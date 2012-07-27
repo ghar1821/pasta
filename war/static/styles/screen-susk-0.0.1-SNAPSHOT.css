@@ -1,0 +1,208 @@
+/** susk-detail */
+.susk-detail {
+	margin: 0 auto;
+	padding: 15px;
+	border: solid 1px #DBD3C2;
+	background: #FDFCDE;
+}
+
+.susk-detail label {
+	display: block;
+	font-weight: bold;
+	font-size: 12px;
+	line-height: 2em;
+	height: 2em;
+	width: 140px;
+	float: left;
+}
+
+.susk-detail span {
+	display: block;
+	font-size: 12px;
+	line-height: 2em;
+	height: 2em;
+}
+
+.susk-detail-clear {
+	clear: both;
+	height: 1px;
+}
+
+/** Susk-form */
+.susk-form {
+	margin: 0 auto;
+	padding: 15px;
+	border: solid 1px #DBD3C2;
+	background: #FDFCDE;
+}
+
+.susk-form p,.susk-form form,.susk-form button {
+	border: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.susk-form-clear {
+	clear: both;
+	height: 1px;
+}
+
+.susk-form form>p {
+	font-size: 0.7em;
+	color: #545456;
+	margin-bottom: 20px;
+	border-bottom: solid 1px #BBBBBB;
+	padding-bottom: 10px;
+}
+
+.susk-form-h1, .susk-detail-h1 {
+	font-size: 1.5em;
+	color: #CE1126;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.susk-form .small {
+	font-size: 0.65em;
+}
+
+.susk-form label {
+	display: block;
+	font-weight: bold;
+	font-size: 12px;
+	line-height: 2em;
+	height: 2em;
+	width: 140px;
+	float: left;
+}
+
+input[type=radio].susk-radio {
+    float: left;
+    margin: 0px 5px 0px 0px !important;
+    width: auto !important;
+}
+
+label.susk-radio {
+    margin-bottom: 5px;
+    width: auto !important;
+}
+
+
+.susk-form-radio {
+	margin-left: 150px;
+}
+
+.susk-form-radio label {
+	float: none;
+	width: auto;
+	line-height: 16px;
+}
+
+.susk-form input,.susk-form textarea,.susk-form select {
+	padding: 4px 2px;
+	border: solid 1px #DDDDDD;
+	margin: 2px 0 20px 10px;
+	font-size: 12px;
+	margin-right: 10px;
+	float: left;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.susk-form input {
+	width: 300px;
+}
+
+.susk-form button {
+	cursor: pointer;
+	clear: both;
+	border: 1px solid #DBD3C2;
+	margin-left: 150px;
+	width: 125px;
+	height: 2em;
+	font-weight: bold;
+	background-color: #CE1126;
+	text-align: center;
+	line-height: 2em;
+	color: #FFFFFF;
+	text-align: center;
+}
+
+.susk-form button:hover {
+	border-color: #DBD3C2;
+	background-color: #12416C;
+}
+
+/** Errors */
+
+.susk-form .susk-form-errors,
+.susk-form .susk-form-error {
+	color: #CE1126;
+	font-size: 1.1em;
+	line-height: 2em;
+	float: left;
+}
+
+/** Susk Info Bar */
+
+.susk-info-bar {
+	background-color: #fffff4;
+	border: 1px solid #999999;
+	padding: 0.25em;
+	margin-bottom: 0.65em;
+}
+
+.susk-info-bar .image {
+	background-image: url("../images/icons/24x24/info.png");
+	margin-right: 0.25em;
+	width: 24px;
+	height: 24px;
+	float: left;
+}
+
+.susk-info-bar .message {
+	margin: 0px !important;
+	line-height: 2em !important;
+}
+
+.susk-info-bar.warning {
+	color: #F5AF00;
+	border-color: #FDEBC5;
+}
+
+.susk-info-bar.warning .image {
+	background-image: url("../images/icons/24x24/warning.png");
+}
+
+.susk-info-bar.success {
+	color: #6dc80d;
+	border-color: #6dc80d;
+}
+
+.susk-info-bar.success .image {
+	background-image: url("../images/icons/24x24/accept.png");
+}
+
+.susk-info-bar.error {
+	color: #CE1126;
+	border-color: #CE1126;
+}
+
+.susk-info-bar.error .image {
+	background-image: url("../images/icons/24x24/warning_red.png");
+}
+
+/* Required */
+
+.star-required {
+	color: #CE1126;
+}
+
+/* susk-toolbar */
+
+.susk-toolbar {
+	line-height: 2em;
+}
+
+.susk-toolbar a {
+	font-size: 12px;
+}
