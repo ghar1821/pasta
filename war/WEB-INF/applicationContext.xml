@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+        xmlns:task="http://www.springframework.org/schema/task"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+           http://www.springframework.org/schema/jdbc
+           http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+           http://www.springframework.org/schema/task  
+           http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+	           
+	           
+    <bean id="messageSource"
+            class="org.springframework.context.support.ResourceBundleMessageSource">
+            <property name="basename" value="messages" />
+    </bean>
+
+    <context:component-scan base-package="info1103.project.repository" />
+    <context:component-scan base-package="info1103.project.service" />	 
+    
+    <bean id="submissionManager" class="info1103.project.service.SubmissionManager" />
+    
+    <context:component-scan base-package="info1103.project.service"/>
+	<task:annotation-driven />
+    
+    <bean id="projectProperties" class="info1103.project.util.ProjectProperties">
+		<constructor-arg type="java.lang.String" value="C:/info1103/template"/> <!-- template location -->
+		<constructor-arg type="java.lang.String" value="C:/info1103/arenas"/> <!-- arenas location -->
+		<constructor-arg type="java.lang.String" value="C:/info1103/submissions"/> <!-- submissions location -->
+		<constructor-arg type="java.lang.String" value="jdbc:mysql://localhost:3306/mark1103"/> <!-- URL -->
+		<constructor-arg type="java.lang.String" value="root"/> <!-- username -->
+		<constructor-arg type="java.lang.String" value="pass"/> <!-- password -->
+		<constructor-arg>
+			<list>
+				<value>mcharles</value>
+				<value>arad0726</value>
+			</list>
+		</constructor-arg>
+		
+	</bean>
+</beans>
