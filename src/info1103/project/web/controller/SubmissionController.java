@@ -1,18 +1,29 @@
 package info1103.project.web.controller;
 
 import info1103.project.domain.AllStudentAssessmentData;
+import info1103.project.domain.Assessment;
 import info1103.project.domain.LoginForm;
 import info1103.project.domain.Submission;
 import info1103.project.login.AuthValidator;
 import info1103.project.service.SubmissionManager;
+import info1103.project.util.ProjectProperties;
 import info1103.project.view.ExcelMarkView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +80,8 @@ public class SubmissionController {
 			return "user/notloggedin";
 		}
 		
+		model.addAttribute("user", manager.getUser(getUser()));
+		model.addAttribute("unikey", getUser());
 		model.addAttribute("latestSubmission", manager.getAssessment(getUser(), taskname));
 		model.addAttribute("submissionHistory", manager.getAssessmentHistory(getUser(), taskname));
 		return ("user/assessment");
@@ -91,6 +104,7 @@ public class SubmissionController {
 			return "user/notloggedin";
 		}
 		
+		model.addAttribute("unikey", getUser());
 		model.addAttribute("user", manager.getUser(getUser()));
 		model.addAttribute("allAssessments", manager.getAssessments(getUser()));
 		model.addAttribute("assessmentList", manager.getAssessmentList());
@@ -108,7 +122,8 @@ public class SubmissionController {
 			return null;
 		}
 		
-		model.addAttribute("user", manager.getUser(unikey));
+		model.addAttribute("user", manager.getUser(getUser()));
+		model.addAttribute("unikey", unikey);
 		model.addAttribute("allAssessments", manager.getAssessments(unikey));
 		model.addAttribute("assessmentList", manager.getAssessmentList());
 		
@@ -125,10 +140,151 @@ public class SubmissionController {
 			return null;
 		}
 		
+		model.addAttribute("user", manager.getUser(getUser()));
+		model.addAttribute("unikey", unikey);
 		model.addAttribute("latestSubmission", manager.getAssessment(unikey, taskname));
 		model.addAttribute("submissionHistory", manager.getAssessmentHistory(unikey, taskname));
 		return ("user/assessment");
 	}
+	
+	// download 1 student 1 task
+	@RequestMapping(value="download/{unikey}-{taskname}",  method=RequestMethod.GET)
+	public void download(@PathVariable("unikey") String unikey, @PathVariable("taskname") String taskname, HttpServletResponse response){
+		if(getUser() == null){
+			return;
+		}
+		if(!manager.getUser(getUser()).isTutor()){
+			return;
+		}
+		try{
+			InputStream file =new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+taskname+"/latest/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip");
+			IOUtils.copy(file, response.getOutputStream());
+			response.flushBuffer();
+		}
+		catch(IOException e){
+			logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+taskname+"/latest/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip"));
+		}
+		
+	}
+	
+	// download 1 student TODO
+	@RequestMapping(value="downloadall/{unikey}",  method=RequestMethod.GET)
+	public void download(@PathVariable("unikey") String unikey, HttpServletResponse response){
+		if(getUser() == null){
+			return;
+		}
+		if(!manager.getUser(getUser()).isTutor()){
+			return;
+		}
+		try{
+			byte[] buf = new byte[1024];
+
+			try {
+			    // Create the ZIP file
+			    String outFilename = ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+unikey+".zip";
+			    ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+
+			    Map<String, Assessment> data = manager.getAssessments(unikey);
+			    
+			    for(String taskname: data.keySet()){
+			    	try{
+				    	FileInputStream in = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+taskname+"/latest/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip");
+	
+				        // Add ZIP entry to output stream.
+				        out.putNextEntry(new ZipEntry(unikey+"/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip"));
+	
+				        // Transfer bytes from the file to the ZIP file
+				        int len;
+				        while ((len = in.read(buf)) > 0) {
+				            out.write(buf, 0, len);
+				        }
+	
+				        // Complete the entry
+				        out.closeEntry();
+				        in.close();
+			    	}
+			    	catch(FileNotFoundException e){
+			    		// do nothing
+			    	}
+			    }
+			    // Complete the ZIP file
+			    out.close();
+			} catch (IOException e) {
+			}
+			
+			InputStream file =new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+unikey+".zip");
+			IOUtils.copy(file, response.getOutputStream());
+			response.flushBuffer();
+			
+			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+unikey+".zip");
+			zipFile.delete();
+		}
+		catch(IOException e){
+			logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+unikey+".zip"));
+		}
+		
+	}
+	
+	// download 1 student TODO
+		@RequestMapping(value="downloadall",  method=RequestMethod.GET)
+		public void download(HttpServletResponse response){
+			if(getUser() == null){
+				return;
+			}
+			if(!manager.getUser(getUser()).isTutor()){
+				return;
+			}
+			try{
+				byte[] buf = new byte[1024];
+			    String outFilename = ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip";
+			    ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+			    
+				for(String unikey: manager.getUserList()){
+	
+					try {
+					    // Create the ZIP file
+	
+					    Map<String, Assessment> data = manager.getAssessments(unikey);
+					    
+					    for(String taskname: data.keySet()){
+					    	try{
+						    	FileInputStream in = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+taskname+"/latest/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip");
+			
+						        // Add ZIP entry to output stream.
+						        out.putNextEntry(new ZipEntry(unikey+"/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip"));
+			
+						        // Transfer bytes from the file to the ZIP file
+						        int len;
+						        while ((len = in.read(buf)) > 0) {
+						            out.write(buf, 0, len);
+						        }
+			
+						        // Complete the entry
+						        out.closeEntry();
+						        in.close();
+					    	}
+					    	catch(FileNotFoundException e){
+					    		// do nothing
+					    	}
+					    }
+					    // Complete the ZIP file
+					    out.close();
+					} catch (IOException e) {
+					}
+					
+					InputStream file =new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
+					IOUtils.copy(file, response.getOutputStream());
+					response.flushBuffer();
+					
+				}
+				File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
+				zipFile.delete();
+			}
+			catch(IOException e){
+				logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip"));
+			}
+			
+		}
 	
 	// all students
 	@RequestMapping(value="all")

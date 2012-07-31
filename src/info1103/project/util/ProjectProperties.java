@@ -36,6 +36,8 @@ public class ProjectProperties {
 	
 	private static List<String> tutors;
 	
+	private static String java6location = null;
+	
 	/**
 	 * The constructor is taken based on the config in
 	 * applicationContext.xml
@@ -47,7 +49,17 @@ public class ProjectProperties {
 	 * @param pass - password of the mysql database
 	 */
 	private ProjectProperties(String tempLoc, String arenasLoc, String subLoc,
+			String url, String user, String pass, List tutors, String java6Location){
+		initialize(tempLoc, arenasLoc, subLoc, url, user, pass, tutors, java6Location);
+	}
+	
+	private ProjectProperties(String tempLoc, String arenasLoc, String subLoc,
 			String url, String user, String pass, List tutors){
+		initialize(tempLoc, arenasLoc, subLoc, url, user, pass, tutors, null);
+	}
+	
+	private void initialize(String tempLoc, String arenasLoc, String subLoc,
+			String url, String user, String pass, List tutors, String java6Location){
 		templateLocation = tempLoc;
 		arenasLocation = arenasLoc;
 		submissionsLocation = subLoc;
@@ -57,6 +69,8 @@ public class ProjectProperties {
 		ProjectProperties.pass = pass;
 		
 		ProjectProperties.tutors = tutors;
+		ProjectProperties.java6location = java6Location;
+		
 		
 		AllStudentAssessmentData.getInstance();
 	}
@@ -91,5 +105,9 @@ public class ProjectProperties {
 	}
 	public List<String> getTutors(){
 		return tutors;
+	}
+	
+	public String getJava6Location(){
+		return java6location;
 	}
 }

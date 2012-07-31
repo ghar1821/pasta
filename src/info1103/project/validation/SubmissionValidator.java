@@ -80,11 +80,17 @@ public class SubmissionValidator {
 		
 		// copy file to location
 		try {
-			code.getFile().transferTo(new File(latest.getAbsolutePath() + "/"+code.getUnikey()+".zip"));
+			code.getFile().transferTo(new File(latest.getAbsolutePath() + "/"+code.getUnikey()+"-"+code.getAssessmentName().toLowerCase().replace(" ", "")+".zip"));
 			
 			// extract file
-			extractFolder(latest.getAbsolutePath() + "/"+code.getUnikey()+".zip");
-			File zipFile = new File(latest.getAbsolutePath() + "/"+code.getUnikey()+".zip");
+			try{
+				extractFolder(latest.getAbsolutePath() + "/"+code.getUnikey()+"-"+code.getAssessmentName().toLowerCase().replace(" ", "")+".zip");
+			}
+			catch(ZipException e){
+				errors.reject("Submission.NotZip");
+				return;
+			}
+			File zipFile = new File(latest.getAbsolutePath() + "/"+code.getUnikey()+"-"+code.getAssessmentName().toLowerCase().replace(" ", "")+".zip");
 			
 			PrintWriter out = new PrintWriter(latest.getAbsolutePath() + "/submission.info");
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -97,6 +103,9 @@ public class SubmissionValidator {
 	    		
 			// compile
 			ProcessBuilder compiler = new ProcessBuilder("bash", "-c", "ant build clean");
+			if(ProjectProperties.getInstance().getJava6Location() != null){
+				compiler.environment().put("JAVA_HOME", ProjectProperties.getInstance().getJava6Location());
+			}
 			compiler.redirectErrorStream(true);
 			compiler.directory(latest);
 			compiler.redirectErrorStream(true);

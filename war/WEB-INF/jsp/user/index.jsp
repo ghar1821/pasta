@@ -3,7 +3,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<h1>${user.unikey}</h1>
+<h1>${unikey}</h1>
+<c:if test="${user.tutor}">
+	<a href="downloadall/${unikey}">Download all submissions</a>
+</c:if>
 <c:if test="${not empty assessmentList}">
 	<spring:hasBindErrors name="submission">
 		<div class="ui-state-error" style="font-size:20">

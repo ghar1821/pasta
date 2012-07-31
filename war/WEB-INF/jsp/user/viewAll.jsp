@@ -5,6 +5,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <a href="all.xls">Download marks</a>
+<a href="downloadall">Download all submissions</a>
 
 <table id="allMarks" class="heat-map tablesorter">
 	<thead>

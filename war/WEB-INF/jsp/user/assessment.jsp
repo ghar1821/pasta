@@ -8,6 +8,9 @@ Due: ${latestSubmission.dueDate}</br>
 Instructions: ${latestSubmission.instructions}</br>
 
 <c:if test="${not empty latestSubmission.result}">
+	<c:if test="${user.tutor}">
+		<a href="../../download/${unikey}-${latestSubmission.name}">Download latest submission</a>
+	</c:if>
 	<h2> Latest submission: </h2>
 	Submitted At: ${latestSubmission.submissionDate}
 	</br>

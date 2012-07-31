@@ -75,14 +75,26 @@ public class Assessment {
 		if(result == null || result.equals("No submission")){
 			return "";
 		}
-		else if(result.equals("Processing")){
+		else if(result.equals("Compilation successful, queued for testing.")){
 			return "background-color:gold;";
 		}
 		else if(result.equals("Did not compile")){
 			return "background-color:red;";
 		}
 		else{
-			return "background-color:#00CC00;";
+			int sred = 255;
+			int sgreen = 255;
+			int sblue = 255;
+			
+			int ered = 0;
+			int egreen = 204;
+			int eblue = 0;
+			
+			return "background-color:rgb(" + 
+			(sred + (int)(Double.parseDouble(percentage)*(ered-sred))) + "," +
+			(sgreen + (int)(Double.parseDouble(percentage)*(egreen-sgreen))) + "," +
+			(sblue + (int)(Double.parseDouble(percentage)*(eblue-sblue))) +
+			");";
 		}
 	}
 	public String getFeedback() {

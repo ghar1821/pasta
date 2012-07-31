@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -94,6 +95,9 @@ public class SubmissionManager {
 				
 				// run
 				ProcessBuilder compiler = new ProcessBuilder("bash", "-c", "ant clean build test clean");
+				if(ProjectProperties.getInstance().getJava6Location() != null){
+					compiler.environment().put("JAVA_HOME", ProjectProperties.getInstance().getJava6Location());
+				}
 				compiler.redirectErrorStream(true);
 				compiler.directory(latest);
 				compiler.redirectErrorStream(true);
@@ -108,6 +112,13 @@ public class SubmissionManager {
 					compileMessage += line + "\r\n";
 				}
 				compileMessage += "\r\n\r\n ERROR CODE: " + compile.waitFor();
+				
+				// if errors, return errors, dump ant output to compile.errors
+				if (!compileMessage.contains("BUILD SUCCESSFUL")) {
+					PrintWriter compileErrors = new PrintWriter(latest.getAbsolutePath() + "/run.errors");
+					compileErrors.println(compileMessage);
+					compileErrors.close();
+				}
 				
 				compile.destroy();
 				

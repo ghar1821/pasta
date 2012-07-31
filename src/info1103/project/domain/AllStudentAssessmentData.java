@@ -64,7 +64,14 @@ public class AllStudentAssessmentData {
 	public void updateStudent(String unikey, List<String> assessments){
 		User person = userDao.getUser(unikey);
 		for(String assessment: assessments){
-			studentData.get(person).put(assessment, assDao.getAssessment(assessment, unikey));
+			if(studentData.get(person) == null){
+				TreeMap<String, Assessment> allAssessments = new TreeMap<String, Assessment>();
+				allAssessments.put(assessment, assDao.getAssessment(assessment, unikey));
+				studentData.put(person, allAssessments);
+			}
+			else{
+				studentData.get(person).put(assessment, assDao.getAssessment(assessment, unikey));
+			}
 		}
 	}
 	
@@ -75,7 +82,14 @@ public class AllStudentAssessmentData {
 	 */
 	public void updateStudent(String unikey, String assessment){
 		User person = userDao.getUser(unikey);
-		studentData.get(person).put(assessment, assDao.getAssessment(assessment, unikey));
+		if(studentData.get(person) == null){
+			TreeMap<String, Assessment> assessments = new TreeMap<String, Assessment>();
+			assessments.put(assessment, assDao.getAssessment(assessment, unikey));
+			studentData.put(person, assessments);
+		}
+		else{
+			studentData.get(person).put(assessment, assDao.getAssessment(assessment, unikey));
+		}
 	}
 	
 	/**
