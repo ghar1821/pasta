@@ -10,6 +10,7 @@ import java.util.Map;
 public class User implements Comparable<User>{
 	String unikey;
 	boolean tutor = false;
+	String tutorialClass;
 	
 	// history
 	Map<String, Double> markHistory;
@@ -28,6 +29,14 @@ public class User implements Comparable<User>{
 
 	public void setTutor(boolean tutor) {
 		this.tutor = tutor;
+	}
+
+	public String getTutorialClass() {
+		return tutorialClass;
+	}
+
+	public void setTutorialClass(String tutorialClass) {
+		this.tutorialClass = tutorialClass;
 	}
 
 	public Map<String, Double> getMarkHistory() {

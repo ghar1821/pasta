@@ -37,6 +37,17 @@ public class ExecutionScheduler {
 						ProjectProperties.getInstance().getUser(),
 						ProjectProperties.getInstance().getPass());
 				databaseConnection.setAutoCommit(false);
+				// create query statement
+				PreparedStatement st1 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `jobs` ( `unikey` text NOT NULL, `assessmentName` text NOT NULL, `executionDate` datetime NOT NULL);\n");
+				// execute and commit
+				st1.executeUpdate();
+				databaseConnection.commit();
+				
+				// create query statement
+				PreparedStatement st2 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `students` ( `unikey` text NOT NULL, `tutorialClass` text NOT NULL);\n");
+				// execute and commit
+				st2.executeUpdate();
+				databaseConnection.commit();
 			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();

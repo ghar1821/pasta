@@ -73,6 +73,17 @@ public class SubmissionManager {
 		subVal.validate(sub, errors);
 	}
 	
+	@Scheduled(fixedDelay=600000)
+	public void fixPermissions(){
+		try {
+			Runtime.getRuntime().exec("chmod g+w -R "+ProjectProperties.getInstance().getSubmissionsLocation());
+			Runtime.getRuntime().exec("chgrp -R mark1103 "+ProjectProperties.getInstance().getSubmissionsLocation());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Scheduled(fixedDelay=120000)
 	/**
 	 * Method to execute all remaining jobs.

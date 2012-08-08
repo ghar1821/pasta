@@ -16,7 +16,7 @@ public class LoginForm {
 		return unikey;
 	}
 	public void setUnikey(String unikey) {
-		this.unikey = unikey;
+		this.unikey = unikey.toLowerCase();
 	}
 	public String getPassword() {
 		return password;

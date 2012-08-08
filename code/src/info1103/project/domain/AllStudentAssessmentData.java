@@ -108,4 +108,8 @@ public class AllStudentAssessmentData {
 	public Map<User, Map<String, Assessment>> getData(){
 		return studentData;
 	}
+	
+	public void reload(){
+		data = new AllStudentAssessmentData();
+	}
 }

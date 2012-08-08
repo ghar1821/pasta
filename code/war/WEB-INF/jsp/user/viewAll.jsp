@@ -11,6 +11,7 @@
 	<thead>
 		<tr>
 			<th class="first">Unikey</th>
+			<th>Tutorial Stream</th>
 			<c:forEach var="assessmentName" items="${allAssessments}">
 				<th>${assessmentName}</th>
 			</c:forEach>
@@ -23,6 +24,7 @@
 			<c:set var="sum" value="0" />
 			<tr class="stats-row">
 				<td class="stats-title"><a href="${entry.key.unikey}">${entry.key.unikey}</a></td>
+				<td class="stats-title"><a href="downloadClass/${entry.key.tutorialClass}">${entry.key.tutorialClass}</a></td>
 				<c:forEach var="assessmentName" items="${allAssessments}">
 					<c:choose>
 						<c:when test="${empty entry.value[assessmentName]}">

@@ -225,22 +225,22 @@ public class SubmissionController {
 		
 	}
 	
-	// download 1 student TODO
-		@RequestMapping(value="downloadall",  method=RequestMethod.GET)
-		public void download(HttpServletResponse response){
-			if(getUser() == null){
-				return;
-			}
-			if(!manager.getUser(getUser()).isTutor()){
-				return;
-			}
-			try{
-				byte[] buf = new byte[1024];
-			    String outFilename = ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip";
-			    ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-			    
-				for(String unikey: manager.getUserList()){
-	
+	// download all students in a class
+	@RequestMapping(value="downloadClass/{tutorialClass}",  method=RequestMethod.GET)
+	public void downloadclass(@PathVariable("tutorialClass") String tutorialClass, HttpServletResponse response){
+		if(getUser() == null){
+			return;
+		}
+		if(!manager.getUser(getUser()).isTutor()){
+			return;
+		}
+		try{
+			byte[] buf = new byte[1024];
+		    String outFilename = ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip";
+		    ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+		    
+			for(String unikey: manager.getUserList()){
+				if(manager.getUser(unikey).getTutorialClass()!=null && manager.getUser(unikey).getTutorialClass().equalsIgnoreCase(tutorialClass)){
 					try {
 					    // Create the ZIP file
 	
@@ -275,16 +275,77 @@ public class SubmissionController {
 					InputStream file =new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
 					IOUtils.copy(file, response.getOutputStream());
 					response.flushBuffer();
-					
 				}
-				File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
-				zipFile.delete();
 			}
-			catch(IOException e){
-				logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip"));
-			}
-			
+			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
+			zipFile.delete();
 		}
+		catch(IOException e){
+			logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip"));
+		}
+		
+	}
+	
+	// download all students
+	@RequestMapping(value="downloadall",  method=RequestMethod.GET)
+	public void download(HttpServletResponse response){
+		if(getUser() == null){
+			return;
+		}
+		if(!manager.getUser(getUser()).isTutor()){
+			return;
+		}
+		try{
+			byte[] buf = new byte[1024];
+		    String outFilename = ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip";
+		    ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+		    
+			for(String unikey: manager.getUserList()){
+
+				try {
+				    // Create the ZIP file
+
+				    Map<String, Assessment> data = manager.getAssessments(unikey);
+				    
+				    for(String taskname: data.keySet()){
+				    	try{
+					    	FileInputStream in = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/"+unikey+"/"+taskname+"/latest/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip");
+		
+					        // Add ZIP entry to output stream.
+					        out.putNextEntry(new ZipEntry(unikey+"/"+(unikey+"-"+taskname.toLowerCase().replace(" ", ""))+".zip"));
+		
+					        // Transfer bytes from the file to the ZIP file
+					        int len;
+					        while ((len = in.read(buf)) > 0) {
+					            out.write(buf, 0, len);
+					        }
+		
+					        // Complete the entry
+					        out.closeEntry();
+					        in.close();
+				    	}
+				    	catch(FileNotFoundException e){
+				    		// do nothing
+				    	}
+				    }
+				    // Complete the ZIP file
+				    out.close();
+				} catch (IOException e) {
+				}
+				
+				InputStream file =new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
+				IOUtils.copy(file, response.getOutputStream());
+				response.flushBuffer();
+				
+			}
+			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip");
+			zipFile.delete();
+		}
+		catch(IOException e){
+			logger.info("Error downloading file. "+(ProjectProperties.getInstance().getSubmissionsLocation()+"/all.zip"));
+		}
+		
+	}
 	
 	// all students
 	@RequestMapping(value="all")
@@ -368,5 +429,17 @@ public class SubmissionController {
 	public String logout() {
 		RequestContextHolder.currentRequestAttributes().removeAttribute("user", RequestAttributes.SCOPE_SESSION);
 		return "redirect:../";
+	}
+	
+	@RequestMapping("reloadCache")
+	public void reload() {
+		if(getUser() == null){
+			return;
+		}
+		if(!manager.getUser(getUser()).isTutor()){
+			return;
+		}
+		
+		AllStudentAssessmentData.getInstance().reload();
 	}
 }
