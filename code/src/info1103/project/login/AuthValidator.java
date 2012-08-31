@@ -75,7 +75,7 @@ public class AuthValidator implements Validator {
 		 
 					Session session = null;			
 					session = Session.getInstance(props);
-					session.setDebug(true);			
+					session.setDebug(false);			
 					javax.mail.Store store = session.getStore(new 
 				               javax.mail.URLName("imap://imap.ug.cs.usyd.edu.au"));
 					store.connect("imap.ug.cs.usyd.edu.au",143,unikey,password);

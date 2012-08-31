@@ -17,10 +17,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,9 @@ import org.springframework.validation.Errors;
 public class SubmissionManager {
 	private UserDAO userDao = new UserDAO();
 	private AssessmentDAO assDao = new AssessmentDAO();
+	
+	@Autowired
+	private ApplicationContext context;
 	
 	// Validator for the submission
 	private SubmissionValidator subVal = new SubmissionValidator();
@@ -93,10 +99,14 @@ public class SubmissionManager {
 	 */
 	public void executeRemainingJobs(){
 		Execution exec = ExecutionScheduler.getInstance().nextExecution();
+		String UOS = "";
+		if(context != null && context.getMessage("UOS", null, Locale.getDefault()) != null){
+			UOS = context.getMessage("UOS", null, Locale.getDefault()) + ": ";
+		}
 		while(exec != null){
 			// execute jobs
 			try {
-				logger.info("executing " + exec.getAssessmentName() + " for " + exec.getUnikey());
+				logger.info(UOS + "executing " + exec.getAssessmentName() + " for " + exec.getUnikey());
 				File latest = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
 						+ exec.getUnikey() + "/" + exec.getAssessmentName() + "/latest");
 
@@ -134,25 +144,27 @@ public class SubmissionManager {
 				compile.destroy();
 				
 				// cleanup - should make this better TODO
+				FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/bin"));
 				FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/junit_jars"));
 				FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/test"));
 				(new File(latest.getAbsolutePath() + "/build.xml")).delete();
 				
-				// remove the execution from the database.
+				
 				ExecutionScheduler.getInstance().completedExecution(exec);
 				// update caching
 				AllStudentAssessmentData.getInstance().updateStudent(exec.getUnikey(), exec.getAssessmentName());
 
-				// get next
-				exec = ExecutionScheduler.getInstance().nextExecution();		
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				// remove the execution from the database.
+				ExecutionScheduler.getInstance().completedExecution(exec);
+				ExecutionScheduler.getInstance().scheduleExecution(exec);
+				logger.info("[PASTA ERROR] " + exec.getUnikey() + " - " + exec.getAssessmentName() + ":\r\n" + e.getMessage());
 			}
+			// get next
+			exec = ExecutionScheduler.getInstance().nextExecution();
 		}
 		
-		logger.info("finished executing all jobs");
+		logger.info(UOS + "finished executing all jobs");
 	}
 	
 }

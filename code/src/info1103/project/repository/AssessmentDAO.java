@@ -160,11 +160,22 @@ public class AssessmentDAO {
 						junitFeedback+="<td style=\"color:#00CC00;font-weight:900;\">PASS</td>";
 						junitFeedbackHeader+="<td style=\"background-color:#00CC00;\">&nbsp</td>";
 					}
-					junitFeedback+= "<td>"+curr.getAttributes().getNamedItem("name").getNodeValue()+"</td><td><b>";
+					junitFeedback+= "<td>"+curr.getAttributes().getNamedItem("name").getNodeValue()+"</td><td><pre style=\"margin:0;\">";
 					if(curr.hasChildNodes()){
-						junitFeedback += curr.getChildNodes().item(1).getAttributes().item(0).getNodeValue();
+						if(curr.getChildNodes().item(1).getNodeName().equals("error")){
+							if(curr.getChildNodes().item(1).getAttributes().getNamedItem("type") != null){
+								junitFeedback += curr.getChildNodes().item(1).getAttributes().getNamedItem("type").getNodeValue().replace("<", "&lt").replace(">", "&gt");
+							}
+							if(curr.getChildNodes().item(1).getAttributes().getNamedItem("message") != null){
+								junitFeedback += ": " + curr.getChildNodes().item(1).getAttributes().item(0).getNodeValue().replace("<", "&lt").replace(">", "&gt");
+							}
+						}else{
+							if(curr.getChildNodes().item(1).getAttributes().getNamedItem("message") != null){
+								junitFeedback += curr.getChildNodes().item(1).getAttributes().item(0).getNodeValue().replace("<", "&lt").replace(">", "&gt");
+							}
+						}
 					}
-					junitFeedback+="</b></td></tr>";
+					junitFeedback+="</pre></td></tr>";
 				}
 				
 				junitFeedback += "</table>";

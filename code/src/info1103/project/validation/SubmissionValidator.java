@@ -52,6 +52,10 @@ public class SubmissionValidator {
 			errors.reject("Submission.NoFile");
 			return;
 		}
+		if(!code.getFile().getOriginalFilename().endsWith("zip")){
+			errors.reject("Submission.NotZip");
+			return;
+		}
 		
 		File latest = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" + code.getUnikey() + "/"
 				+ code.getAssessmentName() + "/latest");
@@ -87,8 +91,7 @@ public class SubmissionValidator {
 				extractFolder(latest.getAbsolutePath() + "/"+code.getUnikey()+"-"+code.getAssessmentName().toLowerCase().replace(" ", "")+".zip");
 			}
 			catch(ZipException e){
-				errors.reject("Submission.NotZip");
-				return;
+				// ignore it.
 			}
 			File zipFile = new File(latest.getAbsolutePath() + "/"+code.getUnikey()+"-"+code.getAssessmentName().toLowerCase().replace(" ", "")+".zip");
 			
@@ -129,6 +132,7 @@ public class SubmissionValidator {
 			
 			//cleanup
 			FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/junit_jars"));
+			FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/bin"));
 			FileUtils.deleteDirectory(new File(latest.getAbsolutePath() + "/test"));
 			(new File(latest.getAbsolutePath() + "/build.xml")).delete();
 			
