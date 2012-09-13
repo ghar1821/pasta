@@ -163,6 +163,8 @@ public class SubmissionController {
 			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
 					+ unikey + "/" + taskname + "/latest/" + (unikey + "-" + taskname.toLowerCase().replace(" ", ""))
 					+ ".zip");
+			response.setContentType("application/zip");
+	        response.setHeader( "Content-Disposition", "attachment; filename=" + unikey + "-" + taskname.toLowerCase().replace(" ", "")+ ".zip" );
 			IOUtils.copy(file, response.getOutputStream());
 			response.flushBuffer();
 		} catch (IOException e) {
@@ -229,6 +231,8 @@ public class SubmissionController {
 			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
 					+ unikey + "/" + unikey + ".zip");
 			IOUtils.copy(file, response.getOutputStream());
+			response.setContentType("application/zip");
+	        response.setHeader( "Content-Disposition", "attachment; filename=" + unikey + ".zip" );
 			response.flushBuffer();
 
 			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" + unikey + "/"
@@ -303,6 +307,8 @@ public class SubmissionController {
 			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()
 					+ "/"+tutorialClass+".zip");
 			IOUtils.copy(file, response.getOutputStream());
+			response.setContentType("application/zip");
+	        response.setHeader( "Content-Disposition", "attachment; filename=" + tutorialClass + ".zip" );
 			response.flushBuffer();
 
 			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"+tutorialClass+".zip");
@@ -377,6 +383,8 @@ public class SubmissionController {
 			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()
 					+ "/all.zip");
 			IOUtils.copy(file, response.getOutputStream());
+			response.setContentType("application/zip");
+	        response.setHeader( "Content-Disposition", "attachment; filename=all.zip" );
 			response.flushBuffer();
 
 		} catch (IOException e) {
@@ -444,7 +452,7 @@ public class SubmissionController {
 //		model.addAttribute("allAssessments", manager.getAssessments(getUser()));
 //		model.addAttribute("assessmentList", manager.getAssessmentList());
 
-		return "redirect:.";
+		return "redirect:/home";
 	}
 
 	@RequestMapping(value = "login", method = RequestMethod.GET)

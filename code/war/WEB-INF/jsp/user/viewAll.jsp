@@ -36,7 +36,7 @@
 						</c:otherwise>
 					</c:choose>
 				</c:forEach>
-				<td>${sum}</td>
+				<td><fmt:formatNumber value="${sum}" pattern="0.000"/></td>
 		  	</tr>
 		  </c:if>
 	</c:forEach>
