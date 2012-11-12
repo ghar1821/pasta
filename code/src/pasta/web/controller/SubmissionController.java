@@ -90,16 +90,6 @@ public class SubmissionController {
 		return ("user/assessment");
 	}
 
-	// Battleship League TODO
-	@RequestMapping(value = "home/submission/BattleshipLeague", method = RequestMethod.GET)
-	public String battleshipLeague(Model model) {
-		if (getUser() == null) {
-			return "user/notloggedin";
-		}
-
-		return ("user/TODO");
-	}
-
 	// home
 	@RequestMapping(value = "home")
 	public String home(Model model) {
@@ -496,4 +486,21 @@ public class SubmissionController {
 		AllStudentAssessmentData.getInstance().reload();
 		return "redirect:home";
 	}
+	
+	// NEW
+	
+	// view an assessment
+	@RequestMapping(value = "assessments/view/{assessmentName}")
+	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+
+		return "assessment/index";
+	}
+	
+	// view an assessment
+	@RequestMapping(value = "assessments/view/{assessmentName}")
+	public String modifyAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+
+		return "assessment/modify/assessment";
+	}
+	
 }
