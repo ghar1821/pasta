@@ -6,6 +6,14 @@
 	background: #FDFCDE;
 }
 
+.pastaTable{
+	width:90%;
+}
+
+.pastaTable td {
+	text-align:center;
+}
+
 .pastaTF {
 	font-weight: bold;
 	text-transform: uppercase;

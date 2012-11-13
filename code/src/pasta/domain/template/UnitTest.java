@@ -4,7 +4,7 @@ public class UnitTest {
 	private String name;
 	private boolean tested;
 	
-	public UnitTest(String name, boolean tested, boolean secret){
+	public UnitTest(String name, boolean tested){
 		this.name = name;
 		this.tested = tested;
 	}
