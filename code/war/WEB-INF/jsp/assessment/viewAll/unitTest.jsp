@@ -4,12 +4,11 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<h1> Unit Test - ${unitTest.name}</h1>
+<h1> Unit Tests</h1>
 
-<table>
-	<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
-</table> 
-
-<!-- show files in folder TODO #42 -->
-
-<!-- Upload testing submission TODO #43 -->
+<table class="pastaTable">
+	<th><td>Name</td><td>Tested</td></th>
+	<c:forEach var="unitTest" items="${allUnitTests}>
+		<tr><td>${unitTest.name}</td><td>${unitTest.tested}</td></tr>
+	</c:forEach>
+</table>
