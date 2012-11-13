@@ -508,18 +508,21 @@ public class SubmissionController {
 		return "assessment/viewAll/assessment";
 	}
 	
-	// view an unit test
+	// view a unit test
 	@RequestMapping(value = "unitTest/view/{testName}/")
-	public String viewUnitTest(@PathVariable("testName") String assessmentName, Model model) {
+	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
-		// TODO harcoded for now.
-		
-		UnitTest a = new UnitTest("Unit Test 1", false);
-		
-		model.addAttribute("unitTest", a);
-				
+		model.addAttribute("unitTest", manager.getUnitTest(testName));
 				
 		return "assessment/view/unitTest";
+	}
+	
+	// view all unit tests
+	@RequestMapping(value = "unitTest/viewAll/")
+	public String viewUnitTest(Model model) {
+
+		model.addAttribute("allUnitTests", manager.getUnitTestList());
+		return "assessment/viewAll/unitTest";
 	}
 	
 	

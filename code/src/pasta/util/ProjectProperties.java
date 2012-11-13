@@ -89,6 +89,11 @@ public class ProjectProperties {
 	public String getTemplateLocation(){
 		return templateLocation;
 	}
+	
+	public String getProjectLocation(){
+		return templateLocation.replace("/template", "");
+	}
+	
 	public String getArenaLocation(){
 		return arenasLocation;
 	}

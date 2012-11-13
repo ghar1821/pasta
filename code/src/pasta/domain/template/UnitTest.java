@@ -12,6 +12,10 @@ public class UnitTest {
 	public String getName() {
 		return name;
 	}
+	
+	public String getShortName() {
+		return name.replace(" ", "");
+	}
 
 	public boolean isTested() {
 		return tested;

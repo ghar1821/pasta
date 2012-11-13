@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -24,6 +25,8 @@ import pasta.domain.Assessment2;
 import pasta.domain.Execution;
 import pasta.domain.Submission;
 import pasta.domain.User;
+import pasta.domain.template.UnitTest;
+import pasta.repository.AssessmentDAO;
 import pasta.repository.AssessmentDAOold;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
@@ -43,6 +46,7 @@ import pasta.validation.SubmissionValidator;
 public class SubmissionManager {
 	private UserDAO userDao = new UserDAO();
 	private AssessmentDAOold assDao = new AssessmentDAOold();
+	private AssessmentDAO assDaoNew = new AssessmentDAO();
 	
 	@Autowired
 	private ApplicationContext context;
@@ -51,6 +55,20 @@ public class SubmissionManager {
 	private SubmissionValidator subVal = new SubmissionValidator();
 	
 	public static final Logger logger = Logger.getLogger(SubmissionManager.class);
+	
+	// new
+	public Collection<UnitTest> getUnitTestList(){
+		return assDaoNew.getAllUnitTests().values();
+	}
+	
+	// new
+	public UnitTest getUnitTest(String name){
+		return assDaoNew.getAllUnitTests().get(name);
+	}
+	
+	
+	
+	
 	
 	public User getUser(String unikey){
 		return userDao.getUser(unikey);

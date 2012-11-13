@@ -21,19 +21,6 @@
            http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 	           
 	           
-    <bean id="messageSource"
-            class="org.springframework.context.support.ResourceBundleMessageSource">
-            <property name="basename" value="messages" />
-    </bean>
-
-    <context:component-scan base-package="pasta.repository" />
-    <context:component-scan base-package="pasta.service" />	 
-    
-    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
-    
-    <context:component-scan base-package="pasta.service"/>
-	<task:annotation-driven />
-    
     <bean id="projectProperties" class="pasta.util.ProjectProperties">
 		<constructor-arg type="java.lang.String" value="C:/info1103/template"/> <!-- template location -->
 		<constructor-arg type="java.lang.String" value="C:/info1103/arenas"/> <!-- arenas location -->
@@ -49,4 +36,17 @@
 		</constructor-arg>
 		
 	</bean>
+	
+    <bean id="messageSource"
+           class="org.springframework.context.support.ResourceBundleMessageSource">
+           <property name="basename" value="messages" />
+    </bean>
+
+    <context:component-scan base-package="pasta.repository" />
+    <context:component-scan base-package="pasta.service" />	 
+    
+    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
+    
+    <context:component-scan base-package="pasta.service"/>
+	<task:annotation-driven />
 </beans>

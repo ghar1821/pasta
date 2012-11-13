@@ -7,8 +7,8 @@
 <h1> Unit Tests</h1>
 
 <table class="pastaTable">
-	<th><td>Name</td><td>Tested</td></th>
-	<c:forEach var="unitTest" items="${allUnitTests}>
-		<tr><td>${unitTest.name}</td><td>${unitTest.tested}</td></tr>
+	<tr><th>Name</th><th>Tested</th></tr>
+	<c:forEach var="unitTest" items="${allUnitTests}">
+		<tr><td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 	</c:forEach>
 </table>
