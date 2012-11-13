@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import pasta.repository.AssessmentDAO;
+import pasta.repository.AssessmentDAOold;
 import pasta.repository.UserDAO;
 
 /**
@@ -26,7 +26,7 @@ public class AllStudentAssessmentData {
 	// the data access object for users
 	private UserDAO userDao = new UserDAO();
 	// the data aceess object for the assessments
-	private AssessmentDAO assDao = new AssessmentDAO();
+	private AssessmentDAOold assDao = new AssessmentDAOold();
 	
 	/**
 	 * Constructor.

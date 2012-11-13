@@ -35,6 +35,8 @@ import pasta.domain.AllStudentAssessmentData;
 import pasta.domain.Assessment2;
 import pasta.domain.LoginForm;
 import pasta.domain.Submission;
+import pasta.domain.template.Assessment;
+import pasta.domain.template.UnitTest;
 import pasta.login.AuthValidator;
 import pasta.service.SubmissionManager;
 import pasta.util.ProjectProperties;
@@ -490,16 +492,40 @@ public class SubmissionController {
 	// NEW
 	
 	// view an assessment
-	@RequestMapping(value = "assessments/view/{assessmentName}")
+	@RequestMapping(value = "assessments/view/{assessmentName}/")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 
+		// TODO harcoded for now.
+		
+		Assessment a = new Assessment();
+		a.setName("an Assessment");
+		a.setMarks(10);
+		
+		model.addAttribute("assessment", a);
+				
+				
 		return "assessment/view/assessment";
 	}
 	
-	// modify an assessment
-	@RequestMapping(value = "assessments/modify/{assessmentName}")
-	public String modifyAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+	// view an unit test
+	@RequestMapping(value = "unitTest/view/{testName}/")
+	public String viewUnitTest(@PathVariable("testName") String assessmentName, Model model) {
 
+		// TODO harcoded for now.
+		
+		UnitTest a = new UnitTest("Unit Test 1", false, false);
+		
+		model.addAttribute("unitTest", a);
+				
+				
+		return "assessment/view/unitTest";
+	}
+	
+	// modify an assessment
+	@RequestMapping(value = "assessments/modify/{assessmentName}/")
+	public String modifyAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+		
+		
 		return "assessment/modify/assessment";
 	}
 	

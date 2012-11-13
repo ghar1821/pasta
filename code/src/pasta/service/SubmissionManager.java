@@ -24,7 +24,7 @@ import pasta.domain.Assessment2;
 import pasta.domain.Execution;
 import pasta.domain.Submission;
 import pasta.domain.User;
-import pasta.repository.AssessmentDAO;
+import pasta.repository.AssessmentDAOold;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.util.ProjectProperties;
@@ -42,7 +42,7 @@ import pasta.validation.SubmissionValidator;
  */
 public class SubmissionManager {
 	private UserDAO userDao = new UserDAO();
-	private AssessmentDAO assDao = new AssessmentDAO();
+	private AssessmentDAOold assDao = new AssessmentDAOold();
 	
 	@Autowired
 	private ApplicationContext context;

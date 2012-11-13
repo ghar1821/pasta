@@ -6,6 +6,19 @@
 	background: #FDFCDE;
 }
 
+.pastaTF {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.pastaTFtrue {
+	color:green;
+}
+
+.pastaTFfalse {
+	color:red;
+}
+
 .susk-detail label {
 	display: block;
 	font-weight: bold;
