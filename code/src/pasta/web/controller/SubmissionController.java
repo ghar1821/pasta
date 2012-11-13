@@ -493,10 +493,10 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/view/{assessmentName}")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		return "assessment/index";
+		return "assessment/view/assessment";
 	}
 	
-	// view an assessment
+	// modify an assessment
 	@RequestMapping(value = "assessments/view/{assessmentName}")
 	public String modifyAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 

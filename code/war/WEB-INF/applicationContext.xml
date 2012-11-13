@@ -26,15 +26,15 @@
             <property name="basename" value="messages" />
     </bean>
 
-    <context:component-scan base-package="info1103.project.repository" />
-    <context:component-scan base-package="info1103.project.service" />	 
+    <context:component-scan base-package="pasta.repository" />
+    <context:component-scan base-package="pasta.service" />	 
     
-    <bean id="submissionManager" class="info1103.project.service.SubmissionManager" />
+    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
     
-    <context:component-scan base-package="info1103.project.service"/>
+    <context:component-scan base-package="pasta.service"/>
 	<task:annotation-driven />
     
-    <bean id="projectProperties" class="info1103.project.util.ProjectProperties">
+    <bean id="projectProperties" class="pasta.util.ProjectProperties">
 		<constructor-arg type="java.lang.String" value="C:/info1103/template"/> <!-- template location -->
 		<constructor-arg type="java.lang.String" value="C:/info1103/arenas"/> <!-- arenas location -->
 		<constructor-arg type="java.lang.String" value="C:/info1103/submissions"/> <!-- submissions location -->
