@@ -116,11 +116,11 @@ public class SubmissionManager {
 		}
 	}
 	
-	@Scheduled(fixedDelay=120000)
+	@Scheduled(fixedDelay=30000)
 	/**
 	 * Method to execute all remaining jobs.
 	 * 
-	 * It's set of a fixed delay. It will run 2 minutes after
+	 * It's set of a fixed delay. It will run 30 seconds after
 	 * the previous execution.
 	 */
 	public void executeRemainingJobs(){
