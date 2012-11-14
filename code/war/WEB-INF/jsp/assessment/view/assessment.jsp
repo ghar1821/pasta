@@ -18,13 +18,19 @@
 	<table>
 		<tr><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 		<c:forEach var="unitTest" items="${assessment.unitTests}">
-			<tr><td>${unitTest.test.name}</td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
+			<tr><td><a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a></td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
 		</c:forEach>
 	</table>
 </c:if>
 
 <c:if test="${not empty assessment.secretUnitTests}">
 	<h2> Secret Unit Tests </h2>
+	<table>
+		<tr><th>Name</th><th>Weighting</th><th>Tested</th></tr>
+		<c:forEach var="unitTest" items="${assessment.secretUnitTests}">
+			<tr><td><a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a></td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
+		</c:forEach>
+	</table>
 </c:if>
 
 <!-- TODO add for hand marking and competitions # 46-->
