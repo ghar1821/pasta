@@ -1,7 +1,7 @@
 package pasta.repository;
 
 import java.io.File;
-import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -9,15 +9,19 @@ import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;
 
 public class AssessmentDAO {
@@ -28,7 +32,9 @@ public class AssessmentDAO {
 	Map<String, HandMarking> allHandMarking;
 	Map<String, Competition> allCompetitions;
 	
-	public AssessmentDAO(){
+	protected final Log logger = LogFactory.getLog(getClass());
+
+	public AssessmentDAO() {
 		// load up all cached objects
 
 		// load up unit tests
@@ -40,6 +46,8 @@ public class AssessmentDAO {
 		// load up competitions TODO #48
 
 		// load up all assessments TODO #49
+		allAssessments = new TreeMap<String, Assessment>();
+		loadAssessments();
 	}
 
 	public Map<String, UnitTest> getAllUnitTests() {
@@ -50,10 +58,13 @@ public class AssessmentDAO {
 		return allAssessments.get(name);
 	}
 
-	public Collection getAssessmentList() {
+	public Collection<Assessment> getAssessmentList() {
 		return allAssessments.values();
 	}
 
+	/**
+	 * Load all unit tests.
+	 */
 	private void loadUnitTests() {
 		// get unit test location
 		String allTestLocation = ProjectProperties.getInstance().getProjectLocation() + "/template/unitTest";
@@ -62,9 +73,28 @@ public class AssessmentDAO {
 
 		// load properties
 		for (String name : allUnitTestNames) {
-			UnitTest test = getUnitTest(allTestLocation+"/"+name);
-			if(test != null){
+			UnitTest test = getUnitTestFromDisk(allTestLocation + "/" + name);
+			if (test != null) {
 				allUnitTests.put(name, test);
+			}
+		}
+
+	}
+
+	/**
+	 * Load all assessments.
+	 */
+	private void loadAssessments() {
+		// get unit test location
+		String allTestLocation = ProjectProperties.getInstance().getProjectLocation() + "/template/assessment";
+		String[] allAssessmentNames = (new File(allTestLocation)).list();
+		Arrays.sort(allAssessmentNames);
+
+		// load properties
+		for (String name : allAssessmentNames) {
+			Assessment test = getAssessmentFromDisk(allTestLocation + "/" + name);
+			if (test != null) {
+				allAssessments.put(name, test);
 			}
 		}
 
@@ -78,7 +108,7 @@ public class AssessmentDAO {
 	 * @return null - there is no unit test at that location to be retrieved
 	 * @return test - the unit test at that location.
 	 */
-	private UnitTest getUnitTest(String location) {
+	private UnitTest getUnitTestFromDisk(String location) {
 		try {
 
 			File fXmlFile = new File(location + "/unitTestProperties.xml");
@@ -93,6 +123,63 @@ public class AssessmentDAO {
 
 			return new UnitTest(name, tested);
 		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Method to get an assessment from a location
+	 * 
+	 * @param location
+	 *            - the location of the unit test
+	 * @return null - there is no unit test at that location to be retrieved
+	 * @return test - the unit test at that location.
+	 */
+	private Assessment getAssessmentFromDisk(String location) {
+		try {
+
+			File fXmlFile = new File(location + "/assessmentProperties.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder;
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+
+			Assessment currentAssessment = new Assessment();
+
+			currentAssessment.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
+			currentAssessment.setMarks(Double.parseDouble(doc.getElementsByTagName("marks").item(0).getChildNodes()
+					.item(0).getNodeValue()));
+
+			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
+			currentAssessment.setDueDate(sdf.parse(doc.getElementsByTagName("dueDate").item(0).getChildNodes().item(0)
+					.getNodeValue()));
+
+			NodeList unitTestList = doc.getElementsByTagName("unitTest");
+			if (unitTestList != null && unitTestList.getLength() > 0) {
+				for (int i = 0; i < unitTestList.getLength(); i++) {
+					Node unitTestNode = unitTestList.item(i);
+					if (unitTestNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element unitTestElement = (Element) unitTestNode;
+						WeightedUnitTest weightedTest = new WeightedUnitTest(allUnitTests.get(unitTestElement
+								.getAttribute("name")), Double.parseDouble(unitTestElement.getAttribute("weight")));
+						if (unitTestElement.getAttribute("secret") != null
+								&& Boolean.parseBoolean(unitTestElement.getAttribute("secret"))) {
+							currentAssessment.addSecretUnitTest(weightedTest);
+						} else {
+							currentAssessment.addUnitTest(weightedTest);
+						}
+					}
+				}
+			}
+
+			// TODO add hand marking
+
+			// TODO add competitions
+
+			return currentAssessment;
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

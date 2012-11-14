@@ -25,6 +25,7 @@ import pasta.domain.Assessment2;
 import pasta.domain.Execution;
 import pasta.domain.Submission;
 import pasta.domain.User;
+import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.AssessmentDAOold;
@@ -66,9 +67,15 @@ public class SubmissionManager {
 		return assDaoNew.getAllUnitTests().get(name);
 	}
 	
+	// new
+	public Collection<Assessment> getAssessmentListNew(){
+		return assDaoNew.getAssessmentList();
+	}
 	
-	
-	
+	// new
+	public Assessment getAssessmentNew(String assessmentName){
+		return assDaoNew.getAssessment(assessmentName);
+	}
 	
 	public User getUser(String unikey){
 		return userDao.getUser(unikey);

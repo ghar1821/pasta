@@ -4,26 +4,26 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Assessment {
-	private ArrayList<UnitTest> unitTests = new ArrayList<UnitTest>();
-	private ArrayList<UnitTest> secretUnitTests = new ArrayList<UnitTest>();
+	private ArrayList<WeightedUnitTest> unitTests = new ArrayList<WeightedUnitTest>();
+	private ArrayList<WeightedUnitTest> secretUnitTests = new ArrayList<WeightedUnitTest>();
 	private String name;
 	private double marks;
 	private Date dueDate;
 	private int numSubmissionsAllowed;
 	
-	public void addUnitTest(UnitTest test){
+	public void addUnitTest(WeightedUnitTest test){
 		unitTests.add(test);
 	}
 	
-	public void removeUnitTest(UnitTest test){
+	public void removeUnitTest(WeightedUnitTest test){
 		unitTests.remove(test);
 	}
 	
-	public void addSecretUnitTest(UnitTest test){
+	public void addSecretUnitTest(WeightedUnitTest test){
 		secretUnitTests.add(test);
 	}
 	
-	public void removeSecretUnitTest(UnitTest test){
+	public void removeSecretUnitTest(WeightedUnitTest test){
 		secretUnitTests.remove(test);
 	}
 	
@@ -31,19 +31,19 @@ public class Assessment {
 		return marks;
 	}
 
-	public ArrayList<UnitTest> getUnitTests() {
+	public ArrayList<WeightedUnitTest> getUnitTests() {
 		return unitTests;
 	}
 
-	public void setUnitTests(ArrayList<UnitTest> unitTests) {
+	public void setUnitTests(ArrayList<WeightedUnitTest> unitTests) {
 		this.unitTests = unitTests;
 	}
 	
-	public ArrayList<UnitTest> getSecretUnitTests() {
+	public ArrayList<WeightedUnitTest> getSecretUnitTests() {
 		return secretUnitTests;
 	}
 
-	public void setSecretUnitTests(ArrayList<UnitTest> secretUnitTests) {
+	public void setSecretUnitTests(ArrayList<WeightedUnitTest> secretUnitTests) {
 		this.secretUnitTests = secretUnitTests;
 	}
 

@@ -474,17 +474,7 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/view/{assessmentName}/")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		// TODO harcoded for now.
-		
-		Assessment a = new Assessment();
-		a.setName("an Assessment");
-		a.setMarks(10);
-		a.setDueDate(new Date());
-		a.addUnitTest(new UnitTest("Test 1", true));
-		
-		model.addAttribute("assessment", a);
-				
-				
+		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
 		return "assessment/view/assessment";
 	}
 	
@@ -492,19 +482,7 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/viewAll/")
 	public String viewAllAssessment(Model model) {
 
-		// TODO harcoded for now.
-		
-		Assessment a = new Assessment();
-		a.setName("an Assessment");
-		a.setMarks(10);
-		a.setDueDate(new Date());
-		
-		ArrayList<Assessment> aa = new ArrayList<Assessment>();
-		aa.add(a);
-		
-		model.addAttribute("allAssessments", aa);
-				
-				
+		model.addAttribute("allAssessments", manager.getAssessmentListNew());
 		return "assessment/viewAll/assessment";
 	}
 	
@@ -513,7 +491,6 @@ public class SubmissionController {
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
-				
 		return "assessment/view/unitTest";
 	}
 	
