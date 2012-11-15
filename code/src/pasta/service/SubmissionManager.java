@@ -110,7 +110,10 @@ public class SubmissionManager {
 		}
 	}
 	
-	
+	//new - unit test is guaranteed to have a unique name
+	public void removeUnitTest(String testName){
+		assDaoNew.removeUnitTest(testName);
+	}
 	
 	
 	public User getUser(String unikey){

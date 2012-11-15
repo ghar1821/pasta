@@ -9,7 +9,11 @@
 <table class="pastaTable">
 	<tr><th>Name</th><th>Tested</th><th><h1>Delete</h1></th></tr>
 	<c:forEach var="unitTest" items="${allUnitTests}">
-		<tr><td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td><td><button>X</button></td></tr>
+		<tr>
+			<td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td>
+			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
+			<td><button onClick="location.href='../delete/${unitTest.shortName}/'">X</button></td>
+		</tr>
 	</c:forEach>
 </table>
 

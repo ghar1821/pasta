@@ -1,6 +1,7 @@
 package pasta.repository;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -64,6 +66,16 @@ public class AssessmentDAO {
 	
 	public void addUnitTest(UnitTest newUnitTest){
 		allUnitTests.put(newUnitTest.getShortName(), newUnitTest);
+	}
+	
+	public void removeUnitTest(String unitTestName){
+		allUnitTests.remove(unitTestName);
+		try {
+			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance().getProjectLocation()+"/template/unitTest/"+unitTestName));
+			logger.info("DELETING"+unitTestName +" path: " + ProjectProperties.getInstance().getProjectLocation()+"/template/unitTest/"+unitTestName);
+		} catch (Exception e) {
+			logger.error("Could not delete the folder for " + unitTestName +"\r\n"+e);
+		}
 	}
 
 	/**

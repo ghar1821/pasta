@@ -481,6 +481,13 @@ public class SubmissionController {
 		return "assessment/viewAll/unitTest";
 	}
 	
+	// delete a unit test
+	@RequestMapping(value = "unitTest/delete/{testName}/")
+	public String deleteUnitTest(@PathVariable("testName") String testName, Model model) {
+		manager.removeUnitTest(testName);
+		return "redirect:../../viewAll/";
+	}
+	
 	@RequestMapping(value = "unitTest/viewAll/", method = RequestMethod.POST)
 	// after submission of an assessment
 	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
