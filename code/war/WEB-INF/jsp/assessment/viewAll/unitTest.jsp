@@ -12,7 +12,48 @@
 		<tr>
 			<td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td>
 			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
-			<td><button onClick="location.href='../delete/${unitTest.shortName}/'">X</button></td>
+			<td><button id="button_${unitTest.shortName}">X</button>
+			<div id="div_${unitTest.shortName}" >
+				<head>
+				<style>
+					#div_${unitTest.shortName} {
+						background-color: white;
+						border-radius: 10px 10px 10px 10px;
+						box-shadow: 0 0 25px 5px #999;
+						color: #111;
+						display: none;
+						min-width: 450px;
+						padding: 25px;
+				}
+				</style>
+				</head>
+					<span class="button bClose">
+					<span><b>X</b></span>
+					</span>
+								<script>
+						;(function($) {
+					
+					         // DOM Ready
+					        $(function() {
+					
+					            // Binding a click event
+					            // From jQuery v.1.7.0 use .on() instead of .bind()
+					            $('#button_${unitTest.shortName}').bind('click', function(e) {
+					
+					                // Prevents the default action to be triggered. 
+					                e.preventDefault();
+					
+					                // Triggering bPopup when click event is fired
+					                $('#div_${unitTest.shortName}').bPopup();
+						
+					            });
+					
+					        });
+					
+					    })(jQuery);
+					</script>
+					<button onClick="location.href='../delete/${unitTest.shortName}/'">Confirm Deletion</button>
+				</div></td>
 		</tr>
 	</c:forEach>
 </table>
