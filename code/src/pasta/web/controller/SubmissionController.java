@@ -22,6 +22,7 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.login.AuthValidator;
 import pasta.service.SubmissionManager;
+import pasta.util.ProjectProperties;
 
 @Controller
 @RequestMapping("/")

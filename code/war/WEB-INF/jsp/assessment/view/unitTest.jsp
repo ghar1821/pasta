@@ -19,5 +19,5 @@ $(document).ready( function() {
 <!-- show files in folder TODO #42 -->
 
 		
-//<c:out value="${testPath}"/>
+<c:out value="${testPath}"/>
 <!-- Upload testing submission TODO #43 -->
