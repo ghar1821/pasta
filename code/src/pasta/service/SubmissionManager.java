@@ -3,8 +3,11 @@ package pasta.service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +30,7 @@ import pasta.domain.Submission;
 import pasta.domain.User;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
+import pasta.domain.upload.NewUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.AssessmentDAOold;
 import pasta.repository.UserDAO;
@@ -76,6 +80,38 @@ public class SubmissionManager {
 	public Assessment getAssessmentNew(String assessmentName){
 		return assDaoNew.getAssessment(assessmentName);
 	}
+	
+	//new - unit test is guaranteed to have a unique name
+	public void addUnitTest(NewUnitTest newTest){
+		UnitTest thisTest = new UnitTest(newTest.getTestName(), false);
+
+		try {
+			
+			// create space on the file system.
+			(new File(thisTest.getFileLocation()+"/code/")).mkdirs();
+			
+			// generate unitTestProperties
+			PrintStream out = new PrintStream(thisTest.getFileLocation()+"/unitTestProperties.xml");
+			out.print(thisTest);
+			out.close();
+			
+			// unzip the uploaded code into the code folder. (if exists)
+			if(newTest.getFile() != null && !newTest.getFile().isEmpty() ){
+				// unpack
+				newTest.getFile().transferTo(new File(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename()));
+				ProjectProperties.extractFolder(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename());
+				new File(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename()).delete();
+			}
+			
+			assDaoNew.addUnitTest(thisTest);
+		} catch (Exception e) {
+			(new File(thisTest.getFileLocation())).delete();
+			logger.error("TEST "+thisTest.getName()+" could not be created successfully!\r\n "+e);
+		}
+	}
+	
+	
+	
 	
 	public User getUser(String unikey){
 		return userDao.getUser(unikey);

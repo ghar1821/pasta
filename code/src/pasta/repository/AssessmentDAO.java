@@ -61,6 +61,10 @@ public class AssessmentDAO {
 	public Collection<Assessment> getAssessmentList() {
 		return allAssessments.values();
 	}
+	
+	public void addUnitTest(UnitTest newUnitTest){
+		allUnitTests.put(newUnitTest.getShortName(), newUnitTest);
+	}
 
 	/**
 	 * Load all unit tests.

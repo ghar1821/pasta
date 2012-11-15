@@ -100,10 +100,6 @@ a.button.large {
 	background-image: url(../../images/common/bg_button_yellow_large.gif);
 }
 
-input {
-	font-size: 1em;
-}
-
 input.field {
 	height: 1.5em;
 	padding: .2em 0 0 .3em;

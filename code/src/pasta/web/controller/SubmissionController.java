@@ -1,23 +1,25 @@
 package pasta.web.controller;
 
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.Submission;
-import pasta.domain.template.Assessment;
+import pasta.domain.LoginForm;
 import pasta.domain.template.UnitTest;
+import pasta.domain.upload.NewUnitTest;
 import pasta.login.AuthValidator;
 import pasta.service.SubmissionManager;
 
@@ -42,9 +44,9 @@ public class SubmissionController {
 		this.manager = myService;
 	}
 
-	@ModelAttribute("submission")
-	public Submission returnModel() {
-		return new Submission();
+	@ModelAttribute("newUnitTestModel")
+	public NewUnitTest returnNewUnitTestModel() {
+		return new NewUnitTest();
 	}
 
 	/**
@@ -427,33 +429,6 @@ public class SubmissionController {
 //		return "redirect:/home";
 //	}
 //
-//	@RequestMapping(value = "login", method = RequestMethod.GET)
-//	public String get(ModelMap model) {
-//		model.addAttribute("LOGINFORM", new LoginForm());
-//		// Because we're not specifying a logical view name, the
-//		// DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
-//		return "login";
-//	}
-//
-//	@RequestMapping(value = "login", method = RequestMethod.POST)
-//	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg, BindingResult result) {
-//
-//		validator.validate(userMsg, result);
-//		if (result.hasErrors()) {
-//			return "login";
-//		}
-//
-//		RequestContextHolder.currentRequestAttributes().setAttribute("user", userMsg.getUnikey(),
-//				RequestAttributes.SCOPE_SESSION);
-//		// Use the redirect-after-post pattern to reduce double-submits.
-//		return "redirect:/home";
-//	}
-//
-//	@RequestMapping("login/exit")
-//	public String logout() {
-//		RequestContextHolder.currentRequestAttributes().removeAttribute("user", RequestAttributes.SCOPE_SESSION);
-//		return "redirect:../";
-//	}
 //
 //	@RequestMapping("reloadCache")
 //	public String reload() {
@@ -502,6 +477,26 @@ public class SubmissionController {
 		return "assessment/viewAll/unitTest";
 	}
 	
+	@RequestMapping(value = "unitTest/viewAll/", method = RequestMethod.POST)
+	// after submission of an assessment
+	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
+
+		// check if the name is unique
+		Collection<UnitTest> allUnitTests = manager.getUnitTestList();
+		
+		for(UnitTest test: allUnitTests){
+			if(test.getName().toLowerCase().replace(" ", "").equals(form.getTestName().toLowerCase().replace(" ", ""))){
+				result.reject("UnitTest.New.NameNotUnique");
+			}
+		}
+		
+		// add it.
+		if(!result.hasErrors()){
+			manager.addUnitTest(form);
+		}
+
+		return "redirect:.";
+	}
 	
 	// modify an assessment
 	@RequestMapping(value = "assessments/modify/{assessmentName}/")
@@ -509,6 +504,41 @@ public class SubmissionController {
 		
 		
 		return "assessment/modify/assessment";
+	}
+	
+	// home page
+	@RequestMapping(value = "home/")
+	public String home(Model model) {
+		// check if tutor or student TODO
+		return "user/studentHome";
+	}
+	
+	@RequestMapping(value = "login", method = RequestMethod.GET)
+	public String get(ModelMap model) {
+		model.addAttribute("LOGINFORM", new LoginForm());
+		// Because we're not specifying a logical view name, the
+		// DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
+		return "login";
+	}
+
+	@RequestMapping(value = "login", method = RequestMethod.POST)
+	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg, BindingResult result) {
+
+		validator.validate(userMsg, result);
+		if (result.hasErrors()) {
+			return "login";
+		}
+
+		RequestContextHolder.currentRequestAttributes().setAttribute("user", userMsg.getUnikey(),
+				RequestAttributes.SCOPE_SESSION);
+		// Use the redirect-after-post pattern to reduce double-submits.
+		return "redirect:/home/";
+	}
+
+	@RequestMapping("login/exit")
+	public String logout() {
+		RequestContextHolder.currentRequestAttributes().removeAttribute("user", RequestAttributes.SCOPE_SESSION);
+		return "redirect:../";
 	}
 	
 }

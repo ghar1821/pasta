@@ -16,6 +16,22 @@ button:hover {
 	background-color: #12416C;
 }
 
+#submit{
+	cursor: pointer;
+	clear: both;
+	border: 1px solid #DBD3C2;
+	font-weight: bold;
+	background-color: #CE1126;
+	line-height: 2em;
+	height:35px;	
+	color:white;
+	padding:3px 20px
+}
+#submit:hover {
+	border-color: #DBD3C2;
+	background-color: #12416C;
+}
+
 #newUnitTest {
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;

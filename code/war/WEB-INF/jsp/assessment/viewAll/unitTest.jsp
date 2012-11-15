@@ -7,9 +7,9 @@
 <h1> Unit Tests</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Tested</th></tr>
+	<tr><th>Name</th><th>Tested</th><th><h1>Delete</h1></th></tr>
 	<c:forEach var="unitTest" items="${allUnitTests}">
-		<tr><td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
+		<tr><td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td><td><button>X</button></td></tr>
 	</c:forEach>
 </table>
 
@@ -19,9 +19,14 @@
 <span class="button bClose">
 	<span><b>X</b></span>
 </span>
-	What would you like to call the unit test?</br>
-	#NAME#</br>
-	#UPLOAD UNIT TESTS#</br>
+	<h1> New Unit Test </h1>
+	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
+		<table>
+			<tr><td>Unit Test Name:</td><td><form:input type="text" path="testName" value=""/></td></tr>
+			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
+		</table>
+    	<input type="submit" value="Create" id="submit"/>
+	</form:form>
 </div>
 
 <script>
