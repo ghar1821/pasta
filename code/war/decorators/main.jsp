@@ -20,6 +20,8 @@
 		<link href="<spring:url value="/static/images/favicon.ico" htmlEscape="true" />" rel="shortcut icon" />
 		<link href="<spring:url value="/static/scripts/jqplot/jquery.jqplot.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
+		
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.4.2.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-1.8.4.custom.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
@@ -35,6 +37,9 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
+		
+		<script type="text/javascript" src="<spring:url value="/static/jqueryFileTree.js" htmlEscape="true" />"></script>
+		
 		<decorator:head />
 	</head>
 	<body id="home">

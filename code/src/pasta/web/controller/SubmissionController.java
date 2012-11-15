@@ -465,6 +465,9 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/view/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
+		String path = ProjectProperties.getInstance().getProjectLocation() + "/template/unitTest/" + testName + "/code";
+
+		model.addAttribute("testPath", path);
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
 		return "assessment/view/unitTest";
 	}
