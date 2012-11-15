@@ -20,9 +20,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import pasta.domain.LoginForm;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
+import pasta.domain.upload.Submission;
 import pasta.login.AuthValidator;
 import pasta.service.SubmissionManager;
-import pasta.util.ProjectProperties;
 
 @Controller
 @RequestMapping("/")
@@ -48,6 +48,11 @@ public class SubmissionController {
 	@ModelAttribute("newUnitTestModel")
 	public NewUnitTest returnNewUnitTestModel() {
 		return new NewUnitTest();
+	}
+	
+	@ModelAttribute("submission")
+	public Submission returnNewSubmissionModel() {
+		return new Submission();
 	}
 
 	/**
@@ -466,11 +471,22 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/view/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
-		String path = ProjectProperties.getInstance().getProjectLocation() + "/template/unitTest/" + testName + "/code";
-
-		model.addAttribute("testPath", path);
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
 		return "assessment/view/unitTest";
+	}
+	
+	// view a unit test
+	@RequestMapping(value = "unitTest/view/{testName}/", method = RequestMethod.POST)
+	public String uploadTestCode(@PathVariable("testName") String testName, @ModelAttribute(value = "submission") Submission form, 
+			BindingResult result,  Model model) {
+
+		// if submission exists
+		if(form.getFile() != null && !form.getFile().isEmpty()){
+			// upload submission
+			manager.testUnitTest(form, testName);
+		}
+		
+		return "redirect:.";
 	}
 	
 	// view all unit tests

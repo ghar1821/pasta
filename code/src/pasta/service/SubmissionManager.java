@@ -3,8 +3,6 @@ package pasta.service;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -21,16 +19,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
+import org.springframework.validation.BindingResult;
 
 import pasta.domain.AllStudentAssessmentData;
 import pasta.domain.Assessment2;
 import pasta.domain.Execution;
-import pasta.domain.Submission;
 import pasta.domain.User;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
+import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.AssessmentDAOold;
 import pasta.repository.UserDAO;
@@ -100,7 +98,8 @@ public class SubmissionManager {
 				// unpack
 				newTest.getFile().transferTo(new File(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename()));
 				ProjectProperties.extractFolder(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename());
-				new File(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename()).delete();
+				newTest.getFile().getInputStream().close();
+				FileUtils.forceDelete(new File(thisTest.getFileLocation()+"/code/"+newTest.getFile().getOriginalFilename()));
 			}
 			
 			assDaoNew.addUnitTest(thisTest);
@@ -115,6 +114,89 @@ public class SubmissionManager {
 		assDaoNew.removeUnitTest(testName);
 	}
 	
+	//new - test submission
+	public void testUnitTest(Submission submission, String testName){
+		try {
+			UnitTest thisTest = getUnitTest(testName);
+			// delete old submission if exists
+			FileUtils.deleteDirectory(new File(thisTest.getFileLocation()+"/test/"));
+			
+			// create folder
+			(new File(thisTest.getFileLocation()+"/test/")).mkdirs();
+			// extract submission
+			submission.getFile().transferTo(new File(thisTest.getFileLocation()+"/test/"+submission.getFile().getOriginalFilename()));
+			ProjectProperties.extractFolder(thisTest.getFileLocation()+"/test/"+submission.getFile().getOriginalFilename());
+			FileUtils.forceDelete(new File(thisTest.getFileLocation()+"/test/"+submission.getFile().getOriginalFilename()));
+				
+			// copy over unit test
+			FileUtils.copyDirectory(new File(thisTest.getFileLocation()+"/code/"), new File(thisTest.getFileLocation()+"/test/"));
+			
+			// compile
+			ProcessBuilder compiler = new ProcessBuilder("ant", "build clean");
+			compiler.redirectErrorStream(true);
+			compiler.directory(new File(thisTest.getFileLocation()+"/test/"));
+			compiler.redirectErrorStream(true);
+			Process compile = compiler.start();
+
+			BufferedReader compileIn = new BufferedReader(new InputStreamReader(compile.getInputStream()));
+			String line;
+			String compileMessage = "Compiler Errors:\r\n";
+			while ((line = compileIn.readLine()) != null) {
+				compileMessage += line + "\r\n";
+			}
+			compileMessage += "\r\n\r\n ERROR CODE: " + compile.waitFor();
+			
+			// if errors, return errors, dump ant output to compile.errors
+			if (!compileMessage.contains("BUILD SUCCESSFUL")) {
+				PrintWriter compileErrors = new PrintWriter(thisTest.getFileLocation()+"/test/compile.errors");
+				compileErrors.println(compileMessage);
+				compileErrors.close();
+			}
+			compile.destroy();
+			
+			// run
+			ProcessBuilder tester = new ProcessBuilder("ant", "clean build test clean");
+			tester.redirectErrorStream(true);
+			tester.directory(new File(thisTest.getFileLocation()+"/test/"));
+			tester.redirectErrorStream(true);
+			Process test = tester.start();
+
+			BufferedReader testIn = new BufferedReader(new InputStreamReader(test.getInputStream()));
+			String testLine="";
+			String testMessage = "Compiler Errors:\r\n";
+			while ((line = testIn.readLine()) != null) {
+				testMessage += testLine + "\r\n";
+			}
+			testMessage += "\r\n\r\n ERROR CODE: " + test.waitFor();
+			
+			// if errors, return errors, dump ant output to run.errors
+			if (!testMessage.contains("BUILD SUCCESSFUL")) {
+				PrintWriter runErrors = new PrintWriter(thisTest.getFileLocation()+"/test/run.errors");
+				runErrors.println(testMessage);
+				runErrors.close();
+			}
+			test.destroy();
+			
+			// delete everything else
+			String[] allFiles = (new File(thisTest.getFileLocation()+"/test/")).list();
+			for(String file: allFiles){
+				File actualFile = new File(thisTest.getFileLocation()+"/test/"+file);
+				if(actualFile.isDirectory()){
+					FileUtils.deleteDirectory(actualFile);
+				}
+				else{
+					if(!file.equals("result.xml") && !file.equals("compile.errors") && !file.equals("run.errors")){
+						FileUtils.forceDelete(actualFile);
+					}
+				}
+			}
+			
+		} catch (IOException e) {
+			logger.error("Unable to test unit test "+getUnitTest(testName).getName()+"\r\n"+e);
+		} catch (InterruptedException e) {
+			logger.error("Unable to execute unit test "+getUnitTest(testName).getName()+"\r\n"+e);
+		}
+	}
 	
 	public User getUser(String unikey){
 		return userDao.getUser(unikey);
@@ -140,9 +222,9 @@ public class SubmissionManager {
 		return assDao.getAssessment(assessmentName, unikey);
 	}
 	
-	public void validateSubmission(Submission sub, Errors errors){
-		subVal.validate(sub, errors);
-	}
+//	public void validateSubmission(Submission sub, Errors errors){
+//		subVal.validate(sub, errors);
+//	}
 	
 	@Scheduled(fixedDelay=600000)
 	public void fixPermissions(){

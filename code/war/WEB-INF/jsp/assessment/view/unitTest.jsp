@@ -3,12 +3,55 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-		<script type="text/javascript">
 
 <h1> Unit Test - ${unitTest.name}</h1>
+<table>
 	<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 </table> 
 
 <!-- show files in folder TODO #42 -->
 
 <!-- Upload testing submission TODO #43 -->
+
+<button id="newPopup"> Test Unit Tests </button>
+
+<div id="newUnitTest" syle="display:none;">
+<span class="button bClose">
+	<span><b>X</b></span>
+</span>
+	<h1> Test Unit Test </h1>
+	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<table>
+			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
+		</table>
+		<form:input type="hidden" path="submittingUsername" value="${submittingUsername}"/>
+		<form:input type="hidden" path="submittingForUsername" value="${submittingForUsername}"/>
+		<form:input type="hidden" path="assessment" value="UNIT TEST CHECK - ${unitTest.shortName}"/>
+    	<input type="submit" value="Upload" id="submit"/>
+	</form:form>
+</div>
+
+<h2>Latest Test results</h2>
+
+<script>
+	;(function($) {
+
+         // DOM Ready
+        $(function() {
+
+            // Binding a click event
+            // From jQuery v.1.7.0 use .on() instead of .bind()
+            $('#newPopup').bind('click', function(e) {
+
+                // Prevents the default action to be triggered. 
+                e.preventDefault();
+
+                // Triggering bPopup when click event is fired
+                $('#newUnitTest').bPopup();
+
+            });
+
+        });
+
+    })(jQuery);
+</script>

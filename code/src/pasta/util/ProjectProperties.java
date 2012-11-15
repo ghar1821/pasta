@@ -173,6 +173,7 @@ public class ProjectProperties {
 	            }
 	            dest.flush();
 	            dest.close();
+	            fos.close();
 	            is.close();
 	        }
 
@@ -181,5 +182,6 @@ public class ProjectProperties {
 	            extractFolder(destFile.getAbsolutePath());
 	        }
 	    }
+	    zip.close();
 	}
 }
