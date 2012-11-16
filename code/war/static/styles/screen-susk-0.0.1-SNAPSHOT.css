@@ -1,6 +1,6 @@
 /** susk-detail */
 
-button{
+button, #submit, .button{
 	cursor: pointer;
 	clear: both;
 	border: 1px solid #DBD3C2;
@@ -11,23 +11,7 @@ button{
 	color:white;
 	padding:3px 20px
 }
-button:hover {
-	border-color: #DBD3C2;
-	background-color: #12416C;
-}
-
-#submit{
-	cursor: pointer;
-	clear: both;
-	border: 1px solid #DBD3C2;
-	font-weight: bold;
-	background-color: #CE1126;
-	line-height: 2em;
-	height:35px;	
-	color:white;
-	padding:3px 20px
-}
-#submit:hover {
+button:hover, #submit:hover, .button:hover{
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
@@ -54,22 +38,6 @@ button:hover {
 	color:white;
 	cursor: pointer;
 }
-
-.button{
-	cursor: pointer;
-	clear: both;
-	border: 1px solid #DBD3C2;
-	font-weight: bold;
-	background-color: #CE1126;
-	line-height: 2em;
-	color:white;
-}
-
-.button:hover {
-	border-color: #DBD3C2;
-	background-color: #12416C;
-}
-
 
 #dialog-overlay {
 
@@ -153,33 +121,16 @@ button:hover {
 	text-align:center;
 }
 
-.pastaTF {
+.pastaTF, .pastaUnitTestResult {
 	font-weight: bold;
 	text-transform: uppercase;
 }
 
-.pastaUnitTestResult {
-	font-weight: bold;
-	text-transform: uppercase;
-}
-
-.pastaUnitTestResultpass {
+.pastaUnitTestResultpass, .pastaTFtrue {
 	color:green;
 }
 
-.pastaUnitTestResulterror {
-	color:red;
-}
-
-.pastaUnitTestResultfailure {
-	color:red;
-}
-
-.pastaTFtrue {
-	color:green;
-}
-
-.pastaTFfalse {
+.pastaUnitTestResulterror, .pastaUnitTestResultfailure, .pastaTFfalse{
 	color:red;
 }
 
