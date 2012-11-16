@@ -31,33 +31,34 @@ public class ExecutionScheduler {
 	protected Connection databaseConnection = null;
 	
 	public Connection getDatabaseConnection(){
-		try {
-			if(databaseConnection == null || databaseConnection.isClosed()){
-				Class.forName("com.mysql.jdbc.Driver");
-				databaseConnection = DriverManager.getConnection(ProjectProperties.getInstance().getUrl(),
-						ProjectProperties.getInstance().getUser(),
-						ProjectProperties.getInstance().getPass());
-				databaseConnection.setAutoCommit(false);
-				// create query statement
-				PreparedStatement st1 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `jobs` ( `unikey` text NOT NULL, `assessmentName` text NOT NULL, `executionDate` datetime NOT NULL);\n");
-				// execute and commit
-				st1.executeUpdate();
-				databaseConnection.commit();
-				
-				// create query statement
-				PreparedStatement st2 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `students` ( `unikey` text NOT NULL, `tutorialClass` text NOT NULL);\n");
-				// execute and commit
-				st2.executeUpdate();
-				databaseConnection.commit();
-			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return databaseConnection;
+//		try {
+//			if(databaseConnection == null || databaseConnection.isClosed()){
+//				Class.forName("com.mysql.jdbc.Driver");
+//				databaseConnection = DriverManager.getConnection(ProjectProperties.getInstance().getUrl(),
+//						ProjectProperties.getInstance().getUser(),
+//						ProjectProperties.getInstance().getPass());
+//				databaseConnection.setAutoCommit(false);
+//				// create query statement
+//				PreparedStatement st1 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `jobs` ( `unikey` text NOT NULL, `assessmentName` text NOT NULL, `executionDate` datetime NOT NULL);\n");
+//				// execute and commit
+//				st1.executeUpdate();
+//				databaseConnection.commit();
+//				
+//				// create query statement
+//				PreparedStatement st2 = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS `students` ( `unikey` text NOT NULL, `tutorialClass` text NOT NULL);\n");
+//				// execute and commit
+//				st2.executeUpdate();
+//				databaseConnection.commit();
+//			}
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//			return null;
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//		return databaseConnection;
+		return null;
 	}
 	
 	/**
@@ -122,47 +123,47 @@ public class ExecutionScheduler {
 	 * @return null - there are no further executions
 	 */
 	public Execution nextExecution(){
-		// connect
-		Connection con = getDatabaseConnection();
-		if(con != null){
-			PreparedStatement st = null;
-			ResultSet result = null;
-			try {
-				// create prepared statement
-				st = con.prepareStatement("SELECT unikey, assessmentName, executionDate FROM jobs WHERE executionDate <= NOW() GROUP BY executionDate LIMIT 0,1;\n");
-				
-				// execute query
-				result = st.executeQuery();
-				
-				Execution exec = null;
-				
-				// get data
-				if(result.next()){
-				exec = new Execution(result.getString("unikey"),
-						result.getString("assessmentName"),
-						result.getDate("executionDate"));
-				}
-				
-				// cleanup
-				result.close();
-				st.close();
-				st = null;
-				result = null;
-				
-				return exec;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				if(con != null){
-					try {
-						con.rollback();
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-//						e1.printStackTrace();
-					}
-				}
-			} 
-		}
+//		// connect
+//		Connection con = getDatabaseConnection();
+//		if(con != null){
+//			PreparedStatement st = null;
+//			ResultSet result = null;
+//			try {
+//				// create prepared statement
+//				st = con.prepareStatement("SELECT unikey, assessmentName, executionDate FROM jobs WHERE executionDate <= NOW() GROUP BY executionDate LIMIT 0,1;\n");
+//				
+//				// execute query
+//				result = st.executeQuery();
+//				
+//				Execution exec = null;
+//				
+//				// get data
+//				if(result.next()){
+//				exec = new Execution(result.getString("unikey"),
+//						result.getString("assessmentName"),
+//						result.getDate("executionDate"));
+//				}
+//				
+//				// cleanup
+//				result.close();
+//				st.close();
+//				st = null;
+//				result = null;
+//				
+//				return exec;
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				if(con != null){
+//					try {
+//						con.rollback();
+//					} catch (SQLException e1) {
+//						// TODO Auto-generated catch block
+////						e1.printStackTrace();
+//					}
+//				}
+//			} 
+//		}
 		return null;
 	}
 	

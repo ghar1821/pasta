@@ -7,7 +7,6 @@ button, #submit, .button{
 	font-weight: bold;
 	background-color: #CE1126;
 	line-height: 2em;
-	height:35px;	
 	color:white;
 	padding:3px 20px
 }
@@ -16,7 +15,7 @@ button:hover, #submit:hover, .button:hover{
 	background-color: #12416C;
 }
 
-#newUnitTest {
+#newUnitTest, #comfirmPopup {
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;
 	box-shadow: 0 0 25px 5px #999;
@@ -24,6 +23,10 @@ button:hover, #submit:hover, .button:hover{
 	display: none;
 	min-width: 450px;
 	padding: 25px;
+}
+
+#comfirmPopup{
+	min-width: 0px;
 }
 
 .bClose {

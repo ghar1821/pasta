@@ -12,68 +12,35 @@
 		<tr>
 			<td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td>
 			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
-			<td><button id="button_${unitTest.shortName}">X</button>
-			<div id="div_${unitTest.shortName}" >
-				<head>
-				<style>
-					#div_${unitTest.shortName} {
-						background-color: white;
-						border-radius: 10px 10px 10px 10px;
-						box-shadow: 0 0 25px 5px #999;
-						color: #111;
-						display: none;
-						min-width: 450px;
-						padding: 25px;
-				}
-				</style>
-				</head>
-					<span class="button bClose">
-					<span><b>X</b></span>
-					</span>
-								<script>
-						;(function($) {
-					
-					         // DOM Ready
-					        $(function() {
-					
-					            // Binding a click event
-					            // From jQuery v.1.7.0 use .on() instead of .bind()
-					            $('#button_${unitTest.shortName}').bind('click', function(e) {
-					
-					                // Prevents the default action to be triggered. 
-					                e.preventDefault();
-					
-					                // Triggering bPopup when click event is fired
-					                $('#div_${unitTest.shortName}').bPopup();
-						
-					            });
-					
-					        });
-					
-					    })(jQuery);
-					</script>
-					<button onClick="location.href='../delete/${unitTest.shortName}/'">Confirm Deletion</button>
-				</div></td>
+			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='../delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
 		</tr>
 	</c:forEach>
 </table>
 
 <button id="newPopup">Add a new Unit Test</button>
 
+<div id="comfirmPopup" >
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
+	<button id="comfirmDeleteButton" onClick="">Confirm Deletion</button>
+</div>
+
 <div id="newUnitTest" >
-<span class="button bClose">
-	<span><b>X</b></span>
-</span>
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
 	<h1> New Unit Test </h1>
 	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Unit Test Name:</td><td><form:input type="text" path="testName" value=""/></td></tr>
+			<tr><td>Unit Test Name:</td><td><form:input autocomplete="off" type="text" path="testName" value=""/></td></tr>
 			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>
 	</form:form>
 </div>
 
+	
 <script>
 	;(function($) {
 
@@ -91,7 +58,6 @@
                 $('#newUnitTest').bPopup();
 
             });
-
         });
 
     })(jQuery);
