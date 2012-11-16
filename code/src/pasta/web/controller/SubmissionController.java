@@ -453,7 +453,7 @@ public class SubmissionController {
 	// NEW
 	
 	// view an assessment
-	@RequestMapping(value = "assessments/view/{assessmentName}/")
+	@RequestMapping(value = "assessments/{assessmentName}/")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 
 		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
@@ -461,7 +461,7 @@ public class SubmissionController {
 	}
 	
 	// view an assessment
-	@RequestMapping(value = "assessments/viewAll/")
+	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
 
 		model.addAttribute("allAssessments", manager.getAssessmentListNew());
@@ -469,7 +469,7 @@ public class SubmissionController {
 	}
 	
 	// view a unit test
-	@RequestMapping(value = "unitTest/view/{testName}/")
+	@RequestMapping(value = "unitTest/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
@@ -478,7 +478,7 @@ public class SubmissionController {
 		return "assessment/view/unitTest";
 	}
 	// view a handmarking
-	@RequestMapping(value = "handmarking/view/{handMarkingName}/")
+	@RequestMapping(value = "handmarking/{handMarkingName}/")
 	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
 
 		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
@@ -486,7 +486,7 @@ public class SubmissionController {
 	}
 	
 	// view a unit test
-	@RequestMapping(value = "unitTest/view/{testName}/", method = RequestMethod.POST)
+	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
 	public String uploadTestCode(@PathVariable("testName") String testName, @ModelAttribute(value = "submission") Submission form, 
 			BindingResult result,  Model model) {
 
@@ -500,7 +500,7 @@ public class SubmissionController {
 	}
 	
 	// view all unit tests
-	@RequestMapping(value = "unitTest/viewAll/")
+	@RequestMapping(value = "unitTest/")
 	public String viewUnitTest(Model model) {
 
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
@@ -514,7 +514,7 @@ public class SubmissionController {
 		return "redirect:../../viewAll/";
 	}
 	
-	@RequestMapping(value = "unitTest/viewAll/", method = RequestMethod.POST)
+	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
 	// after submission of an assessment
 	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
 
@@ -533,14 +533,6 @@ public class SubmissionController {
 		}
 
 		return "redirect:.";
-	}
-	
-	// modify an assessment
-	@RequestMapping(value = "assessments/modify/{assessmentName}/")
-	public String modifyAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
-		
-		
-		return "assessment/modify/assessment";
 	}
 	
 	// home page
