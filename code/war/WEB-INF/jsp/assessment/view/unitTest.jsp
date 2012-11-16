@@ -31,7 +31,43 @@
 	</form:form>
 </div>
 
-<h2>Latest Test results</h2>
+<c:if test="${not empty latestResult}">
+	<h2>Latest Test results
+		<c:if test="${not empty latestResult.compileErrors}">
+			- Compilation Errors Detected
+		</c:if>
+		<c:if test="${not empty latestResult.runtimeErrors}">
+			- Runtime Errors Detected
+		</c:if>
+		<c:if test="${not empty latestResult.testCases}">
+			- Execution Successful
+		</c:if>
+	</h2>
+	<c:if test="${not empty latestResult.compileErrors}">
+		<div class="ui-state-error">
+			<pre>${latestResult.compileErrors}</pre>
+		</div>
+	</c:if>
+	<c:if test="${not empty latestResult.runtimeErrors}">
+		<div class="ui-state-error">
+			<pre>${latestResult.runtimeErrors}</pre>
+		</div>
+	</c:if>
+	<c:if test="${not empty latestResult.testCases}">
+		<table>
+			<tr><th>Status</th><th>Test Name</th><th>Message</th></tr>
+			<c:forEach var="testCase" items="${latestResult.testCases}">
+				<tr>
+					<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+					<td>${testCase.testName}</td>
+					<td>
+						<pre>${testCase.type} - ${testCase.testMessage}</pre>
+					</td>
+				</tr>
+			</c:forEach>
+		</table>
+	</c:if>
+</c:if>
 
 <script>
 	;(function($) {

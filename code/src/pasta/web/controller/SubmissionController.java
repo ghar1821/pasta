@@ -18,6 +18,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.LoginForm;
+import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
@@ -472,6 +473,8 @@ public class SubmissionController {
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
+		model.addAttribute("latestResult", manager.getUnitTestResult(manager.getUnitTest(testName).getFileLocation()+"/test"));
+		
 		return "assessment/view/unitTest";
 	}
 	

@@ -158,6 +158,23 @@ button:hover {
 	text-transform: uppercase;
 }
 
+.pastaUnitTestResult {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.pastaUnitTestResultpass {
+	color:green;
+}
+
+.pastaUnitTestResulterror {
+	color:red;
+}
+
+.pastaUnitTestResultfailure {
+	color:red;
+}
+
 .pastaTFtrue {
 	color:green;
 }

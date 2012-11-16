@@ -21,8 +21,8 @@ public class AssessmentResult {
 		double marks = 0;
 		double maxWeight = 0;
 		for(UnitTestResult result : unitTests){
-			marks += result.getPercentage()*result.getWeighting();
-			maxWeight += result.getWeighting();
+//			marks += result.getPercentage()*result.getWeighting();
+//			maxWeight += result.getWeighting();
 		}
 		marks = (marks / maxWeight) * assessment.getMarks();
 		return marks;

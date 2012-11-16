@@ -19,18 +19,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
 
 import pasta.domain.AllStudentAssessmentData;
 import pasta.domain.Assessment2;
 import pasta.domain.Execution;
 import pasta.domain.User;
+import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.AssessmentDAOold;
+import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.util.ProjectProperties;
@@ -50,6 +51,7 @@ public class SubmissionManager {
 	private UserDAO userDao = new UserDAO();
 	private AssessmentDAOold assDao = new AssessmentDAOold();
 	private AssessmentDAO assDaoNew = new AssessmentDAO();
+	private ResultDAO resultDAO = new ResultDAO();
 	
 	@Autowired
 	private ApplicationContext context;
@@ -58,6 +60,10 @@ public class SubmissionManager {
 	private SubmissionValidator subVal = new SubmissionValidator();
 	
 	public static final Logger logger = Logger.getLogger(SubmissionManager.class);
+	
+	public UnitTestResult getUnitTestResult(String location){
+		return resultDAO.getUnitTestResult(location);
+	}
 	
 	// new
 	public Collection<UnitTest> getUnitTestList(){

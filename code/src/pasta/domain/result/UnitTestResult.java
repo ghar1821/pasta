@@ -5,43 +5,51 @@ import java.util.ArrayList;
 import pasta.domain.template.UnitTest;
 
 public class UnitTestResult {
-	private String name;
-	private double weighting;
-	private boolean tested;
 	private UnitTest test;
 	private boolean secret;
+	private String compileErrors;
+	private String runtimeErrors;
 	private ArrayList<UnitTestCaseResult> testCases;
 	
-	public UnitTestResult(UnitTest test, String name, double weighting, boolean tested, boolean secret){
-		this.name = name;
-		this.weighting = weighting;
-		this.tested = tested;
-		this.secret = secret;
-		this.test = test;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public double getWeighting() {
-		return weighting;
-	}
-
-	public boolean isTested() {
-		return tested;
-	}
-	
-	public boolean isSecret() {
-		return secret;
-	}
 
 	public UnitTest getTest() {
 		return test;
 	}
-	
+
+	public void setTest(UnitTest test) {
+		this.test = test;
+	}
+
+	public boolean isSecret() {
+		return secret;
+	}
+
+	public void setSecret(boolean secret) {
+		this.secret = secret;
+	}
+
+	public String getCompileErrors() {
+		return compileErrors;
+	}
+
+	public void setCompileErrors(String compileErrors) {
+		this.compileErrors = compileErrors;
+	}
+
+	public String getRuntimeErrors() {
+		return runtimeErrors;
+	}
+
+	public void setRuntimeErrors(String runtimeErrors) {
+		this.runtimeErrors = runtimeErrors;
+	}
+
 	public ArrayList<UnitTestCaseResult> getTestCases() {
 		return testCases;
+	}
+
+	public void setTestCases(ArrayList<UnitTestCaseResult> testCases) {
+		this.testCases = testCases;
 	}
 
 	public double getPercentage(){
@@ -51,6 +59,5 @@ public class UnitTestResult {
 		 */
 		return 0; 	
 	}
-	
 	
 }

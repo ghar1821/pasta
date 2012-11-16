@@ -7,7 +7,7 @@
 <h1> Assessments</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Due Date</th><th>Marks</th><th># Submissions Allowed</th><th># Unit Tests</th><th># Secret Unit Tests</th><th># Hand Marking</th><th># Competitions</th></tr>
+	<tr><th>Name</th><th>Due Date</th><th>Marks</th><th># Submissions Allowed</th><th># Public Unit Tests</th><th># Secret Unit Tests</th><th># Hand Marking</th><th># Competitions</th></tr>
 	<c:forEach var="assessment" items="${allAssessments}">
 		<tr>
 			<td><a href="../view/${assessment.shortName}/">${assessment.name}</a></td>
