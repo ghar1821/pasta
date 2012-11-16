@@ -44,7 +44,8 @@ public class AssessmentDAO {
 		loadUnitTests();
 
 		// load up hand marking TODO #47
-
+		allHandMarking = new TreeMap<String, HandMarking>();
+		loadHandMarking();
 		// load up competitions TODO #48
 
 		// load up all assessments TODO #49
@@ -58,6 +59,9 @@ public class AssessmentDAO {
 
 	public Assessment getAssessment(String name) {
 		return allAssessments.get(name);
+	}
+	public HandMarking getHandMarking(String name) {
+		return allHandMarking.get(name);
 	}
 
 	public Collection<Assessment> getAssessmentList() {
@@ -114,6 +118,24 @@ public class AssessmentDAO {
 		}
 
 	}
+	/**
+	 * Load all handmarkings.
+	 */
+	private void loadHandMarking() {
+		// get unit test location
+		String allTestLocation = ProjectProperties.getInstance().getProjectLocation() + "/template/handmarking";
+		String[] allHandMarkingNames = (new File(allTestLocation)).list();
+		Arrays.sort(allHandMarkingNames);
+
+		// load properties
+		for (String name : allHandMarkingNames) {
+			HandMarking test = getHandMarkingFromDisk(allTestLocation + "/" + name);
+			if (test != null) {
+				allHandMarking.put(name, test);
+			}
+		}
+
+	}
 
 	/**
 	 * Method to get a unit test from a location
@@ -146,9 +168,9 @@ public class AssessmentDAO {
 	 * Method to get an assessment from a location
 	 * 
 	 * @param location
-	 *            - the location of the unit test
-	 * @return null - there is no unit test at that location to be retrieved
-	 * @return test - the unit test at that location.
+	 *            - the location of the assessment
+	 * @return null - there is no assessment at that location to be retrieved
+	 * @return test - the assessment at that location.
 	 */
 	private Assessment getAssessmentFromDisk(String location) {
 		try {
@@ -195,6 +217,23 @@ public class AssessmentDAO {
 			// TODO add competitions
 
 			return currentAssessment;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/**
+	 * Method to get a handmarking from a location
+	 * 
+	 * @param location
+	 *            - the location of the handmarking
+	 * @return null - there is no handmarking at that location to be retrieved
+	 * @return test - the handmarking at that location.
+	 */
+	private HandMarking getHandMarkingFromDisk(String location) {
+		try {
+			// TODO add hand marking
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

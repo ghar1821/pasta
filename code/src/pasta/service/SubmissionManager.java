@@ -27,6 +27,7 @@ import pasta.domain.User;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.HandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
@@ -78,6 +79,10 @@ public class SubmissionManager {
 	// new
 	public Collection<Assessment> getAssessmentListNew(){
 		return assDaoNew.getAssessmentList();
+	}
+	// new
+	public HandMarking getHandMarking(String handMarkingName){
+		return assDaoNew.getHandMarking(handMarkingName);
 	}
 	
 	// new

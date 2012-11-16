@@ -477,6 +477,13 @@ public class SubmissionController {
 		
 		return "assessment/view/unitTest";
 	}
+	// view a handmarking
+	@RequestMapping(value = "handmarking/view/{testName}/")
+	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
+
+		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
+		return "assessment/view/handmarking";
+	}
 	
 	// view a unit test
 	@RequestMapping(value = "unitTest/view/{testName}/", method = RequestMethod.POST)
