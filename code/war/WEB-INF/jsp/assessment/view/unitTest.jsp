@@ -54,12 +54,21 @@
 		</div>
 	</c:if>
 	<c:if test="${not empty latestResult.testCases}">
+		<table class="pastaShortTable">
+			<tr>
+			<c:forEach var="testCase" items="${latestResult.testCases}">
+					<td style="padding:0;"><div class="pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div></td>
+			</c:forEach>
+			</tr>
+		</table>
+		
+		</table>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 			<c:forEach var="testCase" items="${latestResult.testCases}">
 				<tr>
 					<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-					<td>${testCase.testName}</td>
+					<td style="text-align:left;">${testCase.testName}</td>
 					<td>${testCase.time}</td>
 					<td>
 						<pre>${testCase.type} - ${testCase.testMessage}</pre>

@@ -82,27 +82,6 @@ public class ResultDAO {
 			}
 		}
 		
-		// check to see if there is a run.errors file
-		File runErrors = new File(location+"/run.errors");
-		if(runErrors.exists()){
-			try{
-				// read in
-				Scanner in = new Scanner (runErrors);
-				String input = "";
-				while(in.hasNextLine()){
-					input+=in.nextLine()+"\r\n";
-				}
-				// set 
-				result.setRuntimeErrors(input);
-				
-				// return
-				return result;
-			}
-			catch(Exception e){
-				logger.error("Could not read run.errors\r\n"+e);
-			}
-		}
-				
 		// check to see if there is a compile.errors file
 		File compileErrors = new File(location+"/compile.errors");
 		if(compileErrors.exists()){
@@ -121,6 +100,27 @@ public class ResultDAO {
 			}
 			catch(Exception e){
 				logger.error("Could not read compile.errors\r\n"+e);
+			}
+		}
+		
+		// check to see if there is a run.errors file
+		File runErrors = new File(location+"/run.errors");
+		if(runErrors.exists()){
+			try{
+				// read in
+				Scanner in = new Scanner (runErrors);
+				String input = "";
+				while(in.hasNextLine()){
+					input+=in.nextLine()+"\r\n";
+				}
+				// set 
+				result.setRuntimeErrors(input);
+				
+				// return
+				return result;
+			}
+			catch(Exception e){
+				logger.error("Could not read run.errors\r\n"+e);
 			}
 		}
 		
