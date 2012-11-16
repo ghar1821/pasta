@@ -232,8 +232,22 @@ public class AssessmentDAO {
 	 */
 	private HandMarking getHandMarkingFromDisk(String location) {
 		try {
-			// TODO add hand marking
-			return null;
+			File fXmlFile = new File(location + "/handMarkingProperties.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder;
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			
+			HandMarking currentHandMarking = new HandMarking();
+			currentHandMarking.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
+			currentHandMarking.setDescription(doc.getElementsByTagName("description").item(0).getChildNodes().item(0).getNodeValue());
+			
+			//String name = doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue();
+			//boolean tested = Boolean.parseBoolean(doc.getElementsByTagName("tested").item(0).getChildNodes().item(0)
+			//		.getNodeValue());
+
+			return currentHandMarking;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

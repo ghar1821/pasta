@@ -478,11 +478,11 @@ public class SubmissionController {
 		return "assessment/view/unitTest";
 	}
 	// view a handmarking
-	@RequestMapping(value = "handmarking/view/{testName}/")
+	@RequestMapping(value = "handmarking/view/{handMarkingName}/")
 	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
 
 		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
-		return "assessment/view/handmarking";
+		return "assessment/view/handMarks";
 	}
 	
 	// view a unit test

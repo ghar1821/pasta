@@ -18,6 +18,9 @@ public class HandMarking {
 	public String getName() {
 		return name;
 	}
+	public String getDescription() {
+		return description;
+	}
 	
 	public String getShortName() {
 		return name.replace(" ", "");
@@ -25,6 +28,10 @@ public class HandMarking {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public void setMarks(double marks) {
