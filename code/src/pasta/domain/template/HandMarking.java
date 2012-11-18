@@ -1,6 +1,6 @@
 package pasta.domain.template;
 
-import java.util.ArrayList;
+import java.util.Array;
 import java.util.Date;
 
 public class HandMarking {
@@ -10,6 +10,9 @@ public class HandMarking {
 	private double marks;
 	private Date dueDate;
 	private int numSubmissionsAllowed;
+	private String[] columns;
+	private String[] rows;
+	private String[][] data;
 	
 	public double getMarks(){
 		return marks;
