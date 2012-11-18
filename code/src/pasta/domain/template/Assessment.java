@@ -1,5 +1,6 @@
 package pasta.domain.template;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -8,7 +9,7 @@ public class Assessment {
 	private ArrayList<WeightedUnitTest> secretUnitTests = new ArrayList<WeightedUnitTest>();
 	private String name;
 	private double marks;
-	private Date dueDate;
+	private Date dueDate = new Date();
 	private int numSubmissionsAllowed;
 	
 	public void addUnitTest(WeightedUnitTest test){
@@ -77,5 +78,30 @@ public class Assessment {
 
 	public void setNumSubmissionsAllowed(int numSubmissionsAllowed) {
 		this.numSubmissionsAllowed = numSubmissionsAllowed;
+	}
+	
+	public String toString(){
+		String output = "";
+		output+="<assessment>" + System.getProperty("line.separator");
+		output+="\t<name>"+getName()+"</name>" + System.getProperty("line.separator");
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
+		output+="\t<dueDate>"+sdf.format(getDueDate())+"</dueDate>" + System.getProperty("line.separator");
+		output+="\t<marks>"+getMarks()+"</marks>" + System.getProperty("line.separator");
+		output+="\t<submissionsAllowed>"+getNumSubmissionsAllowed()+"</submissionsAllowed>" + System.getProperty("line.separator");
+		if(unitTests.size() + secretUnitTests.size() > 0){
+			output+="\t<unitTestSuite>" + System.getProperty("line.separator");
+			for(WeightedUnitTest unitTest: unitTests){
+				output+="\t\t<unitTest name=\""+ unitTest.getTest().getShortName() + "\" weight=\"" + unitTest.getWeight() + "\">" + System.getProperty("line.separator");
+			}
+			
+			for(WeightedUnitTest unitTest: secretUnitTests){
+				output+="\t\t<unitTest name=\""+ unitTest.getTest().getShortName() + "\" weight=\"" + unitTest.getWeight() + "\" secret=\"true\" >" + System.getProperty("line.separator");
+			}
+			output+="\t</unitTestSuite>" + System.getProperty("line.separator");
+		}
+		// TODO handMarks
+		// TODO all competitions
+		output+="</assessment>" + System.getProperty("line.separator");
+		return output;
 	}
 }

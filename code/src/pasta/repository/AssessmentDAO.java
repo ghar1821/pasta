@@ -72,6 +72,10 @@ public class AssessmentDAO {
 		allUnitTests.put(newUnitTest.getShortName(), newUnitTest);
 	}
 	
+	public void addAssessment(Assessment newAssessment){
+		allAssessments.put(newAssessment.getShortName(), newAssessment);
+	}
+	
 	public void removeUnitTest(String unitTestName){
 		allUnitTests.remove(unitTestName);
 		try {

@@ -1,5 +1,9 @@
 /** susk-detail */
 
+pre{
+	margin:0;
+}
+
 button, #submit, .button{
 	cursor: pointer;
 	clear: both;
@@ -15,7 +19,7 @@ button:hover, #submit:hover, .button:hover{
 	background-color: #12416C;
 }
 
-#newUnitTest, #comfirmPopup {
+#newUnitTest, #comfirmPopup, #newAssessment {
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;
 	box-shadow: 0 0 25px 5px #999;
@@ -141,11 +145,11 @@ button:hover, #submit:hover, .button:hover{
 }
 
 .pastaUnitTestResultpass, .pastaTFtrue {
-	color:green;
+	color:#0C0;
 }
 
 .pastaUnitTestBoxResultpass {
-	background-color:green;
+	background-color:#0C0;
 	height:100%;
 	width:100%;
 }

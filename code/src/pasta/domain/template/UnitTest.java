@@ -28,9 +28,9 @@ public class UnitTest {
 	}
 	
 	public String toString(){
-		String output = "<unitTestProperties>\r\n";
-		output += "\t<name>"+name+"</name>\r\n";
-		output += "\t<tested>"+tested+"</tested>\r\n";
+		String output = "<unitTestProperties>" + System.getProperty("line.separator");
+		output += "\t<name>"+name+"</name>" + System.getProperty("line.separator");
+		output += "\t<tested>"+tested+"</tested>" + System.getProperty("line.separator");
 		output += "</unitTestProperties>";
 		return output;
 	}

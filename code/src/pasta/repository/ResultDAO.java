@@ -78,7 +78,7 @@ public class ResultDAO {
 				return result;
 			} 
 			catch (Exception e){
-				logger.error("Could not read result.xml\r\n"+e);
+				logger.error("Could not read result.xml" + System.getProperty("line.separator")+e);
 			}
 		}
 		
@@ -90,7 +90,7 @@ public class ResultDAO {
 				Scanner in = new Scanner (compileErrors);
 				String input = "";
 				while(in.hasNextLine()){
-					input+=in.nextLine()+"\r\n";
+					input+=in.nextLine() + System.getProperty("line.separator");
 				}
 				// set 
 				result.setCompileErrors(input);
@@ -99,7 +99,7 @@ public class ResultDAO {
 				return result;
 			}
 			catch(Exception e){
-				logger.error("Could not read compile.errors\r\n"+e);
+				logger.error("Could not read compile.errors" + System.getProperty("line.separator")+e);
 			}
 		}
 		
@@ -111,7 +111,7 @@ public class ResultDAO {
 				Scanner in = new Scanner (runErrors);
 				String input = "";
 				while(in.hasNextLine()){
-					input+=in.nextLine()+"\r\n";
+					input+=in.nextLine() + System.getProperty("line.separator");
 				}
 				// set 
 				result.setRuntimeErrors(input);
@@ -120,7 +120,7 @@ public class ResultDAO {
 				return result;
 			}
 			catch(Exception e){
-				logger.error("Could not read run.errors\r\n"+e);
+				logger.error("Could not read run.errors" + System.getProperty("line.separator")+e);
 			}
 		}
 		

@@ -117,11 +117,11 @@ public class SubmissionValidator {
 
 			BufferedReader compileIn = new BufferedReader(new InputStreamReader(compile.getInputStream()));
 			String line;
-			String compileMessage = "Compiler Errors:\r\n";
+			String compileMessage = "Compiler Errors:" + System.getProperty("line.separator");
 			while ((line = compileIn.readLine()) != null) {
-				compileMessage += line + "\r\n";
+				compileMessage += line  + System.getProperty("line.separator");
 			}
-			compileMessage += "\r\n\r\n ERROR CODE: " + compile.waitFor();
+			compileMessage +=  System.getProperty("line.separator") + System.getProperty("line.separator") + " ERROR CODE: " + compile.waitFor();
 			
 		    // if errors, return errors, dump ant output to compile.errors
 			if (!compileMessage.contains("BUILD SUCCESSFUL")) {

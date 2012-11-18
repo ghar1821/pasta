@@ -1,6 +1,7 @@
 package pasta.web.controller;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.logging.Log;
@@ -18,7 +19,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.LoginForm;
-import pasta.domain.result.UnitTestResult;
+import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
@@ -54,6 +55,11 @@ public class SubmissionController {
 	@ModelAttribute("submission")
 	public Submission returnNewSubmissionModel() {
 		return new Submission();
+	}
+	
+	@ModelAttribute("assessment")
+	public Assessment returnNewAssessmentModel() {
+		return new Assessment();
 	}
 
 	/**
@@ -468,6 +474,15 @@ public class SubmissionController {
 		return "assessment/viewAll/assessment";
 	}
 	
+	// view an assessment
+	@RequestMapping(value = "assessments/", method = RequestMethod.POST)
+	public String newAssessmentAssessment(@ModelAttribute(value = "assessment") Assessment form, 
+			BindingResult result, Model model) {
+		
+		manager.addAssessment(form);
+		return "redirect:.";
+	}
+	
 	// view a unit test
 	@RequestMapping(value = "unitTest/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
@@ -569,5 +584,7 @@ public class SubmissionController {
 		RequestContextHolder.currentRequestAttributes().removeAttribute("user", RequestAttributes.SCOPE_SESSION);
 		return "redirect:../";
 	}
+	
+	
 	
 }

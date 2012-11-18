@@ -10,7 +10,7 @@
 	<tr><th>Name</th><th>Tested</th><th><h1>Delete</h1></th></tr>
 	<c:forEach var="unitTest" items="${allUnitTests}">
 		<tr>
-			<td><a href="../view/${unitTest.shortName}/">${unitTest.name}</a></td>
+			<td><a href="./${unitTest.shortName}/">${unitTest.name}</a></td>
 			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
 			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='../delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
 		</tr>
@@ -46,7 +46,7 @@
 
          // DOM Ready
         $(function() {
-
+        
             // Binding a click event
             // From jQuery v.1.7.0 use .on() instead of .bind()
             $('#newPopup').bind('click', function(e) {
@@ -58,6 +58,7 @@
                 $('#newUnitTest').bPopup();
 
             });
+            
         });
 
     })(jQuery);

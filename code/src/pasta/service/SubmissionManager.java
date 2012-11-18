@@ -2,6 +2,7 @@ package pasta.service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -126,7 +127,7 @@ public class SubmissionManager {
 			assDaoNew.addUnitTest(thisTest);
 		} catch (Exception e) {
 			(new File(thisTest.getFileLocation())).delete();
-			logger.error("TEST " + thisTest.getName() + " could not be created successfully!\r\n " + e);
+			logger.error("TEST " + thisTest.getName() + " could not be created successfully!" + System.getProperty("line.separator") + e);
 		}
 	}
 
@@ -197,7 +198,27 @@ public class SubmissionManager {
 			}
 
 		} catch (IOException e) {
-			logger.error("Unable to test unit test " + getUnitTest(testName).getName() + "\r\n" + e);
+			logger.error("Unable to test unit test " + getUnitTest(testName).getName()  + System.getProperty("line.separator") + e);
+		}
+	}
+	
+	// new TOOD add assessment
+	public void addAssessment(Assessment assessmentToAdd){
+		try {
+
+		// add it to the directory structure
+		File location = new File(ProjectProperties.getInstance().getProjectLocation()+"/template/assessment/"+assessmentToAdd.getName().replace(" ", ""));
+		location.mkdirs();
+		
+		PrintStream out = new PrintStream(location.getAbsolutePath()+"/assessmentProperties.xml");
+		out.print(assessmentToAdd);
+		out.close();
+		
+		// add it to the list.
+		assDaoNew.addAssessment(assessmentToAdd);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

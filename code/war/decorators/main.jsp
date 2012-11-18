@@ -37,64 +37,12 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
-		
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/jqueryFileTree.js" htmlEscape="true" />"></script>
 		
 		<decorator:head />
 	</head>
 	<body id="home">
-	<style type="text/css">
-	#dialog-overlay1 {
-	
-		/* set it to fill the whole screen */
-		width:100%; 
-		height:100%;
-		
-		/* transparency for different browsers */
-		filter:alpha(opacity=50); 
-		-moz-opacity:0.5; 
-		-khtml-opacity: 0.5; 
-		opacity: 0.5; 
-		background:#000; 
-		margin:auto;
-	
-		/* make sure it appear behind the dialog box but above everything else */
-		position:absolute; 
-		top:0; left:0; 
-		z-index:7; 
-	
-		/* hide it by default */
-		display:none;
-	}
-	#dialog-overlay2 {
-	
-		/* set it to fill the whole screen */
-		width:100%; 
-		height:100%;
-		
-		/* transparency for different browsers */
-		filter:alpha(opacity=50); 
-		-moz-opacity:0.5; 
-		-khtml-opacity: 0.5; 
-		opacity: 0.5; 
-		background:#000; 
-		margin:auto;
-	
-		/* make sure it appear behind the dialog box but above everything else */
-		position:absolute; 
-		top:0; left:0; 
-		z-index:7; 
-	
-		/* hide it by default */
-		display:none;
-	}
-	
-	toBack {
-		z-index:5;
-	}
-	</style>
-	<div id="dialog-overlay1"></div>
-	<div id="dialog-overlay2"></div>
 		<div id="w1">
 			<div id="w2">
 				<div id="w3">
@@ -132,6 +80,16 @@
 						<li>
 							<span>
 								<a href="<spring:url value="/home" htmlEscape="true" />"><span>Home</span></a>
+							</span>
+						</li>
+						<li>
+							<span>
+								<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
+							</span>
+						</li>
+						<li>
+							<span>
+								<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
 							</span>
 						</li>
 						<!--
