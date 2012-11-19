@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,6 +23,7 @@ import org.w3c.dom.NodeList;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
+
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;
@@ -236,6 +238,7 @@ public class AssessmentDAO {
 	 */
 	private HandMarking getHandMarkingFromDisk(String location) {
 		try {
+			//Find and parse the XML file
 			File fXmlFile = new File(location + "/handMarkingProperties.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder;
@@ -243,14 +246,58 @@ public class AssessmentDAO {
 			Document doc = dBuilder.parse(fXmlFile);
 			doc.getDocumentElement().normalize();
 			
+			//Get the Rubric name and description
 			HandMarking currentHandMarking = new HandMarking();
 			currentHandMarking.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
 			currentHandMarking.setDescription(doc.getElementsByTagName("description").item(0).getChildNodes().item(0).getNodeValue());
 			
-			//String name = doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue();
-			//boolean tested = Boolean.parseBoolean(doc.getElementsByTagName("tested").item(0).getChildNodes().item(0)
-			//		.getNodeValue());
-
+			//HashMap Key rowName, value HashMap(key columnName, value description text)
+			HashMap<String, HashMap<String, String>> rowNameAndHashMap = new HashMap();
+			
+			
+			NodeList columns = doc.getElementsByTagName("columnName");
+			NodeList rows = doc.getElementsByTagName("rowName");
+			
+			
+			String[] row = new String[rows.getLength()];
+			String[] column = new String[columns.getLength()];
+			int i = 0;
+			for(int k = 0; k < rows.getLength(); k++){
+				Node rowNode = rows.item(k); 
+				row[i] = rowNode.getNodeValue();
+				i++;
+			}
+			i = 0;
+			for(int l = 0; l < columns.getLength(); l++){
+				Node columnNode = columns.item(l); 
+				row[i] = columnNode.getNodeValue();
+				i++;
+			}
+			//text in a row, one for each column
+			NodeList text = doc.getElementsByTagName("text");
+		
+			HashMap<String, String> columnNameAndText = new HashMap();
+					int columnCounter = 0;
+					int rowCounter = 0;
+					for(int j = 0; j < text.getLength(); j++)
+					{
+						Node theNode = text.item(j); 
+						if(columnCounter >= column.length)
+						{
+							columnCounter = 0;
+							rowCounter++;
+							rowNameAndHashMap.put(row[rowCounter],columnNameAndText);
+							columnNameAndText = new HashMap();
+						}
+						
+						String rubricElement = theNode.getNodeValue();
+						columnNameAndText.put(column[columnCounter],rubricElement);
+						columnCounter++;
+					}
+	
+					//TODO get weights
+					
+			currentHandMarking.setData(rowNameAndHashMap);
 			return currentHandMarking;
 		} catch (Exception e) {
 			e.printStackTrace();

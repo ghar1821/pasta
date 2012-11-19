@@ -501,6 +501,7 @@ public class SubmissionController {
 	@RequestMapping(value = "handmarking/{handMarkingName}/")
 	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
 
+		model.addAttribute("data", manager.getHandMarking(handMarkingName).getData());
 		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
 		return "assessment/view/handMarks";
 	}

@@ -1,7 +1,8 @@
 package pasta.domain.template;
 
-import java.util.Array;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 public class HandMarking {
 
@@ -12,7 +13,7 @@ public class HandMarking {
 	private int numSubmissionsAllowed;
 	private String[] columns;
 	private String[] rows;
-	private String[][] data;
+	private HashMap<String, HashMap<String, String>> data;
 	
 	public double getMarks(){
 		return marks;
@@ -43,6 +44,13 @@ public class HandMarking {
 
 	public Date getDueDate() {
 		return dueDate;
+	}
+	public void setData(HashMap<String, HashMap<String, String>> data) {
+		this.data = data;
+	}
+
+	public HashMap<String, HashMap<String, String>> getData() {
+		return data;
 	}
 
 	public void setDueDate(Date dueDate) {
