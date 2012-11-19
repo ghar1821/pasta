@@ -22,22 +22,14 @@
 		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
 		
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.4.2.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-1.8.4.custom.min.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="http://code.jquery.com/jquery-1.8.2.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="http://code.jquery.com/ui/1.9.1/jquery-ui.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/plugins/jqplot.canvasTextRenderer.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/jquery.jqplot.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/plugins/jqplot.cursor.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/plugins/jqplot.highlighter.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/plugins/jqplot.donutRenderer.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/plugins/jqplot.dateAxisRenderer.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/sorttable.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/roundTableCorners.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.snippet.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/jqueryFileTree.js" htmlEscape="true" />"></script>
 		
 		<decorator:head />

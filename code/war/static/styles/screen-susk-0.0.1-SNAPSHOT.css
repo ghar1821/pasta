@@ -4,6 +4,10 @@ pre{
 	margin:0;
 }
 
+#ui-datepicker-div{
+	display:none;
+}
+
 button, #submit, .button{
 	cursor: pointer;
 	clear: both;

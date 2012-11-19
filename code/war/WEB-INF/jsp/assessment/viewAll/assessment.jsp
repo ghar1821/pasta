@@ -21,7 +21,7 @@
 	</c:forEach>
 </table> 
 
-<button id="newPopup">Add a new Unit Test</button>
+<button id="newPopup">Add a new Assessment</button>
 
 <div id="newAssessment" >
 	<span class="button bClose">
@@ -32,7 +32,7 @@
 		<table>
 			<tr><td>Assessment Name:</td><td><form:input autocomplete="off" type="text" path="name" value=""/></td></tr>
 			<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
-			<tr><td>Assessment DueDate:</td><td><form:input type="text" path="dueDate" id="dueDate" name="dueDate"/></td></tr>
+			<tr><td>Assessment DueDate:</td><td><form:input type="text" path="simpleDueDate" id="simpleDueDate" name="simpleDueDate"/></td></tr>
 			<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/></td></tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>
@@ -45,7 +45,7 @@
          // DOM Ready
         $(function() {
         
-        	// $( "#dueDate" ).datetimepicker(); TODO
+        	$( "#simpleDueDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});// TODO
 
             // Binding a click event
             // From jQuery v.1.7.0 use .on() instead of .bind()

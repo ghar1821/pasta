@@ -1,8 +1,12 @@
 package pasta.domain.template;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class Assessment {
 	private ArrayList<WeightedUnitTest> unitTests = new ArrayList<WeightedUnitTest>();
@@ -11,6 +15,8 @@ public class Assessment {
 	private double marks;
 	private Date dueDate = new Date();
 	private int numSubmissionsAllowed;
+	
+	protected final Log logger = LogFactory.getLog(getClass());
 	
 	public void addUnitTest(WeightedUnitTest test){
 		unitTests.add(test);
@@ -66,6 +72,22 @@ public class Assessment {
 
 	public Date getDueDate() {
 		return dueDate;
+	}
+	
+	public String getSimpleDueDate(){
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		return sdf.format(dueDate);
+	}
+	
+	public void setSimpleDueDate(String date){
+		logger.info(date);
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+			dueDate = sdf.parse(date.trim());
+		} catch (ParseException e) {
+			logger.error("Could not parse date "+e);
+		}
+		logger.info(dueDate);
 	}
 
 	public void setDueDate(Date dueDate) {

@@ -479,7 +479,12 @@ public class SubmissionController {
 	public String newAssessmentAssessment(@ModelAttribute(value = "assessment") Assessment form, 
 			BindingResult result, Model model) {
 		
-		manager.addAssessment(form);
+		if(form.getName() == null || form.getName().isEmpty()){
+			result.reject("Assessment.new.noname");
+		}
+		else{
+			manager.addAssessment(form);
+		}
 		return "redirect:.";
 	}
 	

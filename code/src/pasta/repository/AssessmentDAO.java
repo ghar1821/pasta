@@ -194,7 +194,7 @@ public class AssessmentDAO {
 			currentAssessment.setNumSubmissionsAllowed(Integer.parseInt(doc.getElementsByTagName("submissionsAllowed").item(0).getChildNodes()
 					.item(0).getNodeValue()));
 
-			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
+			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
 			currentAssessment.setDueDate(sdf.parse(doc.getElementsByTagName("dueDate").item(0).getChildNodes().item(0)
 					.getNodeValue()));
 
