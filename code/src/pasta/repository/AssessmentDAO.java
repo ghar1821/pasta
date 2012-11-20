@@ -258,7 +258,7 @@ public class AssessmentDAO {
 			
 			//HashMap Key rowName, value HashMap(key columnName, value description text)
 			//HashMap<String, HashMap<String, String>> rowNameAndHashMap = new HashMap();
-			ArrayList<ArrayList<Tuple>> dataGrid = new ArrayList();
+			ArrayList<ArrayList<String[]>> dataGrid = new ArrayList();
 			
 			
 			NodeList columns = doc.getElementsByTagName("columnName");
@@ -284,7 +284,7 @@ public class AssessmentDAO {
 			NodeList weightNodes = doc.getElementsByTagName("weight");
 		
 			//HashMap<String, String> columnNameAndText = new HashMap();
-			ArrayList<Tuple> rowElementsPerColumn = new ArrayList();
+			ArrayList<String[]> rowElementsPerColumn = new ArrayList();
 					int columnCounter = 0;
 					int rowCounter = 0;
 					for(int j = 0; j < text.getLength(); j++)
@@ -302,7 +302,13 @@ public class AssessmentDAO {
 						//System.out.println(column[0]);
 						Double d = Double.parseDouble(weightNode.getChildNodes().item(0).getNodeValue());
 						
-						Tuple elem = new Tuple(d, theNode.getNodeValue(), column[columnCounter], row[rowCounter]);
+						String[] elem = new String[4];
+						elem[0]=weightNode.getChildNodes().item(0).getNodeValue();
+						elem[1]=theNode.getChildNodes().item(0).getNodeValue();
+						System.out.println("FUCKYOUOOOOOOOOUOUOOu" + theNode.getChildNodes().item(0).getNodeValue());
+						elem[2]=column[columnCounter];
+						elem[3]=row[rowCounter];
+						//Tuple elem = new Tuple(d, theNode.getNodeValue(), column[columnCounter], row[rowCounter]);
 						rowElementsPerColumn.add(elem);
 						columnCounter++;
 					}

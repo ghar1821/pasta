@@ -13,7 +13,7 @@ public class HandMarking {
 	private int numSubmissionsAllowed;
 	private String[] columns;
 	private String[] rows;
-	private ArrayList<ArrayList<Tuple>> data;
+	private ArrayList<ArrayList<String[]>> data;
 	
 	public double getMarks(){
 		return marks;
@@ -58,11 +58,11 @@ public class HandMarking {
 	public Date getDueDate() {
 		return dueDate;
 	}
-	public void setData(ArrayList<ArrayList<Tuple>> data) {
+	public void setData(ArrayList<ArrayList<String[]>> data) {
 		this.data = data;
 	}
 
-	public ArrayList<ArrayList<Tuple>> getData() {
+	public ArrayList<ArrayList<String[]>> getData() {
 		return data;
 	}
 

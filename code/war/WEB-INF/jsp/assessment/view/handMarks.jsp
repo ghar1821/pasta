@@ -6,7 +6,7 @@
 <%@ page import="pasta.domain.template.Tuple"%>
 
 <h1> Rubric - ${handMarking.name}</h1>
-
+${handMarking.data[0][0][1]}
 ${handMarking.description}
 <table>
 	<tr>
@@ -17,7 +17,7 @@ ${handMarking.description}
 <c:forEach items="${handMarking.data}" var="ArrayListColumn">
 	<tr>
 	<c:forEach items="ArrayListColumn" var="element">
-		<td><c:out value="${element.text}" /></td>
+		
                         
 		
 	</c:forEach>
