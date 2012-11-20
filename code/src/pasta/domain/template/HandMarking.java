@@ -2,7 +2,7 @@ package pasta.domain.template;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class HandMarking {
 
@@ -13,7 +13,7 @@ public class HandMarking {
 	private int numSubmissionsAllowed;
 	private String[] columns;
 	private String[] rows;
-	private HashMap<String, HashMap<String, String>> data;
+	private ArrayList<ArrayList<Tuple>> data;
 	
 	public double getMarks(){
 		return marks;
@@ -28,6 +28,19 @@ public class HandMarking {
 	
 	public String getShortName() {
 		return name.replace(" ", "");
+	}
+
+	public void setColumns(String[] c) {
+		this.columns = c;
+	}
+	public String[] getColumns() {
+		return columns;
+	}
+	public void setRows(String[] r) {
+		this.rows = r;
+	}
+	public String[] getRows() {
+		return rows;
 	}
 
 	public void setName(String name) {
@@ -45,11 +58,11 @@ public class HandMarking {
 	public Date getDueDate() {
 		return dueDate;
 	}
-	public void setData(HashMap<String, HashMap<String, String>> data) {
+	public void setData(ArrayList<ArrayList<Tuple>> data) {
 		this.data = data;
 	}
 
-	public HashMap<String, HashMap<String, String>> getData() {
+	public ArrayList<ArrayList<Tuple>> getData() {
 		return data;
 	}
 

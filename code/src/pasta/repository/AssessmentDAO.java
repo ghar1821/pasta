@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,6 +23,7 @@ import org.w3c.dom.NodeList;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
+import pasta.domain.template.Tuple;
 
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
@@ -252,10 +253,12 @@ public class AssessmentDAO {
 			//Get the Rubric name and description
 			HandMarking currentHandMarking = new HandMarking();
 			currentHandMarking.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
+			System.out.println("FUCKYOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOU" + doc.getElementsByTagName("columnName").item(0).getChildNodes().item(0).getNodeValue());
 			currentHandMarking.setDescription(doc.getElementsByTagName("description").item(0).getChildNodes().item(0).getNodeValue());
 			
 			//HashMap Key rowName, value HashMap(key columnName, value description text)
-			HashMap<String, HashMap<String, String>> rowNameAndHashMap = new HashMap();
+			//HashMap<String, HashMap<String, String>> rowNameAndHashMap = new HashMap();
+			ArrayList<ArrayList<Tuple>> dataGrid = new ArrayList();
 			
 			
 			NodeList columns = doc.getElementsByTagName("columnName");
@@ -267,40 +270,47 @@ public class AssessmentDAO {
 			int i = 0;
 			for(int k = 0; k < rows.getLength(); k++){
 				Node rowNode = rows.item(k); 
-				row[i] = rowNode.getNodeValue();
+				row[i] = rowNode.getChildNodes().item(0).getNodeValue();
 				i++;
 			}
 			i = 0;
 			for(int l = 0; l < columns.getLength(); l++){
 				Node columnNode = columns.item(l); 
-				row[i] = columnNode.getNodeValue();
+				column[i] = columnNode.getChildNodes().item(0).getNodeValue();
 				i++;
 			}
 			//text in a row, one for each column
 			NodeList text = doc.getElementsByTagName("text");
+			NodeList weightNodes = doc.getElementsByTagName("weight");
 		
-			HashMap<String, String> columnNameAndText = new HashMap();
+			//HashMap<String, String> columnNameAndText = new HashMap();
+			ArrayList<Tuple> rowElementsPerColumn = new ArrayList();
 					int columnCounter = 0;
 					int rowCounter = 0;
 					for(int j = 0; j < text.getLength(); j++)
 					{
-						Node theNode = text.item(j); 
+						Node theNode = text.item(j);
+						Node weightNode = weightNodes.item(j);
 						if(columnCounter >= column.length)
 						{
 							columnCounter = 0;
 							rowCounter++;
-							rowNameAndHashMap.put(row[rowCounter],columnNameAndText);
-							columnNameAndText = new HashMap();
+							//may need to duplicate to fix error
+							dataGrid.add(rowElementsPerColumn);
+							rowElementsPerColumn = new ArrayList();
 						}
+						//System.out.println(column[0]);
+						Double d = Double.parseDouble(weightNode.getChildNodes().item(0).getNodeValue());
 						
-						String rubricElement = theNode.getNodeValue();
-						columnNameAndText.put(column[columnCounter],rubricElement);
+						Tuple elem = new Tuple(d, theNode.getNodeValue(), column[columnCounter], row[rowCounter]);
+						rowElementsPerColumn.add(elem);
 						columnCounter++;
 					}
 	
 					//TODO get weights
-					
-			currentHandMarking.setData(rowNameAndHashMap);
+					currentHandMarking.setRows(row);
+					currentHandMarking.setColumns(column);
+			currentHandMarking.setData(dataGrid);
 			return currentHandMarking;
 		} catch (Exception e) {
 			e.printStackTrace();
