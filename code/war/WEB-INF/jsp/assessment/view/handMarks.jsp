@@ -6,20 +6,22 @@
 <%@ page import="pasta.domain.template.Tuple"%>
 
 <h1> Rubric - ${handMarking.name}</h1>
-${handMarking.data[0][0][1]}
+${handMarking.data[3][4][1]}
+${handMarking.data[4][3][1]}
 ${handMarking.description}
 <table>
-	<tr>
+	<tr><td></td>
 	<c:forEach items="${handMarking.columns}" var="columnName">
 		<th><c:out value="${columnName}" /></th>
 	</c:forEach>
 	</tr>
 <c:forEach items="${handMarking.data}" var="ArrayListColumn">
 	<tr>
-	<c:forEach items="ArrayListColumn" var="element">
-		
-                        
-		
+	<th><c:out value="${ArrayListColumn[0][3]}" /></th>
+	<c:forEach items="${ArrayListColumn}" var="element">
+	<td>
+		<c:out value="${element[1]}" />
+	</td>
 	</c:forEach>
 	</tr>
 </c:forEach>

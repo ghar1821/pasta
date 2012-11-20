@@ -253,7 +253,7 @@ public class AssessmentDAO {
 			//Get the Rubric name and description
 			HandMarking currentHandMarking = new HandMarking();
 			currentHandMarking.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
-			System.out.println("FUCKYOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOU" + doc.getElementsByTagName("columnName").item(0).getChildNodes().item(0).getNodeValue());
+			//System.out.println("FUCKYOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOU" + doc.getElementsByTagName("columnName").item(0).getChildNodes().item(0).getNodeValue());
 			currentHandMarking.setDescription(doc.getElementsByTagName("description").item(0).getChildNodes().item(0).getNodeValue());
 			
 			//HashMap Key rowName, value HashMap(key columnName, value description text)
@@ -289,16 +289,10 @@ public class AssessmentDAO {
 					int rowCounter = 0;
 					for(int j = 0; j < text.getLength(); j++)
 					{
+					
 						Node theNode = text.item(j);
 						Node weightNode = weightNodes.item(j);
-						if(columnCounter >= column.length)
-						{
-							columnCounter = 0;
-							rowCounter++;
-							//may need to duplicate to fix error
-							dataGrid.add(rowElementsPerColumn);
-							rowElementsPerColumn = new ArrayList();
-						}
+						
 						//System.out.println(column[0]);
 						Double d = Double.parseDouble(weightNode.getChildNodes().item(0).getNodeValue());
 						
@@ -311,6 +305,15 @@ public class AssessmentDAO {
 						//Tuple elem = new Tuple(d, theNode.getNodeValue(), column[columnCounter], row[rowCounter]);
 						rowElementsPerColumn.add(elem);
 						columnCounter++;
+						if(columnCounter >= column.length)
+						{
+							System.out.println("GAH");
+							columnCounter = 0;
+							rowCounter++;
+							//may need to duplicate to fix error
+							dataGrid.add(rowElementsPerColumn);
+							rowElementsPerColumn = new ArrayList();
+						}
 					}
 	
 					//TODO get weights
