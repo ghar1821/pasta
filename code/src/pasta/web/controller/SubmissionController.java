@@ -459,6 +459,16 @@ public class SubmissionController {
 	// NEW
 	
 	// view an assessment
+	@RequestMapping(value = "assessments/{assessmentName}/", method = RequestMethod.POST)
+	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, @ModelAttribute(value = "assessment") Assessment form, 
+			BindingResult result, Model model) {
+
+		form.setName(assessmentName);
+		manager.addAssessment(form);
+		return "redirect:.";
+	}
+	
+	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 

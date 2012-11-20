@@ -14,7 +14,9 @@ public class Assessment {
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
+	private String description;
 	private int numSubmissionsAllowed;
+	private boolean released = false;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -26,6 +28,14 @@ public class Assessment {
 		unitTests.remove(test);
 	}
 	
+	public boolean isReleased() {
+		return released;
+	}
+
+	public void setReleased(boolean released) {
+		this.released = released;
+	}
+
 	public void addSecretUnitTest(WeightedUnitTest test){
 		secretUnitTests.add(test);
 	}
@@ -102,14 +112,43 @@ public class Assessment {
 		this.numSubmissionsAllowed = numSubmissionsAllowed;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public boolean isCompletelyTested(){
+		for(WeightedUnitTest test: unitTests){
+			if(!test.getTest().isTested()){
+				return false;
+			}
+		}
+		
+		for(WeightedUnitTest test: secretUnitTests){
+			if(!test.getTest().isTested()){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean isClosed(){
+		return (new Date()).after(getDueDate());
+	}
+
 	public String toString(){
 		String output = "";
 		output+="<assessment>" + System.getProperty("line.separator");
 		output+="\t<name>"+getName()+"</name>" + System.getProperty("line.separator");
+		output+="\t<released>"+isReleased()+"</released>" + System.getProperty("line.separator");
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
 		output+="\t<dueDate>"+sdf.format(getDueDate())+"</dueDate>" + System.getProperty("line.separator");
 		output+="\t<marks>"+getMarks()+"</marks>" + System.getProperty("line.separator");
 		output+="\t<submissionsAllowed>"+getNumSubmissionsAllowed()+"</submissionsAllowed>" + System.getProperty("line.separator");
+		output+="\t<description>"+getDescription()+"</description>" + System.getProperty("line.separator");
 		if(unitTests.size() + secretUnitTests.size() > 0){
 			output+="\t<unitTestSuite>" + System.getProperty("line.separator");
 			for(WeightedUnitTest unitTest: unitTests){

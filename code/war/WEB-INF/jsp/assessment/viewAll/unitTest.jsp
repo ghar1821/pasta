@@ -12,7 +12,7 @@
 		<tr>
 			<td><a href="./${unitTest.shortName}/">${unitTest.name}</a></td>
 			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
-			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='../delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
+			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
 		</tr>
 	</c:forEach>
 </table>

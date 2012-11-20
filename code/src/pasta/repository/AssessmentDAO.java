@@ -193,12 +193,15 @@ public class AssessmentDAO {
 			currentAssessment.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
 			currentAssessment.setMarks(Double.parseDouble(doc.getElementsByTagName("marks").item(0).getChildNodes()
 					.item(0).getNodeValue()));
+			currentAssessment.setReleased(Boolean.parseBoolean(doc.getElementsByTagName("released").item(0).getChildNodes()
+					.item(0).getNodeValue()));
 			currentAssessment.setNumSubmissionsAllowed(Integer.parseInt(doc.getElementsByTagName("submissionsAllowed").item(0).getChildNodes()
 					.item(0).getNodeValue()));
 
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
 			currentAssessment.setDueDate(sdf.parse(doc.getElementsByTagName("dueDate").item(0).getChildNodes().item(0)
 					.getNodeValue()));
+			currentAssessment.setDescription(doc.getElementsByTagName("description").item(0).getTextContent());
 
 			NodeList unitTestList = doc.getElementsByTagName("unitTest");
 			if (unitTestList != null && unitTestList.getLength() > 0) {

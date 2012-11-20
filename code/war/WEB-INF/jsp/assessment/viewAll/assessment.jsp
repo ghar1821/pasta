@@ -7,16 +7,28 @@
 <h1> Assessments</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Due Date</th><th>Marks</th><th># Submissions Allowed</th><th># Public Unit Tests</th><th># Secret Unit Tests</th><th># Hand Marking</th><th># Competitions</th></tr>
+	<tr>
+		<th>Status</th>
+		<th>Name</th>
+		<th>Due Date</th>
+		<th>Marks</th>
+		<th># Submissions Allowed</th>
+		<th>Tests</th>
+	</tr>
 	<c:forEach var="assessment" items="${allAssessments}">
 		<tr>
+			<td>
+				<c:if test="${not assessment.completelyTested}">
+					<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;" title="Contains untested unit tests."></span>
+				</c:if>
+				<c:if test="${assessment.closed}">
+					<span class="ui-icon ui-icon-locked" style="float: left; margin-right: .3em;" title="Past due date"></span>
+				</c:if>
+			</td>
 			<td><a href="./${assessment.shortName}/">${assessment.name}</a></td>
 			<td>${assessment.dueDate}</td><td>${assessment.marks}</td>
 			<td>${assessment.numSubmissionsAllowed > 0 ? assessment.numSubmissionsAllowed : '&infin;'}</td>
-			<td>${fn:length(assessment.unitTests)}</td>
-			<td>${fn:length(assessment.secretUnitTests)}</td>
-			<td>TODO</td>
-			<td>TODO</td>
+			<td>${fn:length(assessment.unitTests)}u, ${fn:length(assessment.secretUnitTests)}su, TODO hm, TODOc</td>
 		</tr>
 	</c:forEach>
 </table> 
