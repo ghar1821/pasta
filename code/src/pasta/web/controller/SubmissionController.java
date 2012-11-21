@@ -3,6 +3,7 @@ package pasta.web.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +22,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import pasta.domain.LoginForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.login.AuthValidator;
@@ -472,7 +474,38 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/{assessmentName}/")
 	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
+		Assessment currAssessment = manager.getAssessmentNew(assessmentName);
+		model.addAttribute("assessment", currAssessment);
+		
+		List<WeightedUnitTest> otherUnitTetsts = new ArrayList<WeightedUnitTest>();
+		
+		for(UnitTest test: manager.getUnitTestList()){
+			boolean contains = false;
+			for(WeightedUnitTest weightedTest: currAssessment.getUnitTests()){
+				if(weightedTest.getTest() == test){
+					contains = true;
+					break;
+				}
+			}
+			
+			if(!contains){
+				for(WeightedUnitTest weightedTest: currAssessment.getSecretUnitTests()){
+					if(weightedTest.getTest() == test){
+						contains = true;
+						break;
+					}
+				}
+			}
+			
+			if(!contains){
+				WeightedUnitTest weigthedTest = new WeightedUnitTest();
+				weigthedTest.setTest(test);
+				weigthedTest.setWeight(0);
+				otherUnitTetsts.add(weigthedTest);
+			}
+		}
+		
+		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		return "assessment/view/assessment";
 	}
 	

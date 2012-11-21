@@ -210,8 +210,10 @@ public class AssessmentDAO {
 					Node unitTestNode = unitTestList.item(i);
 					if (unitTestNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element unitTestElement = (Element) unitTestNode;
-						WeightedUnitTest weightedTest = new WeightedUnitTest(allUnitTests.get(unitTestElement
-								.getAttribute("name")), Double.parseDouble(unitTestElement.getAttribute("weight")));
+						
+						WeightedUnitTest weightedTest = new WeightedUnitTest();
+						weightedTest.setTest(allUnitTests.get(unitTestElement.getAttribute("name")));
+						weightedTest.setWeight(Double.parseDouble(unitTestElement.getAttribute("weight")));
 						if (unitTestElement.getAttribute("secret") != null
 								&& Boolean.parseBoolean(unitTestElement.getAttribute("secret"))) {
 							currentAssessment.addSecretUnitTest(weightedTest);
