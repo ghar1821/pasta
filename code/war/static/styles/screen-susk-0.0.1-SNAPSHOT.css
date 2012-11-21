@@ -127,7 +127,17 @@ button:hover, #submit:hover, .button:hover{
 .pastaTable{
 	width:90%;
 }
-
+ .handMarkingTable, th, td
+		{
+			table-layout:fixed;
+			padding:15px;
+			
+		
+			 width:200px;
+		
+			  word-wrap:break-word;
+		}  
+}	
 .pastaShortTable{
 	border: 1px;
 	padding:0px;

@@ -13,6 +13,7 @@ public class HandMarking {
 	private int numSubmissionsAllowed;
 	private String[] columns;
 	private String[] rows;
+	private Double[] weights;
 	private ArrayList<ArrayList<String[]>> data;
 	
 	public double getMarks(){
@@ -41,6 +42,12 @@ public class HandMarking {
 	}
 	public String[] getRows() {
 		return rows;
+	}
+	public void setWeights(Double[] d) {
+		this.weights = d;
+	}
+	public Double[] getWeights() {
+		return weights;
 	}
 
 	public void setName(String name) {

@@ -284,7 +284,7 @@ public class AssessmentDAO {
 			//text in a row, one for each column
 			NodeList text = doc.getElementsByTagName("text");
 			NodeList weightNodes = doc.getElementsByTagName("weight");
-		
+			Double[] weightList = new Double[weightNodes.getLength()];
 			//HashMap<String, String> columnNameAndText = new HashMap();
 			ArrayList<String[]> rowElementsPerColumn = new ArrayList();
 					int columnCounter = 0;
@@ -300,8 +300,9 @@ public class AssessmentDAO {
 						
 						String[] elem = new String[4];
 						elem[0]=weightNode.getChildNodes().item(0).getNodeValue();
+						weightList[j] = Double.parseDouble(weightNode.getChildNodes().item(0).getNodeValue());
 						elem[1]=theNode.getChildNodes().item(0).getNodeValue();
-						System.out.println("FUCKYOUOOOOOOOOUOUOOu" + theNode.getChildNodes().item(0).getNodeValue());
+						//System.out.println("FUCKYOUOOOOOOOOUOUOOu" + theNode.getChildNodes().item(0).getNodeValue());
 						elem[2]=column[columnCounter];
 						elem[3]=row[rowCounter];
 						//Tuple elem = new Tuple(d, theNode.getNodeValue(), column[columnCounter], row[rowCounter]);
@@ -309,7 +310,7 @@ public class AssessmentDAO {
 						columnCounter++;
 						if(columnCounter >= column.length)
 						{
-							System.out.println("GAH");
+							//System.out.println("GAH");
 							columnCounter = 0;
 							rowCounter++;
 							//may need to duplicate to fix error
@@ -318,7 +319,7 @@ public class AssessmentDAO {
 						}
 					}
 	
-					//TODO get weights
+					currentHandMarking.setWeights(weightList);
 					currentHandMarking.setRows(row);
 					currentHandMarking.setColumns(column);
 			currentHandMarking.setData(dataGrid);
