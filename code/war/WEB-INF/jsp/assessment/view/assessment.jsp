@@ -14,7 +14,7 @@
 		</div>
 	</c:if>
 	
-	<input type="submit" value="Update Assessment" id="submit" style="margin-top:1em;"/>
+	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
 	
 	<!--TODO make the values changable #45 -->
 	<table>
@@ -94,7 +94,7 @@
 		</tr>
 	</table>
 	
-	<input type="submit" value="Update Assessment" id="submit"/>
+	<input type="submit" value="Save Assessment" id="submit"/>
 </form:form>
 
 <script>
