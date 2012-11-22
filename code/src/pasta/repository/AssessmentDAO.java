@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.ArrayList;
 
@@ -211,7 +212,20 @@ public class AssessmentDAO {
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
 			currentAssessment.setDueDate(sdf.parse(doc.getElementsByTagName("dueDate").item(0).getChildNodes().item(0)
 					.getNodeValue()));
-			currentAssessment.setDescription(doc.getElementsByTagName("description").item(0).getTextContent());
+
+			// load description from file
+			String description = "";
+			try{
+				Scanner in = new Scanner(new File(location+"/description.html"));
+				while(in.hasNextLine()){
+					description = in.nextLine() + System.getProperty("line.separator");
+				}
+				in.close();
+			}
+			catch(Exception e){
+				description = "<pre>Error loading description" + System.getProperty("line.separator") + e + "</pre>";
+			}
+			currentAssessment.setDescription(description);
 
 			NodeList unitTestList = doc.getElementsByTagName("unitTest");
 			if (unitTestList != null && unitTestList.getLength() > 0) {

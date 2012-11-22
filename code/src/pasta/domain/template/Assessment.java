@@ -164,7 +164,6 @@ public class Assessment {
 		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
 		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
 				+ System.getProperty("line.separator");
-		output += "\t<description>" + getDescription() + "</description>" + System.getProperty("line.separator");
 		if (unitTests.size() + secretUnitTests.size() > 0) {
 			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
 			for (WeightedUnitTest unitTest : unitTests) {

@@ -26,7 +26,11 @@
 	The assessment has <c:if test="${not assessment.released}"> not </c:if> been released
 	
 	<h2>Description</h2>
-	<form:textarea path="description" cols="110" rows="10"/>
+	<div id="descriptionHTML">
+		${assessment.description}
+	</div>
+	<button type="button" id="modifyDescription">Modify Description</button>
+	<form:textarea path="description" cols="110" rows="10" style="display:none"/>
 	
 	<table style="margin-bottom:2em;">
 		<tr>
@@ -123,6 +127,15 @@
         });
         
         $( "tbody.sortable").disableSelection();
+        
+        $("#modifyDescription").bind('click', function(e) {
+        	$("#description").show();
+        	$("#modifyDescription").hide();
+        });
+        
+        $("#description").on('keyup', function() {
+            $("#descriptionHTML").html(document.getElementById("description").value);
+        });
     });
 </script>
 

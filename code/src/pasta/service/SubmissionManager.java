@@ -233,6 +233,10 @@ public class SubmissionManager {
 			PrintStream out = new PrintStream(location.getAbsolutePath()+"/assessmentProperties.xml");
 			out.print(assessmentToAdd);
 			out.close();
+			
+			PrintStream descriptionOut = new PrintStream(location.getAbsolutePath() + "/description.html");
+			descriptionOut.print(assessmentToAdd.getDescription());
+			descriptionOut.close();
 		
 		// add it to the list.
 		assDaoNew.addAssessment(assessmentToAdd);
