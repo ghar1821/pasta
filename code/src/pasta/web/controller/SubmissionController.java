@@ -604,6 +604,7 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/tested/{testName}/")
 	public String testedUnitTest(@PathVariable("testName") String testName, Model model) {
 		manager.getUnitTest(testName).setTested(true);
+		manager.saveUnitTest(manager.getUnitTest(testName));
 		return "redirect:../../"+testName+"/";
 	}
 	

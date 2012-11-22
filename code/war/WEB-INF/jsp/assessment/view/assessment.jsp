@@ -32,9 +32,9 @@
 	<button type="button" id="modifyDescription">Modify Description</button>
 	<form:textarea path="description" cols="110" rows="10" style="display:none"/>
 	
-	<table style="margin-bottom:2em;">
+	<table style="margin-bottom:2em;width:90%">
 		<tr>
-			<td valign="top">
+			<td valign="top" >
 				<div style="float:left">
 					<h2> Unit Tests </h2>
 					<table>
@@ -46,7 +46,7 @@
 										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
 										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
-									<td><form:input type="text" path="unitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td><form:input size="5" type="text" path="unitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
@@ -63,7 +63,7 @@
 										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
 										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
-									<td><form:input type="text" path="secretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td><form:input size="5" type="text" path="secretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
@@ -83,7 +83,7 @@
 										<form:input type="hidden" path="garbage[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
 										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
-									<td><form:input type="text" path="garbage[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td><form:input size="5" type="text" path="garbage[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>

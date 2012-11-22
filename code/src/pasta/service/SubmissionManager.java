@@ -96,6 +96,23 @@ public class SubmissionManager {
 		return assDaoNew.getAssessment(assessmentName);
 	}
 
+	public void saveUnitTest(UnitTest thisTest) {
+		try {
+
+			// create space on the file system.
+			(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
+
+			// generate unitTestProperties
+			PrintStream out = new PrintStream(thisTest.getFileLocation() + "/unitTestProperties.xml");
+			out.print(thisTest);
+			out.close();
+
+		} catch (Exception e) {
+			(new File(thisTest.getFileLocation())).delete();
+			logger.error("TEST " + thisTest.getName() + " could not be saved successfully!" + System.getProperty("line.separator") + e);
+		}
+	}
+	
 	// new - unit test is guaranteed to have a unique name
 	public void addUnitTest(NewUnitTest newTest) {
 		UnitTest thisTest = new UnitTest(newTest.getTestName(), false);
