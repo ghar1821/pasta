@@ -145,6 +145,14 @@ public class Assessment {
 	public boolean isClosed() {
 		return (new Date()).after(getDueDate());
 	}  
+	
+	public void setGarbage(ArrayList<WeightedUnitTest> unitTests) {
+	}
+
+	public List<WeightedUnitTest> getGarbage() {
+		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
+				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	}
 
 	public String toString() {
 		String output = "";
@@ -161,12 +169,12 @@ public class Assessment {
 			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
 			for (WeightedUnitTest unitTest : unitTests) {
 				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
-						+ unitTest.getWeight() + "\">" + System.getProperty("line.separator");
+						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
 			}
 
 			for (WeightedUnitTest unitTest : secretUnitTests) {
 				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
-						+ unitTest.getWeight() + "\" secret=\"true\" >" + System.getProperty("line.separator");
+						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
 			}
 			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
 		}

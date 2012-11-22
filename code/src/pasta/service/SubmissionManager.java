@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -19,8 +18,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.Target;
-import org.apache.tools.ant.util.VectorSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +32,7 @@ import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
@@ -205,14 +203,31 @@ public class SubmissionManager {
 	// new TOOD add assessment
 	public void addAssessment(Assessment assessmentToAdd){
 		try {
+			
+			// reload unit tests
+			Collection<UnitTest> tests = getUnitTestList(); 
+			
+			// unit Tests
+			for(WeightedUnitTest test: assessmentToAdd.getUnitTests()){
+				if(getUnitTest(test.getUnitTestName().replace(" ", ""))!= null){
+					test.setTest(getUnitTest(test.getUnitTestName().replace(" ", "")));
+				}
+			}
 
-		// add it to the directory structure
-		File location = new File(ProjectProperties.getInstance().getProjectLocation()+"/template/assessment/"+assessmentToAdd.getName().replace(" ", ""));
-		location.mkdirs();
-		
-		PrintStream out = new PrintStream(location.getAbsolutePath()+"/assessmentProperties.xml");
-		out.print(assessmentToAdd);
-		out.close();
+			// secret unit tests
+			for(WeightedUnitTest test: assessmentToAdd.getSecretUnitTests()){
+				if(getUnitTest(test.getUnitTestName().replace(" ", ""))!= null){
+					test.setTest(getUnitTest(test.getUnitTestName().replace(" ", "")));
+				}
+			}
+				
+			// add it to the directory structure
+			File location = new File(ProjectProperties.getInstance().getProjectLocation()+"/template/assessment/"+assessmentToAdd.getName().replace(" ", ""));
+			location.mkdirs();
+			
+			PrintStream out = new PrintStream(location.getAbsolutePath()+"/assessmentProperties.xml");
+			out.print(assessmentToAdd);
+			out.close();
 		
 		// add it to the list.
 		assDaoNew.addAssessment(assessmentToAdd);

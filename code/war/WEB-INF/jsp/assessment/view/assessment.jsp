@@ -35,19 +35,33 @@
 					<h2> Unit Tests </h2>
 					<table>
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody class="sortable">
-							<c:forEach var="unitTest" items="${assessment.unitTests}">
-								<tr><td><a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a></td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
+						<tbody class="sortable unitTests">
+							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.unitTests}">
+								<tr>
+									<td>
+										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
+										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+									</td>
+									<td><form:input type="text" path="unitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
+								</tr>
 							</c:forEach>
 						</tbody>
 					</table>
 				
 					<h2> Secret Unit Tests </h2>
-					<table class="secretUnitTests">
+					<table>
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody class="sortable">
-							<c:forEach var="unitTest" items="${assessment.secretUnitTests}">
-								<tr><td><a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a></td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
+						<tbody class="sortable secretUnitTests">
+							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.secretUnitTests}">
+								<tr>
+									<td>
+										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
+										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+									</td>
+									<td><form:input type="text" path="secretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
+								</tr>
 							</c:forEach>
 						</tbody>
 					</table>
@@ -58,9 +72,16 @@
 					<h2> Available Unit Tests </h2>
 					<table>
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody class="sortable">
-							<c:forEach var="unitTest" items="${otherUnitTests}">
-								<tr><td><a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a></td><td>${unitTest.weight}</td><td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td></tr>
+						<tbody class="sortable garbage">
+							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
+								<tr>
+									<td>
+										<form:input type="hidden" path="garbage[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
+										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+									</td>
+									<td><form:input type="text" path="garbage[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
+									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
+								</tr>
 							</c:forEach>
 						</tbody>
 					</table>
@@ -78,7 +99,27 @@
     	
         $( "tbody.sortable" ).sortable({
             connectWith: "tbody",
-            dropOnEmpty: true
+            dropOnEmpty: true,
+            
+            stop: function(event, ui){
+            	var tables = $("tbody.sortable");
+            	// for each table
+            	for(var i=0; i<tables.length; i++){
+            		// for each child
+            		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
+            		var childrenNodes = tables[i].children;
+            		for(var j=0; j<childrenNodes.length; ++j){
+            			
+            			// td -> input - unitTestName
+            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".unitTestName");
+            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".unitTestName");
+            			
+            			// td -> input - weight
+            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
+            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+            		}
+            	}
+            }
         });
         
         $( "tbody.sortable").disableSelection();
