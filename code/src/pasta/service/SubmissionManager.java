@@ -133,6 +133,11 @@ public class SubmissionManager {
 	public void removeUnitTest(String testName) {
 		assDaoNew.removeUnitTest(testName);
 	}
+	
+	// new - assessment is guaranteed to have a unique name
+	public void removeAssessment(String assessment) {
+		assDaoNew.removeAssessment(assessment);
+	}
 
 	// new - test submission
 	public void testUnitTest(Submission submission, String testName) {

@@ -32,6 +32,10 @@ public class UnitTest {
 		return tested;
 	}
 	
+	public void setTested(boolean tested) {
+		this.tested = tested;
+	}
+	
 	public String toString(){
 		String output = "<unitTestProperties>" + System.getProperty("line.separator");
 		output += "\t<name>"+name+"</name>" + System.getProperty("line.separator");

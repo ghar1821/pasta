@@ -62,6 +62,7 @@
 			</tr>
 		</table>
 		
+		<button id="acceptUnitTest" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
 		</table>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
@@ -78,6 +79,14 @@
 		</table>
 	</c:if>
 </c:if>
+
+<div id="comfirmPopup" >
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
+	<h1>Are you sure you want to do that?</h1>
+	<button id="comfirmButton" onClick="">Confirm</button>
+</div>
 
 <script>
 	;(function($) {

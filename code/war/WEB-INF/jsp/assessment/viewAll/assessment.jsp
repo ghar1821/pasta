@@ -14,6 +14,8 @@
 		<th>Marks</th>
 		<th># Submissions Allowed</th>
 		<th>Tests</th>
+		<th>Delete</th>
+		<th>Release</th>
 	</tr>
 	<c:forEach var="assessment" items="${allAssessments}">
 		<tr>
@@ -24,11 +26,16 @@
 				<c:if test="${assessment.closed}">
 					<span class="ui-icon ui-icon-locked" style="float: left; margin-right: .3em;" title="Past due date"></span>
 				</c:if>
+				<c:if test="${not assessment.released}">
+					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
+				</c:if>
 			</td>
 			<td><a href="./${assessment.shortName}/">${assessment.name}</a></td>
 			<td>${assessment.dueDate}</td><td>${assessment.marks}</td>
 			<td>${assessment.numSubmissionsAllowed > 0 ? assessment.numSubmissionsAllowed : '&infin;'}</td>
 			<td>${fn:length(assessment.unitTests)}u, ${fn:length(assessment.secretUnitTests)}su, TODO hm, TODOc</td>
+			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
+			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">-></button></td>
 		</tr>
 	</c:forEach>
 </table> 
@@ -49,6 +56,14 @@
 		</table>
     	<input type="submit" value="Create" id="submit"/>
 	</form:form>
+</div>
+
+<div id="comfirmPopup" >
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
+	<h1>Are you sure you want to do that?</h1>
+	<button id="comfirmButton" onClick="">Confirm</button>
 </div>
 	
 <script>

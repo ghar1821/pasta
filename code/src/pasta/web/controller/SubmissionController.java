@@ -531,15 +531,23 @@ public class SubmissionController {
 		return "redirect:.";
 	}
 	
-	// view a unit test
-	@RequestMapping(value = "unitTest/{testName}/")
-	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
-
-		model.addAttribute("unitTest", manager.getUnitTest(testName));
-		model.addAttribute("latestResult", manager.getUnitTestResult(manager.getUnitTest(testName).getFileLocation()+"/test"));
-		
-		return "assessment/view/unitTest";
+	// release a unit test
+	@RequestMapping(value = "assessments/release/{assessmentName}/")
+	public String releaseAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+		if(manager.getAssessmentNew(assessmentName) !=null){
+			manager.getAssessmentNew(assessmentName).setReleased(true);
+		}
+		return "redirect:../../";
 	}
+	
+	// delete a unit test
+	@RequestMapping(value = "assessments/delete/{assessmentName}/")
+	public String deleteAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+		manager.removeAssessment(assessmentName);
+		return "redirect:../../";
+	}
+	
+	
 	// view a handmarking
 	@RequestMapping(value = "handmarking/{handMarkingName}/")
 	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
@@ -549,6 +557,20 @@ public class SubmissionController {
 		return "assessment/view/handMarks";
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////
+	//								UNIT TEST								   //
+	/////////////////////////////////////////////////////////////////////////////
+	
+	// view a unit test
+	@RequestMapping(value = "unitTest/{testName}/")
+	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
+
+		model.addAttribute("unitTest", manager.getUnitTest(testName));
+		model.addAttribute("latestResult", manager.getUnitTestResult(manager.getUnitTest(testName).getFileLocation()+"/test"));
+		
+		return "assessment/view/unitTest";
+	}
+		
 	// view a unit test
 	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
 	public String uploadTestCode(@PathVariable("testName") String testName, @ModelAttribute(value = "submission") Submission form, 
@@ -575,7 +597,14 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/delete/{testName}/")
 	public String deleteUnitTest(@PathVariable("testName") String testName, Model model) {
 		manager.removeUnitTest(testName);
-		return "redirect:../../viewAll/";
+		return "redirect:../../";
+	}
+	
+	// a unit test is marked as tested
+	@RequestMapping(value = "unitTest/tested/{testName}/")
+	public String testedUnitTest(@PathVariable("testName") String testName, Model model) {
+		manager.getUnitTest(testName).setTested(true);
+		return "redirect:../../"+testName+"/";
 	}
 	
 	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
@@ -599,12 +628,20 @@ public class SubmissionController {
 		return "redirect:.";
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////
+	//								HOME									   //
+	/////////////////////////////////////////////////////////////////////////////
+	
 	// home page
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
 		// check if tutor or student TODO
 		return "user/studentHome";
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////
+	//								LOGIN									   //
+	/////////////////////////////////////////////////////////////////////////////
 	
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public String get(ModelMap model) {

@@ -87,6 +87,15 @@ public class AssessmentDAO {
 			logger.error("Could not delete the folder for " + unitTestName +"\r\n"+e);
 		}
 	}
+	
+	public void removeAssessment(String assessmentName){
+		allAssessments.remove(assessmentName);
+		try {
+			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance().getProjectLocation()+"/template/assessment/"+assessmentName));
+		} catch (Exception e) {
+			logger.error("Could not delete the folder for " + assessmentName +"\r\n"+e);
+		}
+	}
 
 	/**
 	 * Load all unit tests.

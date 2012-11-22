@@ -40,7 +40,7 @@
 								<tr>
 									<td>
 										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input type="text" path="unitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
@@ -57,7 +57,7 @@
 								<tr>
 									<td>
 										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input type="text" path="secretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
@@ -66,8 +66,8 @@
 						</tbody>
 					</table>
 				</div>
-				</td>
-				<td valign="top">
+			</td>
+			<td valign="top">
 				<div style="float:left">
 					<h2> Available Unit Tests </h2>
 					<table>
@@ -77,7 +77,7 @@
 								<tr>
 									<td>
 										<form:input type="hidden" path="garbage[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../../unitTest/view/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input type="text" path="garbage[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
