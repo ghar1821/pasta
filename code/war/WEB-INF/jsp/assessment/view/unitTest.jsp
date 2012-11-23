@@ -14,8 +14,9 @@
 <!-- Upload testing submission TODO #43 -->
 
 <button id="newPopup"> Test Unit Tests </button>
+<button id="updateTest"> Update Unit </button>
 
-<div id="newUnitTest" syle="display:none;">
+<div id="testUnitTest" syle="display:none;">
 <span class="button bClose">
 	<span><b>X</b></span>
 </span>
@@ -28,6 +29,23 @@
 		<form:input type="hidden" path="submittingForUsername" value="${submittingForUsername}"/>
 		<form:input type="hidden" path="assessment" value="UNIT TEST CHECK - ${unitTest.shortName}"/>
     	<input type="submit" value="Upload" id="submit"/>
+	</form:form>
+</div>
+
+<div id="updateUnitTest" syle="display:none;">
+<span class="button bClose">
+	<span><b>X</b></span>
+</span>
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
+	<h1> Update Unit Test </h1>
+	<form:form action="../update/${unitTest.name}/" modelAttribute="newUnitTestModel" enctype="multipart/form-data" method="POST">
+		<table>
+			<form:input autocomplete="off" type="hidden" path="testName" value="${unitTest.shortName}"/>
+			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
+		</table>
+    	<input type="submit" value="Update" id="submit"/>
 	</form:form>
 </div>
 
@@ -102,7 +120,20 @@
                 e.preventDefault();
 
                 // Triggering bPopup when click event is fired
-                $('#newUnitTest').bPopup();
+                $('#testUnitTest').bPopup();
+
+            });
+            
+
+            // Binding a click event
+            // From jQuery v.1.7.0 use .on() instead of .bind()
+            $('#updateTest').bind('click', function(e) {
+
+                // Prevents the default action to be triggered. 
+                e.preventDefault();
+
+                // Triggering bPopup when click event is fired
+                $('#updateUnitTest').bPopup();
 
             });
 

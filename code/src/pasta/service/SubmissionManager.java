@@ -106,7 +106,7 @@ public class SubmissionManager {
 			PrintStream out = new PrintStream(thisTest.getFileLocation() + "/unitTestProperties.xml");
 			out.print(thisTest);
 			out.close();
-
+			
 		} catch (Exception e) {
 			(new File(thisTest.getFileLocation())).delete();
 			logger.error("TEST " + thisTest.getName() + " could not be saved successfully!" + System.getProperty("line.separator") + e);
@@ -138,6 +138,8 @@ public class SubmissionManager {
 				FileUtils.forceDelete(new File(thisTest.getFileLocation() + "/code/"
 						+ newTest.getFile().getOriginalFilename()));
 			}
+			
+			FileUtils.deleteDirectory((new File(thisTest.getFileLocation() + "/test/")));
 
 			assDaoNew.addUnitTest(thisTest);
 		} catch (Exception e) {

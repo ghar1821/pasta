@@ -608,6 +608,18 @@ public class SubmissionController {
 		return "redirect:../../"+testName+"/";
 	}
 	
+	@RequestMapping(value = "unitTest/update/{testName}/", method = RequestMethod.POST)
+	// after submission of an assessment
+	public String updateUnitTest(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
+
+		// add it.
+		if(!result.hasErrors()){
+			manager.addUnitTest(form);
+		}
+
+		return "redirect:../../"+form.getTestName()+"/";
+	}
+	
 	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
 	// after submission of an assessment
 	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
