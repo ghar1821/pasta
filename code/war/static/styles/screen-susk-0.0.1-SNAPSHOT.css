@@ -8,6 +8,14 @@ pre{
 	display:none;
 }
 
+div .pastaUnitTestResultpass{
+	background-color:#0C0;
+	width:1em;
+	height:2em;
+	float:left;
+	margin:1px;
+}
+
 button, #submit, .button{
 	cursor: pointer;
 	clear: both;
@@ -15,7 +23,7 @@ button, #submit, .button{
 	font-weight: bold;
 	background-color: #CE1126;
 	line-height: 2em;
-	color:white;
+	color:white;	
 	padding:3px 20px
 }
 button:hover, #submit:hover, .button:hover{

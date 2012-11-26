@@ -458,7 +458,9 @@ public class SubmissionController {
 //		return "redirect:home";
 //	}
 	
-	// NEW
+	/////////////////////////////////////////////////////////////////////////////
+	//								ASSESSMENTS								   //
+	/////////////////////////////////////////////////////////////////////////////
 	
 	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/", method = RequestMethod.POST)
@@ -547,6 +549,10 @@ public class SubmissionController {
 		return "redirect:../../";
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////
+	//							HAND MARKING								   //
+	/////////////////////////////////////////////////////////////////////////////
+	
 	
 	// view a handmarking
 	@RequestMapping(value = "handmarking/{handMarkingName}/")
@@ -621,7 +627,7 @@ public class SubmissionController {
 	}
 	
 	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
-	// after submission of an assessment
+	// after submission of a unit test
 	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
 
 		// check if the name is unique
@@ -649,7 +655,13 @@ public class SubmissionController {
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
 		// check if tutor or student TODO
-		return "user/studentHome";
+		String username = "arad0726";//getUser();
+		if(username != null){
+			model.addAttribute("unikey", username);
+			model.addAttribute("results", manager.getStudentResults(username));
+			return "user/studentHome";
+		}
+		return null;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////

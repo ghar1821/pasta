@@ -218,7 +218,7 @@ public class AssessmentDAO {
 			try{
 				Scanner in = new Scanner(new File(location+"/description.html"));
 				while(in.hasNextLine()){
-					description = in.nextLine() + System.getProperty("line.separator");
+					description += in.nextLine() + System.getProperty("line.separator");
 				}
 				in.close();
 			}

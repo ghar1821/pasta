@@ -22,8 +22,8 @@
 		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
 		
-		<script type="text/javascript" src="<spring:url value="http://code.jquery.com/jquery-1.8.2.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="http://code.jquery.com/ui/1.9.1/jquery-ui.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.8.2.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/sorttable.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/roundTableCorners.js" htmlEscape="true" />"></script>
@@ -33,6 +33,27 @@
 		<script type="text/javascript" src="<spring:url value="/static/jqueryFileTree.js" htmlEscape="true" />"></script>
 		
 		<decorator:head />
+		
+		<script>
+			$(document).ready(function(){
+				$("pre.ccode").snippet("c",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.cppcode").snippet("cpp",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.csharpcode").snippet("csharp",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.csscode").snippet("css",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.flexcode").snippet("flex",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.htmlcode").snippet("html",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.javacode").snippet("java",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.javascriptcode").snippet("javascript",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.javascriptdomcode").snippet("javascript_dom",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.perlcode").snippet("perl",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.phpcode").snippet("php",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.pythoncode").snippet("python",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.rubycode").snippet("ruby",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.sqlcode").snippet("sql",{style:"ide-eclipse",transparent:false,numbered:true});
+				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});
+				// TODO add support for more code types
+			});
+		</script>
 	</head>
 	<body id="home">
 		<div id="w1">
@@ -57,7 +78,7 @@
 							<div id="login">
 								<c:choose>
 									<c:when test="${not empty unikey}">
-										<a href="<spring:url value="/home" htmlEscape="true" />"><span>${unikey}</span></a> |
+										<a href="<spring:url value="/home/" htmlEscape="true" />"><span>${unikey}</span></a> |
 										<a href="<spring:url value="/login/exit" htmlEscape="true" />"><span>Logout</span></a>
 									</c:when>
 									<c:otherwise>
@@ -69,41 +90,21 @@
 					</div>
 					<div id="tabbar">
 						<ul class="horizontal" id="tabs">
-						<li>
-							<span>
-								<a href="<spring:url value="/home" htmlEscape="true" />"><span>Home</span></a>
-							</span>
-						</li>
-						<li>
-							<span>
-								<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
-							</span>
-						</li>
-						<li>
-							<span>
-								<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
-							</span>
-						</li>
-						<!--
 							<li>
 								<span>
-									<a href="<spring:url value="/arenas" htmlEscape="true" />"><span>Arenas</span></a>
+									<a href="<spring:url value="/home/" htmlEscape="true" />"><span>Home</span></a>
 								</span>
 							</li>
 							<li>
 								<span>
-									<a href="<spring:url value="/help" htmlEscape="true" />"><span>Help</span></a>
+									<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
 								</span>
-								<ul>
-									<li>
-										<a href="<spring:url value="/help/faq" htmlEscape="true" />">FAQ</a>
-									</li>
-									<li>
-										<a href="<spring:url value="/help/rules" htmlEscape="true" />">Rules</a>
-									</li>
-								</ul>
 							</li>
-							-->
+							<li>
+								<span>
+									<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
+								</span>
+							</li>
 						</ul>
 					</div>
 					<div id="tabunderscore"></div>

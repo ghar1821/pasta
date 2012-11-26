@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +29,7 @@ import pasta.domain.AllStudentAssessmentData;
 import pasta.domain.Assessment2;
 import pasta.domain.Execution;
 import pasta.domain.User;
+import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
@@ -66,6 +68,24 @@ public class SubmissionManager {
 	private SubmissionValidator subVal = new SubmissionValidator();
 
 	public static final Logger logger = Logger.getLogger(SubmissionManager.class);
+	
+	// TODO return actual results
+	public Collection<AssessmentResult> getStudentResults(String username){
+		ArrayList<AssessmentResult> results = new ArrayList<AssessmentResult>();
+		for(Assessment assess: getAssessmentListNew()){
+			AssessmentResult assessResult = new AssessmentResult();
+			assessResult.setAssessment(assess);
+			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+			utresults.add(resultDAO.getUnitTestResult("C:\\info1103\\template\\unitTest\\test1\\test"));
+			assessResult.setUnitTests(utresults);
+			
+			
+			
+			// add to collection
+			results.add(assessResult);
+		}
+		return results;
+	}
 
 	public UnitTestResult getUnitTestResult(String location) {
 		return resultDAO.getUnitTestResult(location);
@@ -205,6 +225,10 @@ public class SubmissionManager {
 				throw new RuntimeException(String.format("Run %s [%s] failed: %s", buildFile, "everything",
 						e.getMessage()), e);
 			}
+			
+			runErrors.close();
+			compileErrors.flush();
+			compileErrors.close();
 
 			// delete everything else
 			String[] allFiles = (new File(thisTest.getFileLocation() + "/test/")).list();
