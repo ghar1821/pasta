@@ -1,0 +1,33 @@
+package pasta.scheduler;
+
+import java.util.List;
+
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.stereotype.Repository;
+
+@Repository("executionScheduler2")
+public class ExecutionScheduler2 extends HibernateDaoSupport {
+
+	@Autowired
+	public void setMySession(SessionFactory sessionFactory) {
+		setSessionFactory(sessionFactory);
+	}
+
+	public void save(Job job) {
+		getHibernateTemplate().save(job);
+	}
+
+	public void update(Job job) {
+		getHibernateTemplate().update(job);
+	}
+	
+	public void delete(Job stock) {
+		getHibernateTemplate().delete(stock);
+	}
+
+	public List<Job> getOutstandingJobs(){
+		return getHibernateTemplate().find("FROM jobs WHERE executionDate <= NOW() GROUP BY executionDate");
+	}
+}

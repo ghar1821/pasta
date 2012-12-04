@@ -182,4 +182,18 @@ public class Assessment {
 		output += "</assessment>" + System.getProperty("line.separator");
 		return output;
 	}
+	
+	public double getWeighting(UnitTest test){
+		for(WeightedUnitTest myTest: unitTests){
+			if(test == myTest.getTest()){
+				return myTest.getWeight();
+			}
+		}
+		for(WeightedUnitTest myTest: secretUnitTests){
+			if(test == myTest.getTest()){
+				return myTest.getWeight();
+			}
+		}
+		return 0;
+	}
 }

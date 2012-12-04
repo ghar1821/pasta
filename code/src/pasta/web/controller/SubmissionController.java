@@ -1,6 +1,5 @@
 package pasta.web.controller;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,12 +52,12 @@ public class SubmissionController {
 	public NewUnitTest returnNewUnitTestModel() {
 		return new NewUnitTest();
 	}
-	
+
 	@ModelAttribute("submission")
 	public Submission returnNewSubmissionModel() {
 		return new Submission();
 	}
-	
+
 	@ModelAttribute("assessment")
 	public Assessment returnNewAssessmentModel() {
 		return new Assessment();
@@ -70,447 +69,67 @@ public class SubmissionController {
 	 * @return
 	 */
 	public String getUser() {
-		return (String) RequestContextHolder.currentRequestAttributes().getAttribute("user",
-				RequestAttributes.SCOPE_SESSION);
+		return (String) RequestContextHolder.currentRequestAttributes()
+				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
 	}
 
-//	// history
-//	@RequestMapping(value = "home/submission/{taskname}", method = RequestMethod.GET)
-//	public String history(@PathVariable("taskname") String taskname, Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//
-//		model.addAttribute("user", manager.getUser(getUser()));
-//		model.addAttribute("unikey", getUser());
-//		model.addAttribute("latestSubmission", manager.getAssessment(getUser(), taskname));
-//		model.addAttribute("submissionHistory", manager.getAssessmentHistory(getUser(), taskname));
-//		return ("user/assessment");
-//	}
-//
-//	// home
-//	@RequestMapping(value = "home")
-//	public String home(Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//
-//		model.addAttribute("unikey", getUser());
-//		model.addAttribute("user", manager.getUser(getUser()));
-//		model.addAttribute("allAssessments", manager.getAssessments(getUser()));
-//		model.addAttribute("assessmentList", manager.getAssessmentList());
-//
-//		return "user/index";
-//	}
-//
-//	// home
-//	@RequestMapping(value = "{unikey}")
-//	public String view(@PathVariable("unikey") String unikey, Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return null;
-//		}
-//
-//		model.addAttribute("user", manager.getUser(getUser()));
-//		model.addAttribute("unikey", unikey);
-//		model.addAttribute("allAssessments", manager.getAssessments(unikey));
-//		model.addAttribute("assessmentList", manager.getAssessmentList());
-//
-//		return "user/index";
-//	}
-//
-//	// home
-//	@RequestMapping(value = "{unikey}/submission/{taskname}")
-//	public String view(@PathVariable("unikey") String unikey, @PathVariable("taskname") String taskname, Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return null;
-//		}
-//
-//		model.addAttribute("user", manager.getUser(getUser()));
-//		model.addAttribute("unikey", unikey);
-//		model.addAttribute("latestSubmission", manager.getAssessment(unikey, taskname));
-//		model.addAttribute("submissionHistory", manager.getAssessmentHistory(unikey, taskname));
-//		return ("user/assessment");
-//	}
-//
-//	// download 1 student 1 task
-//	@RequestMapping(value = "download/{unikey}-{taskname}", method = RequestMethod.GET)
-//	public void download(@PathVariable("unikey") String unikey, @PathVariable("taskname") String taskname,
-//			HttpServletResponse response) {
-//		if (getUser() == null) {
-//			return;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return;
-//		}
-//		try {
-//			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-//					+ unikey + "/" + taskname + "/latest/" + (unikey + "-" + taskname.toLowerCase().replace(" ", ""))
-//					+ ".zip");
-//			response.setContentType("application/zip");
-//	        response.setHeader( "Content-Disposition", "attachment; filename=" + unikey + "-" + taskname.toLowerCase().replace(" ", "")+ ".zip" );
-//			IOUtils.copy(file, response.getOutputStream());
-//			response.flushBuffer();
-//		} catch (IOException e) {
-//			logger.info("Error downloading file. "
-//					+ (ProjectProperties.getInstance().getSubmissionsLocation() + "/" + unikey + "/" + taskname
-//							+ "/latest/" + (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip"));
-//		}
-//
-//	}
-//
-//	// download 1 student TODO
-//	@RequestMapping(value = "downloadall/{unikey}", method = RequestMethod.GET)
-//	public void download(@PathVariable("unikey") String unikey, HttpServletResponse response) {
-//		if (getUser() == null) {
-//			return;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return;
-//		}
-//		try {
-//			byte[] buf = new byte[1024];
-//
-//			try {
-//				// Create the ZIP file
-//				String outFilename = ProjectProperties.getInstance().getSubmissionsLocation() + "/" + unikey + "/"
-//						+ unikey + ".zip";
-//				ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-//
-//				Map<String, Assessment2> data = manager.getAssessments(unikey);
-//
-//				for (String taskname : data.keySet()) {
-//					try {
-//						FileInputStream in = new FileInputStream(ProjectProperties.getInstance()
-//								.getSubmissionsLocation()
-//								+ "/"
-//								+ unikey
-//								+ "/"
-//								+ taskname
-//								+ "/latest/"
-//								+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip");
-//
-//						// Add ZIP entry to output stream.
-//						out.putNextEntry(new ZipEntry(unikey + "/"
-//								+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip"));
-//
-//						// Transfer bytes from the file to the ZIP file
-//						int len;
-//						while ((len = in.read(buf)) > 0) {
-//							out.write(buf, 0, len);
-//						}
-//
-//						// Complete the entry
-//						out.closeEntry();
-//						in.close();
-//					} catch (FileNotFoundException e) {
-//						// do nothing
-//					}
-//				}
-//				// Complete the ZIP file
-//				out.close();
-//			} catch (IOException e) {
-//			}
-//
-//			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-//					+ unikey + "/" + unikey + ".zip");
-//			response.setContentType("application/zip");
-//	        response.setHeader( "Content-Disposition", "attachment; filename=" + unikey + ".zip" );
-//			IOUtils.copy(file, response.getOutputStream());
-//			response.flushBuffer();
-//
-//			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" + unikey + "/"
-//					+ unikey + ".zip");
-//			zipFile.delete();
-//		} catch (IOException e) {
-//			logger.info("Error downloading file. "
-//					+ (ProjectProperties.getInstance().getSubmissionsLocation() + "/" + unikey + "/" + unikey + ".zip"));
-//		}
-//
-//	}
-//
-//	// download all students in a class
-//	@RequestMapping(value = "downloadClass/{tutorialClass}", method = RequestMethod.GET)
-//	public void downloadclass(@PathVariable("tutorialClass") String tutorialClass, HttpServletResponse response) {
-//		if (getUser() == null) {
-//			return;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return;
-//		}
-//		try {
-//			byte[] buf = new byte[1024];
-//			String outFilename = ProjectProperties.getInstance().getSubmissionsLocation() + "/"+tutorialClass+".zip";
-//			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-//
-//			for (String unikey : manager.getUserList()) {
-//				if (manager.getUser(unikey).getTutorialClass() != null
-//						&& manager.getUser(unikey).getTutorialClass().equalsIgnoreCase(tutorialClass)) {
-//					try {
-//						// Create the ZIP file
-//
-//						Map<String, Assessment2> data = manager.getAssessments(unikey);
-//
-//						for (String taskname : data.keySet()) {
-//							try {
-//								FileInputStream in = new FileInputStream(ProjectProperties.getInstance()
-//										.getSubmissionsLocation()
-//										+ "/"
-//										+ unikey
-//										+ "/"
-//										+ taskname
-//										+ "/latest/"
-//										+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip");
-//
-//								// Add ZIP entry to output stream.
-//								out.putNextEntry(new ZipEntry(unikey + "/"
-//										+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip"));
-//
-//								// Transfer bytes from the file to the ZIP file
-//								int len;
-//								while ((len = in.read(buf)) > 0) {
-//									out.write(buf, 0, len);
-//								}
-//
-//								// Complete the entry
-//								out.closeEntry();
-//								in.close();
-//							} catch (FileNotFoundException e) {
-//								// do nothing
-//							}
-//						}
-//
-//					} catch (IOException e) {
-//					}
-//
-//				}
-//			}
-//			// Complete the ZIP file
-//			out.close();
-//
-//			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()
-//					+ "/"+tutorialClass+".zip");
-//			response.setContentType("application/zip");
-//	        response.setHeader( "Content-Disposition", "attachment; filename=" + tutorialClass + ".zip" );
-//			IOUtils.copy(file, response.getOutputStream());
-//			response.flushBuffer();
-//
-//			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"+tutorialClass+".zip");
-//			zipFile.delete();
-//		} catch (IOException e) {
-//			logger.info("Error downloading file. "
-//					+ (ProjectProperties.getInstance().getSubmissionsLocation() + "/"+tutorialClass+".zip"));
-//		}
-//
-//	}
-//
-//	// download all students
-//	@RequestMapping(value = "downloadall", method = RequestMethod.GET)
-//	public void download(HttpServletResponse response) {
-//		if (getUser() == null) {
-//			return;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return;
-//		}
-//		try {
-//
-//			byte[] buf = new byte[1024];
-//			String outFilename = ProjectProperties.getInstance().getSubmissionsLocation() + "/all.zip";
-//			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-//
-//			for (String unikey : manager.getUserList()) {
-//				logger.info(unikey + " - " + manager.getUserList().length);
-//				try {
-//					// Create the ZIP file
-//
-//					Map<String, Assessment2> data = manager.getAssessments(unikey);
-//
-//					for (String taskname : data.keySet()) {
-//						try {
-//							logger.info(unikey + " - " + taskname);
-//							FileInputStream in = new FileInputStream(ProjectProperties.getInstance()
-//									.getSubmissionsLocation()
-//									+ "/"
-//									+ unikey
-//									+ "/"
-//									+ taskname
-//									+ "/latest/"
-//									+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip");
-//
-//							// Add ZIP entry to output stream.
-//							out.putNextEntry(new ZipEntry(unikey + "/"
-//									+ (unikey + "-" + taskname.toLowerCase().replace(" ", "")) + ".zip"));
-//
-//							// Transfer bytes from the file to the ZIP file
-//							int len;
-//							while ((len = in.read(buf)) > 0) {
-//								out.write(buf, 0, len);
-//							}
-//
-//							// Complete the entry
-//							out.closeEntry();
-//							in.close();
-//						} catch (FileNotFoundException e) {
-//							// do nothing
-//							logger.info(e.getMessage());
-//						}
-//					}
-//					// Complete the ZIP file
-//
-//				} catch (IOException e) {
-//				}
-//
-//			}
-//			out.close();
-//
-//			InputStream file = new FileInputStream(ProjectProperties.getInstance().getSubmissionsLocation()
-//					+ "/all.zip");
-//			response.setContentType("application/zip");
-//	        response.setHeader( "Content-Disposition", "attachment; filename=downloadall.zip" );
-//			IOUtils.copy(file, response.getOutputStream());
-//			response.flushBuffer();
-//
-//		} catch (IOException e) {
-//			logger.info("Error downloading file. "
-//					+ (ProjectProperties.getInstance().getSubmissionsLocation() + "/all.zip"));
-//		}
-//
-//		try {
-//			File zipFile = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/all.zip");
-//			zipFile.delete();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
-//	}
-//
-//	// all students
-//	@RequestMapping(value = "all")
-//	public String view(Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return null;
-//		}
-//
-//		model.addAttribute("allStudents", AllStudentAssessmentData.getInstance().getData());
-//		model.addAttribute("allAssessments", manager.getAssessmentList());
-//		return "user/viewAll";
-//	}
-//
-//	// excel file
-//	@RequestMapping(value = "all.xls")
-//	protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)
-//			throws Exception {
-//		if (getUser() == null) {
-//			return null;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return null;
-//		}
-//
-//		Map<String, Object> data = new HashMap<String, Object>();
-//
-//		data.put("allStudents", AllStudentAssessmentData.getInstance().getData());
-//		data.put("allAssessments", manager.getAssessmentList());
-//
-//		return new ModelAndView(new ExcelMarkView(), data);
-//	}
-//
-//	@RequestMapping(value = "home", method = RequestMethod.POST)
-//	// after submission of an assessment
-//	public String home(@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model) {
-//		if (getUser() == null) {
-//			return "user/notloggedin";
-//		}
-//
-//		if (!manager.getAssessment(getUser(), form.getAssessmentName()).isPastDueDate()
-//				|| manager.getUser(getUser()).isTutor()) {
-//			manager.validateSubmission(form, result);
-//		} else {
-//			result.reject("Submission.PastDueDate");
-//		}
-//
-////		model.addAttribute("user", manager.getUser(getUser()));
-////		model.addAttribute("allAssessments", manager.getAssessments(getUser()));
-////		model.addAttribute("assessmentList", manager.getAssessmentList());
-//
-//		return "redirect:/home";
-//	}
-//
-//
-//	@RequestMapping("reloadCache")
-//	public String reload() {
-//		if (getUser() == null) {
-//			return null;
-//		}
-//		if (!manager.getUser(getUser()).isTutor()) {
-//			return null;
-//		}
-//
-//		AllStudentAssessmentData.getInstance().reload();
-//		return "redirect:home";
-//	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//								ASSESSMENTS								   //
-	/////////////////////////////////////////////////////////////////////////////
-	
+	// ///////////////////////////////////////////////////////////////////////////
+	// ASSESSMENTS //
+	// ///////////////////////////////////////////////////////////////////////////
+
 	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/", method = RequestMethod.POST)
-	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, @ModelAttribute(value = "assessment") Assessment form, 
+	public String viewAssessment(
+			@PathVariable("assessmentName") String assessmentName,
+			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
 
 		form.setName(assessmentName);
 		manager.addAssessment(form);
 		return "redirect:.";
 	}
-	
+
 	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/")
-	public String viewAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+	public String viewAssessment(
+			@PathVariable("assessmentName") String assessmentName, Model model) {
 
 		Assessment currAssessment = manager.getAssessmentNew(assessmentName);
 		model.addAttribute("assessment", currAssessment);
-		
+
 		List<WeightedUnitTest> otherUnitTetsts = new ArrayList<WeightedUnitTest>();
-		
-		for(UnitTest test: manager.getUnitTestList()){
+
+		for (UnitTest test : manager.getUnitTestList()) {
 			boolean contains = false;
-			for(WeightedUnitTest weightedTest: currAssessment.getUnitTests()){
-				if(weightedTest.getTest() == test){
+			for (WeightedUnitTest weightedTest : currAssessment.getUnitTests()) {
+				if (weightedTest.getTest() == test) {
 					contains = true;
 					break;
 				}
 			}
-			
-			if(!contains){
-				for(WeightedUnitTest weightedTest: currAssessment.getSecretUnitTests()){
-					if(weightedTest.getTest() == test){
+
+			if (!contains) {
+				for (WeightedUnitTest weightedTest : currAssessment
+						.getSecretUnitTests()) {
+					if (weightedTest.getTest() == test) {
 						contains = true;
 						break;
 					}
 				}
 			}
-			
-			if(!contains){
+
+			if (!contains) {
 				WeightedUnitTest weigthedTest = new WeightedUnitTest();
 				weigthedTest.setTest(test);
 				weigthedTest.setWeight(0);
 				otherUnitTetsts.add(weigthedTest);
 			}
 		}
-		
+
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		return "assessment/view/assessment";
 	}
-	
+
 	// view an assessment
 	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
@@ -518,79 +137,88 @@ public class SubmissionController {
 		model.addAttribute("allAssessments", manager.getAssessmentListNew());
 		return "assessment/viewAll/assessment";
 	}
-	
+
 	// view an assessment
 	@RequestMapping(value = "assessments/", method = RequestMethod.POST)
-	public String newAssessmentAssessment(@ModelAttribute(value = "assessment") Assessment form, 
+	public String newAssessmentAssessment(
+			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
-		
-		if(form.getName() == null || form.getName().isEmpty()){
+
+		if (form.getName() == null || form.getName().isEmpty()) {
 			result.reject("Assessment.new.noname");
-		}
-		else{
+		} else {
 			manager.addAssessment(form);
 		}
 		return "redirect:.";
 	}
-	
+
 	// release a unit test
 	@RequestMapping(value = "assessments/release/{assessmentName}/")
-	public String releaseAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
-		if(manager.getAssessmentNew(assessmentName) !=null){
+	public String releaseAssessment(
+			@PathVariable("assessmentName") String assessmentName, Model model) {
+		if (manager.getAssessmentNew(assessmentName) != null) {
 			manager.getAssessmentNew(assessmentName).setReleased(true);
 		}
 		return "redirect:../../";
 	}
-	
+
 	// delete a unit test
 	@RequestMapping(value = "assessments/delete/{assessmentName}/")
-	public String deleteAssessment(@PathVariable("assessmentName") String assessmentName, Model model) {
+	public String deleteAssessment(
+			@PathVariable("assessmentName") String assessmentName, Model model) {
 		manager.removeAssessment(assessmentName);
 		return "redirect:../../";
 	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//							HAND MARKING								   //
-	/////////////////////////////////////////////////////////////////////////////
-	
-	
+
+	// ///////////////////////////////////////////////////////////////////////////
+	// HAND MARKING //
+	// ///////////////////////////////////////////////////////////////////////////
+
 	// view a handmarking
 	@RequestMapping(value = "handmarking/{handMarkingName}/")
-	public String viewHandMarking(@PathVariable("handMarkingName") String handMarkingName, Model model) {
+	public String viewHandMarking(
+			@PathVariable("handMarkingName") String handMarkingName, Model model) {
 
-	//	model.addAttribute("data", manager.getHandMarking(handMarkingName).getData());
-		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
+		// model.addAttribute("data",
+		// manager.getHandMarking(handMarkingName).getData());
+		model.addAttribute("handMarking",
+				manager.getHandMarking(handMarkingName));
 		return "assessment/view/handMarks";
 	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//								UNIT TEST								   //
-	/////////////////////////////////////////////////////////////////////////////
-	
+
+	// ///////////////////////////////////////////////////////////////////////////
+	// UNIT TEST //
+	// ///////////////////////////////////////////////////////////////////////////
+
 	// view a unit test
 	@RequestMapping(value = "unitTest/{testName}/")
-	public String viewUnitTest(@PathVariable("testName") String testName, Model model) {
+	public String viewUnitTest(@PathVariable("testName") String testName,
+			Model model) {
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
-		model.addAttribute("latestResult", manager.getUnitTestResult(manager.getUnitTest(testName).getFileLocation()+"/test"));
-		
+		model.addAttribute(
+				"latestResult",
+				manager.getUnitTestResult(manager.getUnitTest(testName)
+						.getFileLocation() + "/test"));
+
 		return "assessment/view/unitTest";
 	}
-		
+
 	// view a unit test
 	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
-	public String uploadTestCode(@PathVariable("testName") String testName, @ModelAttribute(value = "submission") Submission form, 
-			BindingResult result,  Model model) {
+	public String uploadTestCode(@PathVariable("testName") String testName,
+			@ModelAttribute(value = "submission") Submission form,
+			BindingResult result, Model model) {
 
 		// if submission exists
-		if(form.getFile() != null && !form.getFile().isEmpty()){
+		if (form.getFile() != null && !form.getFile().isEmpty()) {
 			// upload submission
 			manager.testUnitTest(form, testName);
 		}
-		
+
 		return "redirect:.";
 	}
-	
+
 	// view all unit tests
 	@RequestMapping(value = "unitTest/")
 	public String viewUnitTest(Model model) {
@@ -598,76 +226,103 @@ public class SubmissionController {
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
 		return "assessment/viewAll/unitTest";
 	}
-	
+
 	// delete a unit test
 	@RequestMapping(value = "unitTest/delete/{testName}/")
-	public String deleteUnitTest(@PathVariable("testName") String testName, Model model) {
+	public String deleteUnitTest(@PathVariable("testName") String testName,
+			Model model) {
 		manager.removeUnitTest(testName);
 		return "redirect:../../";
 	}
-	
+
 	// a unit test is marked as tested
 	@RequestMapping(value = "unitTest/tested/{testName}/")
-	public String testedUnitTest(@PathVariable("testName") String testName, Model model) {
+	public String testedUnitTest(@PathVariable("testName") String testName,
+			Model model) {
 		manager.getUnitTest(testName).setTested(true);
 		manager.saveUnitTest(manager.getUnitTest(testName));
-		return "redirect:../../"+testName+"/";
+		return "redirect:../../" + testName + "/";
 	}
-	
+
 	@RequestMapping(value = "unitTest/update/{testName}/", method = RequestMethod.POST)
 	// after submission of an assessment
-	public String updateUnitTest(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
+	public String updateUnitTest(
+			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
+			BindingResult result, Model model) {
 
 		// add it.
-		if(!result.hasErrors()){
+		if (!result.hasErrors()) {
 			manager.addUnitTest(form);
 		}
 
-		return "redirect:../../"+form.getTestName()+"/";
+		return "redirect:../../" + form.getTestName() + "/";
 	}
-	
+
 	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
 	// after submission of a unit test
-	public String home(@ModelAttribute(value = "newUnitTestModel") NewUnitTest form, BindingResult result, Model model) {
+	public String home(
+			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
+			BindingResult result, Model model) {
 
 		// check if the name is unique
 		Collection<UnitTest> allUnitTests = manager.getUnitTestList();
-		
-		for(UnitTest test: allUnitTests){
-			if(test.getName().toLowerCase().replace(" ", "").equals(form.getTestName().toLowerCase().replace(" ", ""))){
+
+		for (UnitTest test : allUnitTests) {
+			if (test.getName().toLowerCase().replace(" ", "")
+					.equals(form.getTestName().toLowerCase().replace(" ", ""))) {
 				result.reject("UnitTest.New.NameNotUnique");
 			}
 		}
-		
+
 		// add it.
-		if(!result.hasErrors()){
+		if (!result.hasErrors()) {
 			manager.addUnitTest(form);
 		}
 
 		return "redirect:.";
 	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//								HOME									   //
-	/////////////////////////////////////////////////////////////////////////////
-	
+
+	// ///////////////////////////////////////////////////////////////////////////
+	// HOME //
+	// ///////////////////////////////////////////////////////////////////////////
+
 	// home page
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
 		// check if tutor or student TODO
-		String username = "arad0726";//getUser();
-		if(username != null){
+		String username = "arad0726";// getUser();
+		if (username != null) {
 			model.addAttribute("unikey", username);
 			model.addAttribute("results", manager.getStudentResults(username));
 			return "user/studentHome";
 		}
 		return null;
 	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//								LOGIN									   //
-	/////////////////////////////////////////////////////////////////////////////
-	
+
+	// home page
+	@RequestMapping(value = "home/", method = RequestMethod.POST)
+	public String submitAssessment(
+			@ModelAttribute(value = "submission") Submission form,
+			BindingResult result, Model model) {
+		// check if the submission is valid
+		if (form.getFile() == null || form.getFile().isEmpty()) {
+			result.reject("Submission.NoFile");
+		}
+		// accept the submission
+		String submitting = "arad0726";
+		String submittingFor = submitting;
+
+		logger.info(form.getAssessment() + " submitted for " + submittingFor
+				+ " by " + submitting);
+		manager.submit(submittingFor, form);
+
+		return "redirect:.";
+	}
+
+	// ///////////////////////////////////////////////////////////////////////////
+	// LOGIN //
+	// ///////////////////////////////////////////////////////////////////////////
+
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public String get(ModelMap model) {
 		model.addAttribute("LOGINFORM", new LoginForm());
@@ -677,25 +332,25 @@ public class SubmissionController {
 	}
 
 	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg, BindingResult result) {
+	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
+			BindingResult result) {
 
 		validator.validate(userMsg, result);
 		if (result.hasErrors()) {
 			return "login";
 		}
 
-		RequestContextHolder.currentRequestAttributes().setAttribute("user", userMsg.getUnikey(),
-				RequestAttributes.SCOPE_SESSION);
+		RequestContextHolder.currentRequestAttributes().setAttribute("user",
+				userMsg.getUnikey(), RequestAttributes.SCOPE_SESSION);
 		// Use the redirect-after-post pattern to reduce double-submits.
 		return "redirect:/home/";
 	}
 
 	@RequestMapping("login/exit")
 	public String logout() {
-		RequestContextHolder.currentRequestAttributes().removeAttribute("user", RequestAttributes.SCOPE_SESSION);
+		RequestContextHolder.currentRequestAttributes().removeAttribute("user",
+				RequestAttributes.SCOPE_SESSION);
 		return "redirect:../";
 	}
-	
-	
-	
+
 }

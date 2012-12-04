@@ -30,4 +30,5 @@
 	    <!-- one of the properties available; the maximum file size in bytes -->
 	    <property name="maxUploadSize" value="100000"/>
 	</bean>
+	
 </beans>

@@ -1,37 +1,46 @@
 /** susk-detail */
-
-pre{
-	margin:0;
+pre {
+	margin: 0;
 }
 
-#ui-datepicker-div{
-	display:none;
+.pastaQuickFeedback {
+	width: 90%;
 }
 
-div .pastaUnitTestResultpass{
-	background-color:#0C0;
-	width:1em;
-	height:2em;
-	float:left;
-	margin:1px;
+#ui-datepicker-div {
+	display: none;
 }
 
-button, #submit, .button{
+div .pastaUnitTestBoxResult {
+	width: 1em;
+	height: 2em;
+	float: left;
+	margin: 1px;
+	cursor: pointer;
+}
+
+div .pastaUnitTestBoxResultpass {
+	background-color: #0C0;
+}
+
+button,#submit,.button {
 	cursor: pointer;
 	clear: both;
 	border: 1px solid #DBD3C2;
 	font-weight: bold;
 	background-color: #CE1126;
 	line-height: 2em;
-	color:white;	
-	padding:3px 20px
+	color: white;
+	padding: 3px 20px
 }
-button:hover, #submit:hover, .button:hover{
+
+button:hover,#submit:hover,.button:hover {
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
 
-#newUnitTest, #comfirmPopup, #newAssessment, #testUnitTest, #updateUnitTest {
+#newUnitTest,#comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest
+	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;
 	box-shadow: 0 0 25px 5px #999;
@@ -41,7 +50,7 @@ button:hover, #submit:hover, .button:hover{
 	padding: 25px;
 }
 
-#comfirmPopup{
+#comfirmPopup {
 	min-width: 0px;
 }
 
@@ -54,75 +63,64 @@ button:hover, #submit:hover, .button:hover{
 	right: -7px;
 	top: -7px;
 	background-color: #CE1126;
-	color:white;
+	color: white;
 	cursor: pointer;
 }
 
-#dialog-overlay {
-
-	/* set it to fill the whole screen */
-	width:100%; 
-	height:100%;
-	
+#dialog-overlay { /* set it to fill the whole screen */
+	width: 100%;
+	height: 100%;
 	/* transparency for different browsers */
-	filter:alpha(opacity=50); 
-	-moz-opacity:0.5; 
-	-khtml-opacity: 0.5; 
-	opacity: 0.5; 
-	background:#000; 
-	margin:auto;
-
+	filter: alpha(opacity = 50);
+	-moz-opacity: 0.5;
+	-khtml-opacity: 0.5;
+	opacity: 0.5;
+	background: #000;
+	margin: auto;
 	/* make sure it appear behind the dialog box but above everything else */
-	position:absolute; 
-	top:0; left:0; 
-	z-index:3000; 
-
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3000;
 	/* hide it by default */
-	display:none;
+	display: none;
 }
 
-
-#dialog-box {
-	
-	/* css3 drop shadow */
+#dialog-box { /* css3 drop shadow */
 	-webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 	-moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-	
 	/* css3 border radius */
 	-moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-	
-	background:#eee;
-	/* styling of the dialog box, i have a fixed dimension for this demo */ 
-	width:328px; 
-	
+	-webkit-border-radius: 5px;
+	background: #eee;
+	/* styling of the dialog box, i have a fixed dimension for this demo */
+	width: 328px;
 	/* make sure it has the highest z-index */
-	position:absolute; 
-	z-index:5000; 
-
+	position: absolute;
+	z-index: 5000;
 	/* hide it by default */
-	display:none;
+	display: none;
 }
 
-#dialog-box .dialog-content {
-	/* style the content */
-	text-align:left; 
-	padding:10px; 
-	margin:13px;
-	color:#666; 
-	font-family:arial;
-	font-size:11px; 
+#dialog-box .dialog-content { /* style the content */
+	text-align: left;
+	padding: 10px;
+	margin: 13px;
+	color: #666;
+	font-family: arial;
+	font-size: 11px;
 }
 
 /* extra styling */
 #dialog-box .dialog-content p {
-	font-weight:700; margin:0;
+	font-weight: 700;
+	margin: 0;
 }
 
 #dialog-box .dialog-content ul {
-	margin:10px 0 10px 20px; 
-	padding:0; 
-	height:50px;
+	margin: 10px 0 10px 20px;
+	padding: 0;
+	height: 50px;
 }
 
 .susk-detail {
@@ -132,52 +130,50 @@ button:hover, #submit:hover, .button:hover{
 	background: #FDFCDE;
 }
 
-.pastaTable{
-	width:90%;
-}
- .handMarkingTable, th, td
-		{
-			table-layout:fixed;
-			padding:15px;
-			
-		
-			 width:200px;
-		
-			  word-wrap:break-word;
-		}  
-}	
-.pastaShortTable{
-	border: 1px;
-	padding:0px;
-	margin:0px;
+.pastaTable {
+	width: 90%;
 }
 
-.pastaShortTable td{
-	width:1.5em;
-	height:2em;
+.handMarkingTable,th,td {
+	table-layout: fixed;
+	padding: 15px;
+	width: 200px;
+	word-wrap: break-word;
+}
+
+}
+.pastaShortTable {
+	border: 1px;
+	padding: 0px;
+	margin: 0px;
+}
+
+.pastaShortTable td {
+	width: 1.5em;
+	height: 2em;
 }
 
 .pastaTable td {
-	text-align:center;
+	text-align: center;
 }
 
-.pastaTF, .pastaUnitTestResult {
+.pastaTF,.pastaUnitTestResult {
 	font-weight: bold;
 	text-transform: uppercase;
 }
 
-.pastaUnitTestResultpass, .pastaTFtrue {
-	color:#0C0;
+.pastaUnitTestResultpass,.pastaTFtrue {
+	color: #0C0;
 }
 
 .pastaUnitTestBoxResultpass {
-	background-color:#0C0;
-	height:100%;
-	width:100%;
+	background-color: #0C0;
+	height: 100%;
+	width: 100%;
 }
 
-.pastaUnitTestResulterror, .pastaUnitTestResultfailure, .pastaTFfalse{
-	color:red;
+.pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaTFfalse {
+	color: red;
 }
 
 .susk-detail label {
@@ -229,7 +225,7 @@ button:hover, #submit:hover, .button:hover{
 	padding-bottom: 10px;
 }
 
-.susk-form-h1, .susk-detail-h1 {
+.susk-form-h1,.susk-detail-h1 {
 	font-size: 1.5em;
 	color: #CE1126;
 	margin-top: 0.5em;
@@ -251,16 +247,15 @@ button:hover, #submit:hover, .button:hover{
 }
 
 input[type=radio].susk-radio {
-    float: left;
-    margin: 0px 5px 0px 0px !important;
-    width: auto !important;
+	float: left;
+	margin: 0px 5px 0px 0px !important;
+	width: auto !important;
 }
 
 label.susk-radio {
-    margin-bottom: 5px;
-    width: auto !important;
+	margin-bottom: 5px;
+	width: auto !important;
 }
-
 
 .susk-form-radio {
 	margin-left: 150px;
@@ -307,9 +302,7 @@ label.susk-radio {
 }
 
 /** Errors */
-
-.susk-form .susk-form-errors,
-.susk-form .susk-form-error {
+.susk-form .susk-form-errors,.susk-form .susk-form-error {
 	color: #CE1126;
 	font-size: 1.1em;
 	line-height: 2em;
@@ -317,7 +310,6 @@ label.susk-radio {
 }
 
 /** Susk Info Bar */
-
 .susk-info-bar {
 	background-color: #fffff4;
 	border: 1px solid #999999;
@@ -366,13 +358,11 @@ label.susk-radio {
 }
 
 /* Required */
-
 .star-required {
 	color: #CE1126;
 }
 
 /* susk-toolbar */
-
 .susk-toolbar {
 	line-height: 2em;
 }

@@ -72,16 +72,12 @@
 		</div>
 	</c:if>
 	<c:if test="${not empty latestResult.testCases}">
-		<table class="pastaShortTable">
-			<tr>
-			<c:forEach var="testCase" items="${latestResult.testCases}">
-					<td style="padding:0;"><div class="pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div></td>
-			</c:forEach>
-			</tr>
-		</table>
-		
+		<c:forEach var="testCase" items="${latestResult.testCases}">
+				<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
+		</c:forEach>
+		</br>
+		</br>
 		<button id="acceptUnitTest" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
-		</table>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 			<c:forEach var="testCase" items="${latestResult.testCases}">

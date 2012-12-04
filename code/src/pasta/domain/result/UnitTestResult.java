@@ -10,7 +10,6 @@ public class UnitTestResult {
 	private String compileErrors;
 	private String runtimeErrors;
 	private ArrayList<UnitTestCaseResult> testCases;
-	
 
 	public UnitTest getTest() {
 		return test;
@@ -57,7 +56,16 @@ public class UnitTestResult {
 		 * improve - make it be able to take a list of possible outputs that are
 		 * 			going to mean a correct answer
 		 */
-		return 0; 	
+		if(testCases == null || testCases.isEmpty()){
+			return 0;
+		}
+		double passed = 0;
+		for(UnitTestCaseResult result: testCases){
+			if(result.getTestResult().equals("pass")){
+				++passed;
+			}
+		}
+		return passed/testCases.size(); 	
 	}
 	
 }
