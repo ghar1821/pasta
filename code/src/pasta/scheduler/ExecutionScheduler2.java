@@ -23,11 +23,11 @@ public class ExecutionScheduler2 extends HibernateDaoSupport {
 		getHibernateTemplate().update(job);
 	}
 	
-	public void delete(Job stock) {
-		getHibernateTemplate().delete(stock);
+	public void delete(Job job) {
+		getHibernateTemplate().delete(job);
 	}
 
 	public List<Job> getOutstandingJobs(){
-		return getHibernateTemplate().find("FROM jobs WHERE executionDate <= NOW() GROUP BY executionDate");
+		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() GROUP BY runDate");
 	}
 }

@@ -19,10 +19,10 @@ public class Job implements Serializable{
 	
 	public Job(){}
 	
-	public Job(String username, String assessmentName){
+	public Job(String username, String assessmentName, Date runDate){
 		this.username = username;
 		this.assessmentName = assessmentName;
-		runDate = new Date();
+		this.runDate = runDate;
 	}
 	
 	@Id

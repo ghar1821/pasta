@@ -47,6 +47,10 @@ public class SubmissionController {
 	public void setMyService(SubmissionManager myService) {
 		this.manager = myService;
 	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// Models //
+	// ///////////////////////////////////////////////////////////////////////////
 
 	@ModelAttribute("newUnitTestModel")
 	public NewUnitTest returnNewUnitTestModel() {
@@ -62,6 +66,10 @@ public class SubmissionController {
 	public Assessment returnNewAssessmentModel() {
 		return new Assessment();
 	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// Helper Methods //
+	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Get the currently logged in user.
@@ -244,20 +252,6 @@ public class SubmissionController {
 		return "redirect:../../" + testName + "/";
 	}
 
-	@RequestMapping(value = "unitTest/update/{testName}/", method = RequestMethod.POST)
-	// after submission of an assessment
-	public String updateUnitTest(
-			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
-			BindingResult result, Model model) {
-
-		// add it.
-		if (!result.hasErrors()) {
-			manager.addUnitTest(form);
-		}
-
-		return "redirect:../../" + form.getTestName() + "/";
-	}
-
 	@RequestMapping(value = "unitTest/", method = RequestMethod.POST)
 	// after submission of a unit test
 	public String home(
@@ -317,6 +311,19 @@ public class SubmissionController {
 		manager.submit(submittingFor, form);
 
 		return "redirect:.";
+	}
+	
+	// history
+	@RequestMapping(value = "info/{assessmentName}/")
+	public String viewAssessmentInfo(@PathVariable("assessmentName") String assessmentName,
+			Model model) {
+		
+		String username = "arad0726"; // TODO
+		
+		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
+		model.addAttribute("history", manager.getAssessmentHistoryNew(username, assessmentName));
+
+		return "user/viewAssessment";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

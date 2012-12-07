@@ -1,7 +1,12 @@
 package pasta.repository;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -14,8 +19,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
+import pasta.domain.template.Assessment;
+import pasta.domain.template.WeightedUnitTest;
+import pasta.util.ProjectProperties;
 
 public class ResultDAO {
 	
@@ -84,7 +93,9 @@ public class ResultDAO {
 		
 		// check to see if there is a compile.errors file
 		File compileErrors = new File(location+"/compile.errors");
+		System.out.println(location+"/compile.errors");
 		if(compileErrors.exists()){
+			System.out.println("exists");
 			try{
 				// read in
 				Scanner in = new Scanner (compileErrors);
@@ -125,5 +136,65 @@ public class ResultDAO {
 		}
 		
 		return null; // TODO check if in the database
+	}
+	
+	public Collection<AssessmentResult> getAssessmentHistory(String username){
+		Collection<AssessmentResult> results = new ArrayList<AssessmentResult>();
+		// TODO
+		return results;
+	}
+	
+	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
+		Collection<AssessmentResult> results = new ArrayList<AssessmentResult>();
+		
+		String[] allFiles = (new File(ProjectProperties.getInstance()
+				.getProjectLocation()
+				+ "/submissions/"
+				+ username
+				+ "/assessments/" + assessment.getShortName())).list();
+		
+		Arrays.sort(allFiles);
+		
+		// TODO 
+		if(allFiles == null){
+			return results;
+		}
+		for(int i=0; i< allFiles.length; ++i){
+			String latest = allFiles[allFiles.length-1-i];
+			AssessmentResult assessResult = new AssessmentResult();
+			assessResult.setAssessment(assessment);
+	
+			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+			for (WeightedUnitTest uTest : assessment.getUnitTests()) {
+				UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
+								.getProjectLocation()
+								+ "/submissions/"
+								+ username
+								+ "/assessments/"
+								+ assessment.getShortName()
+								+ "/"
+								+ latest
+								+ "/unitTests/" + uTest.getTest().getShortName());
+				if (result == null) {
+					result = new UnitTestResult();
+				}
+				result.setTest(uTest.getTest());
+				utresults.add(result);
+				
+			}
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+			try {
+				assessResult.setSubmissionDate(sdf.parse(latest));
+			} catch (ParseException e) {
+				assessResult.setSubmissionDate(new Date());
+				logger.error("Submission date " + latest + " - " + username + " - " + assessment.getName());
+			}
+			assessResult.setUnitTests(utresults);
+	
+			// add to collection
+			results.add(assessResult);
+		}
+		
+		return results;
 	}
 }

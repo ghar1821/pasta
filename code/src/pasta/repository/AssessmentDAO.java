@@ -1,14 +1,13 @@
 package pasta.repository;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,8 +23,6 @@ import org.w3c.dom.NodeList;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.Tuple;
-
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;

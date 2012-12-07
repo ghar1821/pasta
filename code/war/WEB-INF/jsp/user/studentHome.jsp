@@ -17,7 +17,7 @@
 			    	<input type="submit" value="Upload" id="submit"/>
 				</td>
 				<td>
-					${result.assessment.name} - 
+					<a href="../info/${result.assessment.name}/">${result.assessment.name}</a> - 
 					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${result.marks}" />
 					/ ${result.assessment.marks}</br>
 				${result.assessment.dueDate}</br>
@@ -36,7 +36,7 @@
 					<c:when test="${result.compileError}">
 						<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
 							<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-							<b>Compilation errorsS</b>
+							<b>Compilation errors</b>
 						</div>
 					</c:when>
 					<c:otherwise>

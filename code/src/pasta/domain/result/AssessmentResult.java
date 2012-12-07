@@ -2,6 +2,7 @@ package pasta.domain.result;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import pasta.domain.template.Assessment;
 
@@ -9,6 +10,7 @@ public class AssessmentResult {
 	private ArrayList<UnitTestResult> unitTests;
 	private Assessment assessment;
 	private int submissionsMade;
+	private Date submissionDate;
 	
 	public Collection<UnitTestResult> getUnitTests() {
 		return unitTests;
@@ -34,6 +36,14 @@ public class AssessmentResult {
 		this.submissionsMade = submissionsMade;
 	}
 
+	public Date getSubmissionDate() {
+		return submissionDate;
+	}
+
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+
 	public void addUnitTest(UnitTestResult test){
 		unitTests.add(test);
 	}
@@ -49,6 +59,19 @@ public class AssessmentResult {
 			}
 		}
 		return false;
+	}
+	
+	public String getCompilationError() {
+		String compilationError = "";
+		for(UnitTestResult result : unitTests){
+			if(result.getCompileErrors()!= null && !result.getCompileErrors().isEmpty()){
+				compilationError += result.getCompileErrors() 
+						+ System.getProperty("line.separator")
+						+ System.getProperty("line.separator")
+						+ System.getProperty("line.separator");
+			}
+		}
+		return compilationError;
 	}
 
 	public double getMarks(){
