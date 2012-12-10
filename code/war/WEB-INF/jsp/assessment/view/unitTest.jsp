@@ -13,8 +13,8 @@
 
 <!-- Upload testing submission TODO #43 -->
 
-<button id="newPopup"> Test Unit Tests </button>
-<button id="updateTest"> Update Unit </button>
+<button id="newPopup"> Test Unit Test </button>
+<button id="updateTest"> Update Test </button>
 
 <div id="testUnitTest" syle="display:none;">
 <span class="button bClose">

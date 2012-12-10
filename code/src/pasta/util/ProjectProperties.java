@@ -16,8 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import pasta.domain.AllStudentAssessmentData;
-
 @Component
 /**
  * The project properties.
@@ -80,9 +78,6 @@ public class ProjectProperties {
 		
 		ProjectProperties.tutors = tutors;
 		ProjectProperties.java6location = java6Location;
-		
-		
-		AllStudentAssessmentData.getInstance();
 	}
 	
 	private ProjectProperties(){

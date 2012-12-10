@@ -3,7 +3,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<h1>${unikey}</h1>
+<h1>${unikey.username}</h1>
 
 <table class="pastaQuickFeedback">
 	<c:forEach var="result" items="${results}">
@@ -11,8 +11,6 @@
 			<tr>
 				<td style="width:40px;">
 					<form:input type="file" path="file"/>
-					<form:input type="hidden" path="submittingUsername" value="${submittingUsername}"/>
-					<form:input type="hidden" path="submittingForUsername" value="${submittingForUsername}"/>
 					<form:input type="hidden" path="assessment" value="${result.assessment.shortName}"/>
 			    	<input type="submit" value="Upload" id="submit"/>
 				</td>

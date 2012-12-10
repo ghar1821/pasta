@@ -29,6 +29,21 @@ ${assessment.description}
 						<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 					</c:forEach>
 				</c:forEach>
+				<table class="pastaTable">
+					<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+					<c:forEach var="allUnitTests" items="${result.unitTests}">
+						<c:forEach var="testCase" items="${allUnitTests.testCases}">
+							<tr>
+								<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+								<td style="text-align:left;">${testCase.testName}</td>
+								<td>${testCase.time}</td>
+								<td>
+									<pre>${testCase.type} - ${testCase.testMessage}</pre>
+								</td>
+							</tr>
+						</c:forEach>
+					</c:forEach>
+				</table>
 			</c:otherwise>
 		</c:choose>
 	</c:forEach>

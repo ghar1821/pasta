@@ -19,6 +19,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.LoginForm;
+import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
@@ -76,9 +77,9 @@ public class SubmissionController {
 	 * 
 	 * @return
 	 */
-	public String getUser() {
-		return (String) RequestContextHolder.currentRequestAttributes()
-				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+	public PASTAUser getOrCreateUser() {
+		return manager.getOrCreateUser((String) RequestContextHolder.currentRequestAttributes()
+				.getAttribute("user", RequestAttributes.SCOPE_SESSION));
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -284,10 +285,10 @@ public class SubmissionController {
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
 		// check if tutor or student TODO
-		String username = "arad0726";// getUser();
-		if (username != null) {
-			model.addAttribute("unikey", username);
-			model.addAttribute("results", manager.getStudentResults(username));
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			model.addAttribute("unikey", user);
+			model.addAttribute("results", manager.getStudentResults(user.getUsername()));
 			return "user/studentHome";
 		}
 		return null;
@@ -302,13 +303,14 @@ public class SubmissionController {
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
 		}
+		
+		if (manager.getAssessmentNew(form.getAssessment()).isClosed()){
+			result.reject("Submission.AfterClosingDate");
+		}
 		// accept the submission
-		String submitting = "arad0726";
-		String submittingFor = submitting;
-
-		logger.info(form.getAssessment() + " submitted for " + submittingFor
-				+ " by " + submitting);
-		manager.submit(submittingFor, form);
+		logger.info(form.getAssessment() + " submitted for " + getOrCreateUser().getUsername()
+				+ " by " + getOrCreateUser().getUsername());
+		manager.submit(getOrCreateUser().getUsername(), form);
 
 		return "redirect:.";
 	}
@@ -349,6 +351,7 @@ public class SubmissionController {
 
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
 				userMsg.getUnikey(), RequestAttributes.SCOPE_SESSION);
+		
 		// Use the redirect-after-post pattern to reduce double-submits.
 		return "redirect:/home/";
 	}

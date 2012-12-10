@@ -1,41 +1,33 @@
 package pasta.service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.AllStudentAssessmentData;
 import pasta.domain.Assessment2;
-import pasta.domain.Execution;
-import pasta.domain.User;
+import pasta.domain.PASTAUser;
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
@@ -49,10 +41,8 @@ import pasta.repository.AssessmentDAOold;
 import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.ExecutionScheduler2;
 import pasta.scheduler.Job;
 import pasta.util.ProjectProperties;
-import pasta.validation.SubmissionValidator;
 
 @Service("submissionManager")
 @Repository
@@ -65,23 +55,28 @@ import pasta.validation.SubmissionValidator;
  *
  */
 public class SubmissionManager {
-	private UserDAO userDao = new UserDAO();
+	
 	private AssessmentDAOold assDao = new AssessmentDAOold();
 	private AssessmentDAO assDaoNew = new AssessmentDAO();
 	private ResultDAO resultDAO = new ResultDAO();
 	
-	private ExecutionScheduler2 scheduler;
+	private ExecutionScheduler scheduler;
+	private UserDAO userDao;
 	
 	@Autowired
-	public void setMyScheduler(ExecutionScheduler2 myScheduler) {
+	public void setMyScheduler(ExecutionScheduler myScheduler) {
 		this.scheduler = myScheduler;
+	}
+	
+	@Autowired
+	public void setMyUserDAO(UserDAO myUserDao) {
+		this.userDao = myUserDao;
 	}
 
 	@Autowired
 	private ApplicationContext context;
 
 	// Validator for the submission
-	private SubmissionValidator subVal = new SubmissionValidator();
 
 	public static final Logger logger = Logger
 			.getLogger(SubmissionManager.class);
@@ -602,12 +597,22 @@ public class SubmissionManager {
 		}
 	}
 
-	public User getUser(String unikey) {
-		return userDao.getUser(unikey);
+	public PASTAUser getUser(String username) {
+		return userDao.getUser(username);
 	}
-
-	public String[] getUserList() {
-		return userDao.getUserList();
+	
+	public PASTAUser getOrCreateUser(String username) {
+		PASTAUser user = userDao.getUser(username);
+		if(user == null){
+			user = new PASTAUser();
+			user.setUsername(username);
+			user.setStream("");
+			user.setTutorial("");
+			user.setPermissionLevel(UserPermissionLevel.STUDENT);
+			
+			userDao.add(user);
+		}
+		return user;
 	}
 
 	public List<String> getAssessmentList() {

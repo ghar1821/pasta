@@ -14,6 +14,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import pasta.domain.LoginForm;
+import pasta.repository.UserDAO;
 import pasta.util.ProjectProperties;
 /**
  * Authentication class.
@@ -87,33 +88,6 @@ public class AuthValidator implements Validator {
 //				}
 //			}
 //		}
-
-		// if the login is successful
-		if (!errors.hasErrors()) {
-			// valid user, ensure they have a folder
-			File folder = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" + login.getUnikey());
-			if (!folder.exists()) {
-				folder.mkdir();
-				try {
-					PrintStream out = new PrintStream(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-							+ login.getUnikey() + "/user.properties");
-					out.println("unikey=" + login.getUnikey());
-					out.println("tutor=false");
-					out.close();
-					// for the battleships league
-					folder = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-							+ login.getUnikey() + "/players");
-					folder.mkdir();
-					folder = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-							+ login.getUnikey() + "/players/active");
-					folder.mkdir();
-					folder = new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/"
-							+ login.getUnikey() + "/players/retired");
-					folder.mkdir();
-				} catch (FileNotFoundException e) {
-				}
-			}
-		}
 	}
 
 }
