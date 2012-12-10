@@ -13,7 +13,7 @@ ${assessment.description}
 <c:if test="${not empty history}">
 	<h3>History</h3>
 	
-	<c:forEach var="result" items="${history}">
+	<c:forEach var="result" items="${history}" varStatus="resultStatus">
 		<h4>${result.submissionDate}</h4>
 		<c:choose>
 			<c:when test="${result.compileError}">
@@ -29,7 +29,10 @@ ${assessment.description}
 						<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 					</c:forEach>
 				</c:forEach>
-				<table class="pastaTable">
+				<c:if test="${not empty result.unitTests}">
+					<button style="float:right" onclick='$("#${resultStatus.index}").toggle("fast")'>Details</button>
+				</c:if>
+				<table id="${resultStatus.index}" class="pastaTable" style="display:none">
 					<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 					<c:forEach var="allUnitTests" items="${result.unitTests}">
 						<c:forEach var="testCase" items="${allUnitTests.testCases}">

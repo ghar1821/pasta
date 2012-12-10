@@ -3,7 +3,6 @@
 <%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator"%>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="unikey" value='<%= session.getAttribute( "user" ) %>'/>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -78,11 +77,11 @@
 							<div id="login">
 								<c:choose>
 									<c:when test="${not empty unikey}">
-										<a href="<spring:url value="/home/" htmlEscape="true" />"><span>${unikey}</span></a> |
+										<a href="<spring:url value="/home/" htmlEscape="true" />"><span>${unikey.username}</span></a> |
 										<a href="<spring:url value="/login/exit" htmlEscape="true" />"><span>Logout</span></a>
 									</c:when>
 									<c:otherwise>
-										<a href="<spring:url value="/login" htmlEscape="true" />"><span>Login</span></a>
+										<a href="<spring:url value="/login/" htmlEscape="true" />"><span>Login</span></a>
 									</c:otherwise>
 								</c:choose>
 							</div>
@@ -95,16 +94,18 @@
 									<a href="<spring:url value="/home/" htmlEscape="true" />"><span>Home</span></a>
 								</span>
 							</li>
-							<li>
-								<span>
-									<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
-								</span>
-							</li>
-							<li>
-								<span>
-									<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
-								</span>
-							</li>
+							<c:if test="${not empty unikey and unikey.tutor}">
+								<li>
+									<span>
+										<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
+									</span>
+								</li>
+								<li>
+									<span>
+										<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
+									</span>
+								</li>
+							</c:if>
 						</ul>
 					</div>
 					<div id="tabunderscore"></div>

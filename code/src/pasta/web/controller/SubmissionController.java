@@ -78,8 +78,12 @@ public class SubmissionController {
 	 * @return
 	 */
 	public PASTAUser getOrCreateUser() {
-		return manager.getOrCreateUser((String) RequestContextHolder.currentRequestAttributes()
-				.getAttribute("user", RequestAttributes.SCOPE_SESSION));
+		String username = (String) RequestContextHolder.currentRequestAttributes()
+				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+		if(username != null){
+			return manager.getOrCreateUser(username);
+		}
+		return null;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -136,6 +140,7 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
+		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/assessment";
 	}
 
@@ -144,6 +149,7 @@ public class SubmissionController {
 	public String viewAllAssessment(Model model) {
 
 		model.addAttribute("allAssessments", manager.getAssessmentListNew());
+		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/viewAll/assessment";
 	}
 
@@ -192,6 +198,7 @@ public class SubmissionController {
 		// manager.getHandMarking(handMarkingName).getData());
 		model.addAttribute("handMarking",
 				manager.getHandMarking(handMarkingName));
+		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/handMarks";
 	}
 
@@ -209,7 +216,7 @@ public class SubmissionController {
 				"latestResult",
 				manager.getUnitTestResult(manager.getUnitTest(testName)
 						.getFileLocation() + "/test"));
-
+		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/unitTest";
 	}
 
@@ -233,6 +240,7 @@ public class SubmissionController {
 	public String viewUnitTest(Model model) {
 
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
+		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/viewAll/unitTest";
 	}
 
@@ -291,7 +299,7 @@ public class SubmissionController {
 			model.addAttribute("results", manager.getStudentResults(user.getUsername()));
 			return "user/studentHome";
 		}
-		return null;
+		return "redirect:/login/";
 	}
 
 	// home page
@@ -320,10 +328,13 @@ public class SubmissionController {
 	public String viewAssessmentInfo(@PathVariable("assessmentName") String assessmentName,
 			Model model) {
 		
-		String username = "arad0726"; // TODO
-		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return"redirect:/login/";
+		}
 		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
-		model.addAttribute("history", manager.getAssessmentHistoryNew(username, assessmentName));
+		model.addAttribute("history", manager.getAssessmentHistoryNew(user.getUsername(), assessmentName));
+		model.addAttribute("unikey", getOrCreateUser());
 
 		return "user/viewAssessment";
 	}
@@ -332,7 +343,7 @@ public class SubmissionController {
 	// LOGIN //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	@RequestMapping(value = "login", method = RequestMethod.GET)
+	@RequestMapping(value = "login/", method = RequestMethod.GET)
 	public String get(ModelMap model) {
 		model.addAttribute("LOGINFORM", new LoginForm());
 		// Because we're not specifying a logical view name, the
