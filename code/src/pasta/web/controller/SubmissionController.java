@@ -338,6 +338,29 @@ public class SubmissionController {
 
 		return "user/viewAssessment";
 	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// GRADE CENTRE //
+	// ///////////////////////////////////////////////////////////////////////////
+	
+	@RequestMapping(value = "gradeCentre/")
+	public String viewGradeCentre(Model model) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return "redirect:/login/";
+		}
+		if(!user.isTutor()){
+			return "redirect:/home/";
+		}
+
+		model.addAttribute("assessmentList", manager.getAssessmentList());
+		model.addAttribute("userList", manager.getUserList());
+		model.addAttribute("latestResults", manager.getLatestResults());
+		model.addAttribute("unikey", getOrCreateUser());
+
+		return "user/viewAll";
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// LOGIN //

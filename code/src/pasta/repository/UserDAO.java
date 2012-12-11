@@ -1,6 +1,7 @@
 package pasta.repository;
 
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -49,6 +50,10 @@ public class UserDAO extends HibernateDaoSupport{
 			loadUsersFromDB();
 		}
 		return allUsers.get(username);
+	}
+	
+	public Collection<PASTAUser> getUserList(){
+		return allUsers.values();
 	}
 	
 	public void add(PASTAUser user){

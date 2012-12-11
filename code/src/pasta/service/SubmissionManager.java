@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -597,6 +598,10 @@ public class SubmissionManager {
 		return userDao.getUser(username);
 	}
 	
+	public Collection<PASTAUser> getUserList() {
+		return userDao.getUserList();
+	}
+	
 	public PASTAUser getOrCreateUser(String username) {
 		PASTAUser user = userDao.getUser(username);
 		if(user == null){
@@ -609,6 +614,26 @@ public class SubmissionManager {
 			userDao.add(user);
 		}
 		return user;
+	}
+	
+	public HashMap<String, HashMap<String, AssessmentResult>> getLatestResults(){
+		HashMap<String, HashMap<String, AssessmentResult>> results = new HashMap<String, HashMap<String, AssessmentResult>>();
+		Collection<PASTAUser> allUsers = getUserList();
+		
+		for(PASTAUser user: allUsers){
+			HashMap<String, AssessmentResult> currResultMap = new HashMap<String, AssessmentResult>();
+			Collection<AssessmentResult> currentResults = getStudentResults(user.getUsername());
+			if(currentResults == null){
+				currentResults = new ArrayList<AssessmentResult>();
+			}
+			
+			for(AssessmentResult result: currentResults){
+				currResultMap.put(result.getAssessment().getName(), result);
+			}
+			results.put(user.getUsername(), currResultMap);
+		}
+		
+		return results;
 	}
 
 }
