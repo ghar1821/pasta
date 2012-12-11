@@ -50,7 +50,6 @@
 				$("pre.rubycode").snippet("ruby",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.sqlcode").snippet("sql",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});
-				// TODO add support for more code types
 			});
 		</script>
 	</head>
@@ -95,6 +94,11 @@
 								</span>
 							</li>
 							<c:if test="${not empty unikey and unikey.tutor}">
+								<li>
+									<span>
+										<a href="<spring:url value="/gradeCentre/" htmlEscape="true" />"><span>Grade Centre</span></a>
+									</span>
+								</li>
 								<li>
 									<span>
 										<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>

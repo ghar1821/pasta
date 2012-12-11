@@ -153,12 +153,12 @@ public class ResultDAO {
 				+ username
 				+ "/assessments/" + assessment.getShortName())).list();
 		
-		Arrays.sort(allFiles);
-		
 		// TODO 
 		if(allFiles == null){
 			return results;
 		}
+		Arrays.sort(allFiles);
+
 		for(int i=0; i< allFiles.length; ++i){
 			String latest = allFiles[allFiles.length-1-i];
 			AssessmentResult assessResult = new AssessmentResult();
