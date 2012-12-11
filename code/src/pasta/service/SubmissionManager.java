@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
@@ -25,7 +24,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.Assessment2;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.AssessmentResult;
@@ -37,7 +35,6 @@ import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.AssessmentDAOold;
 import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
@@ -56,7 +53,6 @@ import pasta.util.ProjectProperties;
  */
 public class SubmissionManager {
 	
-	private AssessmentDAOold assDao = new AssessmentDAOold();
 	private AssessmentDAO assDaoNew = new AssessmentDAO();
 	private ResultDAO resultDAO = new ResultDAO();
 	
@@ -293,7 +289,7 @@ public class SubmissionManager {
 	public Collection<AssessmentResult> getStudentResults(String username) {
 		ArrayList<AssessmentResult> results = new ArrayList<AssessmentResult>();
 
-		for (Assessment assess : getAssessmentListNew()) {
+		for (Assessment assess : getAssessmentList()) {
 			AssessmentResult assessResult = new AssessmentResult();
 			assessResult.setAssessment(assess);
 
@@ -377,7 +373,7 @@ public class SubmissionManager {
 	}
 
 	// new
-	public Collection<Assessment> getAssessmentListNew() {
+	public Collection<Assessment> getAssessmentList() {
 		return assDaoNew.getAssessmentList();
 	}
 
@@ -387,13 +383,13 @@ public class SubmissionManager {
 	}
 
 	// new
-	public Assessment getAssessmentNew(String assessmentName) {
+	public Assessment getAssessment(String assessmentName) {
 		return assDaoNew.getAssessment(assessmentName);
 	}
 	
 	// new
-	public Collection<AssessmentResult> getAssessmentHistoryNew(String username, String assessmentName){
-		return resultDAO.getAssessmentHistory(username, getAssessmentNew(assessmentName));
+	public Collection<AssessmentResult> getAssessmentHistory(String username, String assessmentName){
+		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentName));
 	}
 
 	public void saveUnitTest(UnitTest thisTest) {
@@ -613,23 +609,6 @@ public class SubmissionManager {
 			userDao.add(user);
 		}
 		return user;
-	}
-
-	public List<String> getAssessmentList() {
-		return assDao.getAssessmentList();
-	}
-
-	public Map<String, Assessment2> getAssessments(String unikey) {
-		return assDao.getAssessments(unikey);
-	}
-
-	public List<Assessment2> getAssessmentHistory(String unikey,
-			String assessmentName) {
-		return assDao.getAssessmentHistory(unikey, assessmentName);
-	}
-
-	public Assessment2 getAssessment(String unikey, String assessmentName) {
-		return assDao.getAssessment(assessmentName, unikey);
 	}
 
 }

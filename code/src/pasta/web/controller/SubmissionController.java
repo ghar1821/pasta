@@ -107,7 +107,7 @@ public class SubmissionController {
 	public String viewAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		Assessment currAssessment = manager.getAssessmentNew(assessmentName);
+		Assessment currAssessment = manager.getAssessment(assessmentName);
 		model.addAttribute("assessment", currAssessment);
 
 		List<WeightedUnitTest> otherUnitTetsts = new ArrayList<WeightedUnitTest>();
@@ -148,7 +148,7 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
 
-		model.addAttribute("allAssessments", manager.getAssessmentListNew());
+		model.addAttribute("allAssessments", manager.getAssessmentList());
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/viewAll/assessment";
 	}
@@ -171,8 +171,8 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/release/{assessmentName}/")
 	public String releaseAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
-		if (manager.getAssessmentNew(assessmentName) != null) {
-			manager.getAssessmentNew(assessmentName).setReleased(true);
+		if (manager.getAssessment(assessmentName) != null) {
+			manager.getAssessment(assessmentName).setReleased(true);
 		}
 		return "redirect:../../";
 	}
@@ -312,7 +312,7 @@ public class SubmissionController {
 			result.reject("Submission.NoFile");
 		}
 		
-		if (manager.getAssessmentNew(form.getAssessment()).isClosed()){
+		if (manager.getAssessment(form.getAssessment()).isClosed()){
 			result.reject("Submission.AfterClosingDate");
 		}
 		// accept the submission
@@ -332,8 +332,8 @@ public class SubmissionController {
 		if(user == null){
 			return"redirect:/login/";
 		}
-		model.addAttribute("assessment", manager.getAssessmentNew(assessmentName));
-		model.addAttribute("history", manager.getAssessmentHistoryNew(user.getUsername(), assessmentName));
+		model.addAttribute("assessment", manager.getAssessment(assessmentName));
+		model.addAttribute("history", manager.getAssessmentHistory(user.getUsername(), assessmentName));
 		model.addAttribute("unikey", getOrCreateUser());
 
 		return "user/viewAssessment";
