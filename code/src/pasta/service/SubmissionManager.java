@@ -33,6 +33,7 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
@@ -54,7 +55,7 @@ import pasta.util.ProjectProperties;
  */
 public class SubmissionManager {
 	
-	private AssessmentDAO assDaoNew = new AssessmentDAO();
+	private AssessmentDAO assDao = new AssessmentDAO();
 	private ResultDAO resultDAO = new ResultDAO();
 	
 	private ExecutionScheduler scheduler;
@@ -86,7 +87,7 @@ public class SubmissionManager {
 				+ "/submissions/" + username + "/assessments/"
 				+ form.getAssessment() + "/" + currDate + "/submission";
 		
-		Assessment currAssessment = assDaoNew.getAssessment(form.getAssessment());
+		Assessment currAssessment = assDao.getAssessment(form.getAssessment());
 		boolean compiled = true;
 
 		(new File(location)).mkdirs();
@@ -204,7 +205,7 @@ public class SubmissionManager {
 						+ "/submissions/" + job.getUsername() + "/assessments/"
 						+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/submission";
 				
-				Assessment currAssessment = assDaoNew.getAssessment(job.getAssessmentName());
+				Assessment currAssessment = assDao.getAssessment(job.getAssessmentName());
 				boolean compiled = true;
 
 				try {
@@ -365,27 +366,32 @@ public class SubmissionManager {
 
 	// new
 	public Collection<UnitTest> getUnitTestList() {
-		return assDaoNew.getAllUnitTests().values();
+		return assDao.getAllUnitTests().values();
 	}
 
 	// new
 	public UnitTest getUnitTest(String name) {
-		return assDaoNew.getAllUnitTests().get(name);
+		return assDao.getAllUnitTests().get(name);
 	}
 
 	// new
 	public Collection<Assessment> getAssessmentList() {
-		return assDaoNew.getAssessmentList();
+		return assDao.getAssessmentList();
 	}
 
 	// new
 	public HandMarking getHandMarking(String handMarkingName) {
-		return assDaoNew.getHandMarking(handMarkingName);
+		return assDao.getHandMarking(handMarkingName);
+	}
+	
+	// new
+	public Collection<HandMarking> getAllHandMarking() {
+		return assDao.getAllHandMarking();
 	}
 
 	// new
 	public Assessment getAssessment(String assessmentName) {
-		return assDaoNew.getAssessment(assessmentName);
+		return assDao.getAssessment(assessmentName);
 	}
 	
 	// new
@@ -444,7 +450,7 @@ public class SubmissionManager {
 			FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
 					+ "/test/")));
 
-			assDaoNew.addUnitTest(thisTest);
+			assDao.addUnitTest(thisTest);
 		} catch (Exception e) {
 			(new File(thisTest.getFileLocation())).delete();
 			logger.error("TEST " + thisTest.getName()
@@ -455,12 +461,12 @@ public class SubmissionManager {
 
 	// new - unit test is guaranteed to have a unique name
 	public void removeUnitTest(String testName) {
-		assDaoNew.removeUnitTest(testName);
+		assDao.removeUnitTest(testName);
 	}
 
 	// new - assessment is guaranteed to have a unique name
 	public void removeAssessment(String assessment) {
-		assDaoNew.removeAssessment(assessment);
+		assDao.removeAssessment(assessment);
 	}
 
 	// new - test submission
@@ -587,7 +593,7 @@ public class SubmissionManager {
 			descriptionOut.close();
 
 			// add it to the list.
-			assDaoNew.addAssessment(assessmentToAdd);
+			assDao.addAssessment(assessmentToAdd);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -635,5 +641,12 @@ public class SubmissionManager {
 		
 		return results;
 	}
+	
+	public void updateHandMarking(HandMarking marking){
+		assDao.updateHandMarking(marking);
+	}
 
+	public void newHandMarking(NewHandMarking newMarking){
+		assDao.newHandMarking(newMarking);
+	}
 }

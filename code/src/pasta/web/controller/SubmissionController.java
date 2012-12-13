@@ -21,8 +21,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.login.AuthValidator;
@@ -57,15 +59,25 @@ public class SubmissionController {
 	public NewUnitTest returnNewUnitTestModel() {
 		return new NewUnitTest();
 	}
+	
+	@ModelAttribute("newHandMarkingModel")
+	public NewHandMarking returnNewHandMakingModel() {
+		return new NewHandMarking();
+	}
 
 	@ModelAttribute("submission")
-	public Submission returnNewSubmissionModel() {
+	public Submission returnSubmissionModel() {
 		return new Submission();
 	}
 
 	@ModelAttribute("assessment")
-	public Assessment returnNewAssessmentModel() {
+	public Assessment returnAssessmentModel() {
 		return new Assessment();
+	}
+	
+	@ModelAttribute("handMarking")
+	public HandMarking returnHandMarkingModel() {
+		return new HandMarking();
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
@@ -85,6 +97,15 @@ public class SubmissionController {
 		}
 		return null;
 	}
+	
+	public PASTAUser getUser() {
+		String username = (String) RequestContextHolder.currentRequestAttributes()
+				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+		if(username != null){
+			return manager.getUser(username);
+		}
+		return null;
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// ASSESSMENTS //
@@ -97,8 +118,13 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
 
-		form.setName(assessmentName);
-		manager.addAssessment(form);
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			form.setName(assessmentName);
+			manager.addAssessment(form);
+		}
 		return "redirect:.";
 	}
 
@@ -107,6 +133,10 @@ public class SubmissionController {
 	public String viewAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		
 		Assessment currAssessment = manager.getAssessment(assessmentName);
 		model.addAttribute("assessment", currAssessment);
 
@@ -147,7 +177,10 @@ public class SubmissionController {
 	// view an assessment
 	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
-
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		
 		model.addAttribute("allAssessments", manager.getAssessmentList());
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/viewAll/assessment";
@@ -159,10 +192,15 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
 
-		if (form.getName() == null || form.getName().isEmpty()) {
-			result.reject("Assessment.new.noname");
-		} else {
-			manager.addAssessment(form);
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			if (form.getName() == null || form.getName().isEmpty()) {
+				result.reject("Assessment.new.noname");
+			} else {
+				manager.addAssessment(form);
+			}
 		}
 		return "redirect:.";
 	}
@@ -171,8 +209,13 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/release/{assessmentName}/")
 	public String releaseAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
-		if (manager.getAssessment(assessmentName) != null) {
-			manager.getAssessment(assessmentName).setReleased(true);
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			if (manager.getAssessment(assessmentName) != null) {
+				manager.getAssessment(assessmentName).setReleased(true);
+			}
 		}
 		return "redirect:../../";
 	}
@@ -181,7 +224,12 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/delete/{assessmentName}/")
 	public String deleteAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
-		manager.removeAssessment(assessmentName);
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.removeAssessment(assessmentName);
+		}
 		return "redirect:../../";
 	}
 
@@ -190,16 +238,58 @@ public class SubmissionController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	// view a handmarking
-	@RequestMapping(value = "handmarking/{handMarkingName}/")
+	@RequestMapping(value = "handMarking/{handMarkingName}/")
 	public String viewHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
 
-		// model.addAttribute("data",
-		// manager.getHandMarking(handMarkingName).getData());
-		model.addAttribute("handMarking",
-				manager.getHandMarking(handMarkingName));
+		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/handMarks";
+	}
+	
+	// update a handmarking
+	@RequestMapping(value = "handMarking/{handMarkingName}/", method = RequestMethod.POST)
+	public String updateHandMarking(@ModelAttribute(value = "handMarking") HandMarking form,
+			BindingResult result, @PathVariable("handMarkingName") String handMarkingName, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			form.setName(handMarkingName);
+			manager.updateHandMarking(form);
+		}
+		return "redirect:.";
+	}
+	
+	// view a handmarking
+	@RequestMapping(value = "handMarking/")
+	public String viewAllHandMarking( Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		
+		model.addAttribute("allHandMarking", manager.getAllHandMarking());
+		model.addAttribute("unikey", getOrCreateUser());
+		return "assessment/viewAll/handMarks";
+	}
+	
+	// new handmarking
+	@RequestMapping(value = "handMarking/", method = RequestMethod.POST)
+	public String newHandMarking(@ModelAttribute(value = "newHandMarkingModel") NewHandMarking form,
+			BindingResult result, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		
+		// add it to the system
+		if(getUser().isInstructor()){
+			manager.newHandMarking(form);
+			return "redirect:./"+form.getShortName()+"/";
+		}
+		return "redirect:.";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -210,6 +300,9 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName,
 			Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
 		model.addAttribute(
@@ -220,14 +313,17 @@ public class SubmissionController {
 		return "assessment/view/unitTest";
 	}
 
-	// view a unit test
+	// update a unit test
 	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
 	public String uploadTestCode(@PathVariable("testName") String testName,
 			@ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
 
 		// if submission exists
-		if (form.getFile() != null && !form.getFile().isEmpty()) {
+		if (form.getFile() != null && !form.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
 			manager.testUnitTest(form, testName);
 		}
@@ -238,6 +334,9 @@ public class SubmissionController {
 	// view all unit tests
 	@RequestMapping(value = "unitTest/")
 	public String viewUnitTest(Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
 
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
 		model.addAttribute("unikey", getOrCreateUser());
@@ -248,7 +347,12 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/delete/{testName}/")
 	public String deleteUnitTest(@PathVariable("testName") String testName,
 			Model model) {
-		manager.removeUnitTest(testName);
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.removeUnitTest(testName);
+		}
 		return "redirect:../../";
 	}
 
@@ -256,8 +360,13 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/tested/{testName}/")
 	public String testedUnitTest(@PathVariable("testName") String testName,
 			Model model) {
-		manager.getUnitTest(testName).setTested(true);
-		manager.saveUnitTest(manager.getUnitTest(testName));
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.getUnitTest(testName).setTested(true);
+			manager.saveUnitTest(manager.getUnitTest(testName));
+		}
 		return "redirect:../../" + testName + "/";
 	}
 
@@ -266,20 +375,26 @@ public class SubmissionController {
 	public String home(
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			BindingResult result, Model model) {
-
-		// check if the name is unique
-		Collection<UnitTest> allUnitTests = manager.getUnitTestList();
-
-		for (UnitTest test : allUnitTests) {
-			if (test.getName().toLowerCase().replace(" ", "")
-					.equals(form.getTestName().toLowerCase().replace(" ", ""))) {
-				result.reject("UnitTest.New.NameNotUnique");
-			}
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
 		}
 
-		// add it.
-		if (!result.hasErrors()) {
-			manager.addUnitTest(form);
+		if(getUser().isInstructor()){
+	
+			// check if the name is unique
+			Collection<UnitTest> allUnitTests = manager.getUnitTestList();
+	
+			for (UnitTest test : allUnitTests) {
+				if (test.getName().toLowerCase().replace(" ", "")
+						.equals(form.getTestName().toLowerCase().replace(" ", ""))) {
+					result.reject("UnitTest.New.NameNotUnique");
+				}
+			}
+	
+			// add it.
+			if (!result.hasErrors()) {
+				manager.addUnitTest(form);
+			}
 		}
 
 		return "redirect:.";
@@ -346,12 +461,8 @@ public class SubmissionController {
 	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre(Model model) {
 		
-		PASTAUser user = getOrCreateUser();
-		if(user == null){
-			return "redirect:/login/";
-		}
-		if(!user.isTutor()){
-			return "redirect:/home/";
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect/home/.";
 		}
 
 		model.addAttribute("assessmentList", manager.getAssessmentList());

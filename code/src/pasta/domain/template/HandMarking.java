@@ -1,87 +1,67 @@
 package pasta.domain.template;
 
-import java.util.Arrays;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.collections.FactoryUtils;
+import org.apache.commons.collections.list.LazyList;
+import org.apache.commons.collections.map.LazyMap;
 
 public class HandMarking {
 
 	private String name;
-	private String description;
-	private double marks;
-	private Date dueDate;
-	private int numSubmissionsAllowed;
-	private String[] columns;
-	private String[] rows;
-	private Double[] weights;
-	private ArrayList<ArrayList<String[]>> data;
-	
-	public double getMarks(){
-		return marks;
-	}
+	private List<Tuple> columnHeader = LazyList.decorate(new ArrayList<Tuple>(),
+			FactoryUtils.instantiateFactory(Tuple.class));;
+	private List<Tuple> rowHeader = LazyList.decorate(new ArrayList<Tuple>(),
+			FactoryUtils.instantiateFactory(Tuple.class));
+	private Map<String, HashMap<String, String>> data = LazyMap.decorate(new HashMap<String, HashMap<String, String>>(), 
+			FactoryUtils.instantiateFactory(HashMap.class));
 
 	public String getName() {
 		return name;
-	}
-	public String getDescription() {
-		return description;
 	}
 	
 	public String getShortName() {
 		return name.replace(" ", "");
 	}
 
-	public void setColumns(String[] c) {
-		this.columns = c;
-	}
-	public String[] getColumns() {
-		return columns;
-	}
-	public void setRows(String[] r) {
-		this.rows = r;
-	}
-	public String[] getRows() {
-		return rows;
-	}
-	public void setWeights(Double[] d) {
-		this.weights = d;
-	}
-	public Double[] getWeights() {
-		return weights;
-	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public void setDescription(String description) {
-		this.description = description;
+
+	public List<Tuple> getColumnHeader() {
+		return columnHeader;
 	}
 
-	public void setMarks(double marks) {
-		this.marks = marks;
+	public void setColumnHeader(List<Tuple> columnHeader) {
+		this.columnHeader.clear();
+		for(Tuple column: columnHeader){
+			this.columnHeader.add(column);
+		}
 	}
 
-	public Date getDueDate() {
-		return dueDate;
-	}
-	public void setData(ArrayList<ArrayList<String[]>> data) {
-		this.data = data;
+	public List<Tuple> getRowHeader() {
+		return rowHeader;
 	}
 
-	public ArrayList<ArrayList<String[]>> getData() {
+	public void setRowHeader(List<Tuple> rowHeader) {
+		this.rowHeader.clear();
+		for(Tuple row: rowHeader){
+			this.rowHeader.add(row);
+		}
+	}
+
+	public Map<String, HashMap<String, String>> getData() {
 		return data;
 	}
 
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public int getNumSubmissionsAllowed() {
-		return numSubmissionsAllowed;
-	}
-
-	public void setNumSubmissionsAllowed(int numSubmissionsAllowed) {
-		this.numSubmissionsAllowed = numSubmissionsAllowed;
+	public void setData(HashMap<String, HashMap<String, String>> data) {
+		this.data.clear();
+		for(Entry<String, HashMap<String, String>> dataEntry: data.entrySet()){
+			this.data.put(dataEntry.getKey(), dataEntry.getValue());
+		}
 	}
 }
