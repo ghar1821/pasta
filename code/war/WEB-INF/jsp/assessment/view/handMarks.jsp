@@ -10,25 +10,25 @@
 <form:form commandName="handMarking" enctype="multipart/form-data" method="POST">
 	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 
-	<table id="handMarkingTable">
+	<table id="handMarkingTable" class="draggable">
 		<thead>
 			<tr>
 				<td></td> <!-- empty on purpose -->
 				<c:forEach items="${handMarking.columnHeader}" varStatus="columnStatus">
 					<th>
 						<div class="button" style="float:right" onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()">X</div>
-						<form:input type="text" path="columnHeader[${columnStatus.index}].name"/></br>
+						<form:input type="text" path="columnHeader[${columnStatus.index}].name" onkeyup="updateCells()"/></br>
 						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
 					</th>
 				</c:forEach>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="sortable">
 			<c:forEach var="row" items="${handMarking.rowHeader}" varStatus="rowStatus">
 				<tr>
 					<th>
 						<div class="button" style="float:right" onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()">X</div>
-						<form:input type="text" path="rowHeader[${rowStatus.index}].name"/></br>
+						<form:input type="text" path="rowHeader[${rowStatus.index}].name" onkeyup="updateCells()"/></br>
 						<form:input type="text" path="rowHeader[${rowStatus.index}].weight"/>
 					</th>
 					<c:forEach var="column" items="${handMarking.columnHeader}">
@@ -114,5 +114,31 @@
 			currHeader[1].name="rowHeader["+(i-1)+"].weight";
 		}
 	}
+	
+	function updateCells(){
+		var table=document.getElementById("handMarkingTable");
+		for (var i=1; i<table.rows.length; i++) {
+			var rowHeader = table.rows[i].cells[0].getElementsByTagName("input")[0].value;
+			for (var j=1; j<table.rows[i].cells.length; j++) {
+				var columnHeader = table.rows[0].cells[j].getElementsByTagName("input")[0].value;
+				var currCell = table.rows[i].cells[j].getElementsByTagName("textarea")[0];
+				currCell.id="data'"+columnHeader+"''"+rowHeader+"'";
+				currCell.name="data['"+columnHeader+"']['"+rowHeader+"']";
+			}
+		}
+	}
+    $(function() {
+		$( "tbody.sortable" ).sortable({
+	        connectWith: "tbody",
+	        dropOnEmpty: true,
+	        
+	        stop: function(event, ui){
+	        	updateCells();
+	        }
+	    });
+	    $( "table").disableSelection();
+	    
+    });
+    
 	
 </script>
