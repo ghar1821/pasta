@@ -14,7 +14,7 @@
 		<th>Marks</th>
 		<th># Submissions Allowed</th>
 		<th>Tests</th>
-		<th>Delete</th>
+		<!-- <th>Delete</th>   deprecated delete?-->
 		<th>Release</th>
 	</tr>
 	<c:forEach var="assessment" items="${allAssessments}">
@@ -30,12 +30,13 @@
 					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
 				</c:if>
 			</td>
-			<td><a href="./${assessment.shortName}/">${assessment.name}</a></td>
+			<td><a href="./${assessment.shortName}/">${assessment.name}</a>
+			<smallbutton id="delete" style="margin-left:-.1em; position:relative; top:-.7em" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>
 			<td>${assessment.dueDate}</td><td>${assessment.marks}</td>
 			<td>${assessment.numSubmissionsAllowed > 0 ? assessment.numSubmissionsAllowed : '&infin;'}</td>
 			<td>${fn:length(assessment.unitTests)}u, ${fn:length(assessment.secretUnitTests)}su, TODO hm, TODOc</td>
-			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
-			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">-></button></td>
+			<!--<td><smallbutton id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>-->
+			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();"><span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span></button></td>
 		</tr>
 	</c:forEach>
 </table> 

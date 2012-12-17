@@ -22,6 +22,20 @@ div .pastaUnitTestBoxResult {
 div .pastaUnitTestBoxResultpass {
 	background-color: #0C0;
 }
+smallbutton,#submit,.button {
+	cursor: pointer;
+	clear: both;
+	border: 1px solid #DBD3C2;
+	font-weight: bold;
+	background-color: #CE1126;
+	line-height: 1em;
+	color: white;
+	padding: 0px 2px;
+}
+smallbutton:hover,#submit:hover,.button:hover {
+	border-color: #DBD3C2;
+	background-color: #12416C;
+}
 
 button,#submit,.button {
 	cursor: pointer;
@@ -266,7 +280,7 @@ label.susk-radio {
 	width: auto;
 	line-height: 16px;
 }
-
+*/
 .susk-form input,.susk-form textarea,.susk-form select {
 	padding: 4px 2px;
 	border: solid 1px #DDDDDD;

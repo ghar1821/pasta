@@ -7,13 +7,14 @@
 <h1> Unit Tests</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Tested</th><th><h1>Delete</h1></th></tr>
+	<tr><th>Name</th><th>Tested</th><!-- <th><h1>Delete</h1></th> --></tr>
 	<c:forEach var="unitTest" items="${allUnitTests}">
 		<tr>
-			<td><a href="./${unitTest.shortName}/">${unitTest.name}</a></td>
+			<td><a href="./${unitTest.shortName}/">${unitTest.name}</a>
+			<smallbutton id="delete" style="margin-left:-.1em; position:relative; top:-.7em" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>
 			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
-			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
-		</tr>
+			<!-- <td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
+		--></tr>
 	</c:forEach>
 </table>
 
