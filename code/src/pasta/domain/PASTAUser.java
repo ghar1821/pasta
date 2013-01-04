@@ -62,4 +62,13 @@ public class PASTAUser implements Serializable{
 	public boolean isInstructor(){
 		return permissionLevel == UserPermissionLevel.INSTRUCTOR; 
 	}
+	
+	@Transient
+	public String[] getTutorClasses(){
+		if ((permissionLevel == UserPermissionLevel.TUTOR)  
+				|| permissionLevel == UserPermissionLevel.INSTRUCTOR){
+			return tutorial.split(",");
+		}
+		return new String[0];
+	}
 }

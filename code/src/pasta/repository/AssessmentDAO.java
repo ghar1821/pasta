@@ -31,6 +31,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewHandMarking;
 import pasta.util.ProjectProperties;
@@ -261,6 +262,7 @@ public class AssessmentDAO {
 			}
 			currentAssessment.setDescription(description);
 
+			// add unit tests
 			NodeList unitTestList = doc.getElementsByTagName("unitTest");
 			if (unitTestList != null && unitTestList.getLength() > 0) {
 				for (int i = 0; i < unitTestList.getLength(); i++) {
@@ -285,8 +287,25 @@ public class AssessmentDAO {
 				}
 			}
 
-			// TODO add hand marking
+			// add hand marking
+			NodeList handMarkingList = doc.getElementsByTagName("handMarks");
+			if (handMarkingList != null && handMarkingList.getLength() > 0) {
+				for (int i = 0; i < handMarkingList.getLength(); i++) {
+					Node handMarkingNode = handMarkingList.item(i);
+					if (handMarkingNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element handMarkingElement = (Element) handMarkingNode;
 
+						WeightedHandMarking weightedHandMarking = new WeightedHandMarking();
+						weightedHandMarking.setHandMarking(allHandMarking.get(handMarkingElement
+								.getAttribute("name")));
+						weightedHandMarking.setWeight(Double
+								.parseDouble(handMarkingElement
+										.getAttribute("weight")));
+						currentAssessment.addHandMarking(weightedHandMarking);
+					}
+				}
+			}
+			
 			// TODO add competitions
 
 			return currentAssessment;

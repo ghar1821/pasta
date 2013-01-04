@@ -32,6 +32,7 @@ import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
@@ -378,6 +379,11 @@ public class SubmissionManager {
 	public Collection<Assessment> getAssessmentList() {
 		return assDao.getAssessmentList();
 	}
+	
+	// new
+	public Collection<HandMarking> getHandMarkingList() {
+		return assDao.getAllHandMarking();
+	}
 
 	// new
 	public HandMarking getHandMarking(String handMarkingName) {
@@ -571,6 +577,14 @@ public class SubmissionManager {
 			for (WeightedUnitTest test : assessmentToAdd.getSecretUnitTests()) {
 				if (getUnitTest(test.getUnitTestName().replace(" ", "")) != null) {
 					test.setTest(getUnitTest(test.getUnitTestName().replace(
+							" ", "")));
+				}
+			}
+			
+			// hand marking
+			for (WeightedHandMarking test : assessmentToAdd.getHandMarking()) {
+				if (getHandMarking(test.getHandMarkingName().replace(" ", "")) != null) {
+					test.setHandMarking(getHandMarking(test.getHandMarkingName().replace(
 							" ", "")));
 				}
 			}

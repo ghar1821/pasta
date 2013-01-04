@@ -24,27 +24,35 @@ ${assessment.description}
 				</div>
 			</c:when>
 			<c:otherwise>
-				<c:forEach var="allUnitTests" items="${result.unitTests}">
-					<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-						<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+				<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+					<c:forEach var="allUnitTests" items="${result.unitTests}">
+						<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+							<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+						</c:forEach>
 					</c:forEach>
-				</c:forEach>
+				</c:if>
 				<div style="width:100%; text-align:right;">
-					<c:if test="${not empty result.unitTests}">
+					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
 					</c:if>
 					<c:if test="${ unikey.tutor }" >
 						<!-- tutor abilities -->
-						<!-- edit marking if already marked -->
-						<c:choose>
-							<c:when test="${ empty result.handMarkingResult }">
-								<button>Mark attempt</button>
-							</c:when>
-							<c:otherwise>
-								<button>Edit attempt marks</button>
-							</c:otherwise>
-						</c:choose>
-						<button >Re-run attempt</button>
+						<!-- if assessment has hand marking -->
+						<c:if test="${not empty result.assessment.handMarking}">
+							<!-- edit marking if already marked -->
+							<c:choose>
+								<c:when test="${ empty result.handMarkingResult }">
+									<button>Mark attempt</button>
+								</c:when>
+								<c:otherwise>
+									<button>Edit attempt marks</button>
+								</c:otherwise>
+							</c:choose>
+						</c:if>
+						<!-- if the assessment contains unit tests -->
+						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+							<button >Re-run attempt</button>
+						</c:if>
 					</c:if>
 				</div>
 				<div id="${resultStatus.index}" style="display:none">

@@ -16,6 +16,8 @@ public class Assessment {
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
+			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -48,6 +50,14 @@ public class Assessment {
 	public void removeSecretUnitTest(WeightedUnitTest test) {
 		secretUnitTests.remove(test);
 	}
+	
+	public void addHandMarking(WeightedHandMarking test) {
+		handMarking.add(test);
+	}
+
+	public void removeHandMarking(WeightedHandMarking test) {
+		handMarking.remove(test);
+	}
 
 	public double getMarks() {
 		return marks;
@@ -69,6 +79,15 @@ public class Assessment {
 	public void setSecretUnitTests(ArrayList<WeightedUnitTest> secretUnitTests) {
 		this.secretUnitTests.clear();
 		this.secretUnitTests.addAll(secretUnitTests);
+	}
+	
+	public List<WeightedHandMarking> getHandMarking() {
+		return handMarking;
+	}
+
+	public void setHandMarking(ArrayList<WeightedHandMarking> handMarking) {
+		this.handMarking.clear();
+		this.handMarking.addAll(handMarking);
 	}
 
 	public String getName() {
@@ -153,6 +172,14 @@ public class Assessment {
 		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	}
+	
+	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
+	}
+
+	public List<WeightedHandMarking> getHandGarbage() {
+		return LazyList.decorate(new ArrayList<WeightedHandMarking>(),
+				FactoryUtils.instantiateFactory(WeightedHandMarking.class));
+	}
 
 	public String toString() {
 		String output = "";
@@ -177,7 +204,15 @@ public class Assessment {
 			}
 			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
 		}
-		// TODO handMarks
+		// handMarks
+		if (handMarking.size() > 0) {
+			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
+			for (WeightedHandMarking handMarks : handMarking) {
+				output += "\t\t<handMarks name=\"" + handMarks.getHandMarking().getShortName() + "\" weight=\""
+						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
+			}
+			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
+		}
 		// TODO all competitions
 		output += "</assessment>" + System.getProperty("line.separator");
 		return output;

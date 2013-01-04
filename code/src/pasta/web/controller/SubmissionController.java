@@ -23,6 +23,7 @@ import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
@@ -92,6 +93,7 @@ public class SubmissionController {
 	public PASTAUser getOrCreateUser() {
 		String username = (String) RequestContextHolder.currentRequestAttributes()
 				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+//		username = "arad0726";
 		if(username != null){
 			return manager.getOrCreateUser(username);
 		}
@@ -101,6 +103,7 @@ public class SubmissionController {
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder.currentRequestAttributes()
 				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+		username = "arad0726";
 		if(username != null){
 			return manager.getUser(username);
 		}
@@ -168,8 +171,28 @@ public class SubmissionController {
 				otherUnitTetsts.add(weigthedTest);
 			}
 		}
+		
+		List<WeightedHandMarking> otherHandMarking = new ArrayList<WeightedHandMarking>();
+
+		for (HandMarking test : manager.getHandMarkingList()) {
+			boolean contains = false;
+			for (WeightedHandMarking weightedHandMarking : currAssessment.getHandMarking()) {
+				if (weightedHandMarking.getHandMarking() == test) {
+					contains = true;
+					break;
+				}
+			}
+
+			if (!contains) {
+				WeightedHandMarking weigthedHM = new WeightedHandMarking();
+				weigthedHM.setHandMarking(test);
+				weigthedHM.setWeight(0);
+				otherHandMarking.add(weigthedHM);
+			}
+		}
 
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
+		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/assessment";
 	}
@@ -407,12 +430,17 @@ public class SubmissionController {
 	// home page
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
-		// check if tutor or student TODO
+		// check if tutor or student
 		PASTAUser user = getOrCreateUser();
 		if (user != null) {
 			model.addAttribute("unikey", user);
 			model.addAttribute("results", manager.getStudentResults(user.getUsername()));
-			return "user/studentHome";
+			if(user.isTutor()){
+				return "user/tutorHome";
+			}
+			else{
+				return "user/studentHome";
+			}
 		}
 		return "redirect:/login/";
 	}
