@@ -8,6 +8,7 @@ import pasta.domain.template.Assessment;
 
 public class AssessmentResult {
 	private ArrayList<UnitTestResult> unitTests;
+	private HandMarkingResult handMarkingResult;
 	private Assessment assessment;
 	private int submissionsMade;
 	private Date submissionDate;
@@ -42,6 +43,14 @@ public class AssessmentResult {
 
 	public void setSubmissionDate(Date submissionDate) {
 		this.submissionDate = submissionDate;
+	}
+	
+	public HandMarkingResult getHandMarkingResult() {
+		return handMarkingResult;
+	}
+
+	public void setHandMarkingResult(HandMarkingResult handMarkingResult) {
+		this.handMarkingResult = handMarkingResult;
 	}
 
 	public void addUnitTest(UnitTestResult test){

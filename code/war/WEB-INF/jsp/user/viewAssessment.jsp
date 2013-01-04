@@ -29,24 +29,41 @@ ${assessment.description}
 						<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 					</c:forEach>
 				</c:forEach>
-				<c:if test="${not empty result.unitTests}">
-					<button style="float:right" onclick='$("#${resultStatus.index}").toggle("fast")'>Details</button>
-				</c:if>
-				<table id="${resultStatus.index}" class="pastaTable" style="display:none">
-					<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-					<c:forEach var="allUnitTests" items="${result.unitTests}">
-						<c:forEach var="testCase" items="${allUnitTests.testCases}">
-							<tr>
-								<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-								<td style="text-align:left;">${testCase.testName}</td>
-								<td>${testCase.time}</td>
-								<td>
-									<pre>${testCase.type} - ${testCase.testMessage}</pre>
-								</td>
-							</tr>
+				<div style="width:100%; text-align:right;">
+					<c:if test="${not empty result.unitTests}">
+						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
+					</c:if>
+					<c:if test="${ unikey.tutor }" >
+						<!-- tutor abilities -->
+						<!-- edit marking if already marked -->
+						<c:choose>
+							<c:when test="${ empty result.handMarkingResult }">
+								<button>Mark attempt</button>
+							</c:when>
+							<c:otherwise>
+								<button>Edit attempt marks</button>
+							</c:otherwise>
+						</c:choose>
+						<button >Re-run attempt</button>
+					</c:if>
+				</div>
+				<div id="${resultStatus.index}" style="display:none">
+					<table class="pastaTable" >
+						<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+						<c:forEach var="allUnitTests" items="${result.unitTests}">
+							<c:forEach var="testCase" items="${allUnitTests.testCases}">
+								<tr>
+									<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+									<td style="text-align:left;">${testCase.testName}</td>
+									<td>${testCase.time}</td>
+									<td>
+										<pre>${testCase.type} - ${testCase.testMessage}</pre>
+									</td>
+								</tr>
+							</c:forEach>
 						</c:forEach>
-					</c:forEach>
-				</table>
+					</table>
+				</div>
 			</c:otherwise>
 		</c:choose>
 	</c:forEach>

@@ -11,6 +11,45 @@ pre {
 	display: none;
 }
 
+.dragtable-drag-handle{
+	cursor: move;
+}
+
+/*
+ * gets wrapped around placeholder table
+ */
+  
+.dragtable-drag-wrapper{
+	position: absolute;
+    z-index: 1000;
+} 
+ /*
+  * this gets applied to the table copy of the col that we are dragging 
+  */ 
+.dragtable-drag-wrapper .dragtable-drag-col{
+    opacity: 0.7;
+    filter: alpha(opacity=70);
+    cursor:move;
+}
+
+/*
+	placeholder is just a name for the real table col
+*/
+.dragtable-col-placeholder { 
+    color:#FFFFFF;
+    background: #FFFFFF !important; 
+    visibility: visible !important;
+}
+table .dragtable-col-placeholder:first{
+	border-top:1px dotted black;
+}
+
+
+.dragtable-col-placeholder * { 
+    opacity: 0.0; 
+    visibility: hidden; 
+}
+
 div .pastaUnitTestBoxResult {
 	width: 1em;
 	height: 2em;

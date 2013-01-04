@@ -28,7 +28,7 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.snippet.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/dragtable.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dragtable.js" htmlEscape="true" />"></script>
 		
 		<decorator:head />
 		

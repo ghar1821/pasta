@@ -10,14 +10,15 @@
 <form:form commandName="handMarking" enctype="multipart/form-data" method="POST">
 	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 
-	<table id="handMarkingTable" class="draggable">
+	<table id="handMarkingTable">
 		<thead>
 			<tr>
-				<td></td> <!-- empty on purpose -->
+				<th class="notdraggable dragtable-drag-boundary"></th> <!-- empty on purpose -->
 				<c:forEach items="${handMarking.columnHeader}" varStatus="columnStatus">
 					<th>
+						<div class="dragtable-drag-handle" style="width:100%; height: 30px; background-color:gray;"></div>
 						<div class="button" style="float:right" onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()">X</div>
-						<form:input type="text" path="columnHeader[${columnStatus.index}].name" onkeyup="updateCells()"/></br>
+						<form:input style="z-index:9000" type="text" path="columnHeader[${columnStatus.index}].name" onkeyup="updateCells()"/></br>
 						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
 					</th>
 				</c:forEach>
@@ -32,7 +33,7 @@
 						<form:input type="text" path="rowHeader[${rowStatus.index}].weight"/>
 					</th>
 					<c:forEach var="column" items="${handMarking.columnHeader}">
-						<td><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" />
+						<td><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
 							</br>
 							<form:textarea style="height:90%; width:95%" path="data['${column.name}']['${row.name}']"/></br>
 						</td>
@@ -126,7 +127,7 @@
 				currCell.name="data['"+columnHeader+"']['"+rowHeader+"']";
 			}
 		}
-	}
+	}	
     $(function() {
 		$( "tbody.sortable" ).sortable({
 	        connectWith: "tbody",
@@ -136,8 +137,16 @@
 	        	updateCells();
 	        }
 	    });
-	    $( "table").disableSelection();
+	    //$( "table").disableSelection();
+	    $('table').dragtable({
+			items: 'thead th:not( .notdraggable ):not( :has( .dragtable-drag-handle ) ), .dragtable-drag-handle',
+			stop:function(e,ui){
+				updateColumns();
+			},
+			cancel: 'input'
+		});
 	    
+
     });
     
 	
