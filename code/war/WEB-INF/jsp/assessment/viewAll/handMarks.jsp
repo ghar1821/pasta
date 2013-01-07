@@ -7,12 +7,13 @@
 <h1>Hand Marking Templates</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Delete</th></tr>
+	<tr><th>Name</th><!--<th>Delete</th>--></tr>
 	<c:forEach var="handMarking" items="${allHandMarking}">
 		<tr>
-			<td><a href="./${handMarking.shortName}/">${handMarking.name}</a></td>
-			<td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${handMarking.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
-		</tr>
+			<td><a href="./${handMarking.shortName}/">${handMarking.name}</a>
+			<smallbutton id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton>--></td>
+			<!-- <td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${handMarking.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
+		--></tr>
 	</c:forEach>
 </table>
 
