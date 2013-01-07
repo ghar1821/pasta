@@ -122,7 +122,7 @@ public class SubmissionController {
 			BindingResult result, Model model) {
 
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			form.setName(assessmentName);
@@ -137,7 +137,7 @@ public class SubmissionController {
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		
 		Assessment currAssessment = manager.getAssessment(assessmentName);
@@ -201,7 +201,7 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		
 		model.addAttribute("allAssessments", manager.getAssessmentList());
@@ -216,7 +216,7 @@ public class SubmissionController {
 			BindingResult result, Model model) {
 
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			if (form.getName() == null || form.getName().isEmpty()) {
@@ -233,7 +233,7 @@ public class SubmissionController {
 	public String releaseAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			if (manager.getAssessment(assessmentName) != null) {
@@ -248,7 +248,7 @@ public class SubmissionController {
 	public String deleteAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			manager.removeAssessment(assessmentName);
@@ -265,7 +265,7 @@ public class SubmissionController {
 	public String viewHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		model.addAttribute("handMarking", manager.getHandMarking(handMarkingName));
@@ -278,7 +278,7 @@ public class SubmissionController {
 	public String updateHandMarking(@ModelAttribute(value = "handMarking") HandMarking form,
 			BindingResult result, @PathVariable("handMarkingName") String handMarkingName, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			form.setName(handMarkingName);
@@ -291,7 +291,7 @@ public class SubmissionController {
 	@RequestMapping(value = "handMarking/")
 	public String viewAllHandMarking( Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		
 		model.addAttribute("allHandMarking", manager.getAllHandMarking());
@@ -304,7 +304,7 @@ public class SubmissionController {
 	public String newHandMarking(@ModelAttribute(value = "newHandMarkingModel") NewHandMarking form,
 			BindingResult result, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		
 		// add it to the system
@@ -324,7 +324,7 @@ public class SubmissionController {
 	public String viewUnitTest(@PathVariable("testName") String testName,
 			Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		model.addAttribute("unitTest", manager.getUnitTest(testName));
@@ -342,7 +342,7 @@ public class SubmissionController {
 			@ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		// if submission exists
@@ -358,7 +358,7 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/")
 	public String viewUnitTest(Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
@@ -371,7 +371,7 @@ public class SubmissionController {
 	public String deleteUnitTest(@PathVariable("testName") String testName,
 			Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			manager.removeUnitTest(testName);
@@ -384,7 +384,7 @@ public class SubmissionController {
 	public String testedUnitTest(@PathVariable("testName") String testName,
 			Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 		if(getUser().isInstructor()){
 			manager.getUnitTest(testName).setTested(true);
@@ -399,7 +399,7 @@ public class SubmissionController {
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			BindingResult result, Model model) {
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		if(getUser().isInstructor()){
@@ -490,7 +490,7 @@ public class SubmissionController {
 	public String viewGradeCentre(Model model) {
 		
 		if(getUser() == null || !getUser().isTutor()){
-			return "redirect/home/.";
+			return "redirect:/home/.";
 		}
 
 		model.addAttribute("assessmentList", manager.getAssessmentList());
