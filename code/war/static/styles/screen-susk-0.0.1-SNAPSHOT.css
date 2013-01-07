@@ -61,6 +61,10 @@ div .pastaUnitTestBoxResult {
 div .pastaUnitTestBoxResultpass {
 	background-color: #0C0;
 }
+
+div .pastaUnitTestBoxResultfailure, div .pastaUnitTestBoxResulterror {
+	background-color: red;
+}
 smallbutton,#submit,.button {
 	cursor: pointer;
 	clear: both;
