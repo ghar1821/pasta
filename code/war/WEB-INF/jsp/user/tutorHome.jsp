@@ -7,7 +7,7 @@
 
 <h2>My Classes</h2>
 <c:forEach var="class" items="${unikey.tutorClasses}">
-	<a>${class}</a></br>
+	<a href="../tutorial/${class}/">${class}</a></br>
 </c:forEach>
 <button>Change My Classes</button>
 

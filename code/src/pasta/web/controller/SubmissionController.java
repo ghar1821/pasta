@@ -562,6 +562,42 @@ public class SubmissionController {
 		return "redirect:"+ referer;
 	}
 	
+	// home page
+	@RequestMapping(value = "tutorial/{className}/")
+	public String viewClass(@PathVariable("className") String className,
+			Model model) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				model.addAttribute("unikey", user);
+				return "compound/classHome";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
+	}
+	
+	// home page
+	@RequestMapping(value = "stream/{streamName}/")
+	public String viewStream(@PathVariable("streamName") String streamName,
+			Model model) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				model.addAttribute("unikey", user);
+				return "compound/classHome";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
