@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -662,5 +663,16 @@ public class SubmissionManager {
 
 	public void newHandMarking(NewHandMarking newMarking){
 		assDao.newHandMarking(newMarking);
+	}
+	
+	public void runAssessment(String username, String assessmentName, String assessmentDate){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+		try {
+			scheduler.save(new Job(username, assessmentName, sdf.parse(assessmentDate)));
+		} catch (ParseException e) {
+			logger.error("Unable to re-run assessment "
+					+ assessmentName + " for " + username
+					+ System.getProperty("line.separator") + e);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package pasta.domain.result;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -39,6 +40,11 @@ public class AssessmentResult {
 
 	public Date getSubmissionDate() {
 		return submissionDate;
+	}
+	
+	public String getFormattedSubmissionDate(){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+		return sdf.format(submissionDate);
 	}
 
 	public void setSubmissionDate(Date submissionDate) {

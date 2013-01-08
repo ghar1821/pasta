@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -542,6 +544,22 @@ public class SubmissionController {
 		model.addAttribute("viewedUser", manager.getUser(username));
 
 		return "user/viewAssessment";
+	}
+	
+	// re-run assessment
+	@RequestMapping(value = "runAssessment/{username}/{assessmentName}/{assessmentDate}/")
+	public String runAssessment(@PathVariable("username") String username, 
+			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentDate") String assessmentDate,
+			Model model, HttpServletRequest request) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return "redirect:/login/";
+		}
+		manager.runAssessment(username, assessmentName, assessmentDate);
+		String referer = request.getHeader("Referer");
+		return "redirect:"+ referer;
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////

@@ -56,7 +56,14 @@ ${assessment.description}
 						</c:if>
 						<!-- if the assessment contains unit tests -->
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<button >Re-run attempt</button>
+							<c:choose>
+								<c:when test="${not empty viewedUser}">	
+									<button onClick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								</c:when>
+								<c:otherwise>
+									<button onClick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								</c:otherwise>
+							</c:choose>
 						</c:if>
 					</c:if>
 				</div>

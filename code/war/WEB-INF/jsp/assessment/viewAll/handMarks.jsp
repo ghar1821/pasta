@@ -11,9 +11,9 @@
 	<c:forEach var="handMarking" items="${allHandMarking}">
 		<tr>
 			<td><a href="./${handMarking.shortName}/">${handMarking.name}</a>
-			<smallbutton id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton>--></td>
-			<!-- <td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${handMarking.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
-		--></tr>
+			<smallbutton id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>
+			<!-- <td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${handMarking.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>-->
+		</tr>
 	</c:forEach>
 </table>
 

@@ -46,10 +46,6 @@ pre {
     background: #FFFFFF !important; 
     visibility: visible !important;
 }
-table .dragtable-col-placeholder:first{
-	border-top:1px dotted black;
-}
-
 
 .dragtable-col-placeholder * { 
     opacity: 0.0; 
