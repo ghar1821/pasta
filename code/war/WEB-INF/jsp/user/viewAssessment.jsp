@@ -3,7 +3,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<h1>${assessment.name}</h1>
+<h1>
+	<c:if test="${not empty viewedUser}">
+		${viewedUser.username} -
+	</c:if>
+	${assessment.name}
+</h1>
 
 <h3>Due: ${assessment.dueDate}</h3>
 <h3>Worth: ${assessment.marks} marks</h3>

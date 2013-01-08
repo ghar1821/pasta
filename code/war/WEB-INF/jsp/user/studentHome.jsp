@@ -3,7 +3,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<h1>${unikey.username}</h1>
+<c:choose>
+	<c:when test="${ not empty viewedUser}">
+		<h1>${viewedUser.username}</h1>
+	</c:when>
+	<c:otherwise>
+		<h1>${unikey.username}</h1>
+	</c:otherwise>
+</c:choose>
 
 <table class="pastaQuickFeedback">
 	<c:forEach var="result" items="${results}">

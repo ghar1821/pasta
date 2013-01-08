@@ -22,7 +22,13 @@ pre {
 .dragtable-drag-wrapper{
 	position: absolute;
     z-index: 1000;
-} 
+}
+
+.gradeCentreMark{
+	background-color: #0C0 !important; 
+	color: black;
+}
+
  /*
   * this gets applied to the table copy of the col that we are dragging 
   */ 

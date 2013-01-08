@@ -103,13 +103,12 @@ public class SubmissionController {
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder.currentRequestAttributes()
 				.getAttribute("user", RequestAttributes.SCOPE_SESSION);
-		username = "arad0726";
 		if(username != null){
 			return manager.getUser(username);
 		}
 		return null;
 	}
-
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// ASSESSMENTS //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -478,6 +477,69 @@ public class SubmissionController {
 		model.addAttribute("assessment", manager.getAssessment(assessmentName));
 		model.addAttribute("history", manager.getAssessmentHistory(user.getUsername(), assessmentName));
 		model.addAttribute("unikey", getOrCreateUser());
+
+		return "user/viewAssessment";
+	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// VIEW //
+	// ///////////////////////////////////////////////////////////////////////////
+	
+	// home page
+	@RequestMapping(value = "student/{username}/home/")
+	public String viewStudent(@PathVariable("username") String username,
+			Model model) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				PASTAUser viewedUser = manager.getOrCreateUser(username);
+				model.addAttribute("unikey", user);
+				model.addAttribute("viewedUser", viewedUser);
+				model.addAttribute("results", manager.getStudentResults(viewedUser.getUsername()));
+				return "user/studentHome";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
+	}
+	
+	// home page
+	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
+	public String submitAssessment(@PathVariable("username") String username,
+			@ModelAttribute(value = "submission") Submission form,
+			BindingResult result, Model model) {
+		// check if the submission is valid
+		if (form.getFile() == null || form.getFile().isEmpty()) {
+			result.reject("Submission.NoFile");
+		}
+		
+		if (manager.getAssessment(form.getAssessment()).isClosed()){
+			result.reject("Submission.AfterClosingDate");
+		}
+		// accept the submission
+		logger.info(form.getAssessment() + " submitted for " + username
+				+ " by " + getOrCreateUser().getUsername());
+		manager.submit(username, form);
+
+		return "redirect:.";
+	}
+	
+	// history
+	@RequestMapping(value = "student/{username}/info/{assessmentName}/")
+	public String viewAssessmentInfo(@PathVariable("username") String username, 
+			@PathVariable("assessmentName") String assessmentName, Model model) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return"redirect:/login/";
+		}
+		model.addAttribute("assessment", manager.getAssessment(assessmentName));
+		model.addAttribute("history", manager.getAssessmentHistory(username, assessmentName));
+		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("viewedUser", manager.getUser(username));
 
 		return "user/viewAssessment";
 	}

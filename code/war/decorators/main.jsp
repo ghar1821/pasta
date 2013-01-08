@@ -13,6 +13,7 @@
 		<meta http-equiv="Content-Language" content="en" />
 		<meta name="Author" content="Alex Radu" />
 		<title><spring:message code="UOS" /> </title>
+		
 		<link href="<spring:url value="/static/styles/screen-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />

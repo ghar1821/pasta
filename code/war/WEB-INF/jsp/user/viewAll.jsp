@@ -4,6 +4,16 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<style type="text/css">
+.datacellone {
+	background-color: #CC9999; color: black;
+}
+.datacelltwo {
+	background-color: #9999CC; color: black;
+}
+</style>
+
+
 <table>
 	<tr>
 		<th>Username</th>
@@ -16,11 +26,13 @@
 	<c:forEach var="user" items="${userList}">
 		<c:if test="${not user.tutor}">
 			<tr>
-				<td>${user.username}</td>
-				<td>${user.stream}</td>
-				<td>${user.tutorial}</td>
+				<td><a href="../student/${user.username}/home/">${user.username}</a></td>
+				<td><a href="../stream/${user.stream}/">${user.stream}</a></td>
+				<td><a href="../tutorial/${user.tutorial}/">${user.tutorial}</a></td>
 				<c:forEach var="assessment" items="${assessmentList}">
-					<td>${latestResults[user.username][assessment.name].marks}</td>
+					<td class="gradeCentreMark">
+						<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
+					</td>
 				</c:forEach>
 			</tr>
 		</c:if>
