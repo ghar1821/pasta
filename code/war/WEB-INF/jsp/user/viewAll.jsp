@@ -4,17 +4,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<style type="text/css">
-.datacellone {
-	background-color: #CC9999; color: black;
-}
-.datacelltwo {
-	background-color: #9999CC; color: black;
-}
-</style>
-
-
-<table>
+<table id="gradeCentreTable" class="tablesorter">
 	<tr>
 		<th>Username</th>
 		<th>Stream</th>
@@ -26,11 +16,11 @@
 	<c:forEach var="user" items="${userList}">
 		<c:if test="${not user.tutor}">
 			<tr>
-				<td><a href="../student/${user.username}/home/">${user.username}</a></td>
-				<td><a href="../stream/${user.stream}/">${user.stream}</a></td>
-				<td><a href="../tutorial/${user.tutorial}/">${user.tutorial}</a></td>
+				<td href="../student/${user.username}/home/">${user.username}</td>
+				<td href="../stream/${user.stream}/">${user.stream}</td>
+				<td href="../tutorial/${user.tutorial}/">${user.tutorial}</td>
 				<c:forEach var="assessment" items="${assessmentList}">
-					<td class="gradeCentreMark">
+					<td class="gradeCentreMark"  href="../student/${user.username}/info/${assessment.name}/">
 						<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
 					</td>
 				</c:forEach>
@@ -38,3 +28,12 @@
 		</c:if>
 	</c:forEach>
 </table>
+
+<script>
+	$(document).ready(function() 
+	    { 
+	        $("table").tablesorter( {sortList: [[0,0], [1,0]]} );  
+	        alert("shit went down!!!!! :C");
+	    } 
+	); 
+</script>

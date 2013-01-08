@@ -200,7 +200,6 @@
             };
 
             function detectParserForColumn(table, rows, rowIndex, cellIndex) {
-				return parsers[1];
                 var l = parsers.length,
                     node = false,
                     nodeValue = false,
@@ -897,15 +896,6 @@
             var c = table.config;
             return $.tablesorter.isDigit(s, c);
         }, format: function (s) {
-			if(s == "???"){
-				return -1;
-			}
-			if(s == "DNC"){
-				return -2;
-			}
-			if(s == "N/A"){
-				return -3;
-			}
             return $.tablesorter.formatFloat(s);
         }, type: "numeric"
     });
