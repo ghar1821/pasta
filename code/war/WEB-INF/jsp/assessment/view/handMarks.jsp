@@ -18,7 +18,7 @@
 					<th>
 						<div class="dragtable-drag-handle" style="width:100%; height: 30px; background-color:gray;"></div>
 						<div class="button" style="float:right" onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()">X</div>
-						<form:input style="z-index:9000" type="text" path="columnHeader[${columnStatus.index}].name" onkeyup="updateCells()"/></br>
+						<form:input type="text" path="columnHeader[${columnStatus.index}].name" onkeyup="updateCells()"/></br>
 						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
 					</th>
 				</c:forEach>
@@ -56,7 +56,7 @@
 		for (var i=0; i<tblHeadObj.rows.length; i++) {
 			var newTH = document.createElement('th');
 			tblHeadObj.rows[i].appendChild(newTH);
-			newTH.innerHTML = '<input id="columnHeader'+(table.rows[0].cells.length-2)+'.name" name="columnHeader['+(table.rows[0].cells.length-2)+'].name" type="text" type="text" value=""/></br><input id="columnHeader'+(table.rows[0].cells.length-2)+'.weight" name="columnHeader['+(table.rows[0].cells.length-2)+'].weight" type="text" type="text" value=""/>'
+			newTH.innerHTML = '<div class="dragtable-drag-handle" style="width:100%; height: 30px; background-color:gray;"></div><div class="button" style="float:right" onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()">X</div><input id="columnHeader'+(table.rows[0].cells.length-2)+'.name" name="columnHeader['+(table.rows[0].cells.length-2)+'].name" type="text" type="text" value=""/></br><input id="columnHeader'+(table.rows[0].cells.length-2)+'.weight" name="columnHeader['+(table.rows[0].cells.length-2)+'].weight" type="text" type="text" value=""/>'
 		}
 
 		var tblBodyObj = document.getElementById("handMarkingTable").tBodies[0];
@@ -92,7 +92,7 @@
 		var newTH = document.createElement('th');
 		table.rows[table.rows.length-1].appendChild(newTH);
 		// -2 since the top corner should not be counter and length is 1 greater than index
-		newTH.innerHTML = '<div class="button" style="float:right" onclick="deleteRow('+(table.rows.length-2)+')">X</div><input id="rowHeader'+(table.rows.length-2)+'.name" name="rowHeader['+(table.rows.length-2)+'].name" type="text" type="text" value=""/></br><input id="rowHeader'+(table.rows.length-2)+'.weight" name="rowHeader['+(table.rows.length-2)+'].weight" type="text" type="text" value=""/>'
+		newTH.innerHTML = '<div class="button" style="float:right" onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()">X</div><input id="rowHeader'+(table.rows.length-2)+'.name" name="rowHeader['+(table.rows.length-2)+'].name" type="text" type="text" value=""/></br><input id="rowHeader'+(table.rows.length-2)+'.weight" name="rowHeader['+(table.rows.length-2)+'].weight" type="text" type="text" value=""/>'
 		for (var i=1; i<table.rows[0].cells.length; i++) {
 			var newCell = table.rows[table.rows.length-1].insertCell(i);
 			newCell.innerHTML = '???</br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br>'
@@ -113,6 +113,8 @@
 			
 			currHeader[1].id="rowHeader"+(i-1)+".weight";
 			currHeader[1].name="rowHeader["+(i-1)+"].weight";
+			
+			var currDelButton = table.rows[i].cells[0].getElementsByClassName("button");
 		}
 	}
 	

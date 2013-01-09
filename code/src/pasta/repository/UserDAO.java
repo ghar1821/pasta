@@ -1,6 +1,7 @@
 package pasta.repository;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,8 @@ import pasta.domain.PASTAUser;
 public class UserDAO extends HibernateDaoSupport{
 	
 	HashMap<String, PASTAUser> allUsers = null;
+	HashMap<String, Collection<PASTAUser>> usersByTutorial = null;
+	HashMap<String, Collection<PASTAUser>> usersByStream = null;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -56,6 +59,14 @@ public class UserDAO extends HibernateDaoSupport{
 		return allUsers.values();
 	}
 	
+	public Collection<PASTAUser> getUserListByTutorial(String tutorialName){
+		return usersByTutorial.get(tutorialName);
+	}
+	
+	public Collection<PASTAUser> getUserListByStream(String streamName){
+		return usersByStream.get(streamName);
+	}
+	
 	public void add(PASTAUser user){
 		allUsers.put(user.getUsername().toLowerCase(), user);
 		save(user);
@@ -64,9 +75,21 @@ public class UserDAO extends HibernateDaoSupport{
 	private void loadUsersFromDB(){
 		List<PASTAUser> users = getHibernateTemplate().loadAll(PASTAUser.class);
 		allUsers = new HashMap<String, PASTAUser>();
+		usersByTutorial = new HashMap<String, Collection<PASTAUser>>();
+		usersByStream = new HashMap<String, Collection<PASTAUser>>();
 		if(users != null){
 			for(PASTAUser user: users){
 				allUsers.put(user.getUsername().toLowerCase(), user);
+				
+				if(!usersByStream.containsKey(user.getStream())){
+					usersByStream.put(user.getStream(), new ArrayList<PASTAUser>());
+				}
+				usersByStream.get(user.getStream()).add(user);
+				
+				if(!usersByTutorial.containsKey(user.getTutorial())){
+					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
+				}
+				usersByTutorial.get(user.getTutorial()).add(user);
 			}
 		}
 	}

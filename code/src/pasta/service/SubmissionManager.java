@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -621,6 +622,14 @@ public class SubmissionManager {
 	
 	public Collection<PASTAUser> getUserList() {
 		return userDao.getUserList();
+	}
+	
+	public Collection<PASTAUser> getUserListByTutorial(String className) {
+		return userDao.getUserListByTutorial(className);
+	}
+	
+	public Collection<PASTAUser> getUserListByStream(String stream) {
+		return userDao.getUserListByStream(stream);
 	}
 	
 	public PASTAUser getOrCreateUser(String username) {

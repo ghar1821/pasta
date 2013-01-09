@@ -2,6 +2,9 @@ package pasta.web.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -562,42 +565,6 @@ public class SubmissionController {
 		return "redirect:"+ referer;
 	}
 	
-	// home page
-	@RequestMapping(value = "tutorial/{className}/")
-	public String viewClass(@PathVariable("className") String className,
-			Model model) {
-		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if(user.isTutor()){
-				model.addAttribute("unikey", user);
-				return "compound/classHome";
-			}
-			else{
-				return "redirect:/home/";
-			}
-		}
-		return "redirect:/login/";
-	}
-	
-	// home page
-	@RequestMapping(value = "stream/{streamName}/")
-	public String viewStream(@PathVariable("streamName") String streamName,
-			Model model) {
-		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if(user.isTutor()){
-				model.addAttribute("unikey", user);
-				return "compound/classHome";
-			}
-			else{
-				return "redirect:/home/";
-			}
-		}
-		return "redirect:/login/";
-	}
-	
 	// ///////////////////////////////////////////////////////////////////////////
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -615,6 +582,75 @@ public class SubmissionController {
 		model.addAttribute("unikey", getOrCreateUser());
 
 		return "user/viewAll";
+	}
+	
+	// home page
+	@RequestMapping(value = "tutorial/{className}/")
+	public String viewClass(@PathVariable("className") String className,
+			Model model) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				model.addAttribute("assessmentList", manager.getAssessmentList());
+				model.addAttribute("userList", manager.getUserListByTutorial(className));
+				model.addAttribute("latestResults", manager.getLatestResults());
+				model.addAttribute("unikey", getOrCreateUser());
+				model.addAttribute("classname", "Class - " + className);
+				
+				// TODO must fix - too expensive for now.
+//				// get statistics -- assessmet, statistic (min,max,median, UQ, LQ)
+//				HashMap<String, HashMap<String, Double>> statistics = new HashMap<String, HashMap<String, Double>>();
+//				for(Assessment ass: manager.getAssessmentList()){
+//					LinkedList<Double> allMarks = new LinkedList<Double>();
+//					for(PASTAUser currUser: manager.getUserListByTutorial(className)){
+//						allMarks.add(manager.getLatestResults().get(currUser.getUsername()).get(ass.getShortName()).getMarks());
+//					}
+//					HashMap<String, Double> currStats = null;
+//					if(allMarks.size() > 0){
+//						Collections.sort(allMarks);
+//						currStats = new HashMap<String, Double>();
+//						currStats.put("max", allMarks.get(0));
+//						currStats.put("min", allMarks.get(allMarks.size()-1));
+//						currStats.put("median", allMarks.get(allMarks.size()/2));
+//						currStats.put("UQ", allMarks.get((allMarks.size()/4)*3));
+//						currStats.put("LQ", allMarks.get(allMarks.size()/4));
+//					}
+//					statistics.put(ass.getShortName(), currStats);
+//				}
+//				
+//				model.addAttribute("statistics", statistics);
+				
+				return "compound/classHome";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
+	}
+	
+	// home page
+	@RequestMapping(value = "stream/{streamName}/")
+	public String viewStream(@PathVariable("streamName") String streamName,
+			Model model) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				model.addAttribute("assessmentList", manager.getAssessmentList());
+				model.addAttribute("userList", manager.getUserListByStream(streamName));
+				model.addAttribute("latestResults", manager.getLatestResults());
+				model.addAttribute("unikey", getOrCreateUser());
+				model.addAttribute("classname", "Stream - " + streamName);
+				
+				return "compound/classHome";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
