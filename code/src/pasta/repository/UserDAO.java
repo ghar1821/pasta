@@ -49,7 +49,7 @@ public class UserDAO extends HibernateDaoSupport{
 		if(allUsers == null){
 			loadUsersFromDB();
 		}
-		return allUsers.get(username);
+		return allUsers.get(username.toLowerCase());
 	}
 	
 	public Collection<PASTAUser> getUserList(){
@@ -57,7 +57,7 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public void add(PASTAUser user){
-		allUsers.put(user.getUsername(), user);
+		allUsers.put(user.getUsername().toLowerCase(), user);
 		save(user);
 	}
 	
@@ -66,7 +66,7 @@ public class UserDAO extends HibernateDaoSupport{
 		allUsers = new HashMap<String, PASTAUser>();
 		if(users != null){
 			for(PASTAUser user: users){
-				allUsers.put(user.getUsername(), user);
+				allUsers.put(user.getUsername().toLowerCase(), user);
 			}
 		}
 	}
