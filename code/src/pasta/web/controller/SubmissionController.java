@@ -86,9 +86,9 @@ public class SubmissionController {
 		return new HandMarking();
 	}
 	
-	@ModelAttribute("handMarkingResult")
-	public HandMarkingResult returnHandMarkingResultModel() {
-		return new HandMarkingResult();
+	@ModelAttribute("assessmentResult")
+	public AssessmentResult returnAssessmentResultModel() {
+		return new AssessmentResult();
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
@@ -587,19 +587,10 @@ public class SubmissionController {
 		model.addAttribute("student", username);
 		model.addAttribute("assessmentName", assessmentName);
 		
-		model.addAttribute("handMarking", manager.getHandMarking(manager.getAssessment(assessmentName).getHandMarking().get(0).getHandMarking().getShortName()));
+		AssessmentResult result = manager.getAssessmentResult(username, assessmentName, assessmentDate);
 		
-		Collection<AssessmentResult> results = manager.getAssessmentHistory(username, assessmentName);
-		for(AssessmentResult currResult: results){
-			if(currResult.getFormattedSubmissionDate().equals(assessmentDate)){
-				if(currResult.getHandMarkingResult()!=null){
-					model.addAttribute("handMarkingResult", currResult.getHandMarkingResult());
-					logger.info("not null");
-				}
-				logger.info("probably null");
-				break;
-			}
-		}
+		model.addAttribute("assessmentResult", result);
+		model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
 		
 		return "assessment/mark/handMark";
 	}
@@ -609,23 +600,14 @@ public class SubmissionController {
 	public String saveHandMarkAssessment(@PathVariable("username") String username, 
 			@PathVariable("assessmentName") String assessmentName,
 			@PathVariable("assessmentDate") String assessmentDate,
-			@ModelAttribute(value = "handMarkingTable") HandMarkingResult form,
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
 			BindingResult result, Model model) {
 		
 		PASTAUser user = getOrCreateUser();
 		if(user == null){
 			return "redirect:/login/";
 		}
-		model.addAttribute("unikey", user);
-		model.addAttribute("student", username);
-		model.addAttribute("assessmentName", assessmentName);
-		
-		AssessmentResult currResult = manager.getAssessmentResult(username, assessmentName, assessmentDate);
-		if(currResult != null){
-			currResult.setHandMarkingResult(form);
-		}
-		
-		model.addAttribute("handMarking", manager.getHandMarking(manager.getAssessment(assessmentName).getHandMarking().get(0).getHandMarking().getShortName()));
+		manager.saveHandMarkingResults(username, assessmentName, assessmentDate, form.getHandMarkingResults());
 		
 		return "redirect:.";
 	}

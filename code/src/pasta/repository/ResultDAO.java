@@ -1,6 +1,8 @@
 package pasta.repository;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
@@ -22,9 +25,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.HandMarkingResult;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;
 
@@ -197,6 +202,7 @@ public class ResultDAO {
 						AssessmentResult assessResult = new AssessmentResult();
 						assessResult.setAssessment(assessment);
 				
+						// unit tests;
 						ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
 						for (WeightedUnitTest uTest : assessment.getUnitTests()) {
 							UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
@@ -215,6 +221,29 @@ public class ResultDAO {
 							utresults.add(result);
 							
 						}
+						
+						// handMarking
+						ArrayList<HandMarkingResult> handResults = new ArrayList<HandMarkingResult>();
+						for (WeightedHandMarking hMarking : assessment.getHandMarking()) {
+							HandMarkingResult result = getHandMarkingResult(ProjectProperties.getInstance()
+											.getProjectLocation()
+											+ "/submissions/"
+											+ currUser
+											+ "/assessments/"
+											+ assessment.getShortName()
+											+ "/"
+											+ latest
+											+ "/handMarking/" + hMarking.getHandMarking().getShortName());
+							if (result == null) {
+								result = new HandMarkingResult();
+							}
+							else{
+								result.setHandMarkingTemplateShortName(hMarking.getHandMarking().getShortName());
+								handResults.add(result);
+							}
+						}
+						
+						// submission date
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 						try {
 							assessResult.setSubmissionDate(sdf.parse(latest));
@@ -223,6 +252,7 @@ public class ResultDAO {
 							logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getShortName());
 						}
 						assessResult.setUnitTests(utresults);
+						assessResult.setHandMarkingResults(handResults);
 						
 						currAssessmentResults.put(latest, assessResult);
 					}
@@ -231,6 +261,27 @@ public class ResultDAO {
 			}
 			results.put(currUser, currUserResults);
 		}
+	}
+
+	private HandMarkingResult getHandMarkingResult(String location) {
+		HandMarkingResult result = new HandMarkingResult();
+		
+		try {
+			Scanner in = new Scanner(new File(location+"/result.txt"));
+			HashMap<String,String> resultMap = new HashMap<String, String>();
+			while(in.hasNextLine()){
+				String[] currResults = in.nextLine().split(",");
+				if(currResults.length >= 2){
+					resultMap.put(currResults[0].trim(), currResults[1].trim());
+				}
+			}
+			in.close();
+			result.setResult(resultMap);
+			
+			return result;
+		} catch (FileNotFoundException e) {
+		}
+		return null;	
 	}
 
 	public void loadNewAssessment(String currUser, Assessment assessment,
@@ -272,5 +323,41 @@ public class ResultDAO {
 	public AssessmentResult getAsssessmentResult(String username,
 			String assessmentName, String assessmentDate) {
 		return results.get(username).get(assessmentName).get(assessmentDate);
+	}
+
+	public void saveHandMarkingToFile(String username, String assessmentName,
+			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
+		for(HandMarkingResult result: handMarkingResults){
+			// create the directory
+			(new File(ProjectProperties.getInstance()
+								.getProjectLocation()
+								+ "/submissions/"
+								+ username
+								+ "/assessments/"
+								+ assessmentName
+								+ "/"
+								+ assessmentDate
+								+ "/handMarking/" + result.getHandMarkingTemplateShortName())).mkdirs();
+			// save data
+			try {
+				PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance()
+									.getProjectLocation()
+									+ "/submissions/"
+									+ username
+									+ "/assessments/"
+									+ assessmentName
+									+ "/"
+									+ assessmentDate
+									+ "/handMarking/" + result.getHandMarkingTemplateShortName())
+									+ "/result.txt");
+				for(Entry<String, String> entry: result.getResult().entrySet()){
+					out.println(entry.getKey() + "," + entry.getValue());
+				}
+				out.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

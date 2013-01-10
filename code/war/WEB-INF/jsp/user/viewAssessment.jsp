@@ -46,7 +46,7 @@ ${assessment.description}
 						<c:if test="${not empty result.assessment.handMarking}">
 							<!-- edit marking if already marked -->
 							<c:choose>
-								<c:when test="${ empty result.handMarkingResult }">
+								<c:when test="${ empty result.handMarkingResults }">
 									<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 								</c:when>
 								<c:otherwise>

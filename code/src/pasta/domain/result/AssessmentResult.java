@@ -4,12 +4,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.collections.FactoryUtils;
+import org.apache.commons.collections.list.LazyList;
 
 import pasta.domain.template.Assessment;
+import pasta.domain.template.WeightedUnitTest;
 
 public class AssessmentResult {
 	private ArrayList<UnitTestResult> unitTests;
-	private HandMarkingResult handMarkingResult;
+	private List<HandMarkingResult> handMarkingResults = LazyList.decorate(new ArrayList<HandMarkingResult>(),
+			FactoryUtils.instantiateFactory(HandMarkingResult.class));
 	private Assessment assessment;
 	private int submissionsMade;
 	private Date submissionDate;
@@ -51,12 +57,12 @@ public class AssessmentResult {
 		this.submissionDate = submissionDate;
 	}
 	
-	public HandMarkingResult getHandMarkingResult() {
-		return handMarkingResult;
+	public List<HandMarkingResult> getHandMarkingResults() {
+		return handMarkingResults;
 	}
 
-	public void setHandMarkingResult(HandMarkingResult handMarkingResult) {
-		this.handMarkingResult = handMarkingResult;
+	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
+		this.handMarkingResults = handMarkingResults;
 	}
 
 	public void addUnitTest(UnitTestResult test){

@@ -1,17 +1,17 @@
 package pasta.domain.template;
 
 public class WeightedHandMarking {
-	private HandMarking test = new HandMarking();
+	private HandMarking handMarking = new HandMarking();
 	private double weight;
 	private String handMarkingName;
 	
 	public HandMarking getHandMarking() {
-		return test;
+		return handMarking;
 	}
-	public void setHandMarking(HandMarking test) {
-		this.test = test;
-		if(!test.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
-			handMarkingName = test.getName();
+	public void setHandMarking(HandMarking handMarking) {
+		this.handMarking = handMarking;
+		if(!handMarking.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
+			handMarkingName = handMarking.getName();
 		}
 	}
 	public double getWeight() {

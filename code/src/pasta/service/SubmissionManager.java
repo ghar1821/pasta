@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.HandMarkingResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
@@ -618,6 +619,17 @@ public class SubmissionManager {
 			logger.error("Unable to re-run assessment "
 					+ assessmentName + " for " + username
 					+ System.getProperty("line.separator") + e);
+		}
+	}
+
+	public void saveHandMarkingResults(String username, String assessmentName,
+			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
+		AssessmentResult result = resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate);
+		// save to memory
+		if(result != null){
+			result.setHandMarkingResults(handMarkingResults);
+			// save to file
+			resultDAO.saveHandMarkingToFile(username, assessmentName, assessmentDate, handMarkingResults);
 		}
 	}
 
