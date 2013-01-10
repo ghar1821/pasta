@@ -594,7 +594,9 @@ public class SubmissionController {
 			if(currResult.getFormattedSubmissionDate().equals(assessmentDate)){
 				if(currResult.getHandMarkingResult()!=null){
 					model.addAttribute("handMarkingResult", currResult.getHandMarkingResult());
+					logger.info("not null");
 				}
+				logger.info("probably null");
 				break;
 			}
 		}
@@ -618,12 +620,9 @@ public class SubmissionController {
 		model.addAttribute("student", username);
 		model.addAttribute("assessmentName", assessmentName);
 		
-		Collection<AssessmentResult> results = manager.getAssessmentHistory(username, assessmentName);
-		for(AssessmentResult currResult: results){
-			if(currResult.getFormattedSubmissionDate().equals(assessmentDate)){
-				logger.info(form);
-				break;
-			}
+		AssessmentResult currResult = manager.getAssessmentResult(username, assessmentName, assessmentDate);
+		if(currResult != null){
+			currResult.setHandMarkingResult(form);
 		}
 		
 		model.addAttribute("handMarking", manager.getHandMarking(manager.getAssessment(assessmentName).getHandMarking().get(0).getHandMarking().getShortName()));

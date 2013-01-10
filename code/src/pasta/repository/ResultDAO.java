@@ -268,4 +268,9 @@ public class ResultDAO {
 		
 		results.get(currUser).get(assessment.getShortName()).put(latest, assessResult);
 	}
+
+	public AssessmentResult getAsssessmentResult(String username,
+			String assessmentName, String assessmentDate) {
+		return results.get(username).get(assessmentName).get(assessmentDate);
+	}
 }

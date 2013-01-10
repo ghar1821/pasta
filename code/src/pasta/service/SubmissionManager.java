@@ -620,4 +620,9 @@ public class SubmissionManager {
 					+ System.getProperty("line.separator") + e);
 		}
 	}
+
+	public AssessmentResult getAssessmentResult(String username, String assessmentName,
+			String assessmentDate) {
+		return resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate);
+	}
 }
