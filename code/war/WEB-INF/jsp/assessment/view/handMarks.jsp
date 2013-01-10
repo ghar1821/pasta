@@ -34,9 +34,19 @@
 						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Comfirm</div>
 					</th>
 					<c:forEach var="column" items="${handMarking.columnHeader}">
-						<td><span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-							</br>
-							<form:textarea style="height:90%; width:95%" path="data['${column.name}']['${row.name}']"/></br>
+						<td>
+							<c:choose>
+								<c:when test="${not empty handMarking.data[column.name][row.name] or handMarking.data[column.name][row.name] == \"\"}">
+									<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
+									</br>
+									<form:textarea style="height:90%; width:95%" path="data['${column.name}']['${row.name}']"/></br>
+									<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Cell</div>
+									<div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Comfirm</div>
+								</c:when>
+								<c:otherwise>
+									<div class="button newCell" style="text-align: center; " onclick="newCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" >New Cell</div>
+								</c:otherwise>
+							</c:choose>
 						</td>
 					</c:forEach>
 				</tr>
@@ -87,6 +97,7 @@
 			currHeader[1].name="columnHeader["+(i-1)+"].weight";
 			
 			currHeader[1].setAttribute("value", parseFloat(currHeader[1].value));
+			currHeader[1].value = parseFloat(currHeader[1].value);
 		}
 	}
 	
@@ -99,7 +110,7 @@
 		newTH.innerHTML = '<input id="rowHeader'+(table.rows.length-2)+'.name" name="rowHeader['+(table.rows.length-2)+'].name" type="text" type="text" value=""/></br><input id="rowHeader'+(table.rows.length-2)+'.weight" name="rowHeader['+(table.rows.length-2)+'].weight" type="text" type="text" value=""/><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Row</div><div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>'
 		for (var i=1; i<table.rows[0].cells.length; i++) {
 			var newCell = table.rows[table.rows.length-1].insertCell(i);
-			newCell.innerHTML = '???</br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br>'
+			newCell.innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
 		}
 	}
 	
@@ -128,18 +139,32 @@
 			var rowHeader = table.rows[i].cells[0].getElementsByTagName("input")[0].value;
 			var rowValue = table.rows[i].cells[0].getElementsByTagName("input")[1].value;
 			for (var j=1; j<table.rows[i].cells.length; j++) {
-				var columnHeader = table.rows[0].cells[j].getElementsByTagName("input")[0].value;
-				var columnValue = table.rows[0].cells[j].getElementsByTagName("input")[1].value;
-				
-				var currCell = table.rows[i].cells[j].getElementsByTagName("textarea")[0];
-				currCell.id="data'"+columnHeader+"''"+rowHeader+"'";
-				currCell.name="data['"+columnHeader+"']['"+rowHeader+"']";
-				
-				var currCellValue = table.rows[i].cells[j].getElementsByTagName("span")[0];
-				currCellValue.innerHTML=(rowValue*columnValue).toPrecision(3);
+			
+				if(table.rows[i].cells[j].getElementsByTagName("textarea").length != 0){
+					var columnHeader = table.rows[0].cells[j].getElementsByTagName("input")[0].value;
+					var columnValue = table.rows[0].cells[j].getElementsByTagName("input")[1].value;
+					
+					var currCell = table.rows[i].cells[j].getElementsByTagName("textarea")[0];
+					currCell.id="data'"+columnHeader+"''"+rowHeader+"'";
+					currCell.name="data['"+columnHeader+"']['"+rowHeader+"']";
+					
+					var currCellValue = table.rows[i].cells[j].getElementsByTagName("span")[0];
+					currCellValue.innerHTML=parseFloat((rowValue*columnValue).toFixed(3));
+				}
 			}
 		}
 	}	
+	
+	function deleteCell(row, column){
+		var table=document.getElementById("handMarkingTable");
+		table.rows[row].cells[column].innerHTML = '<div class="button newCell" style="text-align: center; " onclick="newCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" >New Cell</div>';
+	}
+	
+	function newCell(row, column){
+		var table=document.getElementById("handMarkingTable");
+		table.rows[row].cells[column].innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
+		updateCells();
+	}
 	
     $(function() {
 		$( "tbody.sortable" ).sortable({
