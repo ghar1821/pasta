@@ -47,10 +47,10 @@ ${assessment.description}
 							<!-- edit marking if already marked -->
 							<c:choose>
 								<c:when test="${ empty result.handMarkingResult }">
-									<button>Mark attempt</button>
+									<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 								</c:when>
 								<c:otherwise>
-									<button>Edit attempt marks</button>
+									<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 								</c:otherwise>
 							</c:choose>
 						</c:if>

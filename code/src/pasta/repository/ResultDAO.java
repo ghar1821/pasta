@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -29,6 +31,12 @@ import pasta.util.ProjectProperties;
 public class ResultDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
+	// username, assessment, date
+	HashMap<String, HashMap<String, HashMap<String, AssessmentResult>>> results;
+	
+	public ResultDAO(AssessmentDAO assDao){
+		loadAssessmentHistoryFromFile(assDao);
+	}
 
 	public UnitTestResult getUnitTestResult(String location){
 		UnitTestResult result = new UnitTestResult();
@@ -138,63 +146,126 @@ public class ResultDAO {
 		return null; // TODO check if in the database
 	}
 	
-	public Collection<AssessmentResult> getAssessmentHistory(String username){
-		Collection<AssessmentResult> results = new ArrayList<AssessmentResult>();
-		// TODO
+	public HashMap<String, AssessmentResult> getLatestResults(String username){
+		HashMap<String, AssessmentResult> results = new HashMap<String, AssessmentResult>();
+		
+		if(this.results.get(username) != null){
+			for(Entry<String, HashMap<String, AssessmentResult>> allAssesmentResults :this.results.get(username).entrySet()){
+				AssessmentResult latest = null;
+				for(AssessmentResult result: allAssesmentResults.getValue().values()){
+					// too tired to do this nicely.
+					latest = result;
+					break;
+				}
+				if(latest != null){
+					results.put(allAssesmentResults.getKey(), latest);
+				}
+			}
+		}
 		return results;
 	}
 	
 	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
-		Collection<AssessmentResult> results = new ArrayList<AssessmentResult>();
-		
-		String[] allFiles = (new File(ProjectProperties.getInstance()
-				.getProjectLocation()
-				+ "/submissions/"
-				+ username
-				+ "/assessments/" + assessment.getShortName())).list();
-		
-		// TODO 
-		if(allFiles == null){
-			return results;
-		}
-		Arrays.sort(allFiles);
-
-		for(int i=0; i< allFiles.length; ++i){
-			String latest = allFiles[allFiles.length-1-i];
-			AssessmentResult assessResult = new AssessmentResult();
-			assessResult.setAssessment(assessment);
+		return results.get(username).get(assessment.getShortName()).values();
+	}
 	
-			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
-			for (WeightedUnitTest uTest : assessment.getUnitTests()) {
-				UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
-								.getProjectLocation()
-								+ "/submissions/"
-								+ username
-								+ "/assessments/"
-								+ assessment.getShortName()
-								+ "/"
-								+ latest
-								+ "/unitTests/" + uTest.getTest().getShortName());
-				if (result == null) {
-					result = new UnitTestResult();
-				}
-				result.setTest(uTest.getTest());
-				utresults.add(result);
+	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
+		results = new HashMap<String, HashMap<String, HashMap<String, AssessmentResult>>>();
+		
+		// scan all users
+		String[] allUsers = (new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/")).list();
+		for(String currUser: allUsers){
+			// scan all assessments
+			Collection<Assessment> allAssessments = assDao.getAssessmentList();
+			
+			HashMap<String, HashMap<String, AssessmentResult>>currUserResults = new HashMap<String, HashMap<String, AssessmentResult>>();
+			for(Assessment assessment: allAssessments){
+				// scan all submissions
 				
+				HashMap<String, AssessmentResult> currAssessmentResults = new HashMap<String, AssessmentResult>();
+				String[] allFiles = (new File(ProjectProperties.getInstance()
+						.getProjectLocation()
+						+ "/submissions/"
+						+ currUser
+						+ "/assessments/" + assessment.getShortName())).list();
+				
+				if(allFiles != null){
+					Arrays.sort(allFiles);
+
+					for(int i=0; i< allFiles.length; ++i){
+						String latest = allFiles[allFiles.length-1-i];
+						AssessmentResult assessResult = new AssessmentResult();
+						assessResult.setAssessment(assessment);
+				
+						ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+						for (WeightedUnitTest uTest : assessment.getUnitTests()) {
+							UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
+											.getProjectLocation()
+											+ "/submissions/"
+											+ currUser
+											+ "/assessments/"
+											+ assessment.getShortName()
+											+ "/"
+											+ latest
+											+ "/unitTests/" + uTest.getTest().getShortName());
+							if (result == null) {
+								result = new UnitTestResult();
+							}
+							result.setTest(uTest.getTest());
+							utresults.add(result);
+							
+						}
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+						try {
+							assessResult.setSubmissionDate(sdf.parse(latest));
+						} catch (ParseException e) {
+							assessResult.setSubmissionDate(new Date());
+							logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getShortName());
+						}
+						assessResult.setUnitTests(utresults);
+						
+						currAssessmentResults.put(latest, assessResult);
+					}
+				}
+				currUserResults.put(assessment.getShortName(), currAssessmentResults);
 			}
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-			try {
-				assessResult.setSubmissionDate(sdf.parse(latest));
-			} catch (ParseException e) {
-				assessResult.setSubmissionDate(new Date());
-				logger.error("Submission date " + latest + " - " + username + " - " + assessment.getName());
-			}
-			assessResult.setUnitTests(utresults);
-	
-			// add to collection
-			results.add(assessResult);
+			results.put(currUser, currUserResults);
 		}
+	}
+
+	public void loadNewAssessment(String currUser, Assessment assessment,
+			Date runDate) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+		String latest = sdf.format(runDate);
+		AssessmentResult assessResult = new AssessmentResult();
+		assessResult.setAssessment(assessment);
+
+		ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+		for (WeightedUnitTest uTest : assessment.getUnitTests()) {
+			UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
+							.getProjectLocation()
+							+ "/submissions/"
+							+ currUser
+							+ "/assessments/"
+							+ assessment.getShortName()
+							+ "/"
+							+ latest
+							+ "/unitTests/" + uTest.getTest().getShortName());
+			if (result == null) {
+				result = new UnitTestResult();
+			}
+			result.setTest(uTest.getTest());
+			utresults.add(result);
+			
+		}
+		try {
+			assessResult.setSubmissionDate(sdf.parse(latest));
+		} catch (ParseException e) {
+			assessResult.setSubmissionDate(new Date());
+			logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getName());
+		}
+		assessResult.setUnitTests(utresults);
 		
-		return results;
+		results.get(currUser).get(assessment.getShortName()).put(latest, assessResult);
 	}
 }

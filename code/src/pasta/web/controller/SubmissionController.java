@@ -1,10 +1,8 @@
 package pasta.web.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +23,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
+import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
@@ -84,6 +84,11 @@ public class SubmissionController {
 	@ModelAttribute("handMarking")
 	public HandMarking returnHandMarkingModel() {
 		return new HandMarking();
+	}
+	
+	@ModelAttribute("handMarkingResult")
+	public HandMarkingResult returnHandMarkingResultModel() {
+		return new HandMarkingResult();
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
@@ -438,7 +443,8 @@ public class SubmissionController {
 		PASTAUser user = getOrCreateUser();
 		if (user != null) {
 			model.addAttribute("unikey", user);
-			model.addAttribute("results", manager.getStudentResults(user.getUsername()));
+			model.addAttribute("assessments", manager.getAssessmentList());
+			model.addAttribute("results", manager.getLatestResultsForUser(user.getUsername()));
 			if(user.isTutor()){
 				return "user/tutorHome";
 			}
@@ -501,7 +507,8 @@ public class SubmissionController {
 				PASTAUser viewedUser = manager.getOrCreateUser(username);
 				model.addAttribute("unikey", user);
 				model.addAttribute("viewedUser", viewedUser);
-				model.addAttribute("results", manager.getStudentResults(viewedUser.getUsername()));
+				model.addAttribute("assessments", manager.getAssessmentList());
+				model.addAttribute("results", manager.getLatestResultsForUser(viewedUser.getUsername()));
 				return "user/studentHome";
 			}
 			else{
@@ -563,6 +570,65 @@ public class SubmissionController {
 		manager.runAssessment(username, assessmentName, assessmentDate);
 		String referer = request.getHeader("Referer");
 		return "redirect:"+ referer;
+	}
+	
+	// hand mark assessment
+	@RequestMapping(value = "mark/{username}/{assessmentName}/{assessmentDate}/")
+	public String handMarkAssessment(@PathVariable("username") String username, 
+			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentDate") String assessmentDate,
+			Model model) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return "redirect:/login/";
+		}
+		model.addAttribute("unikey", user);
+		model.addAttribute("student", username);
+		model.addAttribute("assessmentName", assessmentName);
+		
+		model.addAttribute("handMarking", manager.getHandMarking(manager.getAssessment(assessmentName).getHandMarking().get(0).getHandMarking().getShortName()));
+		
+		Collection<AssessmentResult> results = manager.getAssessmentHistory(username, assessmentName);
+		for(AssessmentResult currResult: results){
+			if(currResult.getFormattedSubmissionDate().equals(assessmentDate)){
+				if(currResult.getHandMarkingResult()!=null){
+					model.addAttribute("handMarkingResult", currResult.getHandMarkingResult());
+				}
+				break;
+			}
+		}
+		
+		return "assessment/mark/handMark";
+	}
+	
+	// hand mark assessment
+	@RequestMapping(value = "mark/{username}/{assessmentName}/{assessmentDate}/", method = RequestMethod.POST)
+	public String saveHandMarkAssessment(@PathVariable("username") String username, 
+			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentDate") String assessmentDate,
+			@ModelAttribute(value = "handMarkingTable") HandMarkingResult form,
+			BindingResult result, Model model) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return "redirect:/login/";
+		}
+		model.addAttribute("unikey", user);
+		model.addAttribute("student", username);
+		model.addAttribute("assessmentName", assessmentName);
+		
+		Collection<AssessmentResult> results = manager.getAssessmentHistory(username, assessmentName);
+		for(AssessmentResult currResult: results){
+			if(currResult.getFormattedSubmissionDate().equals(assessmentDate)){
+				logger.info(form);
+				break;
+			}
+		}
+		
+		model.addAttribute("handMarking", manager.getHandMarking(manager.getAssessment(assessmentName).getHandMarking().get(0).getHandMarking().getShortName()));
+		
+		return "redirect:.";
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
