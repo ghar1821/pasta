@@ -21,6 +21,7 @@
 		<link href="<spring:url value="/static/scripts/jqplot/jquery.jqplot.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<spring:url value="/static/styles/jquery.dataTables.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.8.2.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui.js" htmlEscape="true" />"></script>
@@ -30,6 +31,8 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dragtable.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
 		
 		<decorator:head />
 		

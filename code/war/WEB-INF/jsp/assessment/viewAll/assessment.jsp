@@ -23,7 +23,7 @@
 			</td>
 			<!-- Data -->
 			<td>
-				${assessment.name} -
+				<b>${assessment.name}</b> -
 				<c:choose>
 					<c:when test="${assessment.marks != 0}">
 						 Out of ${assessment.marks}

@@ -180,6 +180,9 @@ public class ResultDAO {
 	}
 	
 	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
+		if(results.get(username) == null){
+			return new ArrayList<AssessmentResult>();
+		}
 		return results.get(username).get(assessment.getShortName()).values();
 	}
 	

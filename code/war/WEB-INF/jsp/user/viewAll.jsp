@@ -4,6 +4,11 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<!-- Ignore me, I don't exist -->
+<div style="display:none" class="gradeCentreMarkGood"></div>
+<div style="display:none" class="gradeCentreMarkBad"></div>
+<div style="display:none" class="gradeCentreMarkNoSub"></div>
+
 <table id="gradeCentreTable" class="tablesorter">
 	<thead>
 		<tr>
@@ -25,6 +30,7 @@
 					<c:forEach var="assessment" items="${assessmentList}">
 						<td class="gradeCentreMark"  onClick="window.location.href=window.location.href+'../student/${user.username}/info/${assessment.name}/'">
 							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
+							<span style="display:none">${latestResults[user.username][assessment.name].percentage}</span>
 						</td>
 					</c:forEach>
 				</tr>
@@ -35,8 +41,47 @@
 
 <script>
 	$(document).ready(function() 
-	    { 
-	        $("table").tablesorter( {sortList: [[0,0], [1,0]]} );  
+	    { 			
+			var oTable = $('#gradeCentreTable').dataTable( {
+		 		"sScrollX": "100%",
+		 		"sScrollXInner": "150%",
+		 		"bScrollCollapse": true,
+		 		"iDisplayLength": 25
+		 	} );
+		 	new FixedColumns( oTable, {
+		 		"iLeftColumns": 3,
+				"iLeftWidth": 250
+		 	} );
 	    } 
 	); 
+	
+	$("td.gradeCentreMark").each(function(){
+	
+		var clr = $("div.gradeCentreMarkGood").css("backgroundColor").replace("rgb(","").replace(")","");
+		var yr = parseFloat(clr.split(",")[0]);
+		var yg = parseFloat(clr.split(",")[1]);
+		var yb = parseFloat(clr.split(",")[2]);
+		
+		var clrBad = $("div.gradeCentreMarkBad").css("backgroundColor").replace("rgb(","").replace(")","");
+		var xr = parseFloat(clrBad.split(",")[0]);
+		var xg = parseFloat(clrBad.split(",")[1]);
+		var xb = parseFloat(clrBad.split(",")[2]);
+		
+		// change them according to the percentage
+		if(this.getElementsByTagName("span")[0].innerHTML == ""){
+			clr = $("div.gradeCentreMarkNoSub").css("backgroundColor");
+		}
+		else{
+			var pos = parseFloat(this.getElementsByTagName("span")[0].innerHTML);
+			
+			n = 100; // number of color groups
+			
+			red = parseInt((xr + (( pos * (yr - xr)))).toFixed(0));
+			green = parseInt((xg + (( pos * (yg - xg)))).toFixed(0));
+			blue = parseInt((xb + (( pos * (yb - xb)))).toFixed(0));
+			clr = 'rgb('+red+','+green+','+blue+')';
+		}
+		$(this).css({backgroundColor:clr});
+				
+	});
 </script>

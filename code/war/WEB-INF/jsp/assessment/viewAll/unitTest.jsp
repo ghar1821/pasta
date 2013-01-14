@@ -22,7 +22,7 @@
 			</td>
 			<td>
 				<!-- name -->
-				${unitTest.name}
+				<b>${unitTest.name}</b>
 			</td>
 			<td>
 				<!-- buttons -->

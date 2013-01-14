@@ -9,7 +9,7 @@
 <table class="pastaTable">
 	<c:forEach var="handMarking" items="${allHandMarking}">
 		<tr>
-			<td>${handMarking.name}</td>
+			<td><b>${handMarking.name}</b></td>
 			<td>
 				<div style="float:left">
 					<button style="float:left; text-align: center; " onclick="location.href='./${handMarking.shortName}/'">Details</button>
