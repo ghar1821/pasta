@@ -1,6 +1,5 @@
 package pasta.web.controller;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -606,6 +605,11 @@ public class SubmissionController {
 		PASTAUser user = getOrCreateUser();
 		if(user == null){
 			return "redirect:/login/";
+		}
+		// rebinding hand marking results with their hand marking templates
+		List<HandMarkingResult> results = form.getHandMarkingResults();
+		for(HandMarkingResult currResult: results){
+			currResult.setMarkingTemplate(manager.getHandMarking(currResult.getHandMarkingTemplateShortName()));
 		}
 		manager.saveHandMarkingResults(username, assessmentName, assessmentDate, form.getHandMarkingResults());
 		

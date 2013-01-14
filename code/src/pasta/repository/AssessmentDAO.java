@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,7 +89,23 @@ public class AssessmentDAO {
 	}
 
 	public void addAssessment(Assessment newAssessment) {
-		allAssessments.put(newAssessment.getShortName(), newAssessment);
+		// if already exists, update
+		if(allAssessments.containsKey(newAssessment.getShortName())){
+			Assessment curAss = allAssessments.get(newAssessment.getShortName());
+			// simple
+			curAss.setDescription(newAssessment.getDescription());
+			curAss.setDueDate(newAssessment.getDueDate());
+			curAss.setMarks(newAssessment.getMarks());
+			curAss.setNumSubmissionsAllowed(newAssessment.getNumSubmissionsAllowed());
+			
+			// tests
+			curAss.setSecretUnitTests(newAssessment.getSecretUnitTests());
+			curAss.setUnitTests(newAssessment.getUnitTests());
+			curAss.setHandMarking(newAssessment.getHandMarking());
+		}
+		else{
+			allAssessments.put(newAssessment.getShortName(), newAssessment);
+		}
 	}
 
 	public void removeUnitTest(String unitTestName) {
@@ -99,8 +116,11 @@ public class AssessmentDAO {
 					+ "/template/unitTest/"
 					+ unitTestName));
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
 			logger.error("Could not delete the folder for " + unitTestName
-					+ "\r\n" + e);
+					+ "\r\n" + sw.toString());
 		}
 	}
 
@@ -112,8 +132,11 @@ public class AssessmentDAO {
 					+ "/template/assessment/"
 					+ assessmentName));
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
 			logger.error("Could not delete the folder for " + assessmentName
-					+ "\r\n" + e);
+					+ "\r\n" + sw.toString());
 		}
 	}
 
@@ -162,18 +185,20 @@ public class AssessmentDAO {
 	 * Load all handmarkings.
 	 */
 	private void loadHandMarking() {
-		// get unit test location
+		// get hand marking location
 		String allTestLocation = ProjectProperties.getInstance()
-				.getProjectLocation() + "/template/handmarking";
+				.getProjectLocation() + "/template/handMarking";
 		String[] allHandMarkingNames = (new File(allTestLocation)).list();
-		Arrays.sort(allHandMarkingNames);
-
-		// load properties
-		for (String name : allHandMarkingNames) {
-			HandMarking test = getHandMarkingFromDisk(allTestLocation + "/"
-					+ name);
-			if (test != null) {
-				allHandMarking.put(test.getShortName(), test);
+		if(allHandMarkingNames!=null && allHandMarkingNames.length > 0){
+			Arrays.sort(allHandMarkingNames);
+	
+			// load properties
+			for (String name : allHandMarkingNames) {
+				HandMarking test = getHandMarkingFromDisk(allTestLocation + "/"
+						+ name);
+				if (test != null) {
+					allHandMarking.put(test.getShortName(), test);
+				}
 			}
 		}
 	}
@@ -204,6 +229,10 @@ public class AssessmentDAO {
 
 			return new UnitTest(name, tested);
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not read unit test " + location + System.getProperty("line.separator")+ sw.toString());
 			return null;
 		}
 	}
@@ -310,7 +339,10 @@ public class AssessmentDAO {
 
 			return currentAssessment;
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not read assessment " + location + System.getProperty("line.separator")+ sw.toString());
 			return null;
 		}
 	}
@@ -406,13 +438,25 @@ public class AssessmentDAO {
 
 			return markingTemplate;
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not read hand marking " + location + System.getProperty("line.separator")+ sw.toString());
 			return null;
 		}
 	}
 
 	public void updateHandMarking(HandMarking newHandMarking) {
-		allHandMarking.put(newHandMarking.getShortName(), newHandMarking);
+		if(allHandMarking.containsKey(newHandMarking.getShortName())){
+			HandMarking currMarking = allHandMarking.get(newHandMarking.getShortName());
+			
+			currMarking.setColumnHeader(newHandMarking.getColumnHeader());
+			currMarking.setData(newHandMarking.getData());
+			currMarking.setRowHeader(newHandMarking.getRowHeader());
+		}
+		else{
+			allHandMarking.put(newHandMarking.getShortName(), newHandMarking);
+		}
 		// save to drive
 
 		String location = ProjectProperties.getInstance().getProjectLocation()
@@ -471,8 +515,10 @@ public class AssessmentDAO {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not update hand marking " + location + System.getProperty("line.separator")+ sw.toString());
 		}
 	}
 

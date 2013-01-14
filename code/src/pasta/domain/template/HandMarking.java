@@ -19,6 +19,8 @@ public class HandMarking {
 			FactoryUtils.instantiateFactory(Tuple.class));
 	private Map<String, HashMap<String, String>> data = LazyMap.decorate(new HashMap<String, HashMap<String, String>>(), 
 			FactoryUtils.instantiateFactory(HashMap.class));
+	
+	private HashMap<String, Double> columnHeaderMap = new HashMap<String, Double>();
 
 	public String getName() {
 		return name;
@@ -35,11 +37,17 @@ public class HandMarking {
 	public List<Tuple> getColumnHeader() {
 		return columnHeader;
 	}
+	
+	public Map<String, Double> getColumnHeaderAsMap() {
+		return columnHeaderMap;
+	}
 
 	public void setColumnHeader(List<Tuple> columnHeader) {
 		this.columnHeader.clear();
+		this.columnHeaderMap.clear();
 		for(Tuple column: columnHeader){
 			this.columnHeader.add(column);
+			this.columnHeaderMap.put(column.getName(), column.getWeight());
 		}
 	}
 
@@ -49,19 +57,15 @@ public class HandMarking {
 
 	public void setRowHeader(List<Tuple> rowHeader) {
 		this.rowHeader.clear();
-		for(Tuple row: rowHeader){
-			this.rowHeader.add(row);
-		}
+		this.rowHeader.addAll(rowHeader);
 	}
 
 	public Map<String, HashMap<String, String>> getData() {
 		return data;
 	}
 
-	public void setData(HashMap<String, HashMap<String, String>> data) {
+	public void setData(Map<String, HashMap<String, String>> data) {
 		this.data.clear();
-		for(Entry<String, HashMap<String, String>> dataEntry: data.entrySet()){
-			this.data.put(dataEntry.getKey(), dataEntry.getValue());
-		}
+		this.data.putAll(data);
 	}
 }

@@ -1,5 +1,7 @@
 package pasta.domain.template;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,7 +69,7 @@ public class Assessment {
 		return unitTests;
 	}
 
-	public void setUnitTests(ArrayList<WeightedUnitTest> unitTests) {
+	public void setUnitTests(List<WeightedUnitTest> unitTests) {
 		this.unitTests.clear();
 		this.unitTests.addAll(unitTests);
 	}
@@ -76,7 +78,7 @@ public class Assessment {
 		return secretUnitTests;
 	}
 
-	public void setSecretUnitTests(ArrayList<WeightedUnitTest> secretUnitTests) {
+	public void setSecretUnitTests(List<WeightedUnitTest> secretUnitTests) {
 		this.secretUnitTests.clear();
 		this.secretUnitTests.addAll(secretUnitTests);
 	}
@@ -85,7 +87,7 @@ public class Assessment {
 		return handMarking;
 	}
 
-	public void setHandMarking(ArrayList<WeightedHandMarking> handMarking) {
+	public void setHandMarking(List<WeightedHandMarking> handMarking) {
 		this.handMarking.clear();
 		this.handMarking.addAll(handMarking);
 	}
@@ -121,7 +123,10 @@ public class Assessment {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 			dueDate = sdf.parse(date.trim());
 		} catch (ParseException e) {
-			logger.error("Could not parse date " + e);
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not parse date " + sw.toString());
 		}
 		logger.info(dueDate);
 	}
@@ -226,6 +231,15 @@ public class Assessment {
 		}
 		for(WeightedUnitTest myTest: secretUnitTests){
 			if(test == myTest.getTest()){
+				return myTest.getWeight();
+			}
+		}
+		return 0;
+	}
+	
+	public double getWeighting(HandMarking test){
+		for(WeightedHandMarking myTest: handMarking){
+			if(test == myTest.getHandMarking()){
 				return myTest.getWeight();
 			}
 		}

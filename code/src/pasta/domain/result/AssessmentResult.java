@@ -62,7 +62,8 @@ public class AssessmentResult {
 	}
 
 	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
-		this.handMarkingResults = handMarkingResults;
+		this.handMarkingResults.clear();
+		this.handMarkingResults.addAll(handMarkingResults);
 	}
 
 	public void addUnitTest(UnitTestResult test){
@@ -98,10 +99,19 @@ public class AssessmentResult {
 	public double getMarks(){
 		double marks = 0;
 		double maxWeight = 0;
+		// unit tests
+		// regular
 		for(UnitTestResult result : unitTests){
 			marks += result.getPercentage()*assessment.getWeighting(result.getTest());
 			maxWeight += assessment.getWeighting(result.getTest());
 		}
+		
+		// hand marking
+		for(HandMarkingResult result : handMarkingResults){
+			marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
+			maxWeight += assessment.getWeighting(result.getMarkingTemplate());
+		}
+		
 		if(maxWeight == 0){
 			return 0;
 		}

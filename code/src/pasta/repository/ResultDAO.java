@@ -3,6 +3,7 @@ package pasta.repository;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -100,7 +101,10 @@ public class ResultDAO {
 				return result;
 			} 
 			catch (Exception e){
-				logger.error("Could not read result.xml" + System.getProperty("line.separator")+e);
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Could not read result.xml" + System.getProperty("line.separator")+sw.toString());
 			}
 		}
 		
@@ -123,7 +127,10 @@ public class ResultDAO {
 				return result;
 			}
 			catch(Exception e){
-				logger.error("Could not read compile.errors" + System.getProperty("line.separator")+e);
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Could not read compile.errors" + System.getProperty("line.separator")+sw.toString());
 			}
 		}
 		
@@ -144,10 +151,12 @@ public class ResultDAO {
 				return result;
 			}
 			catch(Exception e){
-				logger.error("Could not read run.errors" + System.getProperty("line.separator")+e);
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Could not read run.errors" + System.getProperty("line.separator")+sw.toString());
 			}
 		}
-		
 		return null; // TODO check if in the database
 	}
 	
@@ -239,6 +248,7 @@ public class ResultDAO {
 							}
 							else{
 								result.setHandMarkingTemplateShortName(hMarking.getHandMarking().getShortName());
+								result.setMarkingTemplate(hMarking.getHandMarking());
 								handResults.add(result);
 							}
 						}
@@ -327,36 +337,32 @@ public class ResultDAO {
 
 	public void saveHandMarkingToFile(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
+		 
 		for(HandMarkingResult result: handMarkingResults){
+			String location = ProjectProperties.getInstance()
+					.getProjectLocation()
+					+ "/submissions/"
+					+ username
+					+ "/assessments/"
+					+ assessmentName
+					+ "/"
+					+ assessmentDate
+					+ "/handMarking/" + result.getHandMarkingTemplateShortName();
 			// create the directory
-			(new File(ProjectProperties.getInstance()
-								.getProjectLocation()
-								+ "/submissions/"
-								+ username
-								+ "/assessments/"
-								+ assessmentName
-								+ "/"
-								+ assessmentDate
-								+ "/handMarking/" + result.getHandMarkingTemplateShortName())).mkdirs();
+			(new File(location)).mkdirs();
 			// save data
 			try {
-				PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance()
-									.getProjectLocation()
-									+ "/submissions/"
-									+ username
-									+ "/assessments/"
-									+ assessmentName
-									+ "/"
-									+ assessmentDate
-									+ "/handMarking/" + result.getHandMarkingTemplateShortName())
-									+ "/result.txt");
+				PrintWriter out = new PrintWriter(new File(location
+									+ "/result.txt"));
 				for(Entry<String, String> entry: result.getResult().entrySet()){
 					out.println(entry.getKey() + "," + entry.getValue());
 				}
 				out.close();
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Could not save hand marking submission " + location + System.getProperty("line.separator")+ sw.toString());
 			}
 		}
 	}
