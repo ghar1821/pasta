@@ -551,4 +551,20 @@ public class AssessmentDAO {
 
 		updateHandMarking(newMarking);
 	}
+
+	public void removeHandMarking(String handMarkingName) {
+		// remove from set
+		allHandMarking.remove(handMarkingName);
+		
+		// remove from assessments
+		for(Entry<String, Assessment> ass: allAssessments.entrySet()){
+			List<WeightedHandMarking> marking = ass.getValue().getHandMarking();
+			for(WeightedHandMarking weighted: marking){
+				if(weighted.getHandMarkingName().equals(handMarkingName)){
+					ass.getValue().getHandMarking().remove(weighted);
+					break;
+				}
+			}
+		}
+	}
 }

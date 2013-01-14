@@ -6,20 +6,11 @@
 
 <h1> Assessments</h1>
 
-<table class="pastaTable">
-	<tr>
-		<th>Status</th>
-		<th>Name</th>
-		<th>Due Date</th>
-		<th>Marks</th>
-		<th># Submissions Allowed</th>
-		<th>Tests</th>
-		<!-- <th>Delete</th>   deprecated delete?-->
-		<th>Release</th>
-	</tr>
+<table style="width:100%;">
 	<c:forEach var="assessment" items="${allAssessments}">
 		<tr>
-			<td>
+			<!-- icons -->
+			<td style="width:5em">
 				<c:if test="${not assessment.completelyTested}">
 					<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;" title="Contains untested unit tests."></span>
 				</c:if>
@@ -30,16 +21,64 @@
 					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
 				</c:if>
 			</td>
-			<td><a href="./${assessment.shortName}/">${assessment.name}</a>
-			<smallbutton id="delete" style="margin-left:-.1em; position:relative; top:-.7em" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>
-			<td>${assessment.dueDate}</td><td>${assessment.marks}</td>
-			<td>${assessment.numSubmissionsAllowed > 0 ? assessment.numSubmissionsAllowed : '&infin;'}</td>
-			<td>${fn:length(assessment.unitTests)}u, ${fn:length(assessment.secretUnitTests)}su, TODO hm, TODOc</td>
-			<!--<td><smallbutton id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>-->
-			<td><button id="delete" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();"><span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span></button></td>
+			<!-- Data -->
+			<td>
+				${assessment.name} -
+				<c:choose>
+					<c:when test="${assessment.marks != 0}">
+						 Out of ${assessment.marks}
+					</c:when>
+					<c:otherwise>
+						Unmarked
+					</c:otherwise>
+				</c:choose>
+				<br/>
+				${assessment.dueDate}
+				<br/>
+				<c:choose>
+					<c:when test="${assessment.numSubmissionsAllowed == 0}">
+						&infin; 
+					</c:when>
+					<c:otherwise>
+						${assessment.numSubmissionsAllowed}
+					</c:otherwise>
+				</c:choose>
+				sumbissions allowed <br/>
+				<c:choose>
+					<c:when test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests) + fn:length(assessment.handMarking)) == 0}">
+						No tests
+					</c:when>
+					<c:otherwise>
+						<c:if test="${fn:length(assessment.unitTests) > 0}">
+							${fn:length(assessment.unitTests)} Unit Tests </br>
+						</c:if>
+						<c:if test="${fn:length(assessment.secretUnitTests) > 0}">
+							${fn:length(assessment.secretUnitTests)} Secret Unit Tests </br>
+						</c:if>
+						<c:if test="${fn:length(assessment.handMarking) > 0}">
+							${fn:length(assessment.handMarking)} Hand marking templates </br>
+						</c:if>
+					</c:otherwise>
+				</c:choose>
+			</td>
+			<td>
+				<div style="float:left">
+					<button style="float:left; text-align: center; " onclick="location.href='./${assessment.shortName}/'">Details</button>
+				</div>
+				<div style="float:left">
+					<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
+					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${assessment.shortName}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+				</div>
+				<c:if test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests)) != 0}">
+					<div style="float:left">
+						<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
+						<button style="float:left; display:none; text-align: center; " onclick="location.href='./${assessment.shortName}/run/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+					</div>
+				</c:if>
+			</td>
 		</tr>
 	</c:forEach>
-</table> 
+</table>
 
 <button id="newPopup">Add a new Assessment</button>
 
@@ -59,14 +98,6 @@
 	</form:form>
 </div>
 
-<div id="comfirmPopup" >
-	<span class="button bClose">
-		<span><b>X</b></span>
-	</span>
-	<h1>Are you sure you want to do that?</h1>
-	<button id="comfirmButton" onClick="">Confirm</button>
-</div>
-	
 <script>
 	;(function($) {
 

@@ -6,13 +6,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -491,7 +488,7 @@ public class SubmissionManager {
 		}
 	}
 
-	// new TOOD add assessment
+	// new add assessment
 	public void addAssessment(Assessment assessmentToAdd) {
 		try {
 
@@ -540,7 +537,19 @@ public class SubmissionManager {
 			descriptionOut.close();
 
 			// add it to the list.
+			boolean reRunEverything = false;
+			Assessment currAss = assDao.getAssessment(assessmentToAdd.getShortName());
+			if(currAss != null 
+					&& !currAss.getUnitTests().equals(assessmentToAdd.getUnitTests())
+					&& !currAss.getSecretUnitTests().equals(assessmentToAdd.getSecretUnitTests())){
+				reRunEverything = true;
+			}
 			assDao.addAssessment(assessmentToAdd);
+			
+			if(reRunEverything){
+				runAssessment(assessmentToAdd);
+			}
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -621,6 +630,19 @@ public class SubmissionManager {
 					+ System.getProperty("line.separator") + e);
 		}
 	}
+	
+	public void runAssessment(Assessment assessment){
+		// scan to see all who made a submission
+		for(PASTAUser user: userDao.getUserList()){
+			// add them to the queue
+			AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getShortName());
+			if(currResult != null){
+				scheduler.save(new Job(user.getUsername(), 
+						assessment.getShortName(), 
+						currResult.getSubmissionDate()));
+			}
+		}
+	}
 
 	public void saveHandMarkingResults(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
@@ -637,4 +659,10 @@ public class SubmissionManager {
 			String assessmentDate) {
 		return resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate);
 	}
+
+	public void removeHandMarking(String handMarkingName) {
+		assDao.removeHandMarking(handMarkingName);
+	}
+	
+	
 }

@@ -7,25 +7,38 @@
 <h1> Unit Tests</h1>
 
 <table class="pastaTable">
-	<tr><th>Name</th><th>Tested</th><!-- <th><h1>Delete</h1></th> --></tr>
 	<c:forEach var="unitTest" items="${allUnitTests}">
 		<tr>
-			<td><a href="./${unitTest.shortName}/">${unitTest.name}</a>
-			<smallbutton id="delete" style="margin-left:-.1em; position:relative; top:-.7em" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</smallbutton></td>
-			<td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td>
-			<!-- <td><button id="delete" onClick="document.getElementById('comfirmDeleteButton').onclick = function(){ location.href='./delete/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">X</button></td>
-		--></tr>
+			<td class="pastaTF pastaTF${unitTest.tested}">
+				<!-- status -->
+				<c:choose>
+					<c:when test="${unitTest.tested}">
+						TESTED
+					</c:when>
+					<c:otherwise>
+						UNTESTED
+					</c:otherwise>
+				</c:choose>
+			</td>
+			<td>
+				<!-- name -->
+				${unitTest.name}
+			</td>
+			<td>
+				<!-- buttons -->
+				<div style="float:left">
+					<button style="float:left; text-align: center; " onclick="location.href='./${unitTest.shortName}/'">Details</button>
+				</div>
+				<div style="float:left">
+					<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
+					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.shortName}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+				</div>
+			</td>
+		</tr>
 	</c:forEach>
 </table>
 
 <button id="newPopup">Add a new Unit Test</button>
-
-<div id="comfirmPopup" >
-	<span class="button bClose">
-		<span><b>X</b></span>
-	</span>
-	<button id="comfirmDeleteButton" onClick="">Confirm Deletion</button>
-</div>
 
 <div id="newUnitTest" >
 	<span class="button bClose">

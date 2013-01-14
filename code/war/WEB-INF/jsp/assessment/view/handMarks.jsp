@@ -19,7 +19,7 @@
 						<form:input type="text" path="columnHeader[${columnStatus.index}].name"/></br>
 						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Column</div>
-						<div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Comfirm</div>
+						<div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
 					</th>
 				</c:forEach>
 			</tr>
@@ -31,7 +31,7 @@
 						<form:input type="text" path="rowHeader[${rowStatus.index}].name"/></br>
 						<form:input type="text" path="rowHeader[${rowStatus.index}].weight"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Row</div>
-						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Comfirm</div>
+						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
 					</th>
 					<c:forEach var="column" items="${handMarking.columnHeader}">
 						<td>

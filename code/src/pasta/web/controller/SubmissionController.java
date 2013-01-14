@@ -138,6 +138,22 @@ public class SubmissionController {
 		}
 		return "redirect:.";
 	}
+	
+	// view an assessment
+		@RequestMapping(value = "assessments/{assessmentName}/run/")
+		public String runAssessment(
+				@PathVariable("assessmentName") String assessmentName,
+				HttpServletRequest request) {
+
+			if(getUser() == null || !getUser().isTutor()){
+				return "redirect:/home/.";
+			}
+			if(getUser().isInstructor()){
+				manager.runAssessment(manager.getAssessment(assessmentName));
+			}
+			String referer = request.getHeader("Referer");
+			return "redirect:"+ referer;
+		}
 
 	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/")
@@ -321,6 +337,19 @@ public class SubmissionController {
 			return "redirect:./"+form.getShortName()+"/";
 		}
 		return "redirect:.";
+	}
+	
+	// delete a unit test
+	@RequestMapping(value = "handMarking/delete/{handMarkingName}/")
+	public String deleteHandMarking(@PathVariable("handMarkingName") String handMarkingName,
+			Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.removeHandMarking(handMarkingName);
+		}
+		return "redirect:../../";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

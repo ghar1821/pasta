@@ -15,8 +15,8 @@
 	</c:if>
 	
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
+	<div style="margin-top:1em;float:left;" class="button" onClick="window.location.href=window.location.href+'run/'">Re-Run Assessment</div>
 	
-	<!--TODO make the values changable #45 -->
 	<table>
 		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
 		<tr><td>Assessment DueDate:</td><td><form:input type="text" path="simpleDueDate" id="simpleDueDate" name="simpleDueDate"/></td></tr>
