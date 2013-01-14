@@ -4,18 +4,23 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
+
+<c:if test="${not assessment.completelyTested}" >
+	<div class="ui-state-error ui-corner-all" style="font-size: 1.5em;">
+		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span><b>WARNING: This assessment contains untested unit tests</b>
+	</div>
+</c:if>
+
+<button style="margin-top:1em;float:left;" class="button" onClick="window.location.href=window.location.href+'run/'">Re-Run Assessment</button>
+
 <form:form commandName="assessment" enctype="multipart/form-data" method="POST">
 	
-	<h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
 	
-	<c:if test="${not assessment.completelyTested}" >
-		<div class="ui-state-error ui-corner-all" style="font-size: 1.5em;">
-			<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span><b>WARNING: This assessment contains untested unit tests</b>
-		</div>
-	</c:if>
+	
 	
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
-	<div style="margin-top:1em;float:left;" class="button" onClick="window.location.href=window.location.href+'run/'">Re-Run Assessment</div>
+	
 	
 	<table>
 		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
