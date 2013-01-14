@@ -1200,13 +1200,12 @@ ul.caretListItem li {
 #content table td,#content table th {
 	margin: 0;
 	padding: .4em;
-	background: none;
 	font-size: 1.2em;
 }
 
 #content table th {
 	font-weight: bold;
-	background: #fae0a9;
+	background-color: #fae0a9;
 	vertical-align: middle;
 }
 
