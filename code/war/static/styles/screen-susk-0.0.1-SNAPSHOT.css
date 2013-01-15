@@ -35,11 +35,6 @@ pre {
     z-index: 1000;
 }
 
-.gradeCentreMark{
-
-	background-color: #0C0 !important; 
-	color: black;
-	}
 .gradeCentreMarkGood{
 	background-color: #1FCB4A; 
 }
