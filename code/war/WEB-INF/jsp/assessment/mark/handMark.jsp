@@ -11,8 +11,8 @@
 </ul>
 
 <form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
-	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 	<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
+		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 		<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].handMarkingTemplateShortName" value="${handMarking.handMarking.shortName}"/>
 		<table id="handMarkingTable${handMarkingStatus.index}">
 			<thead>
@@ -47,8 +47,11 @@
 				</c:forEach>
 			</tbody>
 		</table>
-		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 	</c:forEach>
+	
+	<form:textarea style="height:200px; width:95%" path="comments"/>
+	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
+	
 </form:form>
 
 <script>

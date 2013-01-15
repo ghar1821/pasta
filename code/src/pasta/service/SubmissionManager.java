@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -667,7 +668,7 @@ public class SubmissionManager {
 		assDao.removeHandMarking(handMarkingName);
 	}
 
-	public FileTreeNode genereateFileTree(String username,
+	public FileTreeNode generateFileTree(String username,
 			String assessmentName, String assessmentDate) {
 		return generateFileTree(ProjectProperties.getInstance().getProjectLocation()
 				+ "/submissions/"
@@ -703,6 +704,45 @@ public class SubmissionManager {
 			e.printStackTrace();
 		}
 		return file;
+	}
+
+	public HashMap<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
+		HashMap<String, FileTreeNode> allsubmissions = new HashMap<String, FileTreeNode>();
+		
+		String[] allSubs = (new File(ProjectProperties.getInstance().getProjectLocation()
+				+ "/submissions/"
+				+ username
+				+ "/assessments/"
+				+ assessmentName).list());
+		if(allSubs != null && allSubs.length > 0){
+			for(String submission : allSubs){
+				if(submission.matches("\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d-\\d\\d-\\d\\d")){
+					allsubmissions.put(submission, generateFileTree(username, assessmentName, submission));
+				}
+			}
+		}
+		
+		return allsubmissions;
+	}
+
+	public void saveComment(String username, String assessmentName,
+			String assessmentDate, String comments) {
+		resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate).setComments(comments);
+		try {
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()
+					+ "/submissions/"
+					+ username
+					+ "/assessments/"
+					+ assessmentName
+					+ "/"
+					+ assessmentDate
+					+ "/comments.txt"));
+			out.print(comments);
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	

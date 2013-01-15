@@ -19,6 +19,7 @@ public class AssessmentResult {
 	private Assessment assessment;
 	private int submissionsMade;
 	private Date submissionDate;
+	private String comments;
 	
 	public Collection<UnitTestResult> getUnitTests() {
 		return unitTests;
@@ -139,6 +140,14 @@ public class AssessmentResult {
 			return 0;
 		}
 		return (marks / maxWeight);
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
 	}
 
 }

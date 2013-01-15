@@ -20,6 +20,12 @@ ${assessment.description}
 	
 	<c:forEach var="result" items="${history}" varStatus="resultStatus">
 		<h4>${result.submissionDate}</h4>
+		<c:if test="${unikey.tutor}">
+			<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
+			<ul class="list">
+				<jsp:include page="../recursive/fileWriter.jsp"/>
+			</ul>
+		</c:if>
 		<c:choose>
 			<c:when test="${result.compileError}">
 				<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
@@ -37,9 +43,7 @@ ${assessment.description}
 					</c:forEach>
 				</c:if>
 				<div style="width:100%; text-align:right;">
-					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
-					</c:if>
+					<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
 					<c:if test="${ unikey.tutor }" >
 						<!-- tutor abilities -->
 						<!-- if assessment has hand marking -->
@@ -68,21 +72,32 @@ ${assessment.description}
 					</c:if>
 				</div>
 				<div id="${resultStatus.index}" style="display:none">
-					<table class="pastaTable" >
-						<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-						<c:forEach var="allUnitTests" items="${result.unitTests}">
-							<c:forEach var="testCase" items="${allUnitTests.testCases}">
-								<tr>
-									<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-									<td style="text-align:left;">${testCase.testName}</td>
-									<td>${testCase.time}</td>
-									<td>
-										<pre>${testCase.type} - ${testCase.testMessage}</pre>
-									</td>
-								</tr>
+					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+						<table class="pastaTable" >
+							<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+							<c:forEach var="allUnitTests" items="${result.unitTests}">
+								<c:forEach var="testCase" items="${allUnitTests.testCases}">
+									<tr>
+										<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+										<td style="text-align:left;">${testCase.testName}</td>
+										<td>${testCase.time}</td>
+										<td>
+											<pre>${testCase.type} - ${testCase.testMessage}</pre>
+										</td>
+									</tr>
+								</c:forEach>
 							</c:forEach>
-						</c:forEach>
-					</table>
+						</table>
+					</c:if>
+					<h5>Comments</h2>
+					<c:choose>
+						<c:when test="${empty result.comments}">
+							No comments
+						</c:when>
+						<c:otherwise>
+							${result.comments}
+						</c:otherwise>
+					</c:choose>
 				</div>
 			</c:otherwise>
 		</c:choose>

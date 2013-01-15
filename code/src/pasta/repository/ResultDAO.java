@@ -264,6 +264,27 @@ public class ResultDAO {
 							assessResult.setSubmissionDate(new Date());
 							logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getShortName());
 						}
+						
+						// comments
+						try {
+							Scanner in = new Scanner(new File(ProjectProperties.getInstance()
+												.getProjectLocation()
+												+ "/submissions/"
+												+ currUser
+												+ "/assessments/"
+												+ assessment.getShortName()
+												+ "/"
+												+ latest
+												+ "/comments.txt"));
+							String comments = "";
+							while(in.hasNextLine()){
+								comments+=in.nextLine() + System.getProperty("line.separator");
+							}
+							in.close();
+							assessResult.setComments(comments);
+						} catch (FileNotFoundException e) {
+						}
+						
 						assessResult.setUnitTests(utresults);
 						assessResult.setHandMarkingResults(handResults);
 						

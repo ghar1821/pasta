@@ -539,6 +539,7 @@ public class SubmissionController {
 		}
 		model.addAttribute("assessment", manager.getAssessment(assessmentName));
 		model.addAttribute("history", manager.getAssessmentHistory(user.getUsername(), assessmentName));
+		model.addAttribute("nodeList", manager.genereateFileTree(user.getUsername(), assessmentName));
 		model.addAttribute("unikey", getOrCreateUser());
 
 		return "user/viewAssessment";
@@ -622,6 +623,7 @@ public class SubmissionController {
 		model.addAttribute("history", manager.getAssessmentHistory(username, assessmentName));
 		model.addAttribute("unikey", getOrCreateUser());
 		model.addAttribute("viewedUser", manager.getUser(username));
+		model.addAttribute("nodeList", manager.genereateFileTree(username, assessmentName));
 
 		return "user/viewAssessment";
 	}
@@ -659,7 +661,7 @@ public class SubmissionController {
 		
 		AssessmentResult result = manager.getAssessmentResult(username, assessmentName, assessmentDate);
 		
-		model.addAttribute("node", manager.genereateFileTree(username, assessmentName, assessmentDate));
+		model.addAttribute("node", manager.generateFileTree(username, assessmentName, assessmentDate));
 		model.addAttribute("assessmentResult", result);
 		model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
 		
@@ -684,6 +686,7 @@ public class SubmissionController {
 			currResult.setMarkingTemplate(manager.getHandMarking(currResult.getHandMarkingTemplateShortName()));
 		}
 		manager.saveHandMarkingResults(username, assessmentName, assessmentDate, form.getHandMarkingResults());
+		manager.saveComment(username, assessmentName, assessmentDate, form.getComments());
 		
 		return "redirect:.";
 	}

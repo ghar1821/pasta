@@ -7,10 +7,12 @@
 <c:choose>
 	<c:when test="${not node.leaf}">
 		<li class="list">
-			<span style="float:left;" class="ui-icon ui-icon-folder-open"></span>
-			${node.name}
+			<div style="cursor:pointer" onclick="$(this).children().toggleClass('ui-icon-folder-collapsed ui-icon-folder-open');$(this).parent().next().toggle('fast');">
+				<span style="float:left;" class="ui-icon ui-icon-folder-collapsed">poo</span>
+				${node.name}
+			</div>
 		</li>
-		<ul class="list">
+		<ul class="list" style="display:none">
 			<c:forEach var="node" items="${node.children}">
 				<c:set var="node" value="${node}" scope="request"/>
 				<jsp:include page="fileWriter.jsp"/>
@@ -19,7 +21,7 @@
 	</c:when>
 	<c:otherwise>
 		<li class="list">
-			<form action="../../../../viewFile/" method="post" target="_blank">
+			<form action="${pageContext.request.contextPath}/viewFile/" method="post" target="_blank">
 				<input type="hidden" name="location" value="${node.location}"/>
 			    <div style="cursor:pointer" onclick="this.parentNode.submit()">
 			    	<span style="float:left;" class="ui-icon ui-icon-document"></span>
