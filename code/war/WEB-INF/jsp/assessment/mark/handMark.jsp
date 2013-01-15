@@ -6,6 +6,10 @@
 
 <h1>${assessmentName} - ${student}</h1>
 
+<ul class="list">
+<jsp:include page="../../recursive/fileWriter.jsp"/>
+</ul>
+
 <form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
 	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 	<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">

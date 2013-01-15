@@ -16,11 +16,7 @@
 
 <form:form commandName="assessment" enctype="multipart/form-data" method="POST">
 	
-	
-	
-	
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
-	
 	
 	<table>
 		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>

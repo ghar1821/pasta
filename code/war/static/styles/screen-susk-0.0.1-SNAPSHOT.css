@@ -18,6 +18,14 @@ pre {
 /*
  * gets wrapped around placeholder table
  */
+ 
+ ul.list{
+ 	list-style-type: none;
+ }
+ 
+ li.list{
+ 	list-style-type: none;
+ }
   
 .dragtable-drag-wrapper{
 	position: absolute;

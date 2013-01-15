@@ -9,7 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -23,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.FileTreeNode;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.AssessmentResult;
@@ -662,6 +665,44 @@ public class SubmissionManager {
 
 	public void removeHandMarking(String handMarkingName) {
 		assDao.removeHandMarking(handMarkingName);
+	}
+
+	public FileTreeNode genereateFileTree(String username,
+			String assessmentName, String assessmentDate) {
+		return generateFileTree(ProjectProperties.getInstance().getProjectLocation()
+				+ "/submissions/"
+				+ username
+				+ "/assessments/"
+				+ assessmentName
+				+ "/"
+				+ assessmentDate
+				+ "/submission");
+	}
+	
+	private FileTreeNode generateFileTree(String location){
+		File[] subDirectories = new File(location).listFiles();
+		if(subDirectories == null || subDirectories.length == 0){
+			return new FileTreeNode(location, null);
+		}
+		List<FileTreeNode> children = new LinkedList<FileTreeNode>();
+		for(File subDirectory: subDirectories){
+			children.add(generateFileTree(subDirectory.getAbsolutePath()));
+		}
+		return new FileTreeNode(location, children);
+	}
+
+	public String scrapeFile(String location) {
+		String file = "";
+		try {
+			Scanner in = new Scanner(new File(location));
+			while(in.hasNextLine()){
+				file+=in.nextLine() + System.getProperty("line.separator");
+			}
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return file;
 	}
 	
 	

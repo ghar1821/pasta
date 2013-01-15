@@ -1,7 +1,9 @@
 package pasta.web.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -46,10 +49,31 @@ import pasta.service.SubmissionManager;
  *
  */
 public class SubmissionController {
+	
+	public SubmissionController(){
+		codeStyle = new HashMap<String, String>();
+		codeStyle.put("c", "ccode");
+		codeStyle.put("cpp", "cppcode");
+		codeStyle.put("h", "cppcode");
+		codeStyle.put("cs", "csharpcode");
+		codeStyle.put("css", "csscode");
+		codeStyle.put("html", "htmlcode");
+		codeStyle.put("java", "javacode");
+		codeStyle.put("js", "javascriptcode");
+		codeStyle.put("pl", "perlcode");
+		codeStyle.put("pm", "perlcode");
+		codeStyle.put("php", "phpcode");
+		codeStyle.put("py", "pythoncode");
+		codeStyle.put("rb", "rubycode");
+		codeStyle.put("sql", "sqlcode");
+		codeStyle.put("xml", "xmlsqlcode");
+	}
+	
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private SubmissionManager manager;
 	private AuthValidator validator = new AuthValidator();
+	private HashMap<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
@@ -524,6 +548,24 @@ public class SubmissionController {
 	// VIEW //
 	// ///////////////////////////////////////////////////////////////////////////
 	
+	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
+	public String viewFile(@RequestParam("location") String location, Model model){
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if(user.isTutor()){
+				model.addAttribute("unikey", user);
+				model.addAttribute("codeStyle", codeStyle);
+				model.addAttribute("fileContents", manager.scrapeFile(location));
+				model.addAttribute("fileEnding", location.substring(location.lastIndexOf(".")+1));
+				return "assessment/mark/viewFile";
+			}
+			else{
+				return "redirect:/home/";
+			}
+		}
+		return "redirect:/login/";
+	}
+	
 	// home page
 	@RequestMapping(value = "student/{username}/home/")
 	public String viewStudent(@PathVariable("username") String username,
@@ -617,6 +659,7 @@ public class SubmissionController {
 		
 		AssessmentResult result = manager.getAssessmentResult(username, assessmentName, assessmentDate);
 		
+		model.addAttribute("node", manager.genereateFileTree(username, assessmentName, assessmentDate));
 		model.addAttribute("assessmentResult", result);
 		model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
 		
