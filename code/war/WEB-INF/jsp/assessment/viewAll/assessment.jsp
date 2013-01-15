@@ -27,32 +27,32 @@
 					<!--  onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">-->
 					<div style="clear: both;"></div>
 					<div id="release${assessment.shortName}" style="display: none;">
-						<ul class="tristate">
-							<li><input type="checkbox"> All <c:forEach
+						<ul class="tristate list">
+							<li class="list"><input type="checkbox"> All <c:forEach
 									var="stream" items="${allStream}">
 									<c:forEach var="class" items="${allClass}">
 									</c:forEach>
 								</c:forEach>
 								<ul>
-									<li><input type="checkbox"><a href="#">Solutions</a>
+									<li class="list"><input type="checkbox"><a href="#">Solutions</a>
 										<ul>
-											<li><input type="checkbox"><a href="#">Government</a></li>
-											<li><input type="checkbox"><a href="#">Manufacturing</a></li>
-											<li><input type="checkbox"><a href="#">Solutions</a>
+											<li class="list"><input type="checkbox"><a href="#">Government</a></li>
+											<li class="list"><input type="checkbox"><a href="#">Manufacturing</a></li>
+											<li class="list"><input type="checkbox"><a href="#">Solutions</a>
 												<ul>
-													<li><input type="checkbox" checked><a href="#">Consumer
+													<li class="list"><input type="checkbox" checked><a href="#">Consumer
 															photo and video</a></li>
-													<li><input type="checkbox" checked><a href="#">Mobile</a></li>
-													<li><input type="checkbox"><a href="#">Rich
+													<li class="list"><input type="checkbox" checked><a href="#">Mobile</a></li>
+													<li class="list"><input type="checkbox"><a href="#">Rich
 															Internet applications</a></li>
-													<li><input type="checkbox"><a href="#">Technical
+													<li class="list"><input type="checkbox"><a href="#">Technical
 															communication</a></li>
-													<li><input type="checkbox"><a href="#">Training
+													<li class="list"><input type="checkbox"><a href="#">Training
 															and eLearning</a></li>
-													<li><input type="checkbox"><a href="#">Web
+													<li class="list"><input type="checkbox"><a href="#">Web
 															conferencing</a></li>
 												</ul></li>
-											<li><input type="checkbox"><a href="#">All
+											<li class="list"><input type="checkbox"><a href="#">All
 													industries and solutions</a></li>
 										</ul></li>
 								</ul></li>
