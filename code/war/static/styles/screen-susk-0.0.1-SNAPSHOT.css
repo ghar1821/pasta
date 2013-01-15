@@ -1,3 +1,6 @@
+
+
+
 /** susk-detail */
 pre {
 	margin: 0;
@@ -32,6 +35,11 @@ pre {
     z-index: 1000;
 }
 
+.gradeCentreMark{
+
+	background-color: #0C0 !important; 
+	color: black;
+	}
 .gradeCentreMarkGood{
 	background-color: #1FCB4A; 
 }
@@ -42,6 +50,7 @@ pre {
 
 .gradeCentreMarkNoSub{
 	background-color: #FF7575; 
+
 }
 
  /*
@@ -79,41 +88,35 @@ div .pastaUnitTestBoxResultpass {
 	background-color: #0C0;
 }
 
-div .pastaUnitTestBoxResultfailure, div .pastaUnitTestBoxResulterror {
-	background-color: red;
-}
-smallbutton,#submit,.button {
+/* Buttons */
+
+button,smallbutton,#submit,.button {
+
 	cursor: pointer;
 	clear: both;
 	border: 1px solid #DBD3C2;
 	font-weight: bold;
 	background-color: #CE1126;
-	line-height: 1em;
 	color: white;
-	padding: 0px 2px;
 }
-smallbutton:hover,#submit:hover,.button:hover {
-	border-color: #DBD3C2;
-	background-color: #12416C;
-}
-
+/* button size */
 button,#submit,.button {
-	cursor: pointer;
-	clear: both;
-	border: 1px solid #DBD3C2;
-	font-weight: bold;
-	background-color: #CE1126;
-	line-height: 2em;
-	color: white;
-	padding: 3px 20px
+line-height: 2em;
+padding: 3px 20px;
 }
-
-button:hover,#submit:hover,.button:hover {
+button:hover,#submit:hover,.button:hover,smallbutton:hover {
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
-
-#newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest
+/* button size and positioning */
+smallbutton{
+	line-height: 1em;
+	padding: 0px 2px;
+	margin-left:-.1em; 
+	position:relative; 
+	top:-.7em;
+}
+#newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;
@@ -279,8 +282,8 @@ button:hover,#submit:hover,.button:hover {
 	border: solid 1px #DBD3C2;
 	background: #FDFCDE;
 }
-
-.susk-form p,.susk-form form,.susk-form button {
+/*.susk-form p,*/
+.susk-form form,.susk-form button {
 	border: 0px;
 	margin: 0px;
 	padding: 0px;
@@ -290,7 +293,7 @@ button:hover,#submit:hover,.button:hover {
 	clear: both;
 	height: 1px;
 }
-
+/*
 .susk-form form>p {
 	font-size: 0.7em;
 	color: #545456;
@@ -298,17 +301,17 @@ button:hover,#submit:hover,.button:hover {
 	border-bottom: solid 1px #BBBBBB;
 	padding-bottom: 10px;
 }
-
+/*
 .susk-form-h1,.susk-detail-h1 {
 	font-size: 1.5em;
 	color: #CE1126;
 	margin-top: 0.5em;
 	margin-bottom: 0.5em;
-}
-
+}*/
+/*
 .susk-form .small {
 	font-size: 0.65em;
-}
+}*/
 
 .susk-form label {
 	display: block;
@@ -319,7 +322,7 @@ button:hover,#submit:hover,.button:hover {
 	width: 140px;
 	float: left;
 }
-
+/*
 input[type=radio].susk-radio {
 	float: left;
 	margin: 0px 5px 0px 0px !important;
@@ -341,7 +344,8 @@ label.susk-radio {
 	line-height: 16px;
 }
 */
-.susk-form input,.susk-form textarea,.susk-form select {
+/*,.susk-form textarea,.susk-form select*/
+.susk-form input {
 	padding: 4px 2px;
 	border: solid 1px #DDDDDD;
 	margin: 2px 0 20px 10px;
@@ -354,7 +358,7 @@ label.susk-radio {
 .susk-form input {
 	width: 300px;
 }
-
+/*
 .susk-form button {
 	cursor: pointer;
 	clear: both;
@@ -374,7 +378,7 @@ label.susk-radio {
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
-
+*/
 /** Errors */
 .susk-form .susk-form-errors,.susk-form .susk-form-error {
 	color: #CE1126;
@@ -384,6 +388,7 @@ label.susk-radio {
 }
 
 /** Susk Info Bar */
+/*
 .susk-info-bar {
 	background-color: #fffff4;
 	border: 1px solid #999999;

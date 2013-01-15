@@ -25,7 +25,7 @@
 		<div class="susk-form-clear"></div>
 		
 		<div style="text-align:left">
-			<button type="submit" id="Submit" name="Submit">Login</button>
+			<button type="submit" style= "margin-left: 17.5em; padding-left: 1em;padding-right: 1em;"id="Submit" name="Submit">Login</button>
 		</div>
 		<div class="susk-form-clear"></div>
 	</form:form>

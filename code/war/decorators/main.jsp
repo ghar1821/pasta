@@ -33,7 +33,7 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dragtable.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
-		
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tristate.min.js" htmlEscape="true" />"></script>
 		<decorator:head />
 		
 		<script>
@@ -52,8 +52,8 @@
 				$("pre.pythoncode").snippet("python",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.rubycode").snippet("ruby",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.sqlcode").snippet("sql",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});
-			});
+				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});		
+				});
 		</script>
 	</head>
 	<body id="home">

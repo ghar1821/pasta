@@ -8,7 +8,7 @@
 
 <table class="pastaTable">
 	<c:forEach var="unitTest" items="${allUnitTests}">
-		<tr>
+		<tr>		
 			<td class="pastaTF pastaTF${unitTest.tested}">
 				<!-- status -->
 				<c:choose>
