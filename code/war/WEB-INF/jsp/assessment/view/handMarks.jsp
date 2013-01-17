@@ -73,7 +73,7 @@
 		var tblBodyObj = document.getElementById("handMarkingTable").tBodies[0];
 		for (var i=0; i<tblBodyObj.rows.length; i++) {
 			var newCell = tblBodyObj.rows[i].insertCell(-1);
-			newCell.innerHTML = '???</br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br>'
+			newCell.innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
 		}
 	}
 	

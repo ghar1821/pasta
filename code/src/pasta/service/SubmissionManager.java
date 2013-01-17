@@ -216,7 +216,7 @@ public class SubmissionManager {
 					
 					String unitTestsLocation = ProjectProperties.getInstance().getProjectLocation()
 							+ "/submissions/" + job.getUsername() + "/assessments/"
-							+ job.getAssessmentName() + "/" + sdf.format(new Date()) + "/unitTests";
+							+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/unitTests";
 					// run unit tests
 					for(WeightedUnitTest test: currAssessment.getUnitTests()){
 						try {
@@ -284,7 +284,7 @@ public class SubmissionManager {
 					scheduler.delete(job);
 					
 					// update resultDAO
-					resultDAO.loadNewAssessment(job.getUsername(), currAssessment, job.getRunDate());
+					resultDAO.updateUnitTestResults(job.getUsername(), currAssessment, job.getRunDate());
 				} catch (Exception e) {
 					logger.error("Execution error for " + job.getUsername() + " - " + job.getAssessmentName() + "   " + e);
 				}
@@ -411,6 +411,8 @@ public class SubmissionManager {
 
 	// new - test submission
 	public void testUnitTest(Submission submission, String testName) {
+		PrintStream compileErrors = null;
+		PrintStream runErrors = null;
 		try {
 			UnitTest thisTest = getUnitTest(testName);
 			// delete old submission if exists
@@ -442,9 +444,9 @@ public class SubmissionManager {
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 			DefaultLogger consoleLogger = new DefaultLogger();
-			PrintStream compileErrors = new PrintStream(
+			compileErrors = new PrintStream(
 					thisTest.getFileLocation() + "/test/compile.errors");
-			PrintStream runErrors = new PrintStream(thisTest.getFileLocation()
+			runErrors = new PrintStream(thisTest.getFileLocation()
 					+ "/test/run.errors");
 			consoleLogger.setErrorPrintStream(compileErrors);
 			consoleLogger.setOutputPrintStream(runErrors);
@@ -465,7 +467,6 @@ public class SubmissionManager {
 			}
 
 			runErrors.close();
-			compileErrors.flush();
 			compileErrors.close();
 
 			// delete everything else
@@ -489,6 +490,12 @@ public class SubmissionManager {
 			logger.error("Unable to test unit test "
 					+ getUnitTest(testName).getName()
 					+ System.getProperty("line.separator") + e);
+		}
+		if(runErrors != null){
+			runErrors.close();
+		}
+		if(compileErrors != null){
+			compileErrors.close();
 		}
 	}
 
@@ -650,7 +657,7 @@ public class SubmissionManager {
 
 	public void saveHandMarkingResults(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
-		AssessmentResult result = resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate);
+		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
 		// save to memory
 		if(result != null){
 			result.setHandMarkingResults(handMarkingResults);
@@ -661,11 +668,17 @@ public class SubmissionManager {
 
 	public AssessmentResult getAssessmentResult(String username, String assessmentName,
 			String assessmentDate) {
-		return resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate);
+		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
 	}
 
 	public void removeHandMarking(String handMarkingName) {
 		assDao.removeHandMarking(handMarkingName);
+		// delete file
+		try {
+			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance().getProjectLocation()
+					+ "/template/handMarking/"
+					+ handMarkingName));
+		} catch (IOException e) {}
 	}
 
 	public FileTreeNode generateFileTree(String username,
@@ -680,7 +693,7 @@ public class SubmissionManager {
 				+ "/submission");
 	}
 	
-	private FileTreeNode generateFileTree(String location){
+	public FileTreeNode generateFileTree(String location){
 		File[] subDirectories = new File(location).listFiles();
 		if(subDirectories == null || subDirectories.length == 0){
 			return new FileTreeNode(location, null);
@@ -727,22 +740,8 @@ public class SubmissionManager {
 
 	public void saveComment(String username, String assessmentName,
 			String assessmentDate, String comments) {
-		resultDAO.getAsssessmentResult(username, assessmentName, assessmentDate).setComments(comments);
-		try {
-			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()
-					+ "/submissions/"
-					+ username
-					+ "/assessments/"
-					+ assessmentName
-					+ "/"
-					+ assessmentDate
-					+ "/comments.txt"));
-			out.print(comments);
-			out.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// make that better
+		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
 	}
 	
 	

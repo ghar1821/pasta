@@ -1,9 +1,9 @@
 package pasta.web.controller;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +66,7 @@ public class SubmissionController {
 		codeStyle.put("py", "pythoncode");
 		codeStyle.put("rb", "rubycode");
 		codeStyle.put("sql", "sqlcode");
-		codeStyle.put("xml", "xmlsqlcode");
+		codeStyle.put("xml", "xmlcode");
 	}
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -393,6 +393,7 @@ public class SubmissionController {
 				"latestResult",
 				manager.getUnitTestResult(manager.getUnitTest(testName)
 						.getFileLocation() + "/test"));
+		model.addAttribute("node", manager.generateFileTree(manager.getUnitTest(testName).getFileLocation()+"/code"));
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/unitTest";
 	}
@@ -556,7 +557,7 @@ public class SubmissionController {
 			if(user.isTutor()){
 				model.addAttribute("unikey", user);
 				model.addAttribute("codeStyle", codeStyle);
-				model.addAttribute("fileContents", manager.scrapeFile(location));
+				model.addAttribute("fileContents", manager.scrapeFile(location).replace(">", "&gt;").replace("<", "&lt;"));
 				model.addAttribute("fileEnding", location.substring(location.lastIndexOf(".")+1));
 				return "assessment/mark/viewFile";
 			}

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -38,18 +39,27 @@ public class ResultDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
-	HashMap<String, HashMap<String, HashMap<String, AssessmentResult>>> results;
+	HashMap<String, HashMap<String, AssessmentResult>> results;
 	
+	/**
+	 * loads up all of the latest results
+	 * @param assDao - for linking the assessments with the results
+	 */
 	public ResultDAO(AssessmentDAO assDao){
 		loadAssessmentHistoryFromFile(assDao);
 	}
 
+	/**
+	 * Load a unit test result from a location
+	 * @param location - location of the test
+	 * @return the result
+	 */
 	public UnitTestResult getUnitTestResult(String location){
 		UnitTestResult result = new UnitTestResult();
 		
 		// check to see if there is a results.xml file
 		File testResults = new File(location+"/result.xml");
-		if(testResults.exists()){
+		if(testResults.exists() && testResults.length() != 0){
 			try{	
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder dBuilder;
@@ -110,9 +120,7 @@ public class ResultDAO {
 		
 		// check to see if there is a compile.errors file
 		File compileErrors = new File(location+"/compile.errors");
-		System.out.println(location+"/compile.errors");
-		if(compileErrors.exists()){
-			System.out.println("exists");
+		if(compileErrors.exists() && compileErrors.length() != 0){
 			try{
 				// read in
 				Scanner in = new Scanner (compileErrors);
@@ -122,6 +130,7 @@ public class ResultDAO {
 				}
 				// set 
 				result.setCompileErrors(input);
+				in.close();
 				
 				// return
 				return result;
@@ -136,7 +145,7 @@ public class ResultDAO {
 		
 		// check to see if there is a run.errors file
 		File runErrors = new File(location+"/run.errors");
-		if(runErrors.exists()){
+		if(runErrors.exists() && runErrors.length() != 0){
 			try{
 				// read in
 				Scanner in = new Scanner (runErrors);
@@ -146,6 +155,7 @@ public class ResultDAO {
 				}
 				// set 
 				result.setRuntimeErrors(input);
+				in.close();
 				
 				// return
 				return result;
@@ -160,147 +170,145 @@ public class ResultDAO {
 		return null; // TODO check if in the database
 	}
 	
+	/**
+	 * Get the latest result for a user.
+	 * @param username - the username of the user
+	 * @return
+	 */
 	public HashMap<String, AssessmentResult> getLatestResults(String username){
-		HashMap<String, AssessmentResult> results = new HashMap<String, AssessmentResult>();
+		return results.get(username);
+	}
+	
+	/**
+	 * Get the assessment history for a particular user's history
+	 * @param username - the username of the user
+	 * @param assessment - the assessment (for linking purposes)
+	 * @return All of the assessments submitted for this user for this assessment
+	 */
+	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
+		// scan folder
+		String[] allFiles = (new File(ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/submissions/"
+				+ username
+				+ "/assessments/"
+				+ assessment.getShortName())).list();
 		
-		if(this.results.get(username) != null){
-			for(Entry<String, HashMap<String, AssessmentResult>> allAssesmentResults :this.results.get(username).entrySet()){
-				AssessmentResult latest = null;
-				for(AssessmentResult result: allAssesmentResults.getValue().values()){
-					// too tired to do this nicely.
-					latest = result;
-					break;
-				}
-				if(latest != null){
-					results.put(allAssesmentResults.getKey(), latest);
-				}
+		Collection<AssessmentResult> results = new LinkedList<AssessmentResult>();
+		
+		// if it exists
+		if (allFiles != null) {
+			// sort it so it's easyer to read by the user
+			Arrays.sort(allFiles);
+			
+			// inverted order (latest should be at the top
+			for(int i=allFiles.length -1; i>=0; --i){
+				// load assessment result
+				results.add(loadAssessmentResultFromDisk(username, assessment, allFiles[i]));
 			}
 		}
+		
 		return results;
 	}
 	
-	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
-		if(results.get(username) == null){
-			return new ArrayList<AssessmentResult>();
-		}
-		return results.get(username).get(assessment.getShortName()).values();
-	}
-	
+	/**
+	 * Load the assessment history from file.
+	 * 
+	 * Done at startup.
+	 * @param assDao - the Assessment Data Access Object
+	 */
 	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
-		results = new HashMap<String, HashMap<String, HashMap<String, AssessmentResult>>>();
+		results = new HashMap<String, HashMap<String, AssessmentResult>>();
 		
 		// scan all users
-		String[] allUsers = (new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/")).list();
-		for(String currUser: allUsers){
-			// scan all assessments
-			Collection<Assessment> allAssessments = assDao.getAssessmentList();
-			
-			HashMap<String, HashMap<String, AssessmentResult>>currUserResults = new HashMap<String, HashMap<String, AssessmentResult>>();
-			for(Assessment assessment: allAssessments){
-				// scan all submissions
-				
-				HashMap<String, AssessmentResult> currAssessmentResults = new HashMap<String, AssessmentResult>();
-				String[] allFiles = (new File(ProjectProperties.getInstance()
-						.getProjectLocation()
-						+ "/submissions/"
-						+ currUser
-						+ "/assessments/" + assessment.getShortName())).list();
-				
-				if(allFiles != null){
-					Arrays.sort(allFiles);
+		String[] allUsers = (new File(ProjectProperties.getInstance()
+				.getProjectLocation() + "/submissions/")).list();
+		if (allUsers != null && allUsers.length > 0) {
+			for (String currUser : allUsers) {
+				// scan all assessments
+				Collection<Assessment> allAssessments = assDao
+						.getAssessmentList();
 
-					for(int i=0; i< allFiles.length; ++i){
-						String latest = allFiles[allFiles.length-1-i];
-						AssessmentResult assessResult = new AssessmentResult();
-						assessResult.setAssessment(assessment);
-				
-						// unit tests;
-						ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
-						for (WeightedUnitTest uTest : assessment.getUnitTests()) {
-							UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
-											.getProjectLocation()
-											+ "/submissions/"
-											+ currUser
-											+ "/assessments/"
-											+ assessment.getShortName()
-											+ "/"
-											+ latest
-											+ "/unitTests/" + uTest.getTest().getShortName());
-							if (result == null) {
-								result = new UnitTestResult();
-							}
-							result.setTest(uTest.getTest());
-							utresults.add(result);
-							
-						}
-						
-						// handMarking
-						ArrayList<HandMarkingResult> handResults = new ArrayList<HandMarkingResult>();
-						for (WeightedHandMarking hMarking : assessment.getHandMarking()) {
-							HandMarkingResult result = getHandMarkingResult(ProjectProperties.getInstance()
-											.getProjectLocation()
-											+ "/submissions/"
-											+ currUser
-											+ "/assessments/"
-											+ assessment.getShortName()
-											+ "/"
-											+ latest
-											+ "/handMarking/" + hMarking.getHandMarking().getShortName());
-							if (result == null) {
-								result = new HandMarkingResult();
-							}
-							else{
-								result.setHandMarkingTemplateShortName(hMarking.getHandMarking().getShortName());
-								result.setMarkingTemplate(hMarking.getHandMarking());
-								handResults.add(result);
-							}
-						}
-						
-						// submission date
-						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+				HashMap<String, AssessmentResult> currUserResults = new HashMap<String, AssessmentResult>();
+				for (Assessment assessment : allAssessments) {
+					// scan all submissions
+
+					// find latest
+					String latest = null;
+					if(new File(ProjectProperties
+							.getInstance().getProjectLocation()
+							+ "/submissions/"
+							+ currUser
+							+ "/assessments/"
+							+ assessment.getShortName()
+							+ "latestOverride.txt").exists()){
+						// overriden latest
+						Scanner in;
 						try {
-							assessResult.setSubmissionDate(sdf.parse(latest));
-						} catch (ParseException e) {
-							assessResult.setSubmissionDate(new Date());
-							logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getShortName());
-						}
-						
-						// comments
-						try {
-							Scanner in = new Scanner(new File(ProjectProperties.getInstance()
-												.getProjectLocation()
-												+ "/submissions/"
-												+ currUser
-												+ "/assessments/"
-												+ assessment.getShortName()
-												+ "/"
-												+ latest
-												+ "/comments.txt"));
-							String comments = "";
-							while(in.hasNextLine()){
-								comments+=in.nextLine() + System.getProperty("line.separator");
-							}
+							in = new Scanner (new File(ProjectProperties
+								.getInstance().getProjectLocation()
+								+ "/submissions/"
+								+ currUser
+								+ "/assessments/"
+								+ assessment.getShortName()
+								+ "latestOverride.txt"));
+							latest = in.nextLine().trim();
 							in.close();
-							assessResult.setComments(comments);
 						} catch (FileNotFoundException e) {
+							// don't care
 						}
 						
-						assessResult.setUnitTests(utresults);
-						assessResult.setHandMarkingResults(handResults);
-						
-						currAssessmentResults.put(latest, assessResult);
 					}
+					
+					String[] allFiles = (new File(ProjectProperties
+							.getInstance().getProjectLocation()
+							+ "/submissions/"
+							+ currUser
+							+ "/assessments/"
+							+ assessment.getShortName())).list();
+					
+					if (allFiles != null) {
+						Arrays.sort(allFiles);
+						
+						String temporalLatest = allFiles[allFiles.length-1];
+
+						// ensure that the latest is in the list
+						if(latest != null){
+							for(String file: allFiles){
+								if(file.trim().equals(latest.trim())){
+									temporalLatest = null;
+									break;
+								}
+							}
+						}
+						
+						if(temporalLatest != null){
+							latest = temporalLatest;
+						}
+					}
+					else{
+						latest = null;
+					}
+					
+					currUserResults.put(assessment.getShortName(),
+							loadAssessmentResultFromDisk(currUser, assessment, latest));
 				}
-				currUserResults.put(assessment.getShortName(), currAssessmentResults);
+				results.put(currUser, currUserResults);
 			}
-			results.put(currUser, currUserResults);
 		}
 	}
 
+	/**
+	 * Get the hand marking result from a location
+	 * @param location - location of the hand marking result
+	 * @return null if there is no hand marking result
+	 * @return the result otherwise
+	 */
 	private HandMarkingResult getHandMarkingResult(String location) {
 		HandMarkingResult result = new HandMarkingResult();
 		
 		try {
+			// read in the file
 			Scanner in = new Scanner(new File(location+"/result.txt"));
 			HashMap<String,String> resultMap = new HashMap<String, String>();
 			while(in.hasNextLine()){
@@ -314,51 +322,39 @@ public class ResultDAO {
 			
 			return result;
 		} catch (FileNotFoundException e) {
+			// return null if the file doesn't exist
 		}
 		return null;	
 	}
 
-	public void loadNewAssessment(String currUser, Assessment assessment,
-			Date runDate) {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-		String latest = sdf.format(runDate);
-		AssessmentResult assessResult = new AssessmentResult();
-		assessResult.setAssessment(assessment);
-
-		ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
-		for (WeightedUnitTest uTest : assessment.getUnitTests()) {
-			UnitTestResult result = getUnitTestResult(ProjectProperties.getInstance()
-							.getProjectLocation()
-							+ "/submissions/"
-							+ currUser
-							+ "/assessments/"
-							+ assessment.getShortName()
-							+ "/"
-							+ latest
-							+ "/unitTests/" + uTest.getTest().getShortName());
-			if (result == null) {
-				result = new UnitTestResult();
-			}
-			result.setTest(uTest.getTest());
-			utresults.add(result);
-			
-		}
-		try {
-			assessResult.setSubmissionDate(sdf.parse(latest));
-		} catch (ParseException e) {
-			assessResult.setSubmissionDate(new Date());
-			logger.error("Submission date " + latest + " - " + currUser + " - " + assessment.getName());
-		}
-		assessResult.setUnitTests(utresults);
-		
-		results.get(currUser).get(assessment.getShortName()).put(latest, assessResult);
-	}
-
+	/**
+	 * Get the assessment result for a particular user, for a particular assessment, for a particular date
+	 * @param username - the username of the user
+	 * @param assessment - the assessment (needed for lookup and linking)
+	 * @param assessmentDate - the date of the submission
+	 * @return the assessment or null if it does not exist
+	 */
 	public AssessmentResult getAsssessmentResult(String username,
-			String assessmentName, String assessmentDate) {
-		return results.get(username).get(assessmentName).get(assessmentDate);
+			Assessment assessment, String assessmentDate) {
+		// check if it's the latest
+		try{
+			if(results.get(username).get(assessment.getShortName()).getFormattedSubmissionDate().equals(assessmentDate)){
+				return results.get(username).get(assessment.getShortName());
+			}
+		}
+		catch(Exception e){
+			// do nothing
+		}
+		return loadAssessmentResultFromDisk(username, assessment, assessmentDate);
 	}
 
+	/**
+	 * Save the hand marking to a file
+	 * @param username - the username of the user
+	 * @param assessment - the assessment short name (no whitespace)
+	 * @param assessmentDate - the date of the submission
+	 * @param handMarkingResults - the results of the hand marking
+	 */
 	public void saveHandMarkingToFile(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
 		 
@@ -388,6 +384,168 @@ public class ResultDAO {
 				e.printStackTrace(pw);
 				logger.error("Could not save hand marking submission " + location + System.getProperty("line.separator")+ sw.toString());
 			}
+		}
+	}
+	
+	/**
+	 * Load a particular assessment form disk
+	 * @param username - the username of the user
+	 * @param assessment - the assessment (needed for lookup and linking)
+	 * @param assessmentDate - the date of the submission
+	 * @return the assessment results
+	 * @return null if there is no assessment result for that user, assessment, date combination
+	 */
+	public AssessmentResult loadAssessmentResultFromDisk(String username, 
+			Assessment assessment, String assessmentDate) {
+
+		AssessmentResult assessResult = null;
+		if ((new File(ProjectProperties.getInstance().getProjectLocation()
+				+ "/submissions/" + username + "/assessments/"
+				+ assessment.getShortName() + "/" + assessmentDate)).exists()) {
+			assessResult = new AssessmentResult();
+			assessResult.setAssessment(assessment);
+
+			// unit tests;
+			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+			for (WeightedUnitTest uTest : assessment.getUnitTests()) {
+				UnitTestResult result = getUnitTestResult(ProjectProperties
+						.getInstance().getProjectLocation()
+						+ "/submissions/"
+						+ username
+						+ "/assessments/"
+						+ assessment.getShortName()
+						+ "/"
+						+ assessmentDate
+						+ "/unitTests/" + uTest.getTest().getShortName());
+				if (result == null) {
+					result = new UnitTestResult();
+				}
+				result.setTest(uTest.getTest());
+				utresults.add(result);
+
+			}
+
+			// handMarking
+			ArrayList<HandMarkingResult> handResults = new ArrayList<HandMarkingResult>();
+			for (WeightedHandMarking hMarking : assessment.getHandMarking()) {
+				HandMarkingResult result = getHandMarkingResult(ProjectProperties
+						.getInstance().getProjectLocation()
+						+ "/submissions/"
+						+ username
+						+ "/assessments/"
+						+ assessment.getShortName()
+						+ "/"
+						+ assessmentDate
+						+ "/handMarking/"
+						+ hMarking.getHandMarking().getShortName());
+				if (result == null) {
+					result = new HandMarkingResult();
+				} else {
+					result.setHandMarkingTemplateShortName(hMarking
+							.getHandMarking().getShortName());
+					result.setMarkingTemplate(hMarking.getHandMarking());
+					handResults.add(result);
+				}
+			}
+
+			// submission date
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+			try {
+				assessResult.setSubmissionDate(sdf.parse(assessmentDate));
+			} catch (ParseException e) {
+				assessResult.setSubmissionDate(new Date());
+				logger.error("Submission date " + assessmentDate + " - "
+						+ username + " - " + assessment.getShortName());
+			}
+			
+			assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getProjectLocation()
+				+ "/submissions/" + username + "/assessments/"
+				+ assessment.getShortName() + "/").list().length);
+			
+			// comments
+			try {
+				Scanner in = new Scanner(new File(ProjectProperties
+						.getInstance().getProjectLocation()
+						+ "/submissions/"
+						+ username
+						+ "/assessments/"
+						+ assessment.getShortName()
+						+ "/"
+						+ assessmentDate
+						+ "/comments.txt"));
+				String comments = "";
+				while (in.hasNextLine()) {
+					comments += in.nextLine()
+							+ System.getProperty("line.separator");
+				}
+				in.close();
+				assessResult.setComments(comments);
+			} catch (FileNotFoundException e) {
+			}
+
+			assessResult.setUnitTests(utresults);
+			assessResult.setHandMarkingResults(handResults);
+		}
+		return assessResult;
+	}
+
+	/**
+	 * Method to save the hand marking comments
+	 * @param username - the username of the user
+	 * @param assessment - the assessment short name (no whitespace)
+	 * @param assessmentDate - the date of the submission
+	 * @param comments - the comments about the submission
+	 */
+	public void saveHandMarkingComments(String username, String assessmentName,
+			String assessmentDate, String comments) {
+		// save to file
+		try {
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()
+					+ "/submissions/"
+					+ username
+					+ "/assessments/"
+					+ assessmentName
+					+ "/"
+					+ assessmentDate
+					+ "/comments.txt"));
+			out.print(comments);
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// update if latest
+		try{
+			if(results.get(username).get(assessmentName).getFormattedSubmissionDate().equals(assessmentDate)){
+				results.get(username).get(assessmentName).setComments(comments);
+			}
+		}
+		catch(Exception e){
+			// do nothing
+		}
+	}
+
+	/**
+	 * Update unit test results
+	 * 
+	 * If the result is the latest, reload it from file. Otherwise ignore it (it will get loaded later)
+	 * 
+	 * @param username - the username of the user
+	 * @param assessment - the assessment (needed for lookup and linking)
+	 * @param runDate - the date of the submission
+	 */
+	public void updateUnitTestResults(String username,
+			Assessment assessment, Date runDate) {
+		// check if latest
+		try{
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+			if(results.get(username).get(assessment.getShortName()).getSubmissionDate().equals(sdf.format(runDate))){
+				results.get(username).put(assessment.getShortName(), loadAssessmentResultFromDisk(username, assessment, sdf.format(runDate)));
+			}
+		}
+		catch(Exception e){
+			// do nothing
 		}
 	}
 }

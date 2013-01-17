@@ -79,8 +79,12 @@ div .pastaUnitTestBoxResult {
 	cursor: pointer;
 }
 
-div .pastaUnitTestBoxResultpass {
+div.pastaUnitTestBoxResultpass {
 	background-color: #0C0;
+}
+
+div.pastaUnitTestBoxResultfailure ,div.pastaUnitTestBoxResulterror{
+	background-color: red;
 }
 
 /* Buttons */
@@ -244,7 +248,7 @@ smallbutton{
 	width: 100%;
 }
 
-.pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaTFfalse {
+.pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaTFfalse,.pastaUnitTestResulterror {
 	color: red;
 }
 

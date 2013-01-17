@@ -29,8 +29,8 @@
 					<td onClick="window.location.href=window.location.href+'../tutorial/${user.tutorial}/'">${user.tutorial}</td>
 					<c:forEach var="assessment" items="${assessmentList}">
 						<td class="gradeCentreMark"  onClick="window.location.href=window.location.href+'../student/${user.username}/info/${assessment.name}/'">
-							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
 							<span style="display:none">${latestResults[user.username][assessment.name].percentage}</span>
+							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
 						</td>
 					</c:forEach>
 				</tr>

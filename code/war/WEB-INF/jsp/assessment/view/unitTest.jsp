@@ -5,6 +5,11 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <h1> Unit Test - ${unitTest.name}</h1>
+
+<ul class="list">
+<jsp:include page="../../recursive/fileWriter.jsp"/>
+</ul>
+
 <table>
 	<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 </table> 

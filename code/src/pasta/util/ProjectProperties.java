@@ -133,6 +133,7 @@ public class ProjectProperties {
 	    File file = new File(zipFile);
 
 	    ZipFile zip = new ZipFile(file);
+	    
 	    String newPath = zipFile.substring(0, zipFile.lastIndexOf("/"));
 
 	    new File(newPath).mkdir();

@@ -6,15 +6,9 @@
 
 <c:choose>
 	<c:when test="${not empty codeStyle[fileEnding]}">
-		<pre class="${codeStyle[fileEnding]}">
-			<code>
-				${fileContents}
-			</code>
-		</pre>
+		<pre class="${codeStyle[fileEnding]}"><code>${fileContents}</code></pre>
 	</c:when>
 	<c:otherwise>
-		<pre>
-			${fileContents}
-		</pre>
+		<pre>${fileContents}</pre>
 	</c:otherwise>
 </c:choose>
