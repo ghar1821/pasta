@@ -7,10 +7,16 @@
 
 <h1> Hand Marking Template - ${handMarking.name}</h1>
 
+<style>
+th, td{
+	min-width:200px;
+}
+</style>
+
 <form:form commandName="handMarking" enctype="multipart/form-data" method="POST">
 	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
-
-	<table id="handMarkingTable">
+<div style="width:100%; overflow:auto">
+	<table id="handMarkingTable" >
 		<thead>
 			<tr>
 				<th class="notdraggable"></th> <!-- empty on purpose -->
@@ -53,7 +59,7 @@
 			</c:forEach>
 		</tbody>
 	</table>
-	
+	</div>
 	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
 </form:form>
 

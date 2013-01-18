@@ -126,14 +126,24 @@ public class AssessmentResult {
 		// unit tests
 		// regular
 		for(UnitTestResult result : unitTests){
-			marks += result.getPercentage()*assessment.getWeighting(result.getTest());
-			maxWeight += assessment.getWeighting(result.getTest());
+			try{
+				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
+				maxWeight += assessment.getWeighting(result.getTest());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions
+			}
 		}
 		
 		// hand marking
 		for(HandMarkingResult result : handMarkingResults){
-			marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
-			maxWeight += assessment.getWeighting(result.getMarkingTemplate());
+			try{
+				marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
+				maxWeight += assessment.getWeighting(result.getMarkingTemplate());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions (probably a partially marked submission)
+			}
 		}
 		
 		if(maxWeight == 0){

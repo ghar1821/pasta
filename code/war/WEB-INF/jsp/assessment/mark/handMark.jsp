@@ -10,43 +10,51 @@
 <jsp:include page="../../recursive/fileWriter.jsp"/>
 </ul>
 
+<style>
+th, td{
+	min-width:200px;
+}
+</style>
+
 <form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
 	<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
 		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 		<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].handMarkingTemplateShortName" value="${handMarking.handMarking.shortName}"/>
-		<table id="handMarkingTable${handMarkingStatus.index}">
-			<thead>
-				<tr>
-					<th></th> <!-- empty on purpose -->
-					<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
-						<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
-							${handMarking.handMarking.columnHeader[columnStatus.index].name}</br>
-							${handMarking.handMarking.columnHeader[columnStatus.index].weight}</br>
-						</th>
-					</c:forEach>
-				</tr>
-			</thead>
-			<tbody>
-				<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+		<div style="width:100%; overflow:auto">
+			<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
+				<thead>
 					<tr>
-						<th>
-							${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
-							${handMarking.handMarking.rowHeader[rowStatus.index].weight}
-						</th>
-						<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-							<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
-								<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
-									<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-									</br>
-									${handMarking.handMarking.data[column.name][row.name]}</br>
-									<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.name}']" value="${column.name}"/>
-								</c:if>
-							</td>
+						<th></th> <!-- empty on purpose -->
+						<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
+							<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
+								${handMarking.handMarking.columnHeader[columnStatus.index].name}</br>
+								${handMarking.handMarking.columnHeader[columnStatus.index].weight}</br>
+							</th>
 						</c:forEach>
 					</tr>
-				</c:forEach>
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+						<tr>
+							<th>
+								${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
+								${handMarking.handMarking.rowHeader[rowStatus.index].weight}
+							</th>
+							<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
+								<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
+									<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
+										<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
+										</br>
+										${handMarking.handMarking.data[column.name][row.name]}</br>
+										<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.name}']" value="${column.name}"/>
+									</c:if>
+								</td>
+							</c:forEach>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</div>
 	</c:forEach>
 	
 	<form:textarea style="height:200px; width:95%" path="comments"/>
