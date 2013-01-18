@@ -3,13 +3,15 @@ package pasta.web.controller;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.validator.cfg.defs.MaxDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -300,6 +302,47 @@ public class SubmissionController {
 		}
 		if(getUser().isInstructor()){
 			manager.removeAssessment(assessmentName);
+		}
+		return "redirect:../../";
+	}
+	
+	// delete a unit test
+	@RequestMapping(value = "assessments/stats/{assessmentName}/")
+	public String statisticsForAssessment(
+			@PathVariable("assessmentName") String assessmentName, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		if(getUser().isTutor()){
+			HashMap<String, HashMap<String, AssessmentResult>> allResults = manager.getLatestResults();
+			TreeMap<Integer, Integer>  submissionDistribution = new TreeMap<Integer, Integer>();
+
+			int maxBreaks = 10;
+			
+			int[] markDistribution = new int[maxBreaks+1];
+			
+			for(Entry<String, HashMap<String, AssessmentResult>> entry: allResults.entrySet()){
+				int spot = 0;
+				int numSubmissionsMade = 0;
+				if(entry.getValue() != null && entry.getValue().get(assessmentName) != null){
+					spot = ((int)(entry.getValue().get(assessmentName).getPercentage()*100/(100/maxBreaks)));
+					numSubmissionsMade = entry.getValue().get(assessmentName).getSubmissionsMade();
+				}
+				// mark histogram
+				markDistribution[spot]++;
+				
+				// # submission distribution
+				if(!submissionDistribution.containsKey(numSubmissionsMade)){
+					submissionDistribution.put(numSubmissionsMade, 0);
+				}
+				submissionDistribution.put(numSubmissionsMade, submissionDistribution.get(numSubmissionsMade)+1);
+			}
+			
+			model.addAttribute("assessment", manager.getAssessment(assessmentName));
+			model.addAttribute("maxBreaks", maxBreaks);
+			model.addAttribute("markDistribution", markDistribution);
+			model.addAttribute("submissionDistribution", submissionDistribution);
+			return "assessment/view/assessmentStats";
 		}
 		return "redirect:../../";
 	}
@@ -702,6 +745,50 @@ public class SubmissionController {
 		if(getUser() == null || !getUser().isTutor()){
 			return "redirect:/home/.";
 		}
+		
+		HashMap<String, HashMap<String, AssessmentResult>> allResults = manager.getLatestResults();
+		HashMap<String, TreeMap<Integer, Integer>>  submissionDistribution = new HashMap<String,TreeMap<Integer, Integer>>();
+		Collection<Assessment> assessments = manager.getAssessmentList();
+
+		int numBreaks = 10;
+		
+		HashMap<String, Integer[]> markDistribution = new HashMap<String, Integer[]>();
+		
+		for(Assessment assessment: assessments){
+			int[] currMarkDist = new int[numBreaks+1];
+			TreeMap<Integer, Integer> currSubmissionDistribution = new TreeMap<Integer, Integer>();
+			for(Entry<String, HashMap<String, AssessmentResult>> entry: allResults.entrySet()){
+				int spot = 0;
+				int numSubmissionsMade = 0;
+				if(entry.getValue() != null && entry.getValue().get(assessment.getShortName()) != null){
+					spot = ((int)(entry.getValue().get(assessment.getShortName()).getPercentage()*100/(100/numBreaks)));
+					numSubmissionsMade = entry.getValue().get(assessment.getShortName()).getSubmissionsMade();
+				}
+				// mark histogram
+				currMarkDist[spot]++;
+				
+				// # submission distribution
+				if(!currSubmissionDistribution.containsKey(numSubmissionsMade)){
+					currSubmissionDistribution.put(numSubmissionsMade, 0);
+				}
+				currSubmissionDistribution.put(numSubmissionsMade, currSubmissionDistribution.get(numSubmissionsMade)+1);
+			}
+			
+			// add to everything list
+			submissionDistribution.put(assessment.getShortName(), currSubmissionDistribution);
+			
+			Integer[] tempCurrMarkDist = new Integer[currMarkDist.length]; 
+			for(int i=0; i< currMarkDist.length; ++i){
+				tempCurrMarkDist[i] = currMarkDist[i];
+			}
+			
+			markDistribution.put(assessment.getShortName(), tempCurrMarkDist);
+		}
+		
+		model.addAttribute("assessments", assessments);
+		model.addAttribute("maxBreaks", numBreaks);
+		model.addAttribute("markDistribution", markDistribution);
+		model.addAttribute("submissionDistribution", submissionDistribution);
 
 		model.addAttribute("assessmentList", manager.getAssessmentList());
 		model.addAttribute("userList", manager.getUserList());

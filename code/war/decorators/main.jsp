@@ -34,6 +34,7 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tristate.min.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/jquery.jqplot.min.js" htmlEscape="true" />"></script>
 		<decorator:head />
 		
 		<script>

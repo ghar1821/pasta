@@ -99,6 +99,10 @@ ${fn:length(assessment.handMarking)} Hand marking templates </br>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
+						onclick="location.href='./stats/${assessment.shortName}/'">Statistics</button>
+				</div>
+				<div style="float: left">
+					<button style="float: left; text-align: center;"
 						onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
 					<button style="float: left; display: none; text-align: center;"
 						onclick="location.href='./delete/${assessment.shortName}/'"

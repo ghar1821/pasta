@@ -9,6 +9,98 @@
 <div style="display:none" class="gradeCentreMarkBad"></div>
 <div style="display:none" class="gradeCentreMarkNoSub"></div>
 
+<div style="float: left; width:100%">
+	<button style="float: left; text-align: center;"
+		onclick="$('#graphs').slideToggle('fast')">Toggle graphs</button>
+</div>
+
+<div id="graphs">
+	<h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
+	<h3>Mark distribution</h3>
+	<div id="markDistribution" style="height:300px; width:90%;"></div>
+	<h3>Number of submissions distribution</h3>
+	<div id="submissionDistribution" style="height:300px; width:90%;"></div>
+	
+	
+	<script>
+	$(document).ready(function(){
+		
+		var plot1 = $.jqplot ('markDistribution', [
+		    <c:forEach var="assessment" items="${assessments}" varStatus="assessmentStatus">
+			    <c:if test="${not (assessmentStatus.index == 0)}">
+				,
+				</c:if>
+		    	[
+				<c:forEach var="mark" items="${markDistribution[assessment.shortName]}" varStatus="markStatus">
+					<c:if test="${not (markStatus.index == 0)}">
+						,
+					</c:if>
+					[${markStatus.index/maxBreaks*100}, ${mark}]
+				</c:forEach>
+		    	 ]
+		    </c:forEach>
+	   		], {
+		   		axesDefaults: {
+		   			pad: 0
+		   		},
+		   		axes: {
+		   			xaxis:{
+		   				label:'Percentage (%)'
+		   			},
+		   			yaxis:{
+		   				label:'Number of students'
+		   			}
+		   		},
+		   		series:[
+					<c:forEach var="assessment" items="${assessments}" varStatus="assessmentStatus"><c:if test="${not (assessmentStatus.index == 0)}">,</c:if>{label: '${assessment.name}'}</c:forEach>
+		   		        ],
+		   		     legend: {
+		   	            show: true,
+		   	            placement: 'outsideGrid'
+		   	        }
+			}
+		);
+		
+		
+		var plot2 = $.jqplot ('submissionDistribution', [
+		    <c:forEach var="assessment" items="${assessments}" varStatus="assessmentStatus">
+		      	<c:if test="${not (assessmentStatus.index == 0)}">
+				,
+				</c:if>
+		    	[
+				<c:forEach var="dist" items="${submissionDistribution[assessment.shortName]}" varStatus="distStatus">
+					<c:if test="${not (distStatus.index == 0)}">
+						,
+					</c:if>
+						[${dist.key}, ${dist.value}]
+				</c:forEach>
+		    	 ]
+		    </c:forEach> 
+		         ], {
+	   		axesDefaults: {
+	   			pad: 0
+	   		},
+	   		axes: {
+	   			xaxis:{
+	   				label:'Number of submissions'
+	   			},
+	   			yaxis:{
+	   				label:'Number of students'
+	   			}
+	   		},
+	   		series:[
+				<c:forEach var="assessment" items="${assessments}" varStatus="assessmentStatus"><c:if test="${not (assessmentStatus.index == 0)}">,</c:if>{label: '${assessment.name}'}</c:forEach>
+	   		        ],
+	   		     legend: {
+	   	            show: true,
+	   	            placement: 'outsideGrid'
+	   	        }
+		}
+	);
+	});
+	</script>
+</div>
+
 <table id="gradeCentreTable" class="tablesorter">
 	<thead>
 		<tr>
@@ -42,6 +134,7 @@
 <script>
 	$(document).ready(function() 
 	    { 			
+			$('#graphs').css('display', 'none');
 			var oTable = $('#gradeCentreTable').dataTable( {
 		 		"sScrollX": "100%",
 		 		"sScrollXInner": "150%",

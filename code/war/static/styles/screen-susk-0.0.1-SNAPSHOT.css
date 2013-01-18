@@ -71,7 +71,7 @@ pre {
     visibility: hidden; 
 }
 
-div .pastaUnitTestBoxResult {
+div.pastaUnitTestBoxResult {
 	width: 1em;
 	height: 2em;
 	float: left;
@@ -210,7 +210,7 @@ smallbutton{
 	width: 90%;
 }
 
-.handMarkingTable,th,td {
+th.handMarkingTable,td.handMarkingTable {
 	table-layout: fixed;
 	padding: 15px;
 	width: 200px;
@@ -224,12 +224,12 @@ smallbutton{
 	margin: 0px;
 }
 
-.pastaShortTable td {
+td.pastaShortTable{
 	width: 1.5em;
 	height: 2em;
 }
 
-.pastaTable td {
+td.pastaTable{
 	text-align: center;
 }
 
