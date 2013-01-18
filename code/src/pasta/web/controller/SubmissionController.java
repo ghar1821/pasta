@@ -3,6 +3,7 @@ package pasta.web.controller;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -11,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.validator.cfg.defs.MaxDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -733,6 +733,101 @@ public class SubmissionController {
 		manager.saveComment(username, assessmentName, assessmentDate, form.getComments());
 		
 		return "redirect:.";
+	}
+	
+	// hand mark assessment
+	@RequestMapping(value = "mark/{assessmentName}/", method = RequestMethod.POST)
+	public String handMarkAssessment(@RequestParam("currStudentIndex") String s_currStudentIndex, 
+			@PathVariable("assessmentName") String assessmentName,
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
+			HttpServletRequest request,
+			Model model) {
+		
+		PASTAUser user = getOrCreateUser();
+		if(user == null){
+			return "redirect:/login/";
+		}
+		
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessmentName", assessmentName);
+		
+		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
+		for(String tutorial: user.getTutorClasses()){
+			myUsers.addAll(manager.getUserListByTutorial(tutorial));
+		}
+		
+		// save the latest submission
+		if(!request.getHeader("Referer").endsWith("/home/")){
+			// get previous user
+			int prevStudentIndex = Integer.parseInt(s_currStudentIndex)-1;
+			PASTAUser prevStudent = (PASTAUser) myUsers.toArray()[prevStudentIndex];
+			
+			// rebinding hand marking results with their hand marking templates
+			List<HandMarkingResult> results = form.getHandMarkingResults();
+			for(HandMarkingResult currResult: results){
+				currResult.setMarkingTemplate(manager.getHandMarking(currResult.getHandMarkingTemplateShortName()));
+			}
+			
+			AssessmentResult result = manager.getLatestResultsForUser(prevStudent.getUsername()).get(assessmentName);
+			
+			manager.saveHandMarkingResults(prevStudent.getUsername(), assessmentName, result.getFormattedSubmissionDate(), form.getHandMarkingResults());
+			manager.saveComment(prevStudent.getUsername(), assessmentName, result.getFormattedSubmissionDate(), form.getComments());
+		}
+		
+		// get the correct new student index
+		int currStudentIndex = 0;
+		try{
+			currStudentIndex = Integer.parseInt(s_currStudentIndex);
+		}
+		catch(Exception e){}
+		
+		if(currStudentIndex >= myUsers.size()){
+			return "redirect:../../home/";
+		}
+		
+		PASTAUser currStudent = (PASTAUser) myUsers.toArray()[currStudentIndex];
+		
+		// make sure the current student has work to be marked
+		while( currStudentIndex < myUsers.size() && 
+				(manager.getLatestResultsForUser(currStudent.getUsername()) == null || 
+				manager.getLatestResultsForUser(currStudent.getUsername()).get(assessmentName) == null)){
+			currStudentIndex++;
+			currStudent = (PASTAUser) myUsers.toArray()[currStudentIndex];
+		}
+		
+		if(currStudentIndex >= myUsers.size()){
+			return "redirect:../../home/";
+		}
+		
+		if(currStudentIndex < myUsers.size()){
+			model.addAttribute("student", currStudent.getUsername());
+			
+			AssessmentResult result = manager.getLatestResultsForUser(currStudent.getUsername()).get(assessmentName);
+			model.addAttribute("node", manager.generateFileTree(currStudent.getUsername(), assessmentName, result.getFormattedSubmissionDate()));
+			model.addAttribute("assessmentResult", result);
+			model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
+			
+			model.addAttribute("currStudentIndex", currStudentIndex);
+			model.addAttribute("maxStudentIndex", myUsers.size() - 1);
+		}
+		
+		// check if they are the last
+		int nextStudentIndex = currStudentIndex+1;
+		if(nextStudentIndex < myUsers.size()){
+			PASTAUser nextStudent = (PASTAUser) myUsers.toArray()[nextStudentIndex];
+			while( nextStudentIndex < myUsers.size() && 
+					(manager.getLatestResultsForUser(nextStudent.getUsername()) == null || 
+					manager.getLatestResultsForUser(nextStudent.getUsername()).get(assessmentName) == null)){
+				nextStudentIndex++;
+				nextStudent = (PASTAUser) myUsers.toArray()[nextStudentIndex];
+			}
+		}
+
+		if(nextStudentIndex >= myUsers.size()){
+			model.addAttribute("last", true);
+		}
+		
+		return "assessment/mark/handMarkBatch";
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////

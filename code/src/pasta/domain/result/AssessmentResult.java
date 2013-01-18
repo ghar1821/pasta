@@ -98,26 +98,7 @@ public class AssessmentResult {
 	}
 
 	public double getMarks(){
-		double marks = 0;
-		double maxWeight = 0;
-		// unit tests
-		// regular
-		for(UnitTestResult result : unitTests){
-			marks += result.getPercentage()*assessment.getWeighting(result.getTest());
-			maxWeight += assessment.getWeighting(result.getTest());
-		}
-		
-		// hand marking
-		for(HandMarkingResult result : handMarkingResults){
-			marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
-			maxWeight += assessment.getWeighting(result.getMarkingTemplate());
-		}
-		
-		if(maxWeight == 0){
-			return 0;
-		}
-		marks = (marks / maxWeight) * assessment.getMarks();
-		return marks;
+		return getPercentage() * assessment.getMarks();
 	}
 	
 	public double getPercentage(){
