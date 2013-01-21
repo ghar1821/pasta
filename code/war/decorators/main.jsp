@@ -118,6 +118,11 @@
 										<a href="<spring:url value="/handMarking/" htmlEscape="true" />"><span>Hand Marking</span></a>
 									</span>
 								</li>
+								<li>
+									<span>
+										<a href="<spring:url value="/competition/" htmlEscape="true" />"><span>Competitions</span></a>
+									</span>
+								</li>
 							</c:if>
 						</ul>
 					</div>

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -32,11 +31,14 @@ import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.result.UnitTestResult;
+import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
@@ -316,7 +318,7 @@ public class SubmissionManager {
 	
 	// new
 	public Collection<HandMarking> getHandMarkingList() {
-		return assDao.getAllHandMarking();
+		return assDao.getHandMarkingList();
 	}
 
 	// new
@@ -326,7 +328,7 @@ public class SubmissionManager {
 	
 	// new
 	public Collection<HandMarking> getAllHandMarking() {
-		return assDao.getAllHandMarking();
+		return assDao.getHandMarkingList();
 	}
 
 	// new
@@ -398,15 +400,124 @@ public class SubmissionManager {
 					+ System.getProperty("line.separator") + e);
 		}
 	}
+	
+	// new - unit test is guaranteed to have a unique name
+	public void addCompetition(NewCompetition form) {
+		Competition thisComp = new Competition();
+		thisComp.setName(form.getTestName());
+		thisComp.setTested(false);
+		if(form.getType().equalsIgnoreCase("arena")){
+			thisComp.setArenas(new LinkedList<Arena>());
+		}
+
+		try {
+
+			// create space on the file system.
+			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
+
+			// generate unitTestProperties
+			PrintStream out = new PrintStream(thisComp.getFileLocation()
+					+ "/competitionProperties.xml");
+			out.print(thisComp);
+			out.close();
+
+			// unzip the uploaded code into the code folder. (if exists)
+			if (form.getFile() != null && !form.getFile().isEmpty()) {
+				// unpack
+				form.getFile().transferTo(
+						new File(thisComp.getFileLocation() + "/code/"
+								+ form.getFile().getOriginalFilename()));
+				ProjectProperties.extractFolder(thisComp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename());
+				form.getFile().getInputStream().close();
+				FileUtils.forceDelete(new File(thisComp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename()));
+			}
+
+			FileUtils.deleteDirectory((new File(thisComp.getFileLocation()
+					+ "/test/")));
+
+			assDao.addCompetition(thisComp);
+		} catch (Exception e) {
+			(new File(thisComp.getFileLocation())).delete();
+			logger.error("Competition " + thisComp.getName()
+					+ " could not be created successfully!"
+					+ System.getProperty("line.separator") + e);
+		}
+	}
+	
+	public void updateCompetition(NewCompetition form) {
+		Competition thisComp = new Competition();
+		thisComp.setName(form.getTestName());
+		try {
+
+			// create space on the file system.
+			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
+
+			// generate unitTestProperties
+			PrintStream out = new PrintStream(thisComp.getFileLocation()
+					+ "/competitionProperties.xml");
+			out.print(thisComp);
+			out.close();
+
+			// unzip the uploaded code into the code folder. (if exists)
+			if (form.getFile() != null && !form.getFile().isEmpty()) {
+				// unpack
+				form.getFile().transferTo(
+						new File(thisComp.getFileLocation() + "/code/"
+								+ form.getFile().getOriginalFilename()));
+				ProjectProperties.extractFolder(thisComp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename());
+				form.getFile().getInputStream().close();
+				FileUtils.forceDelete(new File(thisComp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename()));
+			}
+
+			FileUtils.deleteDirectory((new File(thisComp.getFileLocation()
+					+ "/test/")));
+
+			getCompetition(thisComp.getShortName()).setTested(false);
+		} catch (Exception e) {
+			(new File(thisComp.getFileLocation())).delete();
+			logger.error("Competition " + thisComp.getName()
+					+ " could not be created successfully!"
+					+ System.getProperty("line.separator") + e);
+		}
+	}
+	
+	public void addCompetition(Competition form) {
+		try {
+
+			// create space on the file system.
+			(new File(form.getFileLocation() + "/code/")).mkdirs();
+
+			// generate unitTestProperties
+			PrintStream out = new PrintStream(form.getFileLocation()
+					+ "/competitionProperties.xml");
+			out.print(form);
+			out.close();
+			
+			assDao.addCompetition(form);
+		} catch (Exception e) {
+			(new File(form.getFileLocation())).delete();
+			logger.error("Competition " + form.getName()
+					+ " could not be updated successfully!"
+					+ System.getProperty("line.separator") + e);
+		}
+		assDao.addCompetition(form);
+	}
 
 	// new - unit test is guaranteed to have a unique name
 	public void removeUnitTest(String testName) {
 		assDao.removeUnitTest(testName);
 	}
 
-	// new - assessment is guaranteed to have a unique name
 	public void removeAssessment(String assessment) {
 		assDao.removeAssessment(assessment);
+	}
+	
+	public void removeCompetition(String competitionName) {
+		assDao.removeCompetition(competitionName);
 	}
 
 	// new - test submission
@@ -696,7 +807,11 @@ public class SubmissionManager {
 	public FileTreeNode generateFileTree(String location){
 		File[] subDirectories = new File(location).listFiles();
 		if(subDirectories == null || subDirectories.length == 0){
-			return new FileTreeNode(location, null);
+			FileTreeNode current = new FileTreeNode(location, null);
+			if(new File(location).isDirectory()){
+				current.setLeaf(false);
+			}
+			return current;
 		}
 		List<FileTreeNode> children = new LinkedList<FileTreeNode>();
 		for(File subDirectory: subDirectories){
@@ -743,6 +858,13 @@ public class SubmissionManager {
 		// make that better
 		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
 	}
-	
-	
+
+	public Collection<Competition> getCompeitionList() {
+		return assDao.getCompetitionList();
+	}
+
+	public Competition getCompetition(String competitionName) {
+		return assDao.getCompetition(competitionName);
+	}
+
 }

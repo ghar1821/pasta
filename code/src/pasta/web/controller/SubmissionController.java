@@ -30,10 +30,12 @@ import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
@@ -95,6 +97,11 @@ public class SubmissionController {
 	public NewHandMarking returnNewHandMakingModel() {
 		return new NewHandMarking();
 	}
+	
+	@ModelAttribute("newCompetitionModel")
+	public NewCompetition returnNewCompetitionModel() {
+		return new NewCompetition();
+	}
 
 	@ModelAttribute("submission")
 	public Submission returnSubmissionModel() {
@@ -104,6 +111,11 @@ public class SubmissionController {
 	@ModelAttribute("assessment")
 	public Assessment returnAssessmentModel() {
 		return new Assessment();
+	}
+	
+	@ModelAttribute("competition")
+	public Competition returnCompetitionModel() {
+		return new Competition();
 	}
 	
 	@ModelAttribute("handMarking")
@@ -293,7 +305,7 @@ public class SubmissionController {
 		return "redirect:../../";
 	}
 
-	// delete a unit test
+	// delete an assessment
 	@RequestMapping(value = "assessments/delete/{assessmentName}/")
 	public String deleteAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
@@ -831,6 +843,92 @@ public class SubmissionController {
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
+	// COMPETITIONS //
+	// ///////////////////////////////////////////////////////////////////////////
+	
+	@RequestMapping(value = "competition/")
+	public String viewAllCompetitions(Model model){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		PASTAUser user = getUser();
+		model.addAttribute("unikey", user);
+		model.addAttribute("allCompetitions", manager.getCompeitionList());
+		
+		return "assessment/viewAll/competition";
+	}
+	
+	@RequestMapping(value = "competition/", method = RequestMethod.POST)
+	public String newCompetition(Model model,
+			@ModelAttribute(value = "newCompetitionModel") NewCompetition form){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		manager.addCompetition(form);
+		
+		return "redirect:.";
+	}
+	
+	@RequestMapping(value = "competition/{competitionName}/", method = RequestMethod.POST)
+	public String updateCompetition(Model model,
+			@PathVariable("competitionName") String competitionName, 
+			@ModelAttribute(value = "newCompetitionModel") NewCompetition form){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		form.setTestName(competitionName);
+		manager.updateCompetition(form);
+		
+		return "redirect:.";
+	}
+	
+	// delete a unit test
+	@RequestMapping(value = "competition/delete/{competitionName}/")
+	public String deleteCompetition(
+			@PathVariable("competitionName") String competitionName, Model model) {
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.removeCompetition(competitionName);
+		}
+		return "redirect:../../";
+	}
+	
+	
+	@RequestMapping(value = "competition/{competitionName}")
+	public String viewCompetition(@PathVariable("competitionName") String competitionName, Model model){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		PASTAUser user = getUser();
+		model.addAttribute("unikey", user);
+		model.addAttribute("competition", manager.getCompetition(competitionName));
+		model.addAttribute("node", manager.generateFileTree(manager.getCompetition(competitionName).getFileLocation()+"/code"));
+
+		return "assessment/view/competition";
+	}
+	
+	@RequestMapping(value = "competition/{competitionName}", method = RequestMethod.POST)
+	public String newCompetition(@PathVariable("competitionName") String competitionName,
+			Model model,
+			@ModelAttribute(value = "competition") Competition form){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		form.setName(competitionName);
+		form.setArenas(manager.getCompetition(competitionName).getArenas());
+		manager.addCompetition(form);
+		
+		return "redirect:.";
+	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
 	
@@ -906,29 +1004,6 @@ public class SubmissionController {
 				model.addAttribute("latestResults", manager.getLatestResults());
 				model.addAttribute("unikey", getOrCreateUser());
 				model.addAttribute("classname", "Class - " + className);
-				
-				// TODO must fix - too expensive for now.
-//				// get statistics -- assessmet, statistic (min,max,median, UQ, LQ)
-//				HashMap<String, HashMap<String, Double>> statistics = new HashMap<String, HashMap<String, Double>>();
-//				for(Assessment ass: manager.getAssessmentList()){
-//					LinkedList<Double> allMarks = new LinkedList<Double>();
-//					for(PASTAUser currUser: manager.getUserListByTutorial(className)){
-//						allMarks.add(manager.getLatestResults().get(currUser.getUsername()).get(ass.getShortName()).getMarks());
-//					}
-//					HashMap<String, Double> currStats = null;
-//					if(allMarks.size() > 0){
-//						Collections.sort(allMarks);
-//						currStats = new HashMap<String, Double>();
-//						currStats.put("max", allMarks.get(0));
-//						currStats.put("min", allMarks.get(allMarks.size()-1));
-//						currStats.put("median", allMarks.get(allMarks.size()/2));
-//						currStats.put("UQ", allMarks.get((allMarks.size()/4)*3));
-//						currStats.put("LQ", allMarks.get(allMarks.size()/4));
-//					}
-//					statistics.put(ass.getShortName(), currStats);
-//				}
-//				
-//				model.addAttribute("statistics", statistics);
 				
 				return "compound/classHome";
 			}

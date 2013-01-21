@@ -14,10 +14,6 @@
 	<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 </table> 
 
-<!-- show files in folder TODO #42 -->
-
-<!-- Upload testing submission TODO #43 -->
-
 <button id="newPopup"> Test Unit Test </button>
 <button id="updateTest"> Update Test </button>
 

@@ -24,6 +24,10 @@ public class FileTreeNode {
 	public boolean isLeaf() {
 		return leaf;
 	}
+	
+	public void setLeaf(boolean leaf){
+		this.leaf = leaf;
+	}
 
 	public String getName() {
 		return name;

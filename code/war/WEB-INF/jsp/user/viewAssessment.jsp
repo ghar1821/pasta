@@ -29,7 +29,11 @@ ${assessment.description}
 			</c:if>
 			<c:choose>
 				<c:when test="${result.compileError}">
-					<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
+					<div style="width:100%; text-align:right;">
+						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
+					</div>
+					<h5>Compile Errors</h5>
+					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
 						<pre>
 							${result.compilationError}
 						</pre>

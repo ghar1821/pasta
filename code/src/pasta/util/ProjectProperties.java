@@ -6,6 +6,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -27,6 +30,8 @@ import org.springframework.stereotype.Component;
  */
 public class ProjectProperties {
 	protected final Log logger = LogFactory.getLog(getClass());
+	
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
 	private static ProjectProperties properties;
 	
@@ -179,5 +184,13 @@ public class ProjectProperties {
 	        }
 	    }
 	    zip.close();
+	}
+	
+	public static String formatDate(Date toFormat){
+		return sdf.format(toFormat);
+	}
+	
+	public static Date parseDate(String date) throws ParseException{
+		return sdf.parse(date);
 	}
 }
