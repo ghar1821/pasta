@@ -20,6 +20,8 @@ public class Assessment {
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
 			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
+	private List<WeightedCompetition> competitions = LazyList.decorate(new ArrayList<WeightedCompetition>(),
+			FactoryUtils.instantiateFactory(WeightedCompetition.class));
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -90,6 +92,15 @@ public class Assessment {
 	public void setHandMarking(List<WeightedHandMarking> handMarking) {
 		this.handMarking.clear();
 		this.handMarking.addAll(handMarking);
+	}
+	
+	public List<WeightedCompetition> getCompetitions() {
+		return competitions;
+	}
+
+	public void setCompetitions(List<WeightedCompetition> competitions) {
+		this.competitions.clear();
+		this.competitions.addAll(competitions);
 	}
 
 	public String getName() {
@@ -170,12 +181,20 @@ public class Assessment {
 		return (new Date()).after(getDueDate());
 	}  
 	
-	public void setGarbage(ArrayList<WeightedUnitTest> unitTests) {
+	public void setGarbage(List<WeightedUnitTest> unitTests) {
 	}
 
 	public List<WeightedUnitTest> getGarbage() {
 		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	}
+	
+	public void setCompGarbage(List<WeightedCompetition> comps) {
+	}
+
+	public List<WeightedCompetition> getCompGarbage() {
+		return LazyList.decorate(new ArrayList<WeightedCompetition>(),
+				FactoryUtils.instantiateFactory(WeightedCompetition.class));
 	}
 	
 	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
@@ -218,7 +237,15 @@ public class Assessment {
 			}
 			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
 		}
-		// TODO all competitions
+		// all competitions
+		if (competitions.size() > 0) {
+			output += "\t<competitionSuite>" + System.getProperty("line.separator");
+			for (WeightedCompetition comp : competitions) {
+				output += "\t\t<competition name=\"" + comp.getTest().getShortName() + "\" weight=\""
+						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
+			}
+			output += "\t</competitionSuite>" + System.getProperty("line.separator");
+		}
 		output += "</assessment>" + System.getProperty("line.separator");
 		return output;
 	}
@@ -244,5 +271,9 @@ public class Assessment {
 			}
 		}
 		return 0;
+	}
+
+	public void addCompetition(WeightedCompetition weightedComp) {
+		competitions.add(weightedComp);
 	}
 }

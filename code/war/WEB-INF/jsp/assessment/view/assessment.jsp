@@ -36,9 +36,9 @@
 	<table style="margin-bottom:2em;width:90%">
 		<tr>
 			<td valign="top" >
-				<div style="float:left">
+				<div style="float:left; width:100%;">
 					<h2> Unit Tests </h2>
-					<table>
+					<table style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable unitTests">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.unitTests}">
@@ -55,7 +55,7 @@
 					</table>
 				
 					<h2> Secret Unit Tests </h2>
-					<table>
+					<table style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable secretUnitTests">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.secretUnitTests}">
@@ -73,9 +73,9 @@
 				</div>
 			</td>
 			<td valign="top">
-				<div style="float:left">
+				<div style="float:left; width:100%;">
 					<h2> Available Unit Tests </h2>
-					<table>
+					<table style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable garbage">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
@@ -98,9 +98,9 @@
 	<table style="margin-bottom:2em;width:90%">
 		<tr>
 			<td valign="top" >
-				<div style="float:left">
+				<div style="float:left; width:100%;">
 					<h2> Hand Marking </h2>
-					<table>
+					<table style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="handMarking" class="sortable handMarking">
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${assessment.handMarking}">
@@ -117,9 +117,9 @@
 				</div>
 			</td>
 			<td valign="top">
-				<div style="float:left">
+				<div style="float:left; width:100%;">
 					<h2> Available Hand Marking</h2>
-					<table>
+					<table style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="handMarking" class="sortable handGarbage">
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${otherHandMarking}">
@@ -129,6 +129,49 @@
 										<a href="../../handMarking/${handMarking.handMarking.shortName}/">${handMarking.handMarking.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="handGarbage[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
+								</tr>
+							</c:forEach>
+						</tbody>
+					</table>
+				</div>
+			</td>
+		</tr>
+	</table>
+	
+	<table style="margin-bottom:2em;width:90%">
+		<tr>
+			<td valign="top" >
+				<div style="float:left; width:100%;">
+					<h2> Competitions </h2>
+					<table style="width:100%;">
+						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
+						<tbody id="competitions" class="sortable competitions">
+							<c:forEach var="competition" varStatus="competitionIndex" items="${assessment.competitions}">
+								<tr>
+									<td>
+										<form:input type="hidden" path="competitions[${competitionIndex.index}].compName" value="${competition.compName}"/>
+										<a href="../../competition/${competition.test.shortName}/">${competition.test.name}</a>
+									</td>
+									<td><form:input size="5" type="text" path="competitions[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
+								</tr>
+							</c:forEach>
+						</tbody>
+					</table>
+				</div>
+			</td>
+			<td valign="top">
+				<div style="float:left; width:100%;">
+					<h2> Available Competitions</h2>
+					<table style="width:100%;">
+						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
+						<tbody id="competitions" class="sortable compGarbage">
+							<c:forEach var="competition" varStatus="competitionIndex" items="${otherCompetitions}">
+								<tr>
+									<td>
+										<form:input type="hidden" path="compGarbage[${competitionIndex.index}].compName" value="${competition.compName}"/>
+										<a href="../../competition/${competition.test.shortName}/">${competition.test.name}</a>
+									</td>
+									<td><form:input size="5" type="text" path="compGarbage[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>
 							</c:forEach>
 						</tbody>
@@ -186,6 +229,31 @@
             			// td -> input - unitTestName
             			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".handMarkingName");
             			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".handMarkingName");
+            			
+            			// td -> input - weight
+            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
+            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+            		}
+            	}
+            }
+        });
+        
+        $( "#competitions.sortable" ).sortable({
+            connectWith: "tbody",
+            dropOnEmpty: true,
+            
+            stop: function(event, ui){
+            	var tables = $("#competitions.sortable");
+            	// for each table
+            	for(var i=0; i<tables.length; i++){
+            		// for each child
+            		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
+            		var childrenNodes = tables[i].children;
+            		for(var j=0; j<childrenNodes.length; ++j){
+            			
+            			// td -> input - compName
+            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".compName");
+            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".compName");
             			
             			// td -> input - weight
             			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");

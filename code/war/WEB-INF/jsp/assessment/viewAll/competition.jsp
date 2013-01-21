@@ -32,6 +32,15 @@
 						${fn:length(competition.arenas)} arenas registered
 					</c:otherwise>
 				</c:choose>
+				<br/>
+				<c:choose>
+					<c:when test="${empty competition.nextRunDate }">
+						Will never run
+					</c:when>
+					<c:otherwise>
+						Next Run: ${competition.nextRunDate}
+					</c:otherwise>
+				</c:choose>
 			</td>
 			<td>
 				<!-- buttons -->

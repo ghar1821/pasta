@@ -36,6 +36,7 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewCompetition;
@@ -638,6 +639,15 @@ public class SubmissionManager {
 				if (getHandMarking(test.getHandMarkingName().replace(" ", "")) != null) {
 					test.setHandMarking(getHandMarking(test.getHandMarkingName().replace(
 							" ", "")));
+				}
+			}
+			
+			// competitions
+			for (WeightedCompetition test : assessmentToAdd.getCompetitions()) {
+				if (getCompetition(test.getCompName().replace(" ", "")) != null) {
+					test.setTest(getCompetition(test.getCompName().replace(
+							" ", "")));
+					getCompetition(test.getCompName().replace(" ", "")).setLive(true);
 				}
 			}
 

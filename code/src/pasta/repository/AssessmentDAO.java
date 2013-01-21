@@ -36,6 +36,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewCompetition;
@@ -119,6 +120,7 @@ public class AssessmentDAO {
 			curAss.setSecretUnitTests(newAssessment.getSecretUnitTests());
 			curAss.setUnitTests(newAssessment.getUnitTests());
 			curAss.setHandMarking(newAssessment.getHandMarking());
+			curAss.setCompetitions(newAssessment.getCompetitions());
 		}
 		else{
 			allAssessments.put(newAssessment.getShortName(), newAssessment);
@@ -500,7 +502,25 @@ public class AssessmentDAO {
 				}
 			}
 			
-			// TODO add competitions
+			// add competitions
+			NodeList competitionList = doc.getElementsByTagName("competition");
+			if (competitionList != null && competitionList.getLength() > 0) {
+				for (int i = 0; i < competitionList.getLength(); i++) {
+					Node competitionNode = competitionList.item(i);
+					if (competitionNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element competitionElement = (Element) competitionNode;
+
+						WeightedCompetition weightedComp = new WeightedCompetition();
+						weightedComp.setTest(allCompetitions.get(competitionElement
+								.getAttribute("name")));
+						weightedComp.setWeight(Double
+								.parseDouble(competitionElement
+										.getAttribute("weight")));
+						weightedComp.getTest().setLive(true);
+						currentAssessment.addCompetition(weightedComp);
+					}
+				}
+			}
 
 			return currentAssessment;
 		} catch (Exception e) {

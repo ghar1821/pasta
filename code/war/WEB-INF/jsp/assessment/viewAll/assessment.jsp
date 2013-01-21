@@ -77,7 +77,7 @@ ${assessment.numSubmissionsAllowed}
 </c:otherwise>
 				</c:choose> sumbissions allowed <br /> <c:choose>
 					<c:when
-						test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests) + fn:length(assessment.handMarking)) == 0}">
+						test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests) + fn:length(assessment.handMarking) + fn:length(assessment.competitions)) == 0}">
 No tests
 </c:when>
 					<c:otherwise>
@@ -89,6 +89,9 @@ ${fn:length(assessment.secretUnitTests)} Secret Unit Tests </br>
 						</c:if>
 						<c:if test="${fn:length(assessment.handMarking) > 0}">
 ${fn:length(assessment.handMarking)} Hand marking templates </br>
+						</c:if>
+						<c:if test="${fn:length(assessment.competitions) > 0}">
+${fn:length(assessment.competitions)} Competitions </br>
 						</c:if>
 					</c:otherwise>
 				</c:choose></td>

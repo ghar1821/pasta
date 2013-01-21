@@ -15,19 +15,10 @@
 <form:form commandName="competition" enctype="multipart/form-data" method="POST">
 	<table>
 		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${competition.tested}">${competition.tested}</td></tr>
+		<tr><td>Is live:</td><td class="pastaTF pastaTF${competition.live}">${competition.live}</td></tr>
 		<c:choose>
 			<c:when test="${competition.calculated}">
 				<tr><td>Competition Type:</td><td>Calculated</td></tr>
-				<tr><td>First run:</td><td>${competition.firstStartDate}</td></tr>
-				<tr><td>Frequency:</td><td>${competition.frequency.niceStringRepresentation}</td></tr>
-				<c:choose>
-					<c:when test="${empty competition.nextRunDate }">
-						Never
-					</c:when>
-					<c:otherwise>
-						<tr><td>Next Run:</td><td>${competition.nextRunDate}</td></tr>
-					</c:otherwise>
-				</c:choose>
 			</c:when>
 			<c:otherwise>
 				<tr><td>Competition Type:</td><td>Arena</td></tr>
@@ -37,6 +28,16 @@
 				<tr><td>Students can create arenas:</td><td><form:checkbox path="studentCreatableArena"/></td></tr>
 				<!-- can students make repeatable arenas -->
 				<tr><td>Students can create repeatable arenas:</td><td><form:checkbox path="studentCreatableRepeatableArena"/></td></tr>
+			</c:otherwise>
+		</c:choose>
+		<tr><td>First run:</td><td>${competition.firstStartDate}</td></tr>
+		<tr><td>Frequency:</td><td>${competition.frequency.niceStringRepresentation}</td></tr>
+		<c:choose>
+			<c:when test="${empty competition.nextRunDate }">
+				Never
+			</c:when>
+			<c:otherwise>
+				<tr><td>Next Run:</td><td>${competition.nextRunDate}</td></tr>
 			</c:otherwise>
 		</c:choose>
 	</table> 

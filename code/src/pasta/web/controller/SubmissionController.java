@@ -33,6 +33,7 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewCompetition;
@@ -178,19 +179,19 @@ public class SubmissionController {
 	}
 	
 	// view an assessment
-		@RequestMapping(value = "assessments/{assessmentName}/run/")
-		public String runAssessment(
-				@PathVariable("assessmentName") String assessmentName,
-				HttpServletRequest request) {
+	@RequestMapping(value = "assessments/{assessmentName}/run/")
+	public String runAssessment(
+			@PathVariable("assessmentName") String assessmentName,
+			HttpServletRequest request) {
 
-			if(getUser() == null || !getUser().isTutor()){
-				return "redirect:/home/.";
-			}
-			if(getUser().isInstructor()){
-				manager.runAssessment(manager.getAssessment(assessmentName));
-			}
-			String referer = request.getHeader("Referer");
-			return "redirect:"+ referer;
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		if(getUser().isInstructor()){
+			manager.runAssessment(manager.getAssessment(assessmentName));
+		}
+		String referer = request.getHeader("Referer");
+		return "redirect:"+ referer;
 		}
 
 	// view an assessment
@@ -205,7 +206,7 @@ public class SubmissionController {
 		Assessment currAssessment = manager.getAssessment(assessmentName);
 		model.addAttribute("assessment", currAssessment);
 
-		List<WeightedUnitTest> otherUnitTetsts = new ArrayList<WeightedUnitTest>();
+		List<WeightedUnitTest> otherUnitTetsts = new LinkedList<WeightedUnitTest>();
 
 		for (UnitTest test : manager.getUnitTestList()) {
 			boolean contains = false;
@@ -234,7 +235,7 @@ public class SubmissionController {
 			}
 		}
 		
-		List<WeightedHandMarking> otherHandMarking = new ArrayList<WeightedHandMarking>();
+		List<WeightedHandMarking> otherHandMarking = new LinkedList<WeightedHandMarking>();
 
 		for (HandMarking test : manager.getHandMarkingList()) {
 			boolean contains = false;
@@ -252,9 +253,29 @@ public class SubmissionController {
 				otherHandMarking.add(weigthedHM);
 			}
 		}
+		
+		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
+
+		for (Competition test : manager.getCompeitionList()) {
+			boolean contains = false;
+			for (WeightedCompetition weightedComp : currAssessment.getCompetitions()) {
+				if (weightedComp.getTest() == test) {
+					contains = true;
+					break;
+				}
+			}
+
+			if (!contains) {
+				WeightedCompetition weigthedComp = new WeightedCompetition();
+				weigthedComp.setTest(test);
+				weigthedComp.setWeight(0);
+				otherCompetitions.add(weigthedComp);
+			}
+		}
 
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		model.addAttribute("otherHandMarking", otherHandMarking);
+		model.addAttribute("otherCompetitions", otherCompetitions);
 		model.addAttribute("unikey", getOrCreateUser());
 		return "assessment/view/assessment";
 	}

@@ -16,6 +16,9 @@ public class Competition {
 	private boolean tutorCreatableRepeatableArena;
 	private boolean tested;
 	
+	// check if it's used in an assessment;
+	private boolean isLive;
+	
 	private PASTATime frequency = null;
 	private Date firstStartDate;
 	
@@ -69,6 +72,12 @@ public class Competition {
 	}
 	public void setFirstStartDate(Date firstStartDate) {
 		this.firstStartDate = firstStartDate;
+	}
+	public boolean isLive() {
+		return isLive;
+	}
+	public void setLive(boolean isLive) {
+		this.isLive = isLive;
 	}
 	
 	// calculated methods

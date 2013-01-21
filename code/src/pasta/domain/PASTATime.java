@@ -71,7 +71,11 @@ public class PASTATime {
 
 	public Date nextExecution(Date currentDate){
 		Date next = new Date();
+		Date now = new Date();
 		next.setTime(currentDate.getTime() + getTime());
+		while(next.before(now)){
+			next.setTime(next.getTime() + getTime());
+		}
 		return next;
 	}
 	
