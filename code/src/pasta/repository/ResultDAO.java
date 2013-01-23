@@ -26,11 +26,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pasta.domain.PASTACompUserResult;
+import pasta.domain.result.ArenaResult;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;
@@ -40,6 +44,7 @@ public class ResultDAO {
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
 	HashMap<String, HashMap<String, AssessmentResult>> results;
+	HashMap<String, CompetitionResult> competitionResults;
 	
 	/**
 	 * loads up all of the latest results
@@ -47,6 +52,55 @@ public class ResultDAO {
 	 */
 	public ResultDAO(AssessmentDAO assDao){
 		loadAssessmentHistoryFromFile(assDao);
+		loadCompetitionsFromFile(assDao);
+	}
+
+	private void loadCompetitionsFromFile(AssessmentDAO assDao) {
+		Collection<Competition> comps = assDao.getCompetitionList();
+		competitionResults = new HashMap<String, CompetitionResult>();
+		
+		for(Competition comp: comps){
+			CompetitionResult result = new CompetitionResult();
+			List<PASTACompUserResult> compUserResult = new LinkedList<PASTACompUserResult>();
+			
+			// get latest
+			String[] allFiles = (new File(ProjectProperties
+					.getInstance().getProjectLocation()
+					+ "/competitions/"
+					+ comp.getShortName()
+					+ "/competition/")).list();
+			
+			if (allFiles != null) {
+				Arrays.sort(allFiles);
+				try{
+					Scanner in = new Scanner(new File(ProjectProperties
+						.getInstance().getProjectLocation()
+						+ "/competitions/"
+						+ comp.getShortName()
+						+ "/competition/"
+						+ allFiles[allFiles.length -1]
+						+ "/marks.csv"));
+					
+					while(in.hasNextLine()){
+						try{
+							String line = in.nextLine();
+							PASTACompUserResult user = new PASTACompUserResult(line.split(",")[0].trim(), Double.parseDouble(line.split(",")[1].trim()));
+							compUserResult.add(user);
+						}
+						catch(Exception e){
+							logger.error(e);
+						}
+					}
+					in.close();
+				}
+				catch(Exception e){
+					logger.error(e);
+				}
+			}
+			
+			result.updatePositions(compUserResult);
+			competitionResults.put(comp.getShortName(), result);
+		}
 	}
 
 	/**
@@ -546,6 +600,123 @@ public class ResultDAO {
 		}
 		catch(Exception e){
 			// do nothing
+		}
+	}
+
+	public CompetitionResult getCompetitionResult(String competitionName) {
+		return competitionResults.get(competitionName);
+	}
+
+	public void updateCompetitionResults(String compName) {
+		List<PASTACompUserResult> compUserResult = new LinkedList<PASTACompUserResult>();
+		
+		// get latest
+		String[] allFiles = (new File(ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/competitions/"
+				+ compName
+				+ "/competition/")).list();
+		
+		if (allFiles != null) {
+			Arrays.sort(allFiles);
+			try{
+				Scanner in = new Scanner(new File(ProjectProperties
+					.getInstance().getProjectLocation()
+					+ "/competitions/"
+					+ compName
+					+ "/competition/"
+					+ allFiles[allFiles.length -1]
+					+ "/marks.csv"));
+				
+				while(in.hasNextLine()){
+					try{
+						String line = in.nextLine();
+						PASTACompUserResult user = new PASTACompUserResult(line.split(",")[0].trim(), Double.parseDouble(line.split(",")[1].trim()));
+						compUserResult.add(user);
+					}
+					catch(Exception e){
+						logger.error(e);
+					}
+				}
+				in.close();
+			}
+			catch(Exception e){
+				logger.error(e);
+			}
+		}
+		
+		CompetitionResult result = competitionResults.get(compName);
+		if(result == null){
+			result = new CompetitionResult();
+			competitionResults.put(compName, result);
+		}
+		result.updatePositions(compUserResult);
+	}
+	
+	public ArenaResult getCalculatedCompetitionResult(String competitionName){
+		// get latest
+		String[] allFiles = (new File(ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/competitions/"
+				+ competitionName
+				+ "/competition/")).list();
+		
+		if (allFiles != null) {
+			Arrays.sort(allFiles);
+			try{
+				return loadArenaResult(ProjectProperties
+					.getInstance().getProjectLocation()
+					+ "/competitions/"
+					+ competitionName
+					+ "/competition/"
+					+ allFiles[allFiles.length -1]);
+				
+			}
+			catch(Exception e){
+				logger.error(e);
+			}
+		}
+		return null;
+	}
+	
+	public ArenaResult loadArenaResult(String location){
+		HashMap<String, HashMap<String, String>> data = new HashMap<String, HashMap<String, String>>();
+		Collection<String> categories = new LinkedList<String>();
+		
+		try {
+			Scanner in = new Scanner(new File(location + "/results.csv"));
+			
+			// adding the categories (first line)
+			String[] cat = in.nextLine().split(",");
+			for(int i=1; i< cat.length; ++i){
+				categories.add(cat[i]);
+			}
+			
+			while(in.hasNextLine()){
+				try{
+					String[] line = in.nextLine().split(",");
+					
+					HashMap<String, String> userData = new HashMap<String, String>();
+					for(int i=1; i< cat.length; ++i){
+						userData.put(cat[i], line[i]);
+					}
+					
+					data.put(line[0], userData);
+				}
+				catch(Exception e){}
+			}
+			
+			in.close();
+			
+			ArenaResult result = new ArenaResult();
+			result.setCategories(categories);
+			result.setData(data);
+			
+			return result;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 }

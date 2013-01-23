@@ -949,6 +949,32 @@ public class SubmissionController {
 		return "redirect:.";
 	}
 	
+	@RequestMapping(value = "competition/view/{competitionName}/")
+	public String viewCompetitionPage(Model model,
+			@PathVariable("competitionName") String competitionName){
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		
+		Competition currComp = manager.getCompetition(competitionName);
+		if(currComp == null){
+			return "redirect:../../../home";
+		}
+		
+		model.addAttribute("unikey", getUser());
+		model.addAttribute("competition", currComp);
+		
+		if(currComp.isCalculated()){
+			model.addAttribute("arenaResult", manager.getCalculatedCompetitionResult(competitionName));
+			model.addAttribute("marks", manager.getCompetitionResult(competitionName));
+			return "assessment/competition/calculated";
+		}
+		else{
+			model.addAttribute("arenas", currComp.getArenas());
+			return "assessment/competition/arena";
+		}
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
