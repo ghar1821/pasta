@@ -1,5 +1,7 @@
 package pasta.web.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +43,9 @@ import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.login.AuthValidator;
+import pasta.repository.UserDAO;
 import pasta.service.SubmissionManager;
+import pasta.util.ProjectProperties;
 
 @Controller
 @RequestMapping("/")
@@ -192,7 +196,7 @@ public class SubmissionController {
 		}
 		String referer = request.getHeader("Referer");
 		return "redirect:"+ referer;
-		}
+	}
 
 	// view an assessment
 	@RequestMapping(value = "assessments/{assessmentName}/")
@@ -863,6 +867,30 @@ public class SubmissionController {
 		return "assessment/mark/handMarkBatch";
 	}
 	
+	@RequestMapping(value = "student/{username}/extension/{assessmentName}/{dueDate}")
+	public String giveExtension(
+			@PathVariable("username") String username,
+			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("dueDate") String dueDate,
+			HttpServletRequest request) {
+
+		if(getUser() == null || !getUser().isTutor()){
+			return "redirect:/home/.";
+		}
+		if(getUser().isInstructor()){
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+			try {
+				manager.giveExtension(username, assessmentName, sdf.parse(dueDate));
+				logger.info(getUser().getUsername() + " gave " + username + " an extension for assessment " 
+				+ assessmentName + " until " + dueDate);
+			} catch (ParseException e) {
+				logger.error("Could not parse " + dueDate + " to give student " + username + " an extension");
+			}
+		}
+		String referer = request.getHeader("Referer");
+		return "redirect:"+ referer;
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// COMPETITIONS //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -888,20 +916,6 @@ public class SubmissionController {
 		}
 		
 		manager.addCompetition(form);
-		
-		return "redirect:.";
-	}
-	
-	@RequestMapping(value = "competition/{competitionName}/", method = RequestMethod.POST)
-	public String updateCompetition(Model model,
-			@PathVariable("competitionName") String competitionName, 
-			@ModelAttribute(value = "newCompetitionModel") NewCompetition form){
-		if(getUser() == null || !getUser().isTutor()){
-			return "redirect:/home/.";
-		}
-		
-		form.setTestName(competitionName);
-		manager.updateCompetition(form);
 		
 		return "redirect:.";
 	}
@@ -934,17 +948,26 @@ public class SubmissionController {
 		return "assessment/view/competition";
 	}
 	
-	@RequestMapping(value = "competition/{competitionName}", method = RequestMethod.POST)
-	public String newCompetition(@PathVariable("competitionName") String competitionName,
-			Model model,
-			@ModelAttribute(value = "competition") Competition form){
+	@RequestMapping(value = "competition/{competitionName}/", method = RequestMethod.POST)
+	public String updateCompetition(@ModelAttribute(value = "newCompetitionModel") NewCompetition form,
+			@ModelAttribute(value = "competition") Competition compForm,
+			@PathVariable("competitionName") String competitionName, Model model){
 		if(getUser() == null || !getUser().isTutor()){
 			return "redirect:/home/.";
 		}
 		
-		form.setName(competitionName);
-		form.setArenas(manager.getCompetition(competitionName).getArenas());
-		manager.addCompetition(form);
+		
+		if(form.getFile() != null && !form.getFile().isEmpty()){
+			// update contents
+			form.setTestName(competitionName);
+			manager.updateCompetition(form);
+		}
+		else{
+			// update competition
+			compForm.setName(competitionName);
+			compForm.setArenas(manager.getCompetition(competitionName).getArenas());
+			manager.addCompetition(compForm);
+		}
 		
 		return "redirect:.";
 	}

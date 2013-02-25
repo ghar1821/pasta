@@ -1,10 +1,14 @@
 package pasta.repository;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +18,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
+import pasta.util.ProjectProperties;
 /**
  * The Data access object for the User class.
  * @author Alex
@@ -90,6 +95,26 @@ public class UserDAO extends HibernateDaoSupport{
 					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
 				}
 				usersByTutorial.get(user.getTutorial()).add(user);
+				
+				// load extension file
+				Scanner in;
+				try {
+					in = new Scanner(new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" +
+							user.getUsername() + "/user.extensions"));
+					while(in.hasNextLine()){
+						String[] line = in.nextLine().split(">");
+						if(line.length == 2){
+							try {
+								user.getExtensions().put(line[0], ProjectProperties.parseDate(line[1]));
+							} catch (ParseException e) {
+								// ignore
+							}
+						}
+					}
+					in.close();
+				} catch (FileNotFoundException e) {
+					// no extensions given
+				}
 			}
 		}
 	}

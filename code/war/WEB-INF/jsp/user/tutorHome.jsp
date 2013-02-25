@@ -14,7 +14,7 @@
 <table class="pastaQuickFeedback">
 	<c:forEach var="assessment" items="${assessments}">
 		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
-			<tr>
+			<tr <c:if test="${assessment.closed}">class="closedAssessment"</c:if> >
 				<td style="width:40px;">
 					<form:input type="file" path="file"/>
 					<form:input type="hidden" path="assessment" value="${assessment.shortName}"/>

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -11,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
@@ -215,22 +218,8 @@ public class SubmissionManager {
 		Competition comp = assDao.getCompetition(job.getAssessmentName());
 		if(comp != null){
 			
-			// check if it's still actually live
-			boolean dead = true;
-			for(Assessment ass: assDao.getAssessmentList()){
-				for(WeightedCompetition currComp: ass.getCompetitions()){
-					if(currComp.getTest() == comp){
-						dead = false;
-						break;
-					}
-				}
-			}
-			
-			// update living status
-			comp.setLive(!dead);
-			
 			// if dead, remove from the list and do nothing
-			if(dead){
+			if(!comp.isLive()){
 				scheduler.delete(job);
 				return;
 			}
@@ -315,7 +304,6 @@ public class SubmissionManager {
 				+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/submission";
 		
 		Assessment currAssessment = assDao.getAssessment(job.getAssessmentName());
-		boolean compiled = true;
 
 		try {
 			
@@ -354,7 +342,6 @@ public class SubmissionManager {
 						project.executeTarget("test");
 						project.executeTarget("clean");
 					} catch (BuildException e) {
-						compiled = false;
 						logger.error("Could not compile " + job.getUsername() + " - "
 								+ currAssessment.getName() + " - "
 								+ test.getTest().getName() + e);
@@ -526,6 +513,8 @@ public class SubmissionManager {
 		Competition thisComp = new Competition();
 		thisComp.setName(form.getTestName());
 		thisComp.setTested(false);
+		thisComp.setFirstStartDate(form.getFirstStartDate());
+		thisComp.setFrequency(form.getFrequency());
 		if(form.getType().equalsIgnoreCase("arena")){
 			thisComp.setArenas(new LinkedList<Arena>());
 		}
@@ -567,14 +556,17 @@ public class SubmissionManager {
 	}
 	
 	public void updateCompetition(NewCompetition form) {
-		Competition thisComp = new Competition();
+		Competition thisComp = getCompetition(form.getTestName().replace(" ", ""));
+		if (thisComp == null){
+			thisComp = new Competition();
+		}
 		thisComp.setName(form.getTestName());
 		try {
 
 			// create space on the file system.
 			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
 
-			// generate unitTestProperties
+			// generate competitionProperties
 			PrintStream out = new PrintStream(thisComp.getFileLocation()
 					+ "/competitionProperties.xml");
 			out.print(thisComp);
@@ -598,10 +590,13 @@ public class SubmissionManager {
 
 			getCompetition(thisComp.getShortName()).setTested(false);
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
 			(new File(thisComp.getFileLocation())).delete();
 			logger.error("Competition " + thisComp.getName()
 					+ " could not be created successfully!"
-					+ System.getProperty("line.separator") + e);
+					+ System.getProperty("line.separator") + sw.toString());
 		}
 	}
 	
@@ -611,20 +606,23 @@ public class SubmissionManager {
 			// create space on the file system.
 			(new File(form.getFileLocation() + "/code/")).mkdirs();
 
+			assDao.addCompetition(form);
+
 			// generate unitTestProperties
 			PrintStream out = new PrintStream(form.getFileLocation()
 					+ "/competitionProperties.xml");
-			out.print(form);
+			out.print(getCompetition(form.getShortName()));
 			out.close();
 			
-			assDao.addCompetition(form);
 		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
 			(new File(form.getFileLocation())).delete();
 			logger.error("Competition " + form.getName()
 					+ " could not be updated successfully!"
-					+ System.getProperty("line.separator") + e);
+					+ System.getProperty("line.separator") + pw);
 		}
-		assDao.addCompetition(form);
 	}
 
 	// new - unit test is guaranteed to have a unique name
@@ -734,9 +732,6 @@ public class SubmissionManager {
 	public void addAssessment(Assessment assessmentToAdd) {
 		try {
 
-			// reload unit tests
-			Collection<UnitTest> tests = getUnitTestList();
-
 			// unit Tests
 			for (WeightedUnitTest test : assessmentToAdd.getUnitTests()) {
 				if (getUnitTest(test.getUnitTestName().replace(" ", "")) != null) {
@@ -766,7 +761,7 @@ public class SubmissionManager {
 				if (getCompetition(test.getCompName().replace(" ", "")) != null) {
 					test.setTest(getCompetition(test.getCompName().replace(
 							" ", "")));
-					getCompetition(test.getCompName().replace(" ", "")).setLive(true);
+					getCompetition(test.getCompName().replace(" ", "")).addAssessment(assessmentToAdd);
 				}
 			}
 
@@ -1002,6 +997,23 @@ public class SubmissionManager {
 	
 	public ArenaResult getCalculatedCompetitionResult(String competitionName){
 		return resultDAO.getCalculatedCompetitionResult(competitionName);
+	}
+
+	public void giveExtension(String username, String assessmentName, Date extension) {
+		PASTAUser user = getUser(username);
+		user.getExtensions().put(assessmentName, extension);
+		
+		// update the files
+		try {
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation() + "/" +
+					username + "/user.extensions"));
+			for (Entry<String, Date> ex : user.getExtensions().entrySet()) {
+				out.println(ex.getKey() + ">" + ProjectProperties.formatDate(ex.getValue()));
+			}
+			out.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Could not save extension information for " + username);
+		}
 	}
 
 }

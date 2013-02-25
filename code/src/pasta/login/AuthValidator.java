@@ -1,21 +1,12 @@
 package pasta.login;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.Properties;
-
-import javax.mail.Session;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import pasta.domain.LoginForm;
-import pasta.repository.UserDAO;
-import pasta.util.ProjectProperties;
 /**
  * Authentication class.
  * 

@@ -30,8 +30,17 @@
 				<tr><td>Students can create repeatable arenas:</td><td><form:checkbox path="studentCreatableRepeatableArena"/></td></tr>
 			</c:otherwise>
 		</c:choose>
-		<tr><td>First run:</td><td>${competition.firstStartDate}</td></tr>
-		<tr><td>Frequency:</td><td>${competition.frequency.niceStringRepresentation}</td></tr>
+		<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
+		<tr>
+			<td>Frequency:</td>
+			<td>
+				<form:input type="number" path="frequency.years" style="width:3em;"/> years
+				<form:input type="number" path="frequency.days" style="width:3em;"/> days
+				<form:input type="number" path="frequency.hours" style="width:3em;"/> hours
+				<form:input type="number" path="frequency.minutes" style="width:3em;"/> minutes
+				<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
+			</td>
+		</tr>
 		<c:choose>
 			<c:when test="${empty competition.nextRunDate }">
 				Never
@@ -96,6 +105,8 @@
 
          // DOM Ready
         $(function() {
+        	
+        	$('#firstStartDateStr').datetimepicker({ dateFormat: 'dd/mm/yy', timeFormat: 'hh:mm' });
         
             // Binding a click event
             // From jQuery v.1.7.0 use .on() instead of .bind()

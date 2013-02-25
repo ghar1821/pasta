@@ -516,7 +516,7 @@ public class AssessmentDAO {
 						weightedComp.setWeight(Double
 								.parseDouble(competitionElement
 										.getAttribute("weight")));
-						weightedComp.getTest().setLive(true);
+						weightedComp.getTest().addAssessment(currentAssessment);
 						currentAssessment.addCompetition(weightedComp);
 					}
 				}
@@ -761,6 +761,8 @@ public class AssessmentDAO {
 			allCompetitions.get(comp.getShortName()).setStudentCreatableRepeatableArena(comp.isStudentCreatableRepeatableArena());
 			allCompetitions.get(comp.getShortName()).setTested(comp.isTested());
 			allCompetitions.get(comp.getShortName()).setTutorCreatableRepeatableArena(comp.isTutorCreatableRepeatableArena());
+			allCompetitions.get(comp.getShortName()).setFirstStartDateStr(comp.getFirstStartDateStr());
+			allCompetitions.get(comp.getShortName()).setFrequency(comp.getFrequency());
 		}
 		else{
 			// add

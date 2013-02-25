@@ -41,6 +41,8 @@
 						Next Run: ${competition.nextRunDate}
 					</c:otherwise>
 				</c:choose>
+				<br/>
+				Used in ${fn:length(competition.linkedAssessments)} Assessment<c:if test="${fn:length(competition.linkedAssessments) != 1}">s</c:if>
 			</td>
 			<td>
 				<!-- buttons -->
@@ -75,7 +77,19 @@
 						<option value="calculated">Calculated</option>
 						<option value="arena">Arena</option>
 					</form:select>
-				</td></tr>
+				</td>
+			</tr>
+			<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
+			<tr>
+				<td>Frequency:</td>
+				<td>
+					<form:input type="number" path="frequency.years" style="width:3em;"/> years
+					<form:input type="number" path="frequency.days" style="width:3em;"/> days
+					<form:input type="number" path="frequency.hours" style="width:3em;"/> hours
+					<form:input type="number" path="frequency.minutes" style="width:3em;"/> minutes
+					<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
+				</td>
+			</tr>
 			<tr><td>Competition Code:</td><td><form:input type="file" path="file"/></td></tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>

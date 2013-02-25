@@ -1,6 +1,8 @@
 package pasta.domain;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,6 +19,7 @@ public class PASTAUser implements Serializable{
 	private String tutorial;
 	private String stream;
 	private UserPermissionLevel permissionLevel;
+	private HashMap<String, Date> extensions = new HashMap<String, Date>();
 	
 	@Id
 	@Column(name = "USERNAME", nullable = false)
@@ -71,4 +74,15 @@ public class PASTAUser implements Serializable{
 		}
 		return new String[0];
 	}
+	
+	@Transient
+	public HashMap<String, Date> getExtensions(){
+		return extensions;
+	}
+	
+	@Transient
+	public void giveExtension(String assessmentName, Date newDueDate){
+		extensions.put(assessmentName, newDueDate);
+	}
+	
 }
