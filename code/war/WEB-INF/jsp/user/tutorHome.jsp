@@ -13,61 +13,69 @@
 
 <table class="pastaQuickFeedback">
 	<c:forEach var="assessment" items="${assessments}">
-		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
-			<tr <c:if test="${assessment.closed}">class="closedAssessment"</c:if> >
-				<td style="width:40px;">
-					<form:input type="file" path="file"/>
-					<form:input type="hidden" path="assessment" value="${assessment.shortName}"/>
-			    	<input type="submit" value="Upload" id="submit"/>
-				</td>
-				<td>
-					<a href="../info/${assessment.name}/">${assessment.name}</a> - 
-					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
-					<c:if test="${empty results[assessment.shortName]}">
-						0
-					</c:if>
-					/ ${assessment.marks}</br>
-					${assessment.dueDate}</br>
-					<c:choose>
-						<c:when test="${assessment.numSubmissionsAllowed == 0}">
-							&infin; sumbissions allowed </br>
-						</c:when>
-						<c:otherwise>
-							<c:if test="${empty results[assessment.shortName]}">
-								0
-							</c:if>
-							${results[assessment.shortName].submissionsMade} of ${results[assessment.shortName].assessment.numSubmissionsAllowed} attempts made</br>
-						</c:otherwise>
-					</c:choose>
-					<c:choose>
-						<c:when test="${results[assessment.shortName].submissionsMade == 0 or empty results[assessment.shortName]}">
-							No attempts on record.
-						</c:when>
-						<c:when test="${results[assessment.shortName].compileError}">
-							<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
-								<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-								<b>Compilation errors</b>
-							</div>
-						</c:when>
-						<c:otherwise>
-							<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
-								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-									<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-								</c:forEach>
+		<tr <c:if test="${assessment.closed}">class="closedAssessment"</c:if> >
+			<td>
+				<a href="../info/${assessment.name}/">${assessment.name}</a> - 
+				<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
+				<c:if test="${empty results[assessment.shortName]}">
+					0
+				</c:if>
+				/ ${assessment.marks}</br>
+				${assessment.dueDate}</br>
+				<c:choose>
+					<c:when test="${assessment.numSubmissionsAllowed == 0}">
+						&infin; sumbissions allowed </br>
+					</c:when>
+					<c:otherwise>
+						<c:if test="${empty results[assessment.shortName]}">
+							0
+						</c:if>
+						${results[assessment.shortName].submissionsMade} of ${results[assessment.shortName].assessment.numSubmissionsAllowed} attempts made</br>
+					</c:otherwise>
+				</c:choose>
+				<c:choose>
+					<c:when test="${results[assessment.shortName].submissionsMade == 0 or empty results[assessment.shortName]}">
+						No attempts on record.
+					</c:when>
+					<c:when test="${results[assessment.shortName].compileError}">
+						<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
+							<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+							<b>Compilation errors</b>
+						</div>
+					</c:when>
+					<c:otherwise>
+						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
+							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 							</c:forEach>
-						</c:otherwise>
-					</c:choose>
-				</td>
-				<td>
-					<div style="float: left; width:100%">
-						<button type="button" style="float: left; text-align: center;"
-							onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
-					</div>
-				</td>
-			</tr>
-		</form:form>
+						</c:forEach>
+					</c:otherwise>
+				</c:choose>
+			</td>
+			<td style="width:40px;">
+				<button type="button" style="float: left; text-align: center;"
+						onClick="submitAssessment('${assessment.shortName}');">Submit</button>
+			</td>
+			<td>
+				<div style="float: left; width:100%">
+					<button type="button" style="float: left; text-align: center;"
+						onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
+				</div>
+			</td>
+		</tr>
 	</c:forEach>
 </table>
+
+<div id="submitPopup" class="popup">
+	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<span class="button bClose"> <span><b>X</b></span></span>
+		By submitting this assessment I accept the unviersity's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br>
+		<form:input type="file" path="file"/>
+		<form:input type="hidden" path="assessment" value=""/>
+	   	<input type="submit" value="I accept" id="submit"/>
+   	</form:form>
+</div>
+
 
 <div id="insertForm" style="display:none"></div>
 
@@ -75,5 +83,10 @@
 	function markBatch(className){
 		$('#insertForm').html('<form name="redirect" action="../mark/'+className+'/" method="post"><input type="text" name="currStudentIndex" value="0"/></form>')
 		document.forms['redirect'].submit();
+	}
+	
+	function submitAssessment(assessment){
+		document.getElementById('assessment').value=assessment;
+		$('#submitPopup').bPopup();
 	}
 </script>
