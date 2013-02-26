@@ -66,9 +66,11 @@
 				</c:when>
 				<c:otherwise>
 					<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
-						<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-							<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-						</c:forEach>
+						<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">
+							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+							</c:forEach>
+						</c:if>
 					</c:forEach>
 				</c:otherwise>
 			</c:choose>

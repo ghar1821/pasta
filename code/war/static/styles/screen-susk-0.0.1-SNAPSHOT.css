@@ -88,6 +88,14 @@ div.pastaUnitTestBoxResultfailure ,div.pastaUnitTestBoxResulterror{
 	background-color: red;
 }
 
+div.pastaUnitTestBoxSecretResultpass {
+	background-color: #CCC;
+}
+
+div.pastaUnitTestBoxSecretResultfailure ,div.pastaUnitTestBoxSecretResulterror{
+	background-color: #333;
+}
+
 /* Buttons */
 
 button,smallbutton,#submit,.button {

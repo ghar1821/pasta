@@ -46,7 +46,14 @@
 					<c:otherwise>
 						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
 							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+								<c:choose>
+									<c:when test="${allUnitTests.secret}">
+										<div class="pastaUnitTestBoxResult pastaUnitTestBoxSecretResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+									</c:when>
+									<c:otherwise>
+										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+									</c:otherwise>
+								</c:choose>
 							</c:forEach>
 						</c:forEach>
 					</c:otherwise>
