@@ -18,6 +18,11 @@ import java.util.zip.ZipFile;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Validator;
+
+import pasta.login.DBAuthValidator;
+import pasta.login.DummyAuthValidator;
+import pasta.login.ImapAuthValidator;
 
 @Component
 /**
@@ -35,55 +40,46 @@ public class ProjectProperties {
 
 	private static ProjectProperties properties;
 	
-	// location of the templates (test code)
-	private static String templateLocation;
-	// location of the arenas (only for the battleship league segment)
-	private static String arenasLocation;
-	// location of the submissions
-	private static String submissionsLocation;
+	// location of the project
+	private static String projectLocation;
+	// auth type (dummy, imap, database)
+	private static String authType;
+	// list of mail servers to auth with (imap auth only)
+	private static List<String> emailAddresses;
+	// create a new account if not already assigned a class
+	private static Boolean createAccountOnSuccessfulLogin;
+	// validator
+	private static Validator authenticationValidator;
 	
-	// MySQL data
-	private static String url;
-	private static String user;
-	private static String pass;
-	
-	private static List<String> tutors;
-	
-	private static String java6location = null;
-	
-	/**
-	 * The constructor is taken based on the config in
-	 * applicationContext.xml
-	 * @param tempLoc - template location
-	 * @param arenasLoc - arena location
-	 * @param subLoc - submission location
-	 * @param url - url of the mysql database
-	 * @param user - username of the mysql database
-	 * @param pass - password of the mysql database
-	 */
-	private ProjectProperties(String tempLoc, String arenasLoc, String subLoc,
-			String url, String user, String pass, List tutors, String java6Location){
-		initialize(tempLoc, arenasLoc, subLoc, url, user, pass, tutors, java6Location);
+	private ProjectProperties(String projectLocation, String authType, Boolean createAccountOnSuccessfulLogin){
+		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
 	}
 	
-	private ProjectProperties(String tempLoc, String arenasLoc, String subLoc,
-			String url, String user, String pass, List tutors){
-		initialize(tempLoc, arenasLoc, subLoc, url, user, pass, tutors, null);
+	private ProjectProperties(String projectLocation, String authType, List emailAddresses, Boolean createAccountOnSuccessfulLogin){
+		initialize(projectLocation, authType, emailAddresses, createAccountOnSuccessfulLogin);
 	}
 	
-	private void initialize(String tempLoc, String arenasLoc, String subLoc,
-			String url, String user, String pass, List tutors, String java6Location){
-		templateLocation = tempLoc;
-		arenasLocation = arenasLoc;
-		submissionsLocation = subLoc;
+	private void initialize(String projectLocation, String authType,
+			List emailAddresses, Boolean createAccountOnSuccessfulLogin) {
+		this.projectLocation = projectLocation;
+		this.authType=authType; // default to dummy
+		this.emailAddresses = emailAddresses;
+		this.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
 		
-		ProjectProperties.url = url;
-		ProjectProperties.user = user;
-		ProjectProperties.pass = pass;
-		
-		ProjectProperties.tutors = tutors;
-		ProjectProperties.java6location = java6Location;
+		if(authType.toLowerCase().trim().equals("imap")){
+			authenticationValidator = new ImapAuthValidator();
+			logger.info("Using IMAP authentication");
+		}
+		else if(authType.toLowerCase().trim().equals("database")){
+			authenticationValidator = new DBAuthValidator();
+			logger.info("Using database authentication");
+		}
+		else{
+			authenticationValidator = new DummyAuthValidator();
+			logger.info("Using dummy authentication");
+		}
 	}
+
 	
 	private ProjectProperties(){
 	}
@@ -95,37 +91,27 @@ public class ProjectProperties {
 		return properties;
 	}
 	
-	public String getTemplateLocation(){
-		return templateLocation;
-	}
 	
 	public String getProjectLocation(){
-		return templateLocation.replace("/template", "");
+		return projectLocation;
 	}
 	
-	public String getArenaLocation(){
-		return arenasLocation;
+	public String getAuthType() {
+		return authType;
 	}
-	public String getSubmissionsLocation(){
-		return submissionsLocation;
+
+	public List<String> getEmailAddresses() {
+		return emailAddresses;
 	}
-	public String getUrl() {
-		return url;
+
+	public Boolean getCreateAccountOnSuccessfulLogin() {
+		return createAccountOnSuccessfulLogin;
 	}
-	public String getUser() {
-		return user;
+
+	public Validator getAuthenticationValidator() {
+		return authenticationValidator;
 	}
-	public String getPass() {
-		return pass;
-	}
-	public List<String> getTutors(){
-		return tutors;
-	}
-	
-	public String getJava6Location(){
-		return java6location;
-	}
-	
+
 	/**
 	 * Code used to extract a zip file.
 	 * @param zipFile - the file

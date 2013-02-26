@@ -59,19 +59,15 @@
     </bean>
 	           
     <bean id="projectProperties" class="pasta.util.ProjectProperties">
-		<constructor-arg type="java.lang.String" value="C:/info1103/template"/> <!-- template location -->
-		<constructor-arg type="java.lang.String" value="C:/info1103/arenas"/> <!-- arenas location -->
-		<constructor-arg type="java.lang.String" value="C:/info1103/submissions"/> <!-- submissions location -->
-		<constructor-arg type="java.lang.String" value="jdbc:mysql://localhost:3306/mark1103"/> <!-- URL -->
-		<constructor-arg type="java.lang.String" value="root"/> <!-- username -->
-		<constructor-arg type="java.lang.String" value="pass"/> <!-- password -->
-		<constructor-arg>
+		<constructor-arg type="java.lang.String" value="C:/info1103"/> <!-- project location -->
+		<constructor-arg type="java.lang.String" value="imap"/> <!-- auth type (dummy/imap/database) -->
+		<constructor-arg>	<!-- only for imap, list of urls for servers in the format of address:port - remove if not in use-->
 			<list>
-				<value>mcharles</value>
-				<value>arad0726</value>
+				<value>imap.it.usyd.edu.au:143</value>
+				<value>imap.cs.usyd.edu.au:143</value>
 			</list>
 		</constructor-arg>
-		
+		<constructor-arg type="java.lang.Boolean" value="false"/> <!-- auth type (dummy/email/database) -->
 	</bean>
 	
     <bean id="messageSource"

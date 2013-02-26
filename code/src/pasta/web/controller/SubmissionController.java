@@ -2,7 +2,6 @@ package pasta.web.controller;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,8 +41,6 @@ import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
-import pasta.login.AuthValidator;
-import pasta.repository.UserDAO;
 import pasta.service.SubmissionManager;
 import pasta.util.ProjectProperties;
 
@@ -81,7 +78,6 @@ public class SubmissionController {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private SubmissionManager manager;
-	private AuthValidator validator = new AuthValidator();
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
@@ -1123,7 +1119,7 @@ public class SubmissionController {
 	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
 			BindingResult result) {
 
-		validator.validate(userMsg, result);
+		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
 		if (result.hasErrors()) {
 			return "login";
 		}
