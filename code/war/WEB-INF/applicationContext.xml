@@ -20,6 +20,18 @@
            http://www.springframework.org/schema/task  
            http://www.springframework.org/schema/task/spring-task-3.0.xsd">
            
+    <bean id="projectProperties" class="pasta.util.ProjectProperties">
+		<constructor-arg type="java.lang.String" value="C:/info1103"/> <!-- project location -->
+		<constructor-arg type="java.lang.String" value="database"/> <!-- auth type (dummy/imap/database) -->
+		<constructor-arg>	<!-- only for imap, list of urls for servers in the format of address:port - remove if not in use-->
+			<list>
+				<value>imap.it.usyd.edu.au:143</value>
+				<value>imap.cs.usyd.edu.au:143</value>
+			</list>
+		</constructor-arg>
+		<constructor-arg type="java.lang.Boolean" value="false"/> <!-- auth type (dummy/email/database) -->
+	</bean>
+	
 	<bean 
 	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location">
@@ -54,29 +66,19 @@
 			<list>
 				<value>pasta.scheduler.Job</value>
 				<value>pasta.domain.PASTAUser</value>
+				<value>pasta.domain.PASTALoginUser</value>
 			</list>
 	    </property>
     </bean>
 	           
-    <bean id="projectProperties" class="pasta.util.ProjectProperties">
-		<constructor-arg type="java.lang.String" value="C:/info1103"/> <!-- project location -->
-		<constructor-arg type="java.lang.String" value="imap"/> <!-- auth type (dummy/imap/database) -->
-		<constructor-arg>	<!-- only for imap, list of urls for servers in the format of address:port - remove if not in use-->
-			<list>
-				<value>imap.it.usyd.edu.au:143</value>
-				<value>imap.cs.usyd.edu.au:143</value>
-			</list>
-		</constructor-arg>
-		<constructor-arg type="java.lang.Boolean" value="false"/> <!-- auth type (dummy/email/database) -->
-	</bean>
-	
     <bean id="messageSource"
            class="org.springframework.context.support.ResourceBundleMessageSource">
            <property name="basename" value="messages" />
     </bean>
 
     <context:component-scan base-package="pasta.repository" />
-    <context:component-scan base-package="pasta.service" />	 
+    <context:component-scan base-package="pasta.login" />		 
+    <context:component-scan base-package="pasta.service" />
     <context:component-scan base-package="pasta.scheduler" />
     <context:component-scan base-package="pasta.domain" />
     

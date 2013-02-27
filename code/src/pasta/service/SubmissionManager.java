@@ -49,6 +49,7 @@ import pasta.domain.upload.NewHandMarking;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.LoginDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
@@ -72,6 +73,7 @@ public class SubmissionManager {
 	
 	private ExecutionScheduler scheduler;
 	private UserDAO userDao;
+	private LoginDAO loginDao;
 	
 	@Autowired
 	public void setMyScheduler(ExecutionScheduler myScheduler) {
@@ -88,6 +90,12 @@ public class SubmissionManager {
 	@Autowired
 	public void setMyUserDAO(UserDAO myUserDao) {
 		this.userDao = myUserDao;
+	}
+	
+	@Autowired
+	public void setMyLoginDAO(LoginDAO myLoginDao) {
+		this.loginDao = myLoginDao;
+		ProjectProperties.getInstance().setDBDao(myLoginDao);
 	}
 
 	@Autowired
@@ -1016,4 +1024,8 @@ public class SubmissionManager {
 		}
 	}
 
+	public LoginDAO getLoginDao() {
+		return loginDao;
+	}
+	
 }

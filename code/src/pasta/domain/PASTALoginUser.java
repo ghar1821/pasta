@@ -11,6 +11,13 @@ public class PASTALoginUser {
 	private String username;
 	private String hashedPassword;
 	
+	public PASTALoginUser(String username, String hashedPassword) {
+		this.username = username;
+		this.hashedPassword = hashedPassword;
+	}
+	
+	public PASTALoginUser(){}
+	
 	@Id
 	@Column(name = "USERNAME", nullable = false)
 	public String getUsername() {

@@ -6,6 +6,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ import org.springframework.validation.Validator;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.ImapAuthValidator;
+import pasta.repository.LoginDAO;
 
 @Component
 /**
@@ -51,6 +54,8 @@ public class ProjectProperties {
 	// validator
 	private static Validator authenticationValidator;
 	
+	private static LoginDAO loginDAO;
+	
 	private ProjectProperties(String projectLocation, String authType, Boolean createAccountOnSuccessfulLogin){
 		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
 	}
@@ -72,6 +77,7 @@ public class ProjectProperties {
 		}
 		else if(authType.toLowerCase().trim().equals("database")){
 			authenticationValidator = new DBAuthValidator();
+			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
 		}
 		else{
@@ -178,5 +184,12 @@ public class ProjectProperties {
 	
 	public static Date parseDate(String date) throws ParseException{
 		return sdf.parse(date);
+	}
+
+	public void setDBDao(LoginDAO dao) {
+		this.loginDAO = dao;
+		if(authType.toLowerCase().trim().equals("database")){
+			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+		}
 	}
 }

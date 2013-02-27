@@ -12,7 +12,7 @@ public class DummyAuthValidator implements Validator{
 
 	@Override
 	public void validate(Object arg0, Errors arg1) {
-		// acept everything
+		// accept everything
 	}
 
 

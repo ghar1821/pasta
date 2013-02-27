@@ -32,4 +32,9 @@ public class LoginDAO extends HibernateDaoSupport{
 		getHibernateTemplate().delete(user);
 	}
 
+	public boolean authenticate(String unikey, String hashedPassword) {
+		Object[] parameters = {unikey, hashedPassword};
+		return !(getHibernateTemplate().find("FROM PASTALoginUser WHERE USERNAME=? AND HASHEDPASSWORD=?", parameters).isEmpty());
+	}
+
 }
