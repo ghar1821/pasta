@@ -633,6 +633,11 @@ public class SubmissionManager {
 		}
 	}
 
+	public void releaseAssessment(String AssessmentName, String released)
+	{
+		assDao.releaseAssessment(AssessmentName,released);
+		
+	}
 	// new - unit test is guaranteed to have a unique name
 	public void removeUnitTest(String testName) {
 		assDao.removeUnitTest(testName);
@@ -735,7 +740,11 @@ public class SubmissionManager {
 			compileErrors.close();
 		}
 	}
-
+	// release an assignment ? 
+	public void releaseAssesment(String assessmentName)
+	{
+		
+	}
 	// new add assessment
 	public void addAssessment(Assessment assessmentToAdd) {
 		try {
@@ -816,6 +825,10 @@ public class SubmissionManager {
 	
 	public Collection<PASTAUser> getUserList() {
 		return userDao.getUserList();
+	}
+	
+	public HashMap<String, Collection<String>> getTutorialByStream(){
+		return userDao.getTutorialByStream();
 	}
 	
 	public Collection<PASTAUser> getUserListByTutorial(String className) {

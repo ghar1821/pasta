@@ -7,7 +7,7 @@
 <h1>Assessments</h1>
 
 <table style="width: 100%;">
-	<c:forEach var="assessment" items="${allAssessments}">
+	<c:forEach var="assessment" items="${allAssessments}" varStatus="">
 		<tr>
 			<!-- icons -->
 			<td style="width: 5em"><c:if
@@ -25,38 +25,42 @@
 						<span class="ui-icon ui-icon-gear" title="Not released"></span>
 					</button>
 					<!--  onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">-->
+					<!-- name= "assessmentName"  -->
 					<div style="clear: both;"></div>
 					<div id="release${assessment.shortName}" style="display: none;">
+						<form:form action="release/${assessment.shortName}/" commandName= "assessmentRelease" method="POST" ><!-- "allAssessments[${assStatus.index	}]"  -->
 						<ul class="tristate list">
-							<li class="list"><input type="checkbox"> All <c:forEach
-									var="stream" items="${allStream}">
-									<c:forEach var="class" items="${allClass}">
-									</c:forEach>
-								</c:forEach>
+							<li class="list"><input type="checkbox"> All
 								<ul>
-									<li class="list"><input type="checkbox"><a href="#">Solutions</a>
-										<ul>
-											<li class="list"><input type="checkbox"><a href="#">Government</a></li>
-											<li class="list"><input type="checkbox"><a href="#">Manufacturing</a></li>
-											<li class="list"><input type="checkbox"><a href="#">Solutions</a>
+								<form:input type = "hidden" path= "assessmentName" value= "${assessment.shortName }" /> 
+									<c:forEach var="stream" items="${tutorialByStream}">
+										<c:if test="${!empty stream.key }">
+											<li class="list"><form:input type="checkbox"  path= "list"name= "list" value = ""/>${stream.key} 
 												<ul>
-													<li class="list"><input type="checkbox" checked><a href="#">Consumer
-															photo and video</a></li>
-													<li class="list"><input type="checkbox" checked><a href="#">Mobile</a></li>
-													<li class="list"><input type="checkbox"><a href="#">Rich
-															Internet applications</a></li>
-													<li class="list"><input type="checkbox"><a href="#">Technical
-															communication</a></li>
-													<li class="list"><input type="checkbox"><a href="#">Training
-															and eLearning</a></li>
-													<li class="list"><input type="checkbox"><a href="#">Web
-															conferencing</a></li>
-												</ul></li>
-											<li class="list"><input type="checkbox"><a href="#">All
-													industries and solutions</a></li>
-										</ul></li>
-								</ul></li>
+													<c:forEach var="tutorial" items="${ stream.value}">
+														<li class="list"><form:input path="list" name= "list"  type="checkbox"
+															value="${stream.key }.${tutorial}"/> ${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
+														</li>
+													</c:forEach>
+												</ul>
+											</li>
+										</c:if>
+									</c:forEach>
+								</ul>
+							</li>
 						</ul>
+						<div style="float: right">
+							 <input type="submit" value="testSubmit" id="submit" /> 
+							<button type= "button" style="float: right; text-align: center;"
+								onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Release
+							</button>
+							
+							<button   type="submit" id="submit"  style="float: right; display: none; text-align: center;"
+								
+								onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+								<!-- onclick="location.href='./release/${assessment.shortName}/'" -->
+						</div>
+						</form:form>
 					</div>
 					<!-- just added -->
 				</c:if></td>
@@ -173,54 +177,13 @@ ${fn:length(assessment.competitions)} Competitions </br>
 			<tr>
 				<td>
 					<ul class=tristate">
-						<li item-selected='false'>All</li>
-						<li item-checked='true' item-expanded='true'><a href="#">Solutions</a>
-							<ul>
-								<li><a href="#">Government</a></li>
-								<li item-checked='false'><a href="#">Manufacturing</a></li>
-								<li><a href="#">Solutions</a>
-									<ul>
-										<li><a href="#">Consumer photo and video</a></li>
-										<li><a href="#">Mobile</a></li>
-										<li><a href="#">Rich Internet applications</a></li>
-										<li><a href="#">Technical communication</a></li>
-										<li><a href="#">Training and eLearning</a></li>
-										<li><a href="#">Web conferencing</a></li>
-									</ul></li>
-								<li><a href="#">All industries and solutions</a></li>
-							</ul></li>
+						
 					</ul>
 				</td>
-				<td>For</td>
-				<td><input id="All" type="radio" name="Releasetype" value="All">All<br>
-					<input id="Stream" type="radio" name="Releasetype" value="Stream ">Stream<br>
-					<input id="Class" type="radio" name="Releasetype" value="Class ">Class
-				</td>
+				
 			</tr>
-			<tr>
-				<c:choose>
-					<c:when test="${rel == 1}">
-					</c:when>
-
-
-					<c:when test="${rel == 2 }">
-						<tr>
-							<td>Stream:</td>
-							<td><form:input type="text" path="simpleDueDate"
-									id="simpleDueDate" name="simpleDueDate" /></td>
-						</tr>
-					</c:when>
-					<c:when test="${rel == 3}">
-						<tr>
-							<td>Class:</td>
-							<td><form:input type="text" path="numSubmissionsAllowed" /></td>
-						</tr>
-
-					</c:when>
-					<c:otherwise>
-
-					</c:otherwise>
-				</c:choose>
+			
+				
 		</table>
 		<input type="submit" value="Release" id="submit" />
 	</form:form>

@@ -7,11 +7,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import pasta.domain.PASTAUser;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+
 
 public class Assessment {
 	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
@@ -27,7 +32,8 @@ public class Assessment {
 	private Date dueDate = new Date();
 	private String description;
 	private int numSubmissionsAllowed;
-	private boolean released = false;
+	private boolean released = false; //
+	String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -42,11 +48,26 @@ public class Assessment {
 	public boolean isReleased() {
 		return released;
 	}
+	
+	public boolean isReleasedStudent(PASTAUser student)
+	{
+		if(released)
+		{ 
+			if(Pattern.matches(".*" + student.getStream()+"{.*"+student.getTutorial()+".*}.*", releasedClasses))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public void setReleased(boolean released) {
 		this.released = released;
 	}
-
+	public void setReleasedClasses(String released) {
+		
+			this.releasedClasses = released;
+	}
 	public void addSecretUnitTest(WeightedUnitTest test) {
 		secretUnitTests.add(test);
 	}

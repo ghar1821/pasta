@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,7 +19,6 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
-import pasta.util.ProjectProperties;
 /**
  * The Data access object for the User class.
  * @author Alex
@@ -30,6 +30,7 @@ public class UserDAO extends HibernateDaoSupport{
 	HashMap<String, PASTAUser> allUsers = null;
 	HashMap<String, Collection<PASTAUser>> usersByTutorial = null;
 	HashMap<String, Collection<PASTAUser>> usersByStream = null;
+	HashMap<String, Collection<String>> tutorialByStream = null;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -72,6 +73,11 @@ public class UserDAO extends HibernateDaoSupport{
 		return usersByStream.get(streamName);
 	}
 	
+	public HashMap<String, Collection<String>> getTutorialByStream(){
+		return tutorialByStream;
+	}
+	
+	
 	public void add(PASTAUser user){
 		allUsers.put(user.getUsername().toLowerCase(), user);
 		save(user);
@@ -82,19 +88,22 @@ public class UserDAO extends HibernateDaoSupport{
 		allUsers = new HashMap<String, PASTAUser>();
 		usersByTutorial = new HashMap<String, Collection<PASTAUser>>();
 		usersByStream = new HashMap<String, Collection<PASTAUser>>();
+		tutorialByStream = new HashMap<String, Collection<String>>();
 		if(users != null){
 			for(PASTAUser user: users){
 				allUsers.put(user.getUsername().toLowerCase(), user);
 				
 				if(!usersByStream.containsKey(user.getStream())){
 					usersByStream.put(user.getStream(), new ArrayList<PASTAUser>());
+					tutorialByStream.put(user.getStream(), new HashSet<String>());
 				}
 				usersByStream.get(user.getStream()).add(user);
-				
+				tutorialByStream.get(user.getStream()).add(user.getTutorial());
 				if(!usersByTutorial.containsKey(user.getTutorial())){
 					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
 				}
 				usersByTutorial.get(user.getTutorial()).add(user);
+				
 				
 				// load extension file
 				Scanner in;

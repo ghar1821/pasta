@@ -127,6 +127,13 @@ public class AssessmentDAO {
 		}
 	}
 
+	public void releaseAssessment(String AssessmentName, String released)
+	{
+		allAssessments.get(AssessmentName).setReleased(true);
+		allAssessments.get(AssessmentName).setReleasedClasses(released);
+		
+	}
+	
 	public void removeUnitTest(String unitTestName) {
 		allUnitTests.remove(unitTestName);
 		try {
@@ -752,6 +759,8 @@ public class AssessmentDAO {
 			}
 		}
 	}
+	
+	
 
 	public void addCompetition(Competition comp) {
 		if(allCompetitions.containsKey(comp.getShortName())){
