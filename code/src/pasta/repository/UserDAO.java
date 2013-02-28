@@ -19,6 +19,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
+import pasta.util.ProjectProperties;
 /**
  * The Data access object for the User class.
  * @author Alex

@@ -711,22 +711,22 @@ public class SubmissionManager {
 			runErrors.close();
 			compileErrors.close();
 
-			// delete everything else
-			String[] allFiles = (new File(thisTest.getFileLocation() + "/test/"))
-					.list();
-			for (String file : allFiles) {
-				File actualFile = new File(thisTest.getFileLocation()
-						+ "/test/" + file);
-				if (actualFile.isDirectory()) {
-					FileUtils.deleteDirectory(actualFile);
-				} else {
-					if (!file.equals("result.xml")
-							&& !file.equals("compile.errors")
-							&& !file.equals("run.errors")) {
-						FileUtils.forceDelete(actualFile);
-					}
-				}
-			}
+//			// delete everything else
+//			String[] allFiles = (new File(thisTest.getFileLocation() + "/test/"))
+//					.list();
+//			for (String file : allFiles) {
+//				File actualFile = new File(thisTest.getFileLocation()
+//						+ "/test/" + file);
+//				if (actualFile.isDirectory()) {
+//					FileUtils.deleteDirectory(actualFile);
+//				} else {
+//					if (!file.equals("result.xml")
+//							&& !file.equals("compile.errors")
+//							&& !file.equals("run.errors")) {
+//						FileUtils.forceDelete(actualFile);
+//					}
+//				}
+//			}
 
 		} catch (IOException e) {
 			logger.error("Unable to test unit test "

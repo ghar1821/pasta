@@ -1,8 +1,6 @@
 package pasta.web.controller;
 
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -80,7 +78,6 @@ public class SubmissionController {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private SubmissionManager manager;
-	private AuthValidator validator = new AuthValidator();
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
@@ -202,8 +199,6 @@ public class SubmissionController {
 		}
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
-	}
-		return "redirect:"+ referer;
 	}
 
 	// view an assessment
@@ -998,11 +993,6 @@ public class SubmissionController {
 		return "assessment/view/competition";
 	}
 
-	@RequestMapping(value = "competition/{competitionName}", method = RequestMethod.POST)
-	public String newCompetition(
-			@PathVariable("competitionName") String competitionName,
-			Model model, @ModelAttribute(value = "competition") Competition form) {
-		if (getUser() == null || !getUser().isTutor()) {
 	@RequestMapping(value = "competition/{competitionName}/", method = RequestMethod.POST)
 	public String updateCompetition(@ModelAttribute(value = "newCompetitionModel") NewCompetition form,
 			@ModelAttribute(value = "competition") Competition compForm,
@@ -1189,7 +1179,7 @@ public class SubmissionController {
 	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
 			BindingResult result) {
 
-		validator.validate(userMsg, result);
+		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
 		if (result.hasErrors()) {
 			return "login";
 		}
