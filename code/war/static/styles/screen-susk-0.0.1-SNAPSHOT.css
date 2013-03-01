@@ -202,7 +202,7 @@ smallbutton{
 	margin: 0;
 }
 
-#dialog-box .dialog-content ul {
+ul#dialog-box ul.dialog-content{
 	margin: 10px 0 10px 20px;
 	padding: 0;
 	height: 50px;

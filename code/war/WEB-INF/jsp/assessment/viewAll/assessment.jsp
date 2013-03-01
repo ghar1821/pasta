@@ -15,51 +15,43 @@
 					<span class="ui-icon ui-icon-alert"
 						style="float: left; margin-right: .3em;"
 						title="Contains untested unit tests."></span>
-				</c:if> <c:if test="${assessment.closed}">
-					<span class="ui-icon ui-icon-locked"
-						style="float: left; margin-right: .3em;" title="Past due date"></span>
-				</c:if> <c:if test="${not assessment.released}">
-					<!--  <span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>-->
-					<button id="release"
-						onClick="javascript:toggle('release${assessment.shortName}');">
-						<span class="ui-icon ui-icon-gear" title="Not released"></span>
-					</button>
-					<!--  onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='./release/${assessment.shortName}/'};$('#comfirmPopup').bPopup();">-->
-					<!-- name= "assessmentName"  -->
+					<c:if test="${assessment.closed}">
+						<span class="ui-icon ui-icon-locked"
+							style="float: left; margin-right: .3em;" title="Past due date"></span>
+					</c:if> 
+					<c:if test="${not assessment.released}">
+						<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
+					</c:if>
 					<div style="clear: both;"></div>
-					<div id="release${assessment.shortName}" style="display: none;">
-						<form:form action="release/${assessment.shortName}/" commandName= "assessmentRelease" method="POST" ><!-- "allAssessments[${assStatus.index	}]"  -->
-						<ul class="tristate list">
-							<li class="list"><input type="checkbox"> All
-								<ul>
-								<form:input type = "hidden" path= "assessmentName" value= "${assessment.shortName }" /> 
-									<c:forEach var="stream" items="${tutorialByStream}">
-										<c:if test="${!empty stream.key }">
-											<li class="list"><form:input type="checkbox"  path= "list"name= "list" value = ""/>${stream.key} 
-												<ul>
-													<c:forEach var="tutorial" items="${ stream.value}">
-														<li class="list"><form:input path="list" name= "list"  type="checkbox"
-															value="${stream.key }.${tutorial}"/> ${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-														</li>
-													</c:forEach>
-												</ul>
-											</li>
-										</c:if>
-									</c:forEach>
-								</ul>
-							</li>
-						</ul>
-						<div style="float: right">
-							 <input type="submit" value="testSubmit" id="submit" /> 
-							<button type= "button" style="float: right; text-align: center;"
-								onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Release
-							</button>
-							
-							<button   type="submit" id="submit"  style="float: right; display: none; text-align: center;"
-								
-								onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-								<!-- onclick="location.href='./release/${assessment.shortName}/'" -->
-						</div>
+					<div id="release${assessment.shortName}" class="popup">
+						<form:form action="release/${assessment.shortName}/"
+							commandName="assessmentRelease" method="POST">
+							<h2>${assessment.name}</h2>
+							Select which classes to release this assessment to.
+							<ul class="tristate list">
+								<li class="list"><input type="checkbox"> All
+									<ul>
+										<form:input type="hidden" path="assessmentName"
+											value="${assessment.shortName }" />
+										<c:forEach var="stream" items="${tutorialByStream}">
+											<c:if test="${!empty stream.key }">
+												<li class="list"><form:input type="checkbox"
+														path="list" name="list" value="" />${stream.key}
+													<ul>
+														<c:forEach var="tutorial" items="${stream.value}">
+															<!-- TODO -> command for contains in a string -->
+															<li class="list">
+																<form:input path="list" name="list"
+																	type="checkbox" value="${stream.key }.${tutorial}" />
+																${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
+															</li>
+														</c:forEach>
+													</ul></li>
+											</c:if>
+										</c:forEach>
+									</ul></li>
+							</ul>
+							<button type="button" style="float: right; text-align: center;">Release</button>
 						</form:form>
 					</div>
 					<!-- just added -->
@@ -103,6 +95,10 @@ ${fn:length(assessment.competitions)} Competitions </br>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
 						onclick="location.href='./${assessment.shortName}/'">Details</button>
+				</div>
+				<div style="float: left">
+					<button style="float: left; text-align: center;"
+						onclick="$('#release${assessment.shortName}').bPopup()">Release</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
@@ -177,13 +173,13 @@ ${fn:length(assessment.competitions)} Competitions </br>
 			<tr>
 				<td>
 					<ul class=tristate">
-						
+
 					</ul>
 				</td>
-				
+
 			</tr>
-			
-				
+
+
 		</table>
 		<input type="submit" value="Release" id="submit" />
 	</form:form>

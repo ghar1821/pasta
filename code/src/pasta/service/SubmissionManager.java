@@ -732,7 +732,12 @@ public class SubmissionManager {
 			logger.error("Unable to test unit test "
 					+ getUnitTest(testName).getName()
 					+ System.getProperty("line.separator") + e);
+		} catch (Exception e){
+			// catch the rest of the exceptions
 		}
+		
+		
+		// ensure everything is closed
 		if(runErrors != null){
 			runErrors.close();
 		}
