@@ -2,6 +2,9 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<jsp:useBean id="now" class="java.util.Date"/>
+
 
 <h1>${unikey.username}</h1>
 
@@ -11,17 +14,31 @@
 </c:forEach>
 <button>Change My Classes</button>
 
-<table class="pastaQuickFeedback">
-	<c:forEach var="assessment" items="${assessments}">
-		<tr <c:if test="${assessment.closed}">class="closedAssessment"</c:if> >
-			<td>
-				<a href="../info/${assessment.name}/">${assessment.name}</a> - 
-				<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
-				<c:if test="${empty results[assessment.shortName]}">
-					0
+<c:forEach var="assessmentCategory" items="${assessments}">
+	<h2>${assessmentCategory.key}</h2>
+	<table class="pastaQuickFeedback">
+		<c:forEach var="assessment" items="${assessmentCategory.value}">
+			<tr
+				<c:if test="${assessment.dueDate lt now}">
+					class="closedAssessment"
 				</c:if>
-				/ ${assessment.marks}</br>
-				${assessment.dueDate}</br>
+					>
+				<td>
+					<a href="../info/${assessment.name}/">${assessment.name}</a> - 
+					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
+					<c:if test="${empty results[assessment.shortName]}">
+						0
+					</c:if>
+					/ ${assessment.marks}</br>
+				<c:choose>
+					<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
+						${viewedUser.extensions[assessment.shortName]}
+					</c:when>
+					<c:otherwise>
+						${assessment.dueDate}
+					</c:otherwise>
+				</c:choose>
+				</br>
 				<c:choose>
 					<c:when test="${assessment.numSubmissionsAllowed == 0}">
 						&infin; sumbissions allowed </br>
@@ -45,33 +62,31 @@
 					</c:when>
 					<c:otherwise>
 						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
-							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-								<c:choose>
-									<c:when test="${allUnitTests.secret}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxSecretResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-									</c:when>
-									<c:otherwise>
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-									</c:otherwise>
-								</c:choose>
-							</c:forEach>
+							<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">
+								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+									<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+								</c:forEach>
+							</c:if>
 						</c:forEach>
 					</c:otherwise>
 				</c:choose>
-			</td>
-			<td style="width:40px;">
-				<button type="button" style="float: left; text-align: center;"
-						onClick="submitAssessment('${assessment.shortName}');">Submit</button>
-			</td>
-			<td>
-				<div style="float: left; width:100%">
+				<td style="width:40px;">
 					<button type="button" style="float: left; text-align: center;"
-						onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
-				</div>
-			</td>
-		</tr>
-	</c:forEach>
-</table>
+							onClick="submitAssessment('${assessment.shortName}');">Submit</button>
+				</td>
+				<c:if test="${ not empty viewedUser}">
+					<!-- tutor is viewing a user and they may give out an extension -->
+					<td>
+						<div style="float: left; width:100%">
+						<button type="button" style="float: left; text-align: center;"
+							onClick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+						</div>
+					</td>
+				</c:if>
+			</tr>
+		</c:forEach>
+	</table>
+</c:forEach>
 
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">

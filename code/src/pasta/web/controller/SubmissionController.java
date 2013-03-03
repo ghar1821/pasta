@@ -282,6 +282,7 @@ public class SubmissionController {
 			}
 		}
 
+		model.addAttribute("tutorialByStream", manager.getTutorialByStream());
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
@@ -334,7 +335,7 @@ public class SubmissionController {
 
 			if (manager.getAssessment(assessmentName) != null) {
 				manager.releaseAssessment(form.getAssessmentName(),
-						form.getList());
+						form);
 			}
 		}
 		return "redirect:../../";
@@ -604,7 +605,7 @@ public class SubmissionController {
 		PASTAUser user = getOrCreateUser();
 		if (user != null) {
 			model.addAttribute("unikey", user);
-			model.addAttribute("assessments", manager.getAssessmentList());
+			model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
 			model.addAttribute("results",
 					manager.getLatestResultsForUser(user.getUsername()));
 			if (user.isTutor()) {
@@ -692,7 +693,7 @@ public class SubmissionController {
 				PASTAUser viewedUser = manager.getOrCreateUser(username);
 				model.addAttribute("unikey", user);
 				model.addAttribute("viewedUser", viewedUser);
-				model.addAttribute("assessments", manager.getAssessmentList());
+				model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
 				model.addAttribute("results", manager
 						.getLatestResultsForUser(viewedUser.getUsername()));
 				return "user/studentHome";

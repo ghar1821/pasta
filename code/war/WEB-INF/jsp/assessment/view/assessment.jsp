@@ -31,7 +31,8 @@
 		${assessment.description}
 	</div>
 	<button type="button" id="modifyDescription">Modify Description</button>
-	<form:textarea path="description" cols="110" rows="10" style="display:none"/>
+	<form:textarea path="description" cols="110" rows="10" style="display:none"/><br/>
+	Category: <form:input type="text" path="category"/>
 	
 	<table style="margin-bottom:2em;width:90%">
 		<tr>
@@ -181,6 +182,42 @@
 		</tr>
 	</table>
 	
+	<h2> Release </h2>
+	
+	<ul class="tristate list">
+		<li class="list"><input type="checkbox"> All
+			<ul>
+				<c:forEach var="stream" items="${tutorialByStream}">
+					<c:if test="${!empty stream.key }">
+						<li class="list">
+							<form:input type="checkbox"	path="releasedClasses" value="" />${stream.key}
+							<ul>
+								<c:forEach var="tutorial" items="${stream.value}">
+									<!-- TODO -> command for contains in a string -->
+									<li class="list">
+										<c:set var="classes" value="${stream.key }.${tutorial}"/>
+										<c:choose>
+											<c:when test="${(not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))}">
+												<form:input path="releasedClasses" type="checkbox" checked="checked" value="${stream.key }.${tutorial}" />
+												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
+											</c:when>
+											<c:otherwise>
+												<form:input path="releasedClasses" type="checkbox" value="${stream.key }.${tutorial}" />
+												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
+											</c:otherwise>
+										</c:choose>
+									</li>
+								</c:forEach>
+							</ul>
+						</li>
+					</c:if>
+				</c:forEach>
+			</ul>
+		</li>
+	</ul>
+	Special release to usernames: <br/>
+	<form:textarea path="specialRelease" cols="110" rows="10" />
+	
 	<input type="submit" value="Save Assessment" id="submit"/>
 </form:form>
 
@@ -264,6 +301,7 @@
         });
         
         $( "tbody.sortable").disableSelection();
+        $('ul.tristate').tristate();
         
         $("#modifyDescription").bind('click', function(e) {
         	$("#description").show();

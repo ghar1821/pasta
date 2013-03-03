@@ -11,7 +11,14 @@ package pasta.domain;
 public class ReleaseForm {
 	private String assessmentName;
 	private String list;
+	private String specialRelease;
 	
+	public String getSpecialRelease() {
+		return specialRelease;
+	}
+	public void setSpecialRelease(String specialRelease) {
+		this.specialRelease = specialRelease;
+	}
 	public String getList() {
 		return list;
 	}

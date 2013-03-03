@@ -61,8 +61,11 @@
 												</ul></li>
 										</c:if>
 									</c:forEach>
-								</ul></li>
+								</ul>
+							</li>
 						</ul>
+						Special release to usernames: <br/>
+						<form:textarea path="specialRelease" cols="110" rows="10" />
 						<button style="float: right; text-align: center;">Release</button>
 					</form:form>
 				</div>

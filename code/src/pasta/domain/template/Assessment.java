@@ -32,11 +32,28 @@ public class Assessment {
 	private Date dueDate = new Date();
 	private String description;
 	private int numSubmissionsAllowed;
-	private boolean released = false; //
+	private String category;
+	private String specialRelease;
 	private String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
 
 	protected final Log logger = LogFactory.getLog(getClass());
 	
+	public String getSpecialRelease() {
+		return specialRelease;
+	}
+
+	public void setSpecialRelease(String specialRelease) {
+		this.specialRelease = specialRelease;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
 	public String getReleasedClasses() {
 		return releasedClasses;
 	}
@@ -50,24 +67,10 @@ public class Assessment {
 	}
 
 	public boolean isReleased() {
-		return released;
+		return (releasedClasses != null && !releasedClasses.isEmpty()) || 
+				(specialRelease != null && !specialRelease.isEmpty());
 	}
 	
-	public boolean isReleasedStudent(PASTAUser student)
-	{
-		if(released)
-		{ 
-			if(Pattern.matches(".*" + student.getStream()+"{.*"+student.getTutorial()+".*}.*", releasedClasses))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void setReleased(boolean released) {
-		this.released = released;
-	}
 	public void setReleasedClasses(String released) {
 		
 			this.releasedClasses = released;
@@ -234,9 +237,12 @@ public class Assessment {
 		String output = "";
 		output += "<assessment>" + System.getProperty("line.separator");
 		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
-		output += "\t<released>" + isReleased() + "</released>" + System.getProperty("line.separator");
+		output += "\t<category>" + getCategory() + "</category>" + System.getProperty("line.separator");
 		if(getReleasedClasses() != null){
 			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
+		}
+		if(getSpecialRelease() != null){
+			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
 		}
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
 		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");

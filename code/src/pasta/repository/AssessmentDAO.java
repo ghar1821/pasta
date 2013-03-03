@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.domain.PASTATime;
+import pasta.domain.ReleaseForm;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -47,6 +48,7 @@ public class AssessmentDAO {
 
 	// assessmentTemplates are cached
 	Map<String, Assessment> allAssessments;
+	Map<String, List<Assessment>> allAssessmentsByCategory;
 	Map<String, UnitTest> allUnitTests;
 	Map<String, HandMarking> allHandMarking;
 	Map<String, Competition> allCompetitions;
@@ -60,17 +62,23 @@ public class AssessmentDAO {
 		allUnitTests = new TreeMap<String, UnitTest>();
 		loadUnitTests();
 
-		// load up hand marking TODO #47
+		// load up hand marking
 		allHandMarking = new TreeMap<String, HandMarking>();
 		loadHandMarking();
 		
-		// load up competitions TODO #48
+		// load up competitions
 		allCompetitions = new TreeMap<String, Competition>();
 		loadCompetitions();
 
-		// load up all assessments TODO #49
+		// load up all assessments
+		allAssessmentsByCategory = new TreeMap<String, List<Assessment>>();
 		allAssessments = new TreeMap<String, Assessment>();
 		loadAssessments();
+		
+	}
+
+	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
+		return allAssessmentsByCategory;
 	}
 
 	public Map<String, UnitTest> getAllUnitTests() {
@@ -115,6 +123,23 @@ public class AssessmentDAO {
 			curAss.setDueDate(newAssessment.getDueDate());
 			curAss.setMarks(newAssessment.getMarks());
 			curAss.setNumSubmissionsAllowed(newAssessment.getNumSubmissionsAllowed());
+			curAss.setReleasedClasses(newAssessment.getReleasedClasses());
+			curAss.setSpecialRelease(newAssessment.getSpecialRelease());
+			String oldCategory = "";
+			String newCategory = "";
+			if(curAss.getCategory() != null){
+				oldCategory = curAss.getCategory();
+			}
+			if(newAssessment.getCategory() != null){
+				newCategory = newAssessment.getCategory();
+			}
+			curAss.setCategory(newAssessment.getCategory());
+			
+			allAssessmentsByCategory.get(oldCategory).remove(curAss);
+			if(!allAssessmentsByCategory.containsKey(newCategory)){
+				allAssessmentsByCategory.put(newCategory, new LinkedList<Assessment>());
+			}
+			allAssessmentsByCategory.get(newCategory).add(curAss);
 			
 			// tests
 			curAss.setSecretUnitTests(newAssessment.getSecretUnitTests());
@@ -124,13 +149,24 @@ public class AssessmentDAO {
 		}
 		else{
 			allAssessments.put(newAssessment.getShortName(), newAssessment);
+			String category = "";
+			if(newAssessment.getCategory() != null){
+				category = newAssessment.getCategory();
+			}
+			
+			if(!allAssessmentsByCategory.containsKey(category)){
+				allAssessmentsByCategory.put(category, new LinkedList<Assessment>());
+			}
+			allAssessmentsByCategory.get(category).add(newAssessment);
 		}
 	}
 
-	public void releaseAssessment(String assessmentName, String released)
+	public void releaseAssessment(String assessmentName, ReleaseForm released)
 	{
-		allAssessments.get(assessmentName).setReleased(true);
-		allAssessments.get(assessmentName).setReleasedClasses(released);
+		allAssessments.get(assessmentName).setReleasedClasses(released.getList());
+		if(released.getSpecialRelease() != null && !released.getSpecialRelease().isEmpty()){
+			allAssessments.get(assessmentName).setSpecialRelease(released.getSpecialRelease());
+		}
 		try {
 			// save to file
 			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()+
@@ -251,6 +287,14 @@ public class AssessmentDAO {
 						+ name);
 				if (test != null) {
 					allAssessments.put(name, test);
+					String category = test.getCategory();
+					if(category == null){
+						category = "";
+					}
+					if(!allAssessmentsByCategory.containsKey(category)){
+						allAssessmentsByCategory.put(category, new LinkedList<Assessment>());
+					}
+					allAssessmentsByCategory.get(category).add(test);
 				}
 			}
 		}
@@ -447,9 +491,6 @@ public class AssessmentDAO {
 			currentAssessment.setMarks(Double.parseDouble(doc
 					.getElementsByTagName("marks").item(0).getChildNodes()
 					.item(0).getNodeValue()));
-			currentAssessment.setReleased(Boolean.parseBoolean(doc
-					.getElementsByTagName("released").item(0).getChildNodes()
-					.item(0).getNodeValue()));
 			try{
 				currentAssessment.setReleasedClasses(doc
 						.getElementsByTagName("releasedClasses").item(0).getChildNodes()
@@ -457,6 +498,24 @@ public class AssessmentDAO {
 			}
 			catch(Exception e){
 				// not released
+			}
+			
+			try{
+				currentAssessment.setCategory(doc
+						.getElementsByTagName("category").item(0).getChildNodes()
+						.item(0).getNodeValue());
+			}
+			catch(Exception e){
+				// no category
+			}
+			
+			try{
+				currentAssessment.setSpecialRelease(doc
+						.getElementsByTagName("specialRelease").item(0).getChildNodes()
+						.item(0).getNodeValue());
+			}
+			catch(Exception e){
+				// not special released
 			}
 			currentAssessment.setNumSubmissionsAllowed(Integer.parseInt(doc
 					.getElementsByTagName("submissionsAllowed").item(0)

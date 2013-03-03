@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.PASTAUser;
+import pasta.domain.ReleaseForm;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.result.ArenaResult;
 import pasta.domain.result.AssessmentResult;
@@ -633,7 +635,7 @@ public class SubmissionManager {
 		}
 	}
 
-	public void releaseAssessment(String AssessmentName, String released)
+	public void releaseAssessment(String AssessmentName, ReleaseForm released)
 	{
 		assDao.releaseAssessment(AssessmentName,released);
 		
@@ -1044,6 +1046,10 @@ public class SubmissionManager {
 
 	public LoginDAO getLoginDao() {
 		return loginDao;
+	}
+	
+	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
+		return assDao.getAllAssessmentsByCategory();
 	}
 	
 }
