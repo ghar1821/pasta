@@ -10,52 +10,63 @@
 	<c:forEach var="assessment" items="${allAssessments}" varStatus="">
 		<tr>
 			<!-- icons -->
-			<td style="width: 5em"><c:if
-					test="${not assessment.completelyTested}">
+			<td style="width: 5em">
+				<c:if test="${not assessment.completelyTested}">
 					<span class="ui-icon ui-icon-alert"
 						style="float: left; margin-right: .3em;"
 						title="Contains untested unit tests."></span>
-					<c:if test="${assessment.closed}">
-						<span class="ui-icon ui-icon-locked"
-							style="float: left; margin-right: .3em;" title="Past due date"></span>
-					</c:if> 
-					<c:if test="${not assessment.released}">
-						<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
-					</c:if>
-					<div style="clear: both;"></div>
-					<div id="release${assessment.shortName}" class="popup">
-						<form:form action="release/${assessment.shortName}/"
-							commandName="assessmentRelease" method="POST">
-							<h2>${assessment.name}</h2>
-							Select which classes to release this assessment to.
-							<ul class="tristate list">
-								<li class="list"><input type="checkbox"> All
-									<ul>
-										<form:input type="hidden" path="assessmentName"
-											value="${assessment.shortName }" />
-										<c:forEach var="stream" items="${tutorialByStream}">
-											<c:if test="${!empty stream.key }">
-												<li class="list"><form:input type="checkbox"
-														path="list" name="list" value="" />${stream.key}
-													<ul>
-														<c:forEach var="tutorial" items="${stream.value}">
-															<!-- TODO -> command for contains in a string -->
-															<li class="list">
-																<form:input path="list" name="list"
+				</c:if>
+				<c:if test="${assessment.closed}">
+					<span class="ui-icon ui-icon-locked"
+						style="float: left; margin-right: .3em;" title="Past due date"></span>
+				</c:if> 
+				<c:if test="${not assessment.released}">
+					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
+				</c:if>
+				<div style="clear: both;"></div>
+				<div id="release${assessment.shortName}" class="popup">
+					<form:form action="release/${assessment.shortName}/"
+						commandName="assessmentRelease" method="POST">
+						<h2>${assessment.name}</h2>
+						Select which classes to release this assessment to.
+						<ul class="tristate list">
+							<li class="list"><input type="checkbox"> All
+								<ul>
+									<form:input type="hidden" path="assessmentName"
+										value="${assessment.shortName }" />
+									<c:forEach var="stream" items="${tutorialByStream}">
+										<c:if test="${!empty stream.key }">
+											<li class="list"><form:input type="checkbox"
+													path="list" name="list" value="" />${stream.key}
+												<ul>
+													<c:forEach var="tutorial" items="${stream.value}">
+														<!-- TODO -> command for contains in a string -->
+														<li class="list">
+															<c:set var="classes" value="${stream.key }.${tutorial}"/>
+															<c:choose>
+																<c:when test="${(not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))}">
+																	<form:input path="list" name="list"
+																	type="checkbox" checked="checked" value="${stream.key }.${tutorial}" />
+																${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
+																</c:when>
+																<c:otherwise>
+																	<form:input path="list" name="list"
 																	type="checkbox" value="${stream.key }.${tutorial}" />
 																${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-															</li>
-														</c:forEach>
-													</ul></li>
-											</c:if>
-										</c:forEach>
-									</ul></li>
-							</ul>
-							<button type="button" style="float: right; text-align: center;">Release</button>
-						</form:form>
-					</div>
-					<!-- just added -->
-				</c:if></td>
+																</c:otherwise>
+															</c:choose>
+															
+														</li>
+													</c:forEach>
+												</ul></li>
+										</c:if>
+									</c:forEach>
+								</ul></li>
+						</ul>
+						<button style="float: right; text-align: center;">Release</button>
+					</form:form>
+				</div>
+					</td>
 			<!-- Data -->
 			<td><b>${assessment.name}</b> - <c:choose>
 					<c:when test="${assessment.marks != 0}">

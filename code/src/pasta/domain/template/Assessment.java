@@ -33,9 +33,13 @@ public class Assessment {
 	private String description;
 	private int numSubmissionsAllowed;
 	private boolean released = false; //
-	String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
+	private String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
 
 	protected final Log logger = LogFactory.getLog(getClass());
+	
+	public String getReleasedClasses() {
+		return releasedClasses;
+	}
 
 	public void addUnitTest(WeightedUnitTest test) {
 		unitTests.add(test);
@@ -231,6 +235,9 @@ public class Assessment {
 		output += "<assessment>" + System.getProperty("line.separator");
 		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
 		output += "\t<released>" + isReleased() + "</released>" + System.getProperty("line.separator");
+		if(getReleasedClasses() != null){
+			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
+		}
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
 		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
 		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");

@@ -1180,6 +1180,9 @@ public class SubmissionController {
 			BindingResult result) {
 
 		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
+		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && manager.getUser(userMsg.getUnikey()) == null){
+			result.rejectValue("password", "NotAvailable.loginForm.password");
+		}
 		if (result.hasErrors()) {
 			return "login";
 		}

@@ -99,7 +99,10 @@ public class UserDAO extends HibernateDaoSupport{
 					tutorialByStream.put(user.getStream(), new HashSet<String>());
 				}
 				usersByStream.get(user.getStream()).add(user);
-				tutorialByStream.get(user.getStream()).add(user.getTutorial());
+				// ensure you don't get grouping of tutorials (e.g. tutors have multiple tutorials
+				if(!user.getTutorial().contains(",")){
+					tutorialByStream.get(user.getStream()).add(user.getTutorial());
+				}
 				if(!usersByTutorial.containsKey(user.getTutorial())){
 					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
 				}

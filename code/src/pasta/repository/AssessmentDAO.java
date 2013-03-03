@@ -127,10 +127,20 @@ public class AssessmentDAO {
 		}
 	}
 
-	public void releaseAssessment(String AssessmentName, String released)
+	public void releaseAssessment(String assessmentName, String released)
 	{
-		allAssessments.get(AssessmentName).setReleased(true);
-		allAssessments.get(AssessmentName).setReleasedClasses(released);
+		allAssessments.get(assessmentName).setReleased(true);
+		allAssessments.get(assessmentName).setReleasedClasses(released);
+		try {
+			// save to file
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()+
+					"/template/assessment/"+assessmentName+"/assessmentProperties.xml"));
+			out.print(allAssessments.get(assessmentName).toString());
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -440,6 +450,14 @@ public class AssessmentDAO {
 			currentAssessment.setReleased(Boolean.parseBoolean(doc
 					.getElementsByTagName("released").item(0).getChildNodes()
 					.item(0).getNodeValue()));
+			try{
+				currentAssessment.setReleasedClasses(doc
+						.getElementsByTagName("releasedClasses").item(0).getChildNodes()
+						.item(0).getNodeValue());
+			}
+			catch(Exception e){
+				// not released
+			}
 			currentAssessment.setNumSubmissionsAllowed(Integer.parseInt(doc
 					.getElementsByTagName("submissionsAllowed").item(0)
 					.getChildNodes().item(0).getNodeValue()));
