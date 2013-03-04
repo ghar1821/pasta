@@ -176,11 +176,14 @@ public class SubmissionController {
 			@PathVariable("assessmentName") String assessmentName,
 			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
-
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		if (getUser().isInstructor()) {
+		if (user.isInstructor()) {
 			form.setName(assessmentName);
 			manager.addAssessment(form);
 		}
@@ -193,10 +196,14 @@ public class SubmissionController {
 			@PathVariable("assessmentName") String assessmentName,
 			HttpServletRequest request) {
 
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		if (getUser().isInstructor()) {
+		if (user.isInstructor()) {
 			manager.runAssessment(manager.getAssessment(assessmentName));
 		}
 		String referer = request.getHeader("Referer");
@@ -208,7 +215,11 @@ public class SubmissionController {
 	public String viewAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -295,7 +306,11 @@ public class SubmissionController {
 	// view an assessment
 	@RequestMapping(value = "assessments/")
 	public String viewAllAssessment(Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		model.addAttribute("tutorialByStream", manager.getTutorialByStream());
@@ -310,7 +325,11 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
 
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -330,7 +349,11 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessmentRelease") ReleaseForm form,
 			Model model) {
 
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -347,7 +370,11 @@ public class SubmissionController {
 	@RequestMapping(value = "assessments/delete/{assessmentName}/")
 	public String deleteAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -356,52 +383,53 @@ public class SubmissionController {
 		return "redirect:../../";
 	}
 
-	// delete a unit test
+	// stats of an assessment
 	@RequestMapping(value = "assessments/stats/{assessmentName}/")
 	public String statisticsForAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		if (getUser().isTutor()) {
-			HashMap<String, HashMap<String, AssessmentResult>> allResults = manager
-					.getLatestResults();
-			TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
+		HashMap<String, HashMap<String, AssessmentResult>> allResults = manager
+				.getLatestResults();
+		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 
-			int maxBreaks = 10;
+		int maxBreaks = 10;
 
-			int[] markDistribution = new int[maxBreaks + 1];
+		int[] markDistribution = new int[maxBreaks + 1];
 
-			for (Entry<String, HashMap<String, AssessmentResult>> entry : allResults
-					.entrySet()) {
-				int spot = 0;
-				int numSubmissionsMade = 0;
-				if (entry.getValue() != null
-						&& entry.getValue().get(assessmentName) != null) {
-					spot = ((int) (entry.getValue().get(assessmentName)
-							.getPercentage() * 100 / (100 / maxBreaks)));
-					numSubmissionsMade = entry.getValue().get(assessmentName)
-							.getSubmissionsMade();
-				}
-				// mark histogram
-				markDistribution[spot]++;
-
-				// # submission distribution
-				if (!submissionDistribution.containsKey(numSubmissionsMade)) {
-					submissionDistribution.put(numSubmissionsMade, 0);
-				}
-				submissionDistribution.put(numSubmissionsMade,
-						submissionDistribution.get(numSubmissionsMade) + 1);
+		for (Entry<String, HashMap<String, AssessmentResult>> entry : allResults
+				.entrySet()) {
+			int spot = 0;
+			int numSubmissionsMade = 0;
+			if (entry.getValue() != null
+					&& entry.getValue().get(assessmentName) != null) {
+				spot = ((int) (entry.getValue().get(assessmentName)
+						.getPercentage() * 100 / (100 / maxBreaks)));
+				numSubmissionsMade = entry.getValue().get(assessmentName)
+						.getSubmissionsMade();
 			}
+			// mark histogram
+			markDistribution[spot]++;
 
-			model.addAttribute("assessment",
-					manager.getAssessment(assessmentName));
-			model.addAttribute("maxBreaks", maxBreaks);
-			model.addAttribute("markDistribution", markDistribution);
-			model.addAttribute("submissionDistribution", submissionDistribution);
-			return "assessment/view/assessmentStats";
+			// # submission distribution
+			if (!submissionDistribution.containsKey(numSubmissionsMade)) {
+				submissionDistribution.put(numSubmissionsMade, 0);
+			}
+			submissionDistribution.put(numSubmissionsMade,
+					submissionDistribution.get(numSubmissionsMade) + 1);
 		}
-		return "redirect:../../";
+
+		model.addAttribute("assessment",
+				manager.getAssessment(assessmentName));
+		model.addAttribute("maxBreaks", maxBreaks);
+		model.addAttribute("markDistribution", markDistribution);
+		model.addAttribute("submissionDistribution", submissionDistribution);
+		return "assessment/view/assessmentStats";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -412,7 +440,11 @@ public class SubmissionController {
 	@RequestMapping(value = "handMarking/{handMarkingName}/")
 	public String viewHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -428,7 +460,11 @@ public class SubmissionController {
 			@ModelAttribute(value = "handMarking") HandMarking form,
 			BindingResult result,
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -441,7 +477,11 @@ public class SubmissionController {
 	// view a handmarking
 	@RequestMapping(value = "handMarking/")
 	public String viewAllHandMarking(Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -455,7 +495,11 @@ public class SubmissionController {
 	public String newHandMarking(
 			@ModelAttribute(value = "newHandMarkingModel") NewHandMarking form,
 			BindingResult result, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -471,7 +515,11 @@ public class SubmissionController {
 	@RequestMapping(value = "handMarking/delete/{handMarkingName}/")
 	public String deleteHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -488,7 +536,11 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName,
 			Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -510,7 +562,11 @@ public class SubmissionController {
 	public String uploadTestCode(@PathVariable("testName") String testName,
 			@ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -527,7 +583,11 @@ public class SubmissionController {
 	// view all unit tests
 	@RequestMapping(value = "unitTest/")
 	public String viewUnitTest(Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -540,7 +600,11 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/delete/{testName}/")
 	public String deleteUnitTest(@PathVariable("testName") String testName,
 			Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -553,7 +617,11 @@ public class SubmissionController {
 	@RequestMapping(value = "unitTest/tested/{testName}/")
 	public String testedUnitTest(@PathVariable("testName") String testName,
 			Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -568,7 +636,11 @@ public class SubmissionController {
 	public String home(
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			BindingResult result, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -624,20 +696,23 @@ public class SubmissionController {
 	public String submitAssessment(
 			@ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model) {
+		
+		PASTAUser user = getUser();
 		// check if the submission is valid
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
 		}
 
-		if (manager.getAssessment(form.getAssessment()).isClosed()) {
+		if (manager.getAssessment(form.getAssessment()).isClosed() && (!user.isTutor())) {
 			result.reject("Submission.AfterClosingDate");
 		}
-		// accept the submission
-		logger.info(form.getAssessment() + " submitted for "
-				+ getOrCreateUser().getUsername() + " by "
-				+ getOrCreateUser().getUsername());
-		manager.submit(getOrCreateUser().getUsername(), form);
-
+		if(!result.hasErrors()){
+			// accept the submission
+			logger.info(form.getAssessment() + " submitted for "
+					+ getOrCreateUser().getUsername() + " by "
+					+ getOrCreateUser().getUsername());
+			manager.submit(getOrCreateUser().getUsername(), form);
+		}
 		return "redirect:.";
 	}
 
@@ -646,7 +721,7 @@ public class SubmissionController {
 	public String viewAssessmentInfo(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
@@ -667,21 +742,20 @@ public class SubmissionController {
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
 	public String viewFile(@RequestParam("location") String location,
 			Model model) {
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if (user.isTutor()) {
-				model.addAttribute("unikey", user);
-				model.addAttribute("codeStyle", codeStyle);
-				model.addAttribute("fileContents", manager.scrapeFile(location)
-						.replace(">", "&gt;").replace("<", "&lt;"));
-				model.addAttribute("fileEnding",
-						location.substring(location.lastIndexOf(".") + 1));
-				return "assessment/mark/viewFile";
-			} else {
-				return "redirect:/home/";
-			}
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
 		}
-		return "redirect:/login/";
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		model.addAttribute("unikey", user);
+		model.addAttribute("codeStyle", codeStyle);
+		model.addAttribute("fileContents", manager.scrapeFile(location)
+				.replace(">", "&gt;").replace("<", "&lt;"));
+		model.addAttribute("fileEnding",
+				location.substring(location.lastIndexOf(".") + 1));
+		return "assessment/mark/viewFile";
 	}
 
 	// home page
@@ -689,21 +763,20 @@ public class SubmissionController {
 	public String viewStudent(@PathVariable("username") String username,
 			Model model) {
 		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if (user.isTutor()) {
-				PASTAUser viewedUser = manager.getOrCreateUser(username);
-				model.addAttribute("unikey", user);
-				model.addAttribute("viewedUser", viewedUser);
-				model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
-				model.addAttribute("results", manager
-						.getLatestResultsForUser(viewedUser.getUsername()));
-				return "user/studentHome";
-			} else {
-				return "redirect:/home/";
-			}
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
 		}
-		return "redirect:/login/";
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		PASTAUser viewedUser = manager.getOrCreateUser(username);
+		model.addAttribute("unikey", user);
+		model.addAttribute("viewedUser", viewedUser);
+		model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
+		model.addAttribute("results", manager
+				.getLatestResultsForUser(viewedUser.getUsername()));
+		return "user/studentHome";
 	}
 
 	// home page
@@ -711,6 +784,13 @@ public class SubmissionController {
 	public String submitAssessment(@PathVariable("username") String username,
 			@ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
 		// check if the submission is valid
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
@@ -719,11 +799,12 @@ public class SubmissionController {
 		if (manager.getAssessment(form.getAssessment()).isClosed()) {
 			result.reject("Submission.AfterClosingDate");
 		}
-		// accept the submission
-		logger.info(form.getAssessment() + " submitted for " + username
-				+ " by " + getOrCreateUser().getUsername());
-		manager.submit(username, form);
-
+		if(!result.hasErrors()){
+			// accept the submission
+			logger.info(form.getAssessment() + " submitted for " + username
+					+ " by " + getOrCreateUser().getUsername());
+			manager.submit(username, form);
+		}
 		return "redirect:.";
 	}
 
@@ -732,9 +813,12 @@ public class SubmissionController {
 	public String viewAssessmentInfo(@PathVariable("username") String username,
 			@PathVariable("assessmentName") String assessmentName, Model model) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
 		}
 		model.addAttribute("assessment", manager.getAssessment(assessmentName));
 		model.addAttribute("history",
@@ -754,11 +838,16 @@ public class SubmissionController {
 			@PathVariable("assessmentDate") String assessmentDate, Model model,
 			HttpServletRequest request) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		manager.runAssessment(username, assessmentName, assessmentDate);
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		if(user.isInstructor()){
+			manager.runAssessment(username, assessmentName, assessmentDate);
+		}
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
 	}
@@ -769,9 +858,12 @@ public class SubmissionController {
 			@PathVariable("assessmentName") String assessmentName,
 			@PathVariable("assessmentDate") String assessmentDate, Model model) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
 		}
 		model.addAttribute("unikey", user);
 		model.addAttribute("student", username);
@@ -798,9 +890,12 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
 			BindingResult result, Model model) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
 		}
 		// rebinding hand marking results with their hand marking templates
 		List<HandMarkingResult> results = form.getHandMarkingResults();
@@ -824,9 +919,12 @@ public class SubmissionController {
 			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
 			HttpServletRequest request, Model model) {
 
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
 		}
 
 		model.addAttribute("unikey", user);
@@ -929,11 +1027,14 @@ public class SubmissionController {
 
 	@RequestMapping(value = "competition/")
 	public String viewAllCompetitions(Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
-		PASTAUser user = getUser();
 		model.addAttribute("unikey", user);
 		model.addAttribute("allCompetitions", manager.getCompeitionList());
 
@@ -943,11 +1044,16 @@ public class SubmissionController {
 	@RequestMapping(value = "competition/", method = RequestMethod.POST)
 	public String newCompetition(Model model,
 			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-
-		manager.addCompetition(form);
+		if(user.isInstructor()){
+			manager.addCompetition(form);
+		}
 
 		return "redirect:.";
 	}
@@ -956,12 +1062,17 @@ public class SubmissionController {
 	public String updateCompetition(Model model,
 			@PathVariable("competitionName") String competitionName,
 			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-
-		form.setTestName(competitionName);
-		manager.updateCompetition(form);
+		if(user.isInstructor()){
+			form.setTestName(competitionName);
+			manager.updateCompetition(form);
+		}
 
 		return "redirect:.";
 	}
@@ -970,7 +1081,11 @@ public class SubmissionController {
 	@RequestMapping(value = "competition/delete/{competitionName}/")
 	public String deleteCompetition(
 			@PathVariable("competitionName") String competitionName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
@@ -982,11 +1097,14 @@ public class SubmissionController {
 	@RequestMapping(value = "competition/{competitionName}")
 	public String viewCompetition(
 			@PathVariable("competitionName") String competitionName, Model model) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
-		PASTAUser user = getUser();
 		model.addAttribute("unikey", user);
 		model.addAttribute("competition",
 				manager.getCompetition(competitionName));
@@ -1000,21 +1118,26 @@ public class SubmissionController {
 	public String updateCompetition(@ModelAttribute(value = "newCompetitionModel") NewCompetition form,
 			@ModelAttribute(value = "competition") Competition compForm,
 			@PathVariable("competitionName") String competitionName, Model model){
-		if(getUser() == null || !getUser().isTutor()){
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
-
-		if(form.getFile() != null && !form.getFile().isEmpty()){
-			// update contents
-			form.setTestName(competitionName);
-			manager.updateCompetition(form);
-		}
-		else{
-			// update competition
-			compForm.setName(competitionName);
-			compForm.setArenas(manager.getCompetition(competitionName).getArenas());
-			manager.addCompetition(compForm);
+		if(user.isInstructor()){
+			if(form.getFile() != null && !form.getFile().isEmpty()){
+				// update contents
+				form.setTestName(competitionName);
+				manager.updateCompetition(form);
+			}
+			else{
+				// update competition
+				compForm.setName(competitionName);
+				compForm.setArenas(manager.getCompetition(competitionName).getArenas());
+				manager.addCompetition(compForm);
+			}
 		}
 		
 		return "redirect:.";
@@ -1023,7 +1146,11 @@ public class SubmissionController {
 	@RequestMapping(value = "competition/view/{competitionName}/")
 	public String viewCompetitionPage(Model model,
 			@PathVariable("competitionName") String competitionName) {
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -1054,7 +1181,11 @@ public class SubmissionController {
 	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre(Model model) {
 
-		if (getUser() == null || !getUser().isTutor()) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
 
@@ -1123,23 +1254,22 @@ public class SubmissionController {
 	public String viewClass(@PathVariable("className") String className,
 			Model model) {
 		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if (user.isTutor()) {
-				model.addAttribute("assessmentList",
-						manager.getAssessmentList());
-				model.addAttribute("userList",
-						manager.getUserListByTutorial(className));
-				model.addAttribute("latestResults", manager.getLatestResults());
-				model.addAttribute("unikey", getOrCreateUser());
-				model.addAttribute("classname", "Class - " + className);
-
-				return "compound/classHome";
-			} else {
-				return "redirect:/home/";
-			}
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
 		}
-		return "redirect:/login/";
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		model.addAttribute("assessmentList",
+				manager.getAssessmentList());
+		model.addAttribute("userList",
+				manager.getUserListByTutorial(className));
+		model.addAttribute("latestResults", manager.getLatestResults());
+		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("classname", "Class - " + className);
+
+		return "compound/classHome";
 	}
 
 	// home page
@@ -1147,23 +1277,22 @@ public class SubmissionController {
 	public String viewStream(@PathVariable("streamName") String streamName,
 			Model model) {
 		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if (user.isTutor()) {
-				model.addAttribute("assessmentList",
-						manager.getAssessmentList());
-				model.addAttribute("userList",
-						manager.getUserListByStream(streamName));
-				model.addAttribute("latestResults", manager.getLatestResults());
-				model.addAttribute("unikey", getOrCreateUser());
-				model.addAttribute("classname", "Stream - " + streamName);
-
-				return "compound/classHome";
-			} else {
-				return "redirect:/home/";
-			}
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
 		}
-		return "redirect:/login/";
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		model.addAttribute("assessmentList",
+				manager.getAssessmentList());
+		model.addAttribute("userList",
+				manager.getUserListByStream(streamName));
+		model.addAttribute("latestResults", manager.getLatestResults());
+		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("classname", "Stream - " + streamName);
+	
+		return "compound/classHome";
 	}
 	
 	@RequestMapping(value = "student/{username}/extension/{assessmentName}/{extension}/")
@@ -1173,17 +1302,21 @@ public class SubmissionController {
 			Model model,
 			HttpServletRequest request) {
 		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
-		if (user != null) {
-			if (user.isInstructor()) {
-				SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-				try {
-					manager.giveExtension(username, assessmentName, sdf.parse(extension));
-				} catch (ParseException e) {
-					logger.error("Parse Exception");
-				}
-			} 
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
 		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		if (user.isInstructor()) {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+			try {
+				manager.giveExtension(username, assessmentName, sdf.parse(extension));
+			} catch (ParseException e) {
+				logger.error("Parse Exception");
+			}
+		} 
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
 	}
