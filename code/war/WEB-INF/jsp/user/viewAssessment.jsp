@@ -109,14 +109,33 @@ ${assessment.description}
 							</table>
 						</c:if>
 						<h5>Comments</h2>
-						<c:choose>
-							<c:when test="${empty result.comments}">
-								No comments
-							</c:when>
-							<c:otherwise>
-								${result.comments}
-							</c:otherwise>
-						</c:choose>
+						<div id="comments${assessment.shortName}">
+							<c:choose>
+								<c:when test="${empty result.comments}">
+									No comments
+								</c:when>
+								<c:otherwise>
+									${result.comments}
+								</c:otherwise>
+							</c:choose>
+						</div>
+						<c:if test="${not empty viewedUser}">
+							<button type="button" onclick="$('div#updateComments${assessment.shortName}').show();$(this).hide()">Modify Comments</button>
+							<div id="updateComments${assessment.shortName}"  style="display:none;">
+								<form action="updateComment/" enctype="multipart/form-data" method="POST">
+									<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}">
+									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.shortName}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
+									<button id="updateComments${assessment.shortName}" type="submit" >Update Comments</button>
+								</form>
+								<script>
+							    $(function() {
+									$("#modifyComments${assessment.shortName}").on('keyup', function() {
+							            $("#comments${assessment.shortName}").html(document.getElementById("modifyComments${assessment.shortName}").value);
+							        });
+							    });
+								</script>
+							</div>
+						</c:if>
 					</div>
 				</c:otherwise>
 			</c:choose>

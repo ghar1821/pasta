@@ -13,6 +13,10 @@
 	<button style="float: left; text-align: center;"
 		onclick="$('#graphs').slideToggle('fast')">Toggle graphs</button>
 </div>
+<div style="float: left; width:100%">
+	<button style="float: left; text-align: center;"
+		onclick="window.location = '../downloadMarks/'">Download Marks</button>
+</div>
 
 <div id="graphs">
 	<h1 style="margin-bottom:0.5em;">${assessment.name}</h1>

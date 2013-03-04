@@ -1051,5 +1051,11 @@ public class SubmissionManager {
 	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
 		return assDao.getAllAssessmentsByCategory();
 	}
+
+	public void updateComment(String username, String assessmentName,
+			String newComment) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

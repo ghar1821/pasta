@@ -7,10 +7,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.ModelAndView;
 
 import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
@@ -45,6 +48,7 @@ import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.service.SubmissionManager;
 import pasta.util.ProjectProperties;
+import pasta.view.ExcelMarkView;
 
 @Controller
 @RequestMapping("/")
@@ -739,6 +743,45 @@ public class SubmissionController {
 	// VIEW //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	@RequestMapping(value = "downloadMarks/")
+	public ModelAndView viewExcel(HttpServletRequest request, HttpServletResponse response) {
+		PASTAUser user = getUser();
+		ModelAndView model = new ModelAndView();
+		
+		if (user == null) {
+			model.setViewName("redirect:/login/");
+			return model;
+		}
+		if (!user.isTutor()) {
+			model.setViewName("redirect:/home/");
+			return model;
+		}
+		Map<String, Object> data = new HashMap<String, Object>();
+
+		data.put("assessmentList", manager.getAssessmentList());
+		data.put("userList", manager.getUserList());
+		data.put("latestResults", manager.getLatestResults());
+		
+		return new ModelAndView(new ExcelMarkView(), data);
+	}
+	
+	@RequestMapping(value = "student/{username}/info/{assessmentName}/updateComment/", method = RequestMethod.POST)
+	public String updateComment(@RequestParam("newComment") String newComment,
+			@RequestParam("assessmentDate") String assessmentDate,
+			@PathVariable("username") String username,
+			@PathVariable("assessmentName") String assessmentName,
+			Model model) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		manager.saveComment(username, assessmentName, assessmentDate, newComment);
+		return "redirect:../";
+	}
+	
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
 	public String viewFile(@RequestParam("location") String location,
 			Model model) {
