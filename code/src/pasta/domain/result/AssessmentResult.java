@@ -141,5 +141,19 @@ public class AssessmentResult {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
+	
+	public boolean isFinishedHandMarking(){
+		if(handMarkingResults.size() < assessment.getHandMarking().size()){
+			return false;
+		}
+		if(handMarkingResults != null){
+			for(HandMarkingResult res : handMarkingResults){
+				if(!res.isFinishedMarking()){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 }

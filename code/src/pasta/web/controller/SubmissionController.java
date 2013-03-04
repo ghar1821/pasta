@@ -1,6 +1,8 @@
 package pasta.web.controller;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -1162,6 +1164,28 @@ public class SubmissionController {
 			}
 		}
 		return "redirect:/login/";
+	}
+	
+	@RequestMapping(value = "student/{username}/extension/{assessmentName}/{extension}/")
+	public String giveExtension(@PathVariable("username") String username,
+			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("extension") String extension,
+			Model model,
+			HttpServletRequest request) {
+		// check if tutor or student
+		PASTAUser user = getOrCreateUser();
+		if (user != null) {
+			if (user.isInstructor()) {
+				SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+				try {
+					manager.giveExtension(username, assessmentName, sdf.parse(extension));
+				} catch (ParseException e) {
+					logger.error("Parse Exception");
+				}
+			} 
+		}
+		String referer = request.getHeader("Referer");
+		return "redirect:" + referer;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

@@ -8,12 +8,6 @@
 
 <h1>${unikey.username}</h1>
 
-<h2>My Classes</h2>
-<c:forEach var="class" items="${unikey.tutorClasses}">
-	<a href="../tutorial/${class}/">${class}</a></br>
-</c:forEach>
-<button>Change My Classes</button>
-
 <c:forEach var="assessmentCategory" items="${assessments}">
 	<h2>${assessmentCategory.key}</h2>
 	<table class="pastaQuickFeedback">

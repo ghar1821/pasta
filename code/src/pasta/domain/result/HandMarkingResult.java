@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.map.LazyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
@@ -12,6 +14,9 @@ import pasta.domain.template.Tuple;
 public class HandMarkingResult {
 	private Map<String, String> result = LazyMap.decorate(new HashMap<String, String>(), 
 			FactoryUtils.instantiateFactory(HashMap.class));
+	
+	protected final Log logger = LogFactory.getLog(getClass());
+
 	
 	private HandMarking markingTemplate;
 	private String handMarkingTemplateShortName;
@@ -51,6 +56,11 @@ public class HandMarkingResult {
 		}
 		
 		return Math.min(percentage, 1.0);
+	}
+	
+	public boolean isFinishedMarking(){
+		logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
+		return (result.size() >= markingTemplate.getRowHeader().size());  
 	}
 	
 }

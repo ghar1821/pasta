@@ -23,24 +23,35 @@
 	<table class="pastaQuickFeedback">
 		<c:forEach var="assessment" items="${assessmentCategory.value}">
 			<c:if test="${((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, releaseUsername)))}">
+				<c:out value="${viewedUser.extensions[assessment.shortName]}"/>
+				<c:set var="closedAssessment" value="false"/>
 				<tr <c:choose>
 						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
 							<c:if test="${viewedUser.extensions[assessment.shortName] lt now}">
 								class="closedAssessment"
+								<c:set var="closedAssessment" value="true"/>
 							</c:if>
 						</c:when>
 						<c:otherwise>
 							<c:if test="${assessment.dueDate lt now}">
 								class="closedAssessment"
+								<c:set var="closedAssessment" value="true"/>
 							</c:if>
 						</c:otherwise>
 					</c:choose> >
 					<td>
 						<a href="../info/${assessment.name}/">${assessment.name}</a> - 
-						<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
-						<c:if test="${empty results[assessment.shortName]}">
-							0
-						</c:if>
+						<c:choose>
+							<c:when test="${empty results[assessment.shortName]}">
+								0
+							</c:when>
+							<c:when test="${(not results[assessment.shortName].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
+								???
+							</c:when>
+							<c:otherwise>
+								<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
+							</c:otherwise>
+						</c:choose>
 						/ ${assessment.marks}</br>
 					<c:choose>
 						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
@@ -137,7 +148,7 @@
 		function confirmExtension(){
 			var assessmentName = document.getElementById('assessmentName').innerHTML;
 			var newDueDate = document.getElementById('simpleDueDate').value.replace("/", "-").replace("/", "-");
-			window.location = "../extension/"+assessmentName+"/"+newDueDate;
+			window.location = "../extension/"+assessmentName+"/"+newDueDate+"/";
 		}
 		
 		(function($) {

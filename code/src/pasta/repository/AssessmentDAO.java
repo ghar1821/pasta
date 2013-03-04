@@ -197,6 +197,7 @@ public class AssessmentDAO {
 	}
 
 	public void removeAssessment(String assessmentName) {
+		allAssessmentsByCategory.get(allAssessments.get(assessmentName).getCategory()).remove(allAssessments.get(assessmentName));
 		allAssessments.remove(assessmentName);
 		try {
 			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance()

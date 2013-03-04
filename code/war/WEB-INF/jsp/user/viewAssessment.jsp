@@ -55,11 +55,25 @@ ${assessment.description}
 							<c:if test="${not empty result.assessment.handMarking}">
 								<!-- edit marking if already marked -->
 								<c:choose>
-									<c:when test="${ empty result.handMarkingResults }">
-										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+									<c:when test="${not empty viewedUser}">
+										<c:choose>
+											<c:when test="${ empty result.handMarkingResults }">
+												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+											</c:when>
+											<c:otherwise>
+												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+											</c:otherwise>
+										</c:choose>
 									</c:when>
 									<c:otherwise>
-										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+										<c:choose>
+											<c:when test="${ empty result.handMarkingResults }">
+												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+											</c:when>
+											<c:otherwise>
+												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+											</c:otherwise>
+										</c:choose>
 									</c:otherwise>
 								</c:choose>
 							</c:if>
