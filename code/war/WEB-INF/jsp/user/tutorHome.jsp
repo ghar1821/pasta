@@ -54,6 +54,12 @@
 							<b>Compilation errors</b>
 						</div>
 					</c:when>
+					<c:when test="${empty results[assessment.shortName].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.shortName]}">
+						<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
+							<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+							<b>Code is queued for testing.</b>
+						</div>
+					</c:when>
 					<c:otherwise>
 						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
 							<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">

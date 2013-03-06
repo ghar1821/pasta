@@ -188,7 +188,7 @@ public class SubmissionController {
 			return "redirect:/home/.";
 		}
 		if (user.isInstructor()) {
-			form.setName(assessmentName);
+			form.setName(manager.getAssessment(assessmentName).getName());
 			manager.addAssessment(form);
 		}
 		return "redirect:.";

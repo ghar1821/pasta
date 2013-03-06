@@ -730,7 +730,7 @@ public class AssessmentDAO {
 		// save to drive
 
 		String location = ProjectProperties.getInstance().getProjectLocation()
-				+ "/template/handmarking/" + newHandMarking.getShortName();
+				+ "/template/handMarking/" + newHandMarking.getShortName();
 
 		try {
 			FileUtils.deleteDirectory(new File(location));

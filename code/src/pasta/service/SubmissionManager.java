@@ -153,14 +153,9 @@ public class SubmissionManager {
 
 					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 					DefaultLogger consoleLogger = new DefaultLogger();
-					PrintStream compileErrors = new PrintStream(
-							unitTestsLocation + "/" + test.getTest().getShortName()
-							+ "/compile.errors");
 					PrintStream runErrors = new PrintStream(
 							unitTestsLocation + "/" + test.getTest().getShortName()
 							+ "/run.errors");
-					PrintStream normalErrOut = System.err;
-					System.setErr(compileErrors);
 					consoleLogger.setOutputPrintStream(runErrors);
 					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
 					project.addBuildListener(consoleLogger);
@@ -181,10 +176,39 @@ public class SubmissionManager {
 
 					runErrors.flush();
 					runErrors.close();
-					compileErrors.flush();
-					compileErrors.close();
 					
-					System.setErr(normalErrOut);
+					// scrape compiler errors from run.errors
+					try{
+						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getShortName()
+								+ "/run.errors"));
+						boolean containsError = false;
+						boolean importantData = false;
+						String output = "";
+						while(in.hasNextLine()){
+							String line = in.nextLine();
+							if(line.contains(": error:")){
+								containsError = true;
+							}
+							if(line.contains("[javac] Files to be compiled:")){
+								importantData = true;
+							}
+							if(importantData){
+								output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
+							}
+						}
+						in.close();
+						
+						if(containsError){
+							PrintStream compileErrors = new PrintStream(
+									unitTestsLocation + "/" + test.getTest().getShortName()
+									+ "/compile.errors");
+							compileErrors.print(output);
+							compileErrors.close();
+						}
+					}
+					catch (Exception e){
+						// do nothing
+					}
 					
 					// delete everything else
 					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getShortName()))
@@ -214,6 +238,9 @@ public class SubmissionManager {
 							+ System.getProperty("line.separator") + e);
 				}
 			}
+			
+			resultDAO.updateUnitTestResults(username, currAssessment, now);
+			
 			// add to scheduler
 			if(compiled){
 				scheduler.save(new Job(username, form.getAssessment(), now));
@@ -688,11 +715,6 @@ public class SubmissionManager {
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 			DefaultLogger consoleLogger = new DefaultLogger();
-			compileErrors = new PrintStream(
-					thisTest.getFileLocation() + "/test/compile.errors");
-			runErrors = new PrintStream(thisTest.getFileLocation()
-					+ "/test/run.errors");
-			consoleLogger.setErrorPrintStream(compileErrors);
 			consoleLogger.setOutputPrintStream(runErrors);
 			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
 			project.addBuildListener(consoleLogger);
@@ -711,7 +733,38 @@ public class SubmissionManager {
 			}
 
 			runErrors.close();
-			compileErrors.close();
+			
+			// scrape compiler errors from run.errors
+			try{
+				Scanner in = new Scanner (new File(thisTest.getFileLocation() + "/test/" + "/run.errors"));
+				boolean containsError = false;
+				boolean importantData = false;
+				String output = "";
+				while(in.hasNextLine()){
+					String line = in.nextLine();
+					if(line.contains(": error:")){
+						containsError = true;
+					}
+					if(line.contains("[javac] Files to be compiled:")){
+						importantData = true;
+					}
+					if(importantData){
+						output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
+					}
+				}
+				in.close();
+				
+				if(containsError){
+					compileErrors = new PrintStream(
+							thisTest.getFileLocation() + "/test/" + "/compile.errors");
+					compileErrors.print(output);
+					compileErrors.close();
+					
+				}
+			}
+			catch (Exception e){
+				// do nothing
+			}
 
 //			// delete everything else
 //			String[] allFiles = (new File(thisTest.getFileLocation() + "/test/"))
