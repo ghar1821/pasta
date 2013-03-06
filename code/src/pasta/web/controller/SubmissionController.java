@@ -303,7 +303,7 @@ public class SubmissionController {
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}
 
@@ -319,7 +319,7 @@ public class SubmissionController {
 		}
 		model.addAttribute("tutorialByStream", manager.getTutorialByStream());
 		model.addAttribute("allAssessments", manager.getAssessmentList());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/viewAll/assessment";
 	}
 
@@ -433,6 +433,7 @@ public class SubmissionController {
 		model.addAttribute("maxBreaks", maxBreaks);
 		model.addAttribute("markDistribution", markDistribution);
 		model.addAttribute("submissionDistribution", submissionDistribution);
+		model.addAttribute("unikey", user);
 		return "assessment/view/assessmentStats";
 	}
 
@@ -454,7 +455,7 @@ public class SubmissionController {
 
 		model.addAttribute("handMarking",
 				manager.getHandMarking(handMarkingName));
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/view/handMarks";
 	}
 
@@ -490,7 +491,7 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("allHandMarking", manager.getAllHandMarking());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/viewAll/handMarks";
 	}
 
@@ -557,7 +558,7 @@ public class SubmissionController {
 				"node",
 				manager.generateFileTree(manager.getUnitTest(testName)
 						.getFileLocation() + "/code"));
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/view/unitTest";
 	}
 
@@ -596,7 +597,7 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("allUnitTests", manager.getUnitTestList());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		return "assessment/viewAll/unitTest";
 	}
 
@@ -713,9 +714,9 @@ public class SubmissionController {
 		if(!result.hasErrors()){
 			// accept the submission
 			logger.info(form.getAssessment() + " submitted for "
-					+ getOrCreateUser().getUsername() + " by "
-					+ getOrCreateUser().getUsername());
-			manager.submit(getOrCreateUser().getUsername(), form);
+					+ user.getUsername() + " by "
+					+ user.getUsername());
+			manager.submit(user.getUsername(), form);
 		}
 		return "redirect:.";
 	}
@@ -734,7 +735,7 @@ public class SubmissionController {
 				user.getUsername(), assessmentName));
 		model.addAttribute("nodeList",
 				manager.genereateFileTree(user.getUsername(), assessmentName));
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 
 		return "user/viewAssessment";
 	}
@@ -845,7 +846,7 @@ public class SubmissionController {
 		if(!result.hasErrors()){
 			// accept the submission
 			logger.info(form.getAssessment() + " submitted for " + username
-					+ " by " + getOrCreateUser().getUsername());
+					+ " by " + user.getUsername());
 			manager.submit(username, form);
 		}
 		return "redirect:.";
@@ -866,7 +867,7 @@ public class SubmissionController {
 		model.addAttribute("assessment", manager.getAssessment(assessmentName));
 		model.addAttribute("history",
 				manager.getAssessmentHistory(username, assessmentName));
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", manager.getUser(username));
 		model.addAttribute("nodeList",
 				manager.genereateFileTree(username, assessmentName));
@@ -1202,7 +1203,7 @@ public class SubmissionController {
 			return "redirect:../../../home";
 		}
 
-		model.addAttribute("unikey", getUser());
+		model.addAttribute("unikey", user);
 		model.addAttribute("competition", currComp);
 
 		if (currComp.isCalculated()) {
@@ -1287,7 +1288,7 @@ public class SubmissionController {
 		model.addAttribute("assessmentList", manager.getAssessmentList());
 		model.addAttribute("userList", manager.getUserList());
 		model.addAttribute("latestResults", manager.getLatestResults());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 
 		return "user/viewAll";
 	}
@@ -1309,7 +1310,7 @@ public class SubmissionController {
 		model.addAttribute("userList",
 				manager.getUserListByTutorial(className));
 		model.addAttribute("latestResults", manager.getLatestResults());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		model.addAttribute("classname", "Class - " + className);
 
 		return "compound/classHome";
@@ -1332,7 +1333,7 @@ public class SubmissionController {
 		model.addAttribute("userList",
 				manager.getUserListByStream(streamName));
 		model.addAttribute("latestResults", manager.getLatestResults());
-		model.addAttribute("unikey", getOrCreateUser());
+		model.addAttribute("unikey", user);
 		model.addAttribute("classname", "Stream - " + streamName);
 	
 		return "compound/classHome";

@@ -800,7 +800,7 @@ public class AssessmentDAO {
 		ArrayList<Tuple> columns = new ArrayList<Tuple>();
 		columns.add(new Tuple("Poor", 0));
 		columns.add(new Tuple("Acceptable", 0.5));
-		columns.add(new Tuple("Excelent", 1));
+		columns.add(new Tuple("Excellent", 1));
 		newMarking.setColumnHeader(columns);
 
 		ArrayList<Tuple> rows = new ArrayList<Tuple>();

@@ -40,7 +40,7 @@
 						</c:otherwise>
 					</c:choose> >
 					<td>
-						<a href="../info/${assessment.name}/">${assessment.name}</a> - 
+						<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
 						<c:choose>
 							<c:when test="${empty results[assessment.shortName]}">
 								0

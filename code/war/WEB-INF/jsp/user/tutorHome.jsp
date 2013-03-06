@@ -18,7 +18,7 @@
 				</c:if>
 					>
 				<td>
-					<a href="../info/${assessment.name}/">${assessment.name}</a> - 
+					<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
 					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
 					<c:if test="${empty results[assessment.shortName]}">
 						0
