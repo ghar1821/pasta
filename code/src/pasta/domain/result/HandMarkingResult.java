@@ -47,9 +47,8 @@ public class HandMarkingResult {
 	
 	public double getPercentage(){
 		double percentage = 0;
-		
 		for (Tuple t : markingTemplate.getRowHeader()) {
-			if(markingTemplate.getColumnHeaderAsMap().containsKey(result.get(t.getName()))){
+			if(result.containsKey(t.getName()) && markingTemplate.getColumnHeaderAsMap().containsKey(result.get(t.getName()))){
 				percentage += (t.getWeight() * markingTemplate
 						.getColumnHeaderAsMap().get(result.get(t.getName())));
 			}

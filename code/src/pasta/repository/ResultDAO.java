@@ -494,12 +494,11 @@ public class ResultDAO {
 						+ hMarking.getHandMarking().getShortName());
 				if (result == null) {
 					result = new HandMarkingResult();
-				} else {
-					result.setHandMarkingTemplateShortName(hMarking
-							.getHandMarking().getShortName());
-					result.setMarkingTemplate(hMarking.getHandMarking());
-					handResults.add(result);
-				}
+				} 
+				result.setHandMarkingTemplateShortName(hMarking
+						.getHandMarking().getShortName());
+				result.setMarkingTemplate(hMarking.getHandMarking());
+				handResults.add(result);
 			}
 
 			// submission date

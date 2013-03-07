@@ -2,147 +2,172 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-
-<h1>
-	<c:if test="${not empty viewedUser}">
-		${viewedUser.username} -
-	</c:if>
-	${assessment.name}
-</h1>
-
-<h3>Due: ${assessment.dueDate}</h3>
-<h3>Worth: ${assessment.marks} marks</h3>
-
-${assessment.description}
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<jsp:useBean id="now" class="java.util.Date"/>
 
 <c:choose>
-	<c:when test="${not empty history}">
-		<h3>History</h3>
-		
-		<c:forEach var="result" items="${history}" varStatus="resultStatus">
-			<h4>${result.submissionDate}</h4>
-			<c:if test="${unikey.tutor}">
-				<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-				<ul class="list">
-					<jsp:include page="../recursive/fileWriter.jsp"/>
-				</ul>
-			</c:if>
-			<c:choose>
-				<c:when test="${result.compileError}">
-					<div style="width:100%; text-align:right;">
-						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
-					</div>
-					<h5>Compile Errors</h5>
-					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
-						<pre>
-							${result.compilationError}
-						</pre>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-						<c:forEach var="allUnitTests" items="${result.unitTests}">
-							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-							</c:forEach>
-						</c:forEach>
-					</c:if>
-					<div style="width:100%; text-align:right;">
-						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
-						<c:if test="${ unikey.tutor }" >
-							<!-- tutor abilities -->
-							<!-- if assessment has hand marking -->
-							<c:if test="${not empty result.assessment.handMarking}">
-								<!-- edit marking if already marked -->
-								<c:choose>
-									<c:when test="${not empty viewedUser}">
-										<c:choose>
-											<c:when test="${ empty result.handMarkingResults }">
-												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-											</c:when>
-											<c:otherwise>
-												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-											</c:otherwise>
-										</c:choose>
-									</c:when>
-									<c:otherwise>
-										<c:choose>
-											<c:when test="${ empty result.handMarkingResults }">
-												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-											</c:when>
-											<c:otherwise>
-												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-											</c:otherwise>
-										</c:choose>
-									</c:otherwise>
-								</c:choose>
-							</c:if>
-							<!-- if the assessment contains unit tests -->
-							<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-								<c:choose>
-									<c:when test="${not empty viewedUser}">	
-										<button onClick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-									</c:when>
-									<c:otherwise>
-										<button onClick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.name}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-									</c:otherwise>
-								</c:choose>
-							</c:if>
-						</c:if>
-					</div>
-					<div id="${resultStatus.index}" style="display:none">
-						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<table class="pastaTable" >
-								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-								<c:forEach var="allUnitTests" items="${result.unitTests}">
-									<c:forEach var="testCase" items="${allUnitTests.testCases}">
-										<tr>
-											<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-											<td style="text-align:left;">${testCase.testName}</td>
-											<td>${testCase.time}</td>
-											<td>
-												<pre>${testCase.type} - ${testCase.testMessage}</pre>
-											</td>
-										</tr>
-									</c:forEach>
-								</c:forEach>
-							</table>
-						</c:if>
-						<h5>Comments</h2>
-						<div id="comments${assessment.shortName}">
-							<c:choose>
-								<c:when test="${empty result.comments}">
-									No comments
-								</c:when>
-								<c:otherwise>
-									${result.comments}
-								</c:otherwise>
-							</c:choose>
-						</div>
-						<c:if test="${not empty viewedUser}">
-							<button type="button" onclick="$('div#updateComments${assessment.shortName}').show();$(this).hide()">Modify Comments</button>
-							<div id="updateComments${assessment.shortName}"  style="display:none;">
-								<form action="updateComment/" enctype="multipart/form-data" method="POST">
-									<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}">
-									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.shortName}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
-									<button id="updateComments${assessment.shortName}" type="submit" >Update Comments</button>
-								</form>
-								<script>
-							    $(function() {
-									$("#modifyComments${assessment.shortName}").on('keyup', function() {
-							            $("#comments${assessment.shortName}").html(document.getElementById("modifyComments${assessment.shortName}").value);
-							        });
-							    });
-								</script>
-							</div>
-						</c:if>
-					</div>
-				</c:otherwise>
-			</c:choose>
-		</c:forEach>
+	<c:when test="${ not empty viewedUser}">
+		<h1>${viewedUser.username}</h1>
+		<c:set var="classes" value="${viewedUser.stream}.${viewedUser.tutorial}"/>
+		<c:set var="releaseUsername" value="${viewedUser.username}"/>
 	</c:when>
-	
 	<c:otherwise>
-		<h3>Assessment not attempted</h3>
+		<h1>${unikey.username}</h1>
+		<c:set var="classes" value="${unikey.stream}.${unikey.tutorial}"/>
+		<c:set var="releaseUsername" value="${unikey.username}"/>
 	</c:otherwise>
 </c:choose>
+
+<c:forEach var="assessmentCategory" items="${assessments}">
+	<h2>${assessmentCategory.key}</h2>
+	<table class="pastaQuickFeedback">
+		<c:forEach var="assessment" items="${assessmentCategory.value}">
+			<c:if test="${((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, releaseUsername)))}">
+				<c:out value="${viewedUser.extensions[assessment.shortName]}"/>
+				<c:set var="closedAssessment" value="false"/>
+				<tr <c:choose>
+						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
+							<c:if test="${viewedUser.extensions[assessment.shortName] lt now}">
+								class="closedAssessment"
+								<c:set var="closedAssessment" value="true"/>
+							</c:if>
+						</c:when>
+						<c:otherwise>
+							<c:if test="${assessment.dueDate lt now}">
+								class="closedAssessment"
+								<c:set var="closedAssessment" value="true"/>
+							</c:if>
+						</c:otherwise>
+					</c:choose> >
+					<td>
+						<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
+						<c:choose>
+							<c:when test="${empty results[assessment.shortName]}">
+								0
+							</c:when>
+							<c:when test="${(not results[assessment.shortName].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
+								???
+							</c:when>
+							<c:otherwise>
+								<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
+							</c:otherwise>
+						</c:choose>
+						/ ${assessment.marks}</br>
+					<c:choose>
+						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
+							${viewedUser.extensions[assessment.shortName]}
+						</c:when>
+						<c:otherwise>
+							${assessment.dueDate}
+						</c:otherwise>
+					</c:choose>
+					</br>
+					<c:choose>
+						<c:when test="${assessment.numSubmissionsAllowed == 0}">
+							&infin; sumbissions allowed </br>
+						</c:when>
+						<c:otherwise>
+							<c:if test="${empty results[assessment.shortName]}">
+								0
+							</c:if>
+							${results[assessment.shortName].submissionsMade} of ${results[assessment.shortName].assessment.numSubmissionsAllowed} attempts made</br>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${results[assessment.shortName].submissionsMade == 0 or empty results[assessment.shortName]}">
+							No attempts on record.
+						</c:when>
+						<c:when test="${results[assessment.shortName].compileError}">
+							<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
+								<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+								<b>Compilation errors</b>
+							</div>
+						</c:when>
+						<c:when test="${empty results[assessment.shortName].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.shortName]}">
+							<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
+								<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+								<b>Code is queued for testing.</b>
+							</div>
+						</c:when>
+						<c:otherwise>
+							<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
+								<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">
+									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+									</c:forEach>
+								</c:if>
+							</c:forEach>
+						</c:otherwise>
+					</c:choose>
+					<td style="width:40px;">
+						<button type="button" style="float: left; text-align: center;"
+								onClick="submitAssessment('${assessment.shortName}');">Submit</button>
+					</td>
+					<c:if test="${ not empty viewedUser}">
+						<!-- tutor is viewing a user and they may give out an extension -->
+						<td>
+							<div style="float: left; width:100%">
+							<button type="button" style="float: left; text-align: center;"
+								onClick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+							</div>
+						</td>
+					</c:if>
+				</tr>
+			</c:if>
+		</c:forEach>
+	</table>
+</c:forEach>
+
+<div id="submitPopup" class="popup">
+	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<span class="button bClose"> <span><b>X</b></span></span>
+		By submitting this assessment I accept the unviersity's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br>
+		<form:input type="file" path="file"/>
+		<form:input type="hidden" path="assessment" value=""/>
+	   	<input type="submit" value="I accept" id="submit"/>
+   	</form:form>
+</div>
+
+<c:if test="${ not empty viewedUser}">
+	<div id="extensionPopup" class="popup">
+		<span class="button bClose"> <span><b>X</b></span></span>
+		<h1>Give an extension to this assessment for this student.</h1>
+		<input type="text" id="simpleDueDate" name="simpleDueDate" />
+		<div style="display:none" id="assessmentName"></div>
+		
+		<button id="confirm" onClick="confirmExtension()">Confirm</button>
+	</div>
+	<script>
+	
+		function submitAssessment(assessment){
+			document.getElementById('assessment').value=assessment;
+			$('#submitPopup').bPopup();
+		}
+	
+		function giveExtension(assessment, dueDate){
+			document.getElementById('assessmentName').innerHTML=assessment;
+			document.getElementById('simpleDueDate').value = dueDate;
+			$('#extensionPopup').bPopup();
+
+		}
+		
+		function confirmExtension(){
+			var assessmentName = document.getElementById('assessmentName').innerHTML;
+			var newDueDate = document.getElementById('simpleDueDate').value.replace("/", "-").replace("/", "-");
+			window.location = "../extension/"+assessmentName+"/"+newDueDate+"/";
+		}
+		
+		(function($) {
+	
+			// DOM Ready
+			$(function() {
+	
+				$("#simpleDueDate").datetimepicker({
+					timeformat : 'hh:mm',
+					dateFormat : 'dd/mm/yy'
+				});
+			});
+	
+		})(jQuery);
+	</script>
+</c:if>
