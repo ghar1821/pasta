@@ -85,7 +85,7 @@ Unmarked
 					<c:otherwise>
 ${assessment.numSubmissionsAllowed}
 </c:otherwise>
-				</c:choose> sumbissions allowed <br /> <c:choose>
+				</c:choose> submissions allowed <br /> <c:choose>
 					<c:when
 						test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests) + fn:length(assessment.handMarking) + fn:length(assessment.competitions)) == 0}">
 No tests
