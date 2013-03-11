@@ -715,6 +715,8 @@ public class SubmissionManager {
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 			DefaultLogger consoleLogger = new DefaultLogger();
+			 runErrors = new PrintStream(thisTest.getFileLocation()
+					  + "/test/run.errors");
 			consoleLogger.setOutputPrintStream(runErrors);
 			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
 			project.addBuildListener(consoleLogger);
@@ -763,7 +765,10 @@ public class SubmissionManager {
 				}
 			}
 			catch (Exception e){
-				// do nothing
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Something went wrong: " + sw.toString());
 			}
 
 //			// delete everything else
