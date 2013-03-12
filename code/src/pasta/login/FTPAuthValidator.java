@@ -7,13 +7,15 @@ import javax.mail.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import pasta.domain.LoginForm;
 import pasta.util.ProjectProperties;
 
-public class ImapAuthValidator implements Validator{
+public class FTPAuthValidator implements Validator{
 
 	// what to use to write the log to.
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -44,26 +46,26 @@ public class ImapAuthValidator implements Validator{
 			String unikey = login.getUnikey();
 			String password = login.getPassword();
 			
-			List<String> mailServers = ProjectProperties.getInstance().getServerAddresses();
+			List<String> servers = ProjectProperties.getInstance().getServerAddresses();
 			boolean authenticated = false;
-			for(String mailServer: mailServers){
+			for(String server: servers){
 				try{
-					Properties props = new Properties();
-					props.setProperty("mail.imap.socketFactory.fallback", "false");
-					props.setProperty("mail.imap.port", mailServer.split(":")[1]);
-					props.setProperty("mail.imap.socketFactory.port", mailServer.split(":")[1]);
-					props.put("mail.imap.auth.plain.disable","true"); 
-		 
-					Session session = null;			
-					session = Session.getInstance(props);
-					session.setDebug(false);			
-					javax.mail.Store store = session.getStore(new 
-				               javax.mail.URLName("imap://"+mailServer.split(":")[0]));
-					store.connect(mailServer.split(":")[0],Integer.parseInt(mailServer.split(":")[1]),unikey,password);
-					authenticated = true;
-					break;
+					FTPClient client = new FTPClient();
+					client.connect(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
+					int replyCode = client.getReplyCode();
+					if (!FTPReply.isPositiveCompletion(replyCode)) {
+						logger.error("Could not reach " + server + " reply code: " + replyCode);
+		            }
+					
+		            if (client.login(unikey, password)) {
+		            	authenticated = true;
+						break;
+		            } else {
+		            	logger.error("Could not authenticate " + unikey + " against " + server);
+		            }
+					
 				}catch (Exception e) {
-					logger.error("Could not authenticate " + unikey + " against " + mailServer);
+					logger.error("Could not authenticate " + unikey + " against " + server);
 					logger.error(e);
 				}
 			}

@@ -6,7 +6,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,7 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
@@ -24,6 +22,7 @@ import org.springframework.validation.Validator;
 
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
+import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.repository.LoginDAO;
 
@@ -48,7 +47,7 @@ public class ProjectProperties {
 	// auth type (dummy, imap, database)
 	private static String authType;
 	// list of mail servers to auth with (imap auth only)
-	private static List<String> emailAddresses;
+	private static List<String> serverAddresses;
 	// create a new account if not already assigned a class
 	private static Boolean createAccountOnSuccessfulLogin;
 	// validator
@@ -60,15 +59,15 @@ public class ProjectProperties {
 		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
 	}
 	
-	private ProjectProperties(String projectLocation, String authType, List emailAddresses, Boolean createAccountOnSuccessfulLogin){
-		initialize(projectLocation, authType, emailAddresses, createAccountOnSuccessfulLogin);
+	private ProjectProperties(String projectLocation, String authType, List serverAddresses, Boolean createAccountOnSuccessfulLogin){
+		initialize(projectLocation, authType, serverAddresses, createAccountOnSuccessfulLogin);
 	}
 	
 	private void initialize(String projectLocation, String authType,
-			List emailAddresses, Boolean createAccountOnSuccessfulLogin) {
+			List serverAddresses, Boolean createAccountOnSuccessfulLogin) {
 		this.projectLocation = projectLocation;
 		this.authType=authType; // default to dummy
-		this.emailAddresses = emailAddresses;
+		this.serverAddresses = serverAddresses;
 		this.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
 		
 		if(authType.toLowerCase().trim().equals("imap")){
@@ -79,6 +78,10 @@ public class ProjectProperties {
 			authenticationValidator = new DBAuthValidator();
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
+		}
+		else if(authType.toLowerCase().trim().equals("ftp")){
+			authenticationValidator = new FTPAuthValidator();
+			logger.info("Using ftp authentication");
 		}
 		else{
 			authenticationValidator = new DummyAuthValidator();
@@ -106,8 +109,8 @@ public class ProjectProperties {
 		return authType;
 	}
 
-	public List<String> getEmailAddresses() {
-		return emailAddresses;
+	public List<String> getServerAddresses() {
+		return serverAddresses;
 	}
 
 	public Boolean getCreateAccountOnSuccessfulLogin() {

@@ -152,6 +152,7 @@ public class SubmissionManager {
 					Project project = new Project();
 
 					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
+					project.setBasedir(unitTestsLocation + "/" + test.getTest().getShortName());
 					DefaultLogger consoleLogger = new DefaultLogger();
 					PrintStream runErrors = new PrintStream(
 							unitTestsLocation + "/" + test.getTest().getShortName()
@@ -369,6 +370,7 @@ public class SubmissionManager {
 					Project project = new Project();
 
 					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
+					project.setBasedir(unitTestsLocation + "/" + test.getTest().getShortName());
 					project.init();
 
 					project.addReference("ant.projectHelper", projectHelper);
@@ -714,6 +716,7 @@ public class SubmissionManager {
 			Project project = new Project();
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
+			project.setBasedir(thisTest.getFileLocation() + "/test");
 			DefaultLogger consoleLogger = new DefaultLogger();
 			 runErrors = new PrintStream(thisTest.getFileLocation()
 					  + "/test/run.errors");
