@@ -591,15 +591,14 @@ public class ResultDAO {
 	public void updateUnitTestResults(String username,
 			Assessment assessment, Date runDate) {
 		// check if latest
-		try{
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-			if(results.get(username).get(assessment.getShortName()).getSubmissionDate().before(runDate) || 
-					results.get(username).get(assessment.getShortName()).getSubmissionDate().equals(runDate)){
-				results.get(username).put(assessment.getShortName(), loadAssessmentResultFromDisk(username, assessment, sdf.format(runDate)));
-			}
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+		if(results.get(username)==null){
+			results.put(username, new HashMap<String, AssessmentResult>());
 		}
-		catch(Exception e){
-			// do nothing
+		if(results.get(username).get(assessment.getShortName()) == null ||
+				results.get(username).get(assessment.getShortName()).getSubmissionDate().before(runDate) || 
+				results.get(username).get(assessment.getShortName()).getSubmissionDate().equals(runDate)){
+			results.get(username).put(assessment.getShortName(), loadAssessmentResultFromDisk(username, assessment, sdf.format(runDate)));
 		}
 	}
 

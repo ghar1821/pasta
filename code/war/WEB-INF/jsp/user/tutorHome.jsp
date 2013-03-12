@@ -41,7 +41,7 @@
 						<c:if test="${empty results[assessment.shortName]}">
 							0
 						</c:if>
-						${results[assessment.shortName].submissionsMade} of ${results[assessment.shortName].assessment.numSubmissionsAllowed} attempts made</br>
+						${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made</br>
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
