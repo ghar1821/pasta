@@ -11,7 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
 
-public class HandMarkingResult {
+public class HandMarkingResult implements Comparable{
 	private Map<String, String> result = LazyMap.decorate(new HashMap<String, String>(), 
 			FactoryUtils.instantiateFactory(HashMap.class));
 	
@@ -60,6 +60,12 @@ public class HandMarkingResult {
 	public boolean isFinishedMarking(){
 		logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
 		return (result.size() >= markingTemplate.getRowHeader().size());  
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		HandMarkingResult target = (HandMarkingResult)(o);
+		return markingTemplate.getName().compareTo(target.getMarkingTemplate().getName());
 	}
 	
 }

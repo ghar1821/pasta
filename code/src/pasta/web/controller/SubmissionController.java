@@ -707,6 +707,10 @@ public class SubmissionController {
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
 		}
+		
+		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
+			result.reject("Submission.NotZip");
+		}
 
 		if (manager.getAssessment(form.getAssessment()).isClosed() && (!user.isTutor())) {
 			result.reject("Submission.AfterClosingDate");

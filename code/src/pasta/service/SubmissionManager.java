@@ -173,6 +173,13 @@ public class SubmissionManager {
 						logger.error("Could not compile " + username + " - "
 								+ currAssessment.getName() + " - "
 								+ test.getTest().getName() + e);
+						
+						PrintStream compileErrors = new PrintStream(
+								unitTestsLocation + "/" + test.getTest().getShortName()
+								+ "/compile.errors");
+						compileErrors.print(e.toString().replaceAll(".*" +
+								unitTestsLocation + "/" + test.getTest().getShortName() + "/" , "folder "));
+						compileErrors.close();
 					}
 
 					runErrors.flush();
@@ -384,6 +391,12 @@ public class SubmissionManager {
 						logger.error("Could not compile " + job.getUsername() + " - "
 								+ currAssessment.getName() + " - "
 								+ test.getTest().getName() + e);
+						PrintStream compileErrors = new PrintStream(
+								unitTestsLocation + "/" + test.getTest().getShortName()
+								+ "/compile.errors");
+						compileErrors.print(e.toString().replaceAll(".*" +
+								unitTestsLocation + "/" + test.getTest().getShortName() + "/" , "folder "));
+						compileErrors.close();
 					}
 
 					// delete everything else
@@ -970,11 +983,13 @@ public class SubmissionManager {
 		// scan to see all who made a submission
 		for(PASTAUser user: userDao.getUserList()){
 			// add them to the queue
-			AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getShortName());
-			if(currResult != null){
-				scheduler.save(new Job(user.getUsername(), 
-						assessment.getShortName(), 
-						currResult.getSubmissionDate()));
+			if(resultDAO.getLatestResults(user.getUsername())!=null){
+				AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getShortName());
+				if(currResult != null){
+					scheduler.save(new Job(user.getUsername(), 
+							assessment.getShortName(), 
+							currResult.getSubmissionDate()));
+				}
 			}
 		}
 	}

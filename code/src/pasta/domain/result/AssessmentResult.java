@@ -3,6 +3,7 @@ package pasta.domain.result;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class AssessmentResult {
 
 	public void setUnitTests(ArrayList<UnitTestResult> unitTests) {
 		this.unitTests = unitTests;
+		Collections.sort(this.unitTests);
 	}
 
 	public Assessment getAssessment() {

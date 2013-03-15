@@ -124,9 +124,9 @@
 					<td onClick="window.location.href=window.location.href+'../stream/${user.stream}/'">${user.stream}</td>
 					<td onClick="window.location.href=window.location.href+'../tutorial/${user.tutorial}/'">${user.tutorial}</td>
 					<c:forEach var="assessment" items="${assessmentList}">
-						<td class="gradeCentreMark"  onClick="window.location.href=window.location.href+'../student/${user.username}/info/${assessment.name}/'">
-							<span style="display:none">${latestResults[user.username][assessment.name].percentage}</span>
-							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
+						<td class="gradeCentreMark"  onClick="window.location.href=window.location.href+'../student/${user.username}/info/${assessment.shortName}/'">
+							<span style="display:none">${latestResults[user.username][assessment.shortName].percentage}</span>
+							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.shortName].marks}" />
 						</td>
 					</c:forEach>
 				</tr>

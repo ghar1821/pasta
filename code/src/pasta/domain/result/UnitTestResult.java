@@ -1,10 +1,11 @@
 package pasta.domain.result;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import pasta.domain.template.UnitTest;
 
-public class UnitTestResult {
+public class UnitTestResult implements Comparable{
 	private UnitTest test;
 	private boolean secret;
 	private String compileErrors;
@@ -49,6 +50,7 @@ public class UnitTestResult {
 
 	public void setTestCases(ArrayList<UnitTestCaseResult> testCases) {
 		this.testCases = testCases;
+		Collections.sort(this.testCases);
 	}
 
 	public double getPercentage(){
@@ -66,6 +68,12 @@ public class UnitTestResult {
 			}
 		}
 		return passed/testCases.size(); 	
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		UnitTestResult target = (UnitTestResult)(o);
+		return test.getName().compareTo(target.getTest().getName());
 	}
 	
 }

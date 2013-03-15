@@ -1,7 +1,7 @@
 package pasta.domain.result;
 
 
-public class UnitTestCaseResult {
+public class UnitTestCaseResult implements Comparable{
 	private String testName;
 	private String testResult;
 	private String testMessage;
@@ -44,5 +44,11 @@ public class UnitTestCaseResult {
 	}
 	public void setType(String type) {
 		this.type = type.trim();
+	}
+	
+	@Override
+	public int compareTo(Object o) {
+		UnitTestCaseResult target = (UnitTestCaseResult)(o);
+		return testName.compareTo(target.getTestName());
 	}
 }
