@@ -193,6 +193,7 @@
 							<form:input type="checkbox"	path="releasedClasses" value="" />${stream.key}
 							<ul>
 								<c:forEach var="tutorial" items="${stream.value}">
+									<c:if test="${not empty tutorial}">
 									<!-- TODO -> command for contains in a string -->
 									<li class="list">
 										<c:set var="classes" value="${stream.key }.${tutorial}"/>
@@ -207,6 +208,7 @@
 											</c:otherwise>
 										</c:choose>
 									</li>
+									</c:if>
 								</c:forEach>
 							</ul>
 						</li>

@@ -703,17 +703,20 @@ public class SubmissionController {
 			BindingResult result, Model model) {
 		
 		PASTAUser user = getUser();
+		if(user == null){
+			return "redirect:../login";
+		}
 		// check if the submission is valid
 		if (form.getFile() == null || form.getFile().isEmpty()) {
-			result.reject("Submission.NoFile");
+			result.rejectValue("file", "Submission.NoFile");
 		}
 		
 		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
-			result.reject("Submission.NotZip");
+			result.rejectValue("file", "Submission.NotZip");
 		}
 
 		if (manager.getAssessment(form.getAssessment()).isClosed() && (!user.isTutor())) {
-			result.reject("Submission.AfterClosingDate");
+			result.rejectValue("file", "Submission.AfterClosingDate");
 		}
 		if(!result.hasErrors()){
 			// accept the submission
@@ -722,7 +725,16 @@ public class SubmissionController {
 					+ user.getUsername());
 			manager.submit(user.getUsername(), form);
 		}
-		return "redirect:.";
+//		return "redirect:.";
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
+		model.addAttribute("results",
+				manager.getLatestResultsForUser(user.getUsername()));
+		if (user.isTutor()) {
+			return "user/tutorHome";
+		} else {
+			return "user/studentHome";
+		}
 	}
 
 	// history
@@ -1019,11 +1031,11 @@ public class SubmissionController {
 
 		PASTAUser currStudent = (PASTAUser) myUsers.toArray()[currStudentIndex];
 
-		// make sure the current student has work to be marked
+		// make sure the current student has work to be marked and is not you
 		while (currStudentIndex < myUsers.size()
 				&& (manager.getLatestResultsForUser(currStudent.getUsername()) == null || manager
 						.getLatestResultsForUser(currStudent.getUsername())
-						.get(assessmentName) == null)) {
+						.get(assessmentName) == null) || (currStudent.getUsername() == user.getUsername())) {
 			currStudentIndex++;
 			currStudent = (PASTAUser) myUsers.toArray()[currStudentIndex];
 		}

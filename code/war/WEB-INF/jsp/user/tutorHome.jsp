@@ -8,6 +8,19 @@
 
 <h1>${unikey.username}</h1>
 
+<spring:hasBindErrors name="submission">
+	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<h3>Submission Errors</h3>
+		<form:errors path="file" cssClass="ui-state-error" element="div" />
+	</form:form>
+</spring:hasBindErrors>
+
+<h6>Submission Instructions</h6>
+<p>
+To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
+Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br/>
+<i><b>NOTE: Packages are not used in any task, but they are used in all of the assignments</b></i>
+
 <c:forEach var="assessmentCategory" items="${assessments}">
 	<h2>${assessmentCategory.key}</h2>
 	<table class="pastaQuickFeedback">
@@ -74,9 +87,15 @@
 					<button type="button" style="float: left; text-align: center;"
 							onClick="submitAssessment('${assessment.shortName}');">Submit</button>
 				</td>
+				<td style="width:15em;">
+	                          <div style="float: left; width:100%">
+	                                  <button type="button" style="float: left; text-align: center;"
+	                                          onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
+	                          </div>
+	                     </td>
 				<c:if test="${ not empty viewedUser}">
 					<!-- tutor is viewing a user and they may give out an extension -->
-					<td>
+					<td style="width:40px;">
 						<div style="float: left; width:100%">
 						<button type="button" style="float: left; text-align: center;"
 							onClick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
@@ -91,8 +110,10 @@
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
-		By submitting this assessment I accept the unviersity's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br>
-		<form:input type="file" path="file"/>
+		<div style="font-size:150%">
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br></br>
+		</div>
+		<form:input accept="application/zip" type="file" path="file"/>
 		<form:input type="hidden" path="assessment" value=""/>
 	   	<input type="submit" value="I accept" id="submit"/>
    	</form:form>

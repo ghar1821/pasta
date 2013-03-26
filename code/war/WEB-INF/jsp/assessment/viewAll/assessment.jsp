@@ -41,6 +41,7 @@
 												<ul>
 													<c:forEach var="tutorial" items="${stream.value}">
 														<!-- TODO -> command for contains in a string -->
+														<c:if test="${not empty tutorial}">
 														<li class="list">
 															<c:set var="classes" value="${stream.key }.${tutorial}"/>
 															<c:choose>
@@ -57,6 +58,7 @@
 															</c:choose>
 															
 														</li>
+														</c:if>
 													</c:forEach>
 												</ul></li>
 										</c:if>
@@ -229,6 +231,7 @@ ${fn:length(assessment.competitions)} Competitions </br>
 				$('#newAssessment').bPopup();
 
 			});
+
 
 		});
 

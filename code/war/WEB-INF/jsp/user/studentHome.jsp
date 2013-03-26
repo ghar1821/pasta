@@ -18,6 +18,22 @@
 	</c:otherwise>
 </c:choose>
 
+<spring:hasBindErrors name="submission">
+	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<h3>Submission Errors</h3>
+		<form:errors path="file" cssClass="ui-state-error" element="div" />
+	</form:form>
+</spring:hasBindErrors>
+
+<h6>Submission Instructions</h6>
+<p>
+To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
+Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.</br>
+<i><b>NOTE: Packages are not used in any task, but they are used in all of the assignments</b></i><br/>
+<div class="ui-state-error" style="font-size:1.5em">
+<i><b>NOTE: These marks are provisional, your final marks will appear on eLearning and may differ from these marks.</b></i>
+</div>
+
 <c:forEach var="assessmentCategory" items="${assessments}">
 	<h2>${assessmentCategory.key}</h2>
 	<table class="pastaQuickFeedback">
@@ -121,12 +137,22 @@
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
-		By submitting this assessment I accept the unviersity's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br>
-		<form:input type="file" path="file"/>
+		<div style="font-size:150%">
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br></br>
+		</div>
+		<form:input accept="application/zip" type="file" path="file"/>
 		<form:input type="hidden" path="assessment" value=""/>
 	   	<input type="submit" value="I accept" id="submit"/>
    	</form:form>
 </div>
+
+<script>
+	
+		function submitAssessment(assessment){
+			document.getElementById('assessment').value=assessment;
+			$('#submitPopup').bPopup();
+		}
+</script>
 
 <c:if test="${ not empty viewedUser}">
 	<div id="extensionPopup" class="popup">
@@ -138,12 +164,6 @@
 		<button id="confirm" onClick="confirmExtension()">Confirm</button>
 	</div>
 	<script>
-	
-		function submitAssessment(assessment){
-			document.getElementById('assessment').value=assessment;
-			$('#submitPopup').bPopup();
-		}
-	
 		function giveExtension(assessment, dueDate){
 			document.getElementById('assessmentName').innerHTML=assessment;
 			document.getElementById('simpleDueDate').value = dueDate;
