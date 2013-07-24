@@ -29,7 +29,7 @@
 				<value>imap.cs.usyd.edu.au:143</value>
 			</list>
 		</constructor-arg>
-		<constructor-arg type="java.lang.Boolean" value="false"/> <!-- auth type (dummy/email/database) -->
+		<constructor-arg type="java.lang.Boolean" value="true"/> <!-- auth type (dummy/email/database) -->
 	</bean>
 	
 	<bean 

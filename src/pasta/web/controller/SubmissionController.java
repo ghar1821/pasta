@@ -1,6 +1,9 @@
 package pasta.web.controller;
 
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -14,9 +17,11 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -79,6 +85,7 @@ public class SubmissionController {
 		codeStyle.put("rb", "rubycode");
 		codeStyle.put("sql", "sqlcode");
 		codeStyle.put("xml", "xmlcode");
+
 	}
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -281,7 +288,7 @@ public class SubmissionController {
 
 		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
 
-		for (Competition test : manager.getCompeitionList()) {
+		for (Competition test : manager.getCompetitionList()) {
 			boolean contains = false;
 			for (WeightedCompetition weightedComp : currAssessment
 					.getCompetitions()) {
@@ -798,10 +805,58 @@ public class SubmissionController {
 		manager.saveComment(username, assessmentName, assessmentDate, newComment);
 		return "redirect:../";
 	}
+
+	
+
+
+	@RequestMapping(value = "viewFile/loadFile", method = RequestMethod.GET)
+	public void getFile(@RequestParam("file_name") String fileName,
+			HttpServletResponse response) {
+		PASTAUser user = getUser();
+		if (user != null && user.isTutor()) {
+			if(!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))){
+				try {
+			      // get your file as InputStream
+			      InputStream is = new FileInputStream(fileName.replace("\"", ""));
+			      // copy it to response's OutputStream
+			      IOUtils.copy(is, response.getOutputStream());
+			      response.flushBuffer();
+			      is.close();
+			    } catch (IOException ex) {
+			      throw new RuntimeException("IOError writing file to output stream");
+			    }
+			}
+		}
+	}
+	
+	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
+	public void downloadFile(@RequestParam("file_name") String fileName,
+			HttpServletResponse response) {
+		PASTAUser user = getUser();
+		if (user != null && user.isTutor()) {
+			if(!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))){
+				try {
+			      // get your file as InputStream
+			      InputStream is = new FileInputStream(fileName.replace("\"", ""));
+			      // copy it to response's OutputStream
+			      response.setContentType("application/octet-stream;");
+			      response.setHeader("Content-Disposition", "attachment; filename="+fileName.replace("\"", "")
+			    		  .substring(fileName.replace("\"", "").replace("\\", "/").lastIndexOf("/") + 1));
+			      IOUtils.copy(is, response.getOutputStream());
+			      response.flushBuffer();
+			      is.close();
+			    } catch (IOException ex) {
+			      throw new RuntimeException("IOError writing file to output stream");
+			    }
+			}
+		}
+	}
+	
 	
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
 	public String viewFile(@RequestParam("location") String location,
-			Model model) {
+			Model model,  
+		    HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -809,12 +864,30 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
+	
+		model.addAttribute("location", location);
 		model.addAttribute("unikey", user);
 		model.addAttribute("codeStyle", codeStyle);
-		model.addAttribute("fileContents", manager.scrapeFile(location)
-				.replace(">", "&gt;").replace("<", "&lt;"));
 		model.addAttribute("fileEnding",
 				location.substring(location.lastIndexOf(".") + 1));
+	
+		if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))){
+			model.addAttribute("fileContents", manager.scrapeFile(location)
+					.replace(">", "&gt;").replace("<", "&lt;"));
+
+			return "assessment/mark/viewFile";
+		}
+//		else{
+//			try {
+//			      // get your file as InputStream
+//			      InputStream is = new FileInputStream(location);
+//			      // copy it to response's OutputStream
+//			      IOUtils.copy(is, response.getOutputStream());
+//			      response.flushBuffer();
+//			    } catch (IOException ex) {
+//			      throw new RuntimeException("IOError writing file to output stream");
+//			    }
+//		}
 		return "assessment/mark/viewFile";
 	}
 
@@ -1096,7 +1169,7 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("allCompetitions", manager.getCompeitionList());
+		model.addAttribute("allCompetitions", manager.getCompetitionList());
 
 		return "assessment/viewAll/competition";
 	}

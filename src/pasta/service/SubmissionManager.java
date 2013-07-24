@@ -1087,7 +1087,7 @@ public class SubmissionManager {
 		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
 	}
 
-	public Collection<Competition> getCompeitionList() {
+	public Collection<Competition> getCompetitionList() {
 		return assDao.getCompetitionList();
 	}
 
