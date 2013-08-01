@@ -244,7 +244,7 @@ public class Assessment {
 		if(getSpecialRelease() != null){
 			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
 		}
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/YYYY");
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
 		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
 		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
 		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"

@@ -41,7 +41,7 @@
 		<span><b>X</b></span>
 	</span>
 	<h1> Update Unit Test </h1>
-	<form:form action="../update/${unitTest.name}/" modelAttribute="newUnitTestModel" enctype="multipart/form-data" method="POST">
+	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
 		<table>
 			<form:input autocomplete="off" type="hidden" path="testName" value="${unitTest.shortName}"/>
 			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>

@@ -434,7 +434,7 @@ public class SubmissionManager {
 		}
 	}
 	
-	@Scheduled(fixedDelay = 30000)
+	@Scheduled(fixedDelay = 5000)
 	public void executeRemainingJobs(){
 		List<Job> outstandingJobs = scheduler.getOutstandingJobs();
 		while(outstandingJobs != null && !outstandingJobs.isEmpty()){
@@ -1132,6 +1132,56 @@ public class SubmissionManager {
 			String newComment) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public void updateUpdateUnitTest(NewUnitTest newTest) {
+		UnitTest thisTest = getUnitTest(newTest.getTestName());
+
+		if(thisTest != null){
+			try {
+	
+				// force delete old location
+				FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
+						+ "/code/")));
+				
+				// create space on the file system.
+				(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
+	
+				// generate unitTestProperties
+				PrintStream out = new PrintStream(thisTest.getFileLocation()
+						+ "/unitTestProperties.xml");
+				out.print(thisTest);
+				out.close();
+	
+				// unzip the uploaded code into the code folder. (if exists)
+				if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
+					// unpack
+					newTest.getFile().transferTo(
+							new File(thisTest.getFileLocation() + "/code/"
+									+ newTest.getFile().getOriginalFilename()));
+					ProjectProperties.extractFolder(thisTest.getFileLocation()
+							+ "/code/" + newTest.getFile().getOriginalFilename());
+					newTest.getFile().getInputStream().close();
+					FileUtils.forceDelete(new File(thisTest.getFileLocation()
+							+ "/code/" + newTest.getFile().getOriginalFilename()));
+				}
+	
+				FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
+						+ "/test/")));
+	
+				// set it as not tested
+				thisTest.setTested(false);
+				saveUnitTest(thisTest);
+			} catch (Exception e) {
+				(new File(thisTest.getFileLocation())).delete();
+				logger.error("TEST " + thisTest.getName()
+						+ " could not be updated successfully!"
+						+ System.getProperty("line.separator") + e);
+			}
+		}
+		else{
+			addUnitTest(newTest);
+		}
 	}
 	
 }

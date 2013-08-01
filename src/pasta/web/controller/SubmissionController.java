@@ -569,10 +569,34 @@ public class SubmissionController {
 		return "assessment/view/unitTest";
 	}
 
-	// update a unit test
+//	// test a unit test
+//	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
+//	public String testTestCode(@PathVariable("testName") String testName,
+//			@ModelAttribute(value = "submission") Submission form,
+//			BindingResult result, Model model) {
+//		PASTAUser user = getUser();
+//		if (user == null) {
+//			return "redirect:/login/";
+//		}
+//		if (!user.isTutor()) {
+//			return "redirect:/home/.";
+//		}
+//
+//		// if submission exists
+//		if (form.getFile() != null && !form.getFile().isEmpty()
+//				&& getUser().isInstructor()) {
+//			// upload submission
+//			manager.testUnitTest(form, testName);
+//		}
+//
+//		return "redirect:.";
+//	}
+	
+	// test a unit test
 	@RequestMapping(value = "unitTest/{testName}/", method = RequestMethod.POST)
-	public String uploadTestCode(@PathVariable("testName") String testName,
-			@ModelAttribute(value = "submission") Submission form,
+	public String updateTestCode(@PathVariable("testName") String testName,
+			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
+			@ModelAttribute(value = "submission") Submission subForm,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -583,10 +607,18 @@ public class SubmissionController {
 		}
 
 		// if submission exists
-		if (form.getFile() != null && !form.getFile().isEmpty()
-				&& getUser().isInstructor()) {
+		if (form != null && form.getTestName() != null && form.getFile() != null && 
+				!form.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
-			manager.testUnitTest(form, testName);
+			manager.updateUpdateUnitTest(form);
+		}
+		
+		// if submission exists
+		if (subForm != null && subForm.getAssessment() != null
+				&& subForm.getFile() != null && 
+				!subForm.getFile().isEmpty() && getUser().isInstructor()) {
+			// upload submission
+			manager.testUnitTest(subForm, testName);
 		}
 
 		return "redirect:.";
