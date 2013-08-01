@@ -452,8 +452,6 @@ public class SubmissionManager {
 			}
 			outstandingJobs = scheduler.getOutstandingJobs();
 		}
-		
-		logger.info("Finished executing all jobs");
 	}
 
 	public UnitTestResult getUnitTestResult(String location) {
