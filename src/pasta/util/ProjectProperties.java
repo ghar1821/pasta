@@ -17,14 +17,19 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.repository.LoginDAO;
+import pasta.service.SubmissionManager;
 
 @Component
 /**
@@ -195,4 +200,5 @@ public class ProjectProperties {
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 		}
 	}
+	
 }

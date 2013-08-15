@@ -1,0 +1,80 @@
+package pasta.web.controller;
+
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import pasta.domain.LoginForm;
+import pasta.service.SubmissionManager;
+import pasta.util.ProjectProperties;
+
+/**
+ * Controller class. 
+ * 
+ * Handles mappings of a url to a method.
+ * 
+ * @author Alex
+ *
+ */
+@Controller
+@RequestMapping("login/")
+public class AuthenitcationController {
+
+
+	protected final Log logger = LogFactory.getLog(getClass());
+	private SubmissionManager manager;
+
+	@Autowired
+	public void setMyService(SubmissionManager myService) {
+		this.manager = myService;
+	}
+
+	// ///////////////////////////////////////////////////////////////////////////
+	// LOGIN //
+	// ///////////////////////////////////////////////////////////////////////////
+
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String get(ModelMap model) {
+		model.addAttribute("LOGINFORM", new LoginForm());
+		// Because we're not specifying a logical view name, the
+		// DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
+		return "login";
+	}
+
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
+			BindingResult result) {
+
+		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
+		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && 
+				manager.getUser(userMsg.getUnikey()) == null){
+			result.rejectValue("password", "NotAvailable.loginForm.password");
+		}
+		if (result.hasErrors()) {
+			return "login";
+		}
+
+		RequestContextHolder.currentRequestAttributes().setAttribute("user",
+				userMsg.getUnikey(), RequestAttributes.SCOPE_SESSION);
+
+		// Use the redirect-after-post pattern to reduce double-submits.
+		return "redirect:/home/";
+	}
+
+	@RequestMapping("exit")
+	public String logout() {
+		RequestContextHolder.currentRequestAttributes().removeAttribute("user",
+				RequestAttributes.SCOPE_SESSION);
+		return "redirect:../";
+	}
+
+}
