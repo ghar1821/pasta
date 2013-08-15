@@ -709,13 +709,20 @@ public class SubmissionController {
 			}
 		}
 
-		return "redirect:.";
+		return "redirect:/mirror/";
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// HOME //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	// redirect back
+	@RequestMapping(value="mirror/")
+	public String goBack(HttpServletRequest request){
+		String referer = request.getHeader("Referer");
+		return "redirect:" + referer;
+	}
+	
 	// home page
 	@RequestMapping(value = "home/")
 	public String home(Model model) {
@@ -764,16 +771,16 @@ public class SubmissionController {
 					+ user.getUsername());
 			manager.submit(user.getUsername(), form);
 		}
-//		return "redirect:.";
-		model.addAttribute("unikey", user);
-		model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
-		model.addAttribute("results",
-				manager.getLatestResultsForUser(user.getUsername()));
-		if (user.isTutor()) {
-			return "user/tutorHome";
-		} else {
-			return "user/studentHome";
-		}
+		return "redirect:/mirror/";
+//		model.addAttribute("unikey", user);
+//		model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
+//		model.addAttribute("results",
+//				manager.getLatestResultsForUser(user.getUsername()));
+//		if (user.isTutor()) {
+//			return "user/tutorHome";
+//		} else {
+//			return "user/studentHome";
+//		}
 	}
 
 	// history
@@ -995,7 +1002,7 @@ public class SubmissionController {
 
 		return "user/viewAssessment";
 	}
-
+	
 	// re-run assessment
 	@RequestMapping(value = "runAssessment/{username}/{assessmentName}/{assessmentDate}/")
 	public String runAssessment(@PathVariable("username") String username,
