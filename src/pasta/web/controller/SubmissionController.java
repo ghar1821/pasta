@@ -33,6 +33,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
+import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
@@ -42,6 +43,7 @@ import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.service.SubmissionManager;
+import pasta.util.ProjectProperties;
 import pasta.view.ExcelMarkView;
 
 @Controller
@@ -196,6 +198,11 @@ public class SubmissionController {
 
 		if (manager.getAssessment(form.getAssessment()).isClosed() && (!user.isTutor())) {
 			result.rejectValue("file", "Submission.AfterClosingDate");
+		}
+		if((!user.isTutor()) && 
+				manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()) != null &&
+					manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= manager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()){
+			result.rejectValue("file", "Submission.NoAttempts");
 		}
 		if(!result.hasErrors()){
 			// accept the submission
