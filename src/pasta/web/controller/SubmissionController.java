@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
@@ -43,7 +43,6 @@ import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.service.SubmissionManager;
-import pasta.util.ProjectProperties;
 import pasta.view.ExcelMarkView;
 
 @Controller
@@ -195,11 +194,16 @@ public class SubmissionController {
 		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
 			result.rejectValue("file", "Submission.NotZip");
 		}
-
-		if (manager.getAssessment(form.getAssessment()).isClosed() && (!user.isTutor())) {
+		Date now = new Date();
+		if (manager.getAssessment(form.getAssessment()).isClosed() 
+				&& (user.getExtensions() != null // no extension
+				&& user.getExtensions().get(form.getAssessment()) != null
+				&& user.getExtensions().get(form.getAssessment()).before(now))
+				&& (!user.isTutor())) {
 			result.rejectValue("file", "Submission.AfterClosingDate");
 		}
 		if((!user.isTutor()) && 
+				manager.getLatestResultsForUser(user.getUsername()) != null &&
 				manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()) != null &&
 					manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= manager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()){
 			result.rejectValue("file", "Submission.NoAttempts");
@@ -398,10 +402,9 @@ public class SubmissionController {
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
 		}
-
-		if (manager.getAssessment(form.getAssessment()).isClosed()) {
-			result.reject("Submission.AfterClosingDate");
-		}
+//		if (manager.getAssessment(form.getAssessment()).isClosed()) {
+//			result.reject("Submission.AfterClosingDate");
+//		}
 		if(!result.hasErrors()){
 			// accept the submission
 			logger.info(form.getAssessment() + " submitted for " + username
@@ -539,7 +542,7 @@ public class SubmissionController {
 		}
 
 		// save the latest submission
-		if (!request.getHeader("Referer").endsWith("/home/")) {
+		if (!request.getHeader("Referer").endsWith("/home/") && Integer.parseInt(s_currStudentIndex) > 0) {
 			// get previous user
 			int prevStudentIndex = Integer.parseInt(s_currStudentIndex) - 1;
 			PASTAUser prevStudent = (PASTAUser) myUsers.toArray()[prevStudentIndex];

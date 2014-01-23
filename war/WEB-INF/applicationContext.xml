@@ -21,7 +21,7 @@
            http://www.springframework.org/schema/task/spring-task-3.0.xsd">
            
     <bean id="projectProperties" class="pasta.util.ProjectProperties">
-		<constructor-arg type="java.lang.String" value="C:/info1103"/> <!-- project location -->
+		<constructor-arg type="java.lang.String" value="C:/Users/Alex/info1103"/> <!-- project location -->
 		<constructor-arg type="java.lang.String" value="dummy"/> <!-- auth type (dummy/imap/database) -->
 		<constructor-arg>	<!-- only for imap, list of urls for servers in the format of address:port - remove if not in use-->
 			<list>

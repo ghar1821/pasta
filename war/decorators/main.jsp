@@ -126,6 +126,13 @@
 									</span>
 								</li>
 							</c:if>
+							<c:if test="${not empty unikey}">
+								<li>
+									<span>
+										<a href="<spring:url value="/admin/" htmlEscape="true" />"><span>Admin</span></a>
+									</span>
+								</li>
+							</c:if>
 						</ul>
 					</div>
 					<div id="tabunderscore"></div>

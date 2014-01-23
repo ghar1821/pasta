@@ -4,32 +4,35 @@ package pasta.util;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.MessageDigest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.repository.LoginDAO;
-import pasta.service.SubmissionManager;
 
 @Component
 /**
@@ -75,16 +78,21 @@ public class ProjectProperties {
 		this.serverAddresses = serverAddresses;
 		this.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
 		
-		if(authType.toLowerCase().trim().equals("imap")){
+		if(new File(getProjectLocation()+"/authentication.settings").exists()){
+			logger.info("exists");
+			decryptAuthContent();
+		}
+		
+		if(this.authType.toLowerCase().trim().equals("imap")){
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
 		}
-		else if(authType.toLowerCase().trim().equals("database")){
+		else if(this.authType.toLowerCase().trim().equals("database")){
 			authenticationValidator = new DBAuthValidator();
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
 		}
-		else if(authType.toLowerCase().trim().equals("ftp")){
+		else if(this.authType.toLowerCase().trim().equals("ftp")){
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
 		}
@@ -198,6 +206,70 @@ public class ProjectProperties {
 		this.loginDAO = dao;
 		if(authType.toLowerCase().trim().equals("database")){
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+		}
+	}
+
+	public void changeAuthMethod(String type, String[] addresses) {
+		
+		serverAddresses.clear();
+		authType = type;
+		for(String address: addresses){
+			if(!address.isEmpty()){
+				serverAddresses.add(address);
+			}
+		}
+		if(authType.toLowerCase().trim().equals("imap")){
+			authenticationValidator = new ImapAuthValidator();
+			logger.info("Using IMAP authentication");
+		}
+		else if(authType.toLowerCase().trim().equals("database")){
+			authenticationValidator = new DBAuthValidator();
+			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+			logger.info("Using database authentication");
+		}
+		else if(authType.toLowerCase().trim().equals("ftp")){
+			authenticationValidator = new FTPAuthValidator();
+			logger.info("Using ftp authentication");
+		}
+		else{
+			authenticationValidator = new DummyAuthValidator();
+			logger.info("Using dummy authentication");
+		}
+		
+		encryptAuthContent();
+	}
+	
+	private void encryptAuthContent(){
+
+		try {
+			PrintWriter out = new PrintWriter(new File(getProjectLocation()+"/authentication.settings"));
+			
+			out.println(authType);
+			for(String address: serverAddresses){
+				out.println(address);
+			}
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void decryptAuthContent(){
+
+		try {
+			Scanner in = new Scanner(new File(getProjectLocation()+"/authentication.settings"));
+			
+			authType = in.nextLine();
+			serverAddresses.clear();
+			while(in.hasNextLine()){
+				serverAddresses.add(in.nextLine());
+			}
+			in.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

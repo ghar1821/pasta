@@ -53,6 +53,60 @@ public class UserDAO extends HibernateDaoSupport{
 		getHibernateTemplate().delete(user);
 	}
 	
+	public void replaceStudents(List<PASTAUser> users){
+		for(PASTAUser user: allUsers.values()){
+			if(!user.isTutor()){
+				delete(user);
+			}
+		}
+		
+		for(PASTAUser user: users){
+			save(user);
+		}
+		
+		loadUsersFromDB();
+	}
+	
+	public void updateStudents(List<PASTAUser> users){
+		for(PASTAUser user: users){
+			if(allUsers.containsKey(user.getUsername())){
+				update(user);
+			}
+			else{
+				save(user);
+			}
+		}
+
+		loadUsersFromDB();
+	}
+	
+	public void replaceTutors(List<PASTAUser> users){
+		for(PASTAUser user: allUsers.values()){
+			if(user.isTutor()){
+				delete(user);
+			}
+		}
+		
+		for(PASTAUser user: users){
+			save(user);
+		}
+		
+		loadUsersFromDB();
+	}
+	
+	public void updateTutors(List<PASTAUser> users){
+		for(PASTAUser user: users){
+			if(allUsers.containsKey(user.getUsername())){
+				update(user);
+			}
+			else{
+				save(user);
+			}
+		}
+		
+		loadUsersFromDB();
+	}
+	
 	// calculated methods
 	
 	public PASTAUser getUser(String username){
@@ -129,6 +183,16 @@ public class UserDAO extends HibernateDaoSupport{
 					// no extensions given
 				}
 			}
+		}
+	}
+
+	public void deleteSingleUser(PASTAUser toDelete) {
+		delete(toDelete);
+		PASTAUser fullUser = allUsers.get(toDelete.getUsername());
+		if(fullUser != null){
+			usersByTutorial.get(fullUser.getTutorial()).remove(fullUser);
+			usersByStream.get(fullUser.getStream()).remove(fullUser);
+			allUsers.remove(toDelete.getUsername());
 		}
 	}
 }

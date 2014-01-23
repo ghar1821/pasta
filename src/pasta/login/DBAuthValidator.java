@@ -1,7 +1,5 @@
 package pasta.login;
 
-import java.io.UnsupportedEncodingException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +24,16 @@ public class DBAuthValidator implements Validator{
 	public boolean supports(Class<?> clazz) {
 		return LoginForm.class.isAssignableFrom(clazz);
 	}
+	
+	public boolean authenticate(String username, String password){
+		if(database.hasPassword(username)){
+			String hashedPassword = DigestUtils.md5Hex(password);
+			return database.authenticate(username, hashedPassword);
+		}
+		else{
+			return password.equals(username);
+		}
+	}
 
 	@Override
 	public void validate(Object target, Errors errors) {
@@ -41,14 +49,10 @@ public class DBAuthValidator implements Validator{
 		
 		// if nothing has gone wrong yet, check using the database servers. 
 		if (!errors.hasErrors()){
-			String unikey = login.getUnikey();
+			String username = login.getUnikey();
 			String password = login.getPassword();
 			
-			String hashedPassword = DigestUtils.md5Hex(password);
-			
-			logger.info(hashedPassword);
-			
-			if(!database.authenticate(unikey, hashedPassword)){
+			if(!authenticate(username, password)){
 				errors.rejectValue("password", "Failed.loginForm.password");
 			}
 		}

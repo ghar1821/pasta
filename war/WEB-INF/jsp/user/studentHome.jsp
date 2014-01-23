@@ -48,6 +48,12 @@ Your zip file should contain the src folder. If you are unsure, please email you
 								<c:set var="closedAssessment" value="true"/>
 							</c:if>
 						</c:when>
+						<c:when test="${not empty unikey.extensions[assessment.shortName]}">
+							<c:if test="${unikey.extensions[assessment.shortName] lt now}">
+								class="closedAssessment"
+								<c:set var="closedAssessment" value="true"/>
+							</c:if>
+						</c:when>
 						<c:otherwise>
 							<c:if test="${assessment.dueDate lt now}">
 								class="closedAssessment"

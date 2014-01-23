@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
@@ -1180,6 +1181,30 @@ public class SubmissionManager {
 		else{
 			addUnitTest(newTest);
 		}
+	}
+	
+	public void replaceStudents(List<PASTAUser> users){
+		userDao.replaceStudents(users);
+	}
+	
+	public void updateStudents(List<PASTAUser> users){
+		userDao.updateStudents(users);
+	}
+	
+	public void replaceTutors(List<PASTAUser> users){
+		userDao.replaceTutors(users);
+	}
+	
+	public void updateTutors(List<PASTAUser> users){
+		userDao.updateTutors(users);
+	}
+
+	public void deleteUser(PASTAUser toDelete) {
+		userDao.deleteSingleUser(toDelete);
+	}
+
+	public void updatePassword(String username, String newPassword) {
+		loginDao.updatePassword(username, DigestUtils.md5Hex(newPassword));
 	}
 	
 }
