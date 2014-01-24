@@ -83,6 +83,7 @@
     <context:component-scan base-package="pasta.domain" />
     
     <bean id="submissionManager" class="pasta.service.SubmissionManager" />
+    <bean id="mossManager" class="pasta.service.MossManager" />
     
     <context:component-scan base-package="pasta.service"/>
 	<task:annotation-driven />
