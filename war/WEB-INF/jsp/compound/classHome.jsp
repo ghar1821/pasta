@@ -31,13 +31,15 @@
 		<c:forEach var="user" items="${userList}">
 			<c:if test="${not user.tutor}">
 				<tr>
-					<td onClick="window.location.href=window.location.href+'../../student/${user.username}/home/'">${user.username}</td>
-					<td onClick="window.location.href=window.location.href+'../../stream/${user.stream}/'">${user.stream}</td>
-					<td onClick="window.location.href=window.location.href+'../../tutorial/${user.tutorial}/'">${user.tutorial}</td>
+					<td><a href="../../student/${user.username}/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.username}</a></td>
+					<td><a href="../../stream/${user.stream}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.stream}</a></td>
+					<td><a href="../../tutorial/${user.tutorial}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.tutorial}</a></td>
 					<c:forEach var="assessment" items="${assessmentList}">
-						<td class="gradeCentreMark"  onClick="window.location.href=window.location.href+'../../student/${user.username}/info/${assessment.name}/'">
-							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.name].marks}" />
-							<span style="display:none">${latestResults[user.username][assessment.name].percentage}</span>
+						<td class="gradeCentreMark" >
+							<a href="../../student/${user.username}/info/${assessment.shortName}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">
+							<span style="display:none">${latestResults[user.username][assessment.shortName].percentage}</span>
+							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.shortName].marks}" />
+							</a>
 						</td>
 					</c:forEach>
 				</tr>
