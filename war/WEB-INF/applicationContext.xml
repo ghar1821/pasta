@@ -23,10 +23,10 @@
     <bean id="projectProperties" class="pasta.util.ProjectProperties">
 		<constructor-arg type="java.lang.String" value="C:/Users/Alex/info1103"/> <!-- project location -->
 		<constructor-arg type="java.lang.String" value="dummy"/> <!-- auth type (dummy/imap/database) -->
-		<constructor-arg>	<!-- only for imap, list of urls for servers in the format of address:port - remove if not in use-->
+		<constructor-arg>
 			<list>
-				<value>imap.it.usyd.edu.au:143</value>
-				<value>imap.cs.usyd.edu.au:143</value>
+				<value>web-cache.usyd.edu.au</value>
+				<value>8080</value>
 			</list>
 		</constructor-arg>
 		<constructor-arg type="java.lang.Boolean" value="true"/> <!-- auth type (dummy/email/database) -->

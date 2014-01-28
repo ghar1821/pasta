@@ -96,6 +96,8 @@ public class MossController {
 		if (user == null) {
 			return "redirect:/../";
 		}
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessmentName", assessment);
 	
 		model.addAttribute("mossList", mossManager.getMossList(assessment));
 		return "moss/list";
@@ -110,6 +112,7 @@ public class MossController {
 		if (user == null) {
 			return "redirect:/../";
 		}
+		model.addAttribute("unikey", user);
 	
 		model.addAttribute("mossResults", mossManager.getMossRun(assessment, date));
 		return "moss/view";

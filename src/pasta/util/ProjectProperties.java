@@ -4,24 +4,23 @@ package pasta.util;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.MessageDigest;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,6 +59,8 @@ public class ProjectProperties {
 	private static Boolean createAccountOnSuccessfulLogin;
 	// validator
 	private static Validator authenticationValidator;
+	// proxy
+	private static Proxy proxy;
 	
 	private static LoginDAO loginDAO;
 	
@@ -67,15 +68,15 @@ public class ProjectProperties {
 		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
 	}
 	
-	private ProjectProperties(String projectLocation, String authType, List serverAddresses, Boolean createAccountOnSuccessfulLogin){
-		initialize(projectLocation, authType, serverAddresses, createAccountOnSuccessfulLogin);
+	private ProjectProperties(String projectLocation, String authType, List proxy, Boolean createAccountOnSuccessfulLogin){
+		initialize(projectLocation, authType, proxy, createAccountOnSuccessfulLogin);
 	}
 	
 	private void initialize(String projectLocation, String authType,
-			List serverAddresses, Boolean createAccountOnSuccessfulLogin) {
+			List proxy, Boolean createAccountOnSuccessfulLogin) {
 		this.projectLocation = projectLocation;
 		this.authType=authType; // default to dummy
-		this.serverAddresses = serverAddresses;
+		serverAddresses = new LinkedList<String>();
 		this.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
 		
 		if(new File(getProjectLocation()+"/authentication.settings").exists()){
@@ -99,6 +100,13 @@ public class ProjectProperties {
 		else{
 			authenticationValidator = new DummyAuthValidator();
 			logger.info("Using dummy authentication");
+		}
+		
+		if(proxy != null && proxy.size()>=2){
+			SocketAddress addr = new InetSocketAddress((String)proxy.get(0),
+					Integer.parseInt((String) proxy.get(1)));
+			this.proxy = new Proxy(Proxy.Type.HTTP, addr);
+			logger.info("Using proxy " + proxy.get(0) + " on port " + proxy.get(1));
 		}
 	}
 
@@ -271,6 +279,14 @@ public class ProjectProperties {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean usingProxy(){
+		return proxy != null;
+	}
+	
+	public Proxy getProxy(){
+		return proxy;
 	}
 	
 }

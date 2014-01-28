@@ -1,10 +1,18 @@
 package pasta.service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
@@ -22,7 +30,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.MossResults;
-import pasta.scheduler.ExecutionScheduler;
 import pasta.util.ProjectProperties;
 
 @Service("mossManager")
@@ -37,12 +44,12 @@ import pasta.util.ProjectProperties;
  */
 public class MossManager {
 	
-	private ExecutionScheduler scheduler;
-	
-	@Autowired
-	public void setMyScheduler(ExecutionScheduler myScheduler) {
-		this.scheduler = myScheduler;
-	}
+//	private ExecutionScheduler scheduler;
+//	
+//	@Autowired
+//	public void setMyScheduler(ExecutionScheduler myScheduler) {
+//		this.scheduler = myScheduler;
+//	}
 	
 	@Autowired
 	private ApplicationContext context;
@@ -94,14 +101,28 @@ public class MossManager {
 			locationIn.close();
 			
 			// read html page
-			Scanner in = new Scanner(new File(location
-					+ "/index.html"));
+			URL url = new URL(mossUrl);
 			
-			String webpage = "";
-			while (in.hasNextLine()) {
-				webpage += in.nextLine();
+			InputStream is;
+			if(ProjectProperties.getInstance().usingProxy()){
+				logger.info("Executing moss using proxy");
+				URLConnection conn = url.openConnection(ProjectProperties.getInstance().getProxy());
+				is = conn.getInputStream();
 			}
-			in.close();
+			else{
+				logger.info("Executing moss without a proxy");
+				is = url.openStream();
+			}
+	        
+	         // throws an IOException
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			String line = "";
+			String webpage = "";
+	        while ((line = br.readLine()) != null) {
+	            webpage += line;
+	        }
+			
+			is.close();
 
 			// process results (web page - csv)
 			// strip top
@@ -181,12 +202,14 @@ public class MossManager {
 					}
 				});
 		
-		for(String file: filenames){
-			try {
-				mossList.put(file,ProjectProperties.parseDate(file.replace(".csv", "")).toString());
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(filenames != null){
+			for(String file: filenames){
+				try {
+					mossList.put(file.replace(".csv", ""),ProjectProperties.parseDate(file.replace(".csv", "")).toString());
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		

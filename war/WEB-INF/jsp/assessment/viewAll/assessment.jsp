@@ -122,6 +122,10 @@ ${fn:length(assessment.competitions)} Competitions </br>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
+						onclick="location.href='../moss/view/${assessment.shortName}/'">MOSS</button>
+				</div>
+				<div style="float: left">
+					<button style="float: left; text-align: center;"
 						onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
 					<button style="float: left; display: none; text-align: center;"
 						onclick="location.href='./delete/${assessment.shortName}/'"
