@@ -26,11 +26,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pasta.domain.PASTACompUserResult;
 import pasta.domain.result.ArenaResult;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.HandMarkingResult;
+import pasta.domain.result.PASTACompUserResult;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;

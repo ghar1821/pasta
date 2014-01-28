@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import pasta.domain.PASTACompUserResult;
 
 public class CompetitionResult {
 	Map<Integer, List<PASTACompUserResult>> positions;

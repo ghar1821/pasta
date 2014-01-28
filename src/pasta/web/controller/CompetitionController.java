@@ -161,24 +161,24 @@ public class CompetitionController {
 		return "redirect:.";
 	}
 
-	@RequestMapping(value = "{competitionName}/", method = RequestMethod.POST)
-	public String updateCompetition(Model model,
-			@PathVariable("competitionName") String competitionName,
-			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
-		if(user.isInstructor()){
-			form.setTestName(competitionName);
-			manager.updateCompetition(form);
-		}
-
-		return "redirect:.";
-	}
+//	@RequestMapping(value = "{competitionName}/", method = RequestMethod.POST)
+//	public String updateCompetition(Model model,
+//			@PathVariable("competitionName") String competitionName,
+//			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
+//		PASTAUser user = getUser();
+//		if (user == null) {
+//			return "redirect:/login/";
+//		}
+//		if (!user.isTutor()) {
+//			return "redirect:/home/.";
+//		}
+//		if(user.isInstructor()){
+//			form.setTestName(competitionName);
+//			manager.updateCompetition(form);
+//		}
+//
+//		return "redirect:.";
+//	}
 
 	// delete a unit test
 	@RequestMapping(value = "delete/{competitionName}/")
@@ -276,5 +276,4 @@ public class CompetitionController {
 			return "assessment/competition/arena";
 		}
 	}
-
 }
