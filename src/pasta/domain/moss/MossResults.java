@@ -1,4 +1,4 @@
-package pasta.domain;
+package pasta.domain.moss;
 
 import java.util.LinkedList;
 

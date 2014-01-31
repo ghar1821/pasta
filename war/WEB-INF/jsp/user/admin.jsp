@@ -16,12 +16,12 @@
 			</tr>
 			<tr>
 				<td><form:label path="newPassword" cssClass="required">New Password<span class="star-required">*</span></form:label></td> 
-				<td><form:password path="newPassword" size="50" name="newPassword" id="newPassword" />
+				<td><form:password path="newPassword" size="50" name="newPassword" id="newPassword" onkeyup="checkPasswords();"/>
 				<form:errors path="newPassword" cssClass="susk-form-errors" element="div" /></td>
 			</tr>
 			<tr>
 				<td><form:label path="confirmPassword" cssClass="required">Confirm Password <span class="star-required">*</span></form:label></td> 
-				<td><form:password path="confirmPassword" size="50" name="confirmPassword" id="confirmPassword" />
+				<td><form:password path="confirmPassword" size="50" name="confirmPassword" id="confirmPassword" onkeyup="checkPasswords();"/>
 				<form:errors path="confirmPassword" cssClass="susk-form-errors" element="div" /></td>
 			</tr>
 		</table>
@@ -182,3 +182,59 @@
 		</script>
 		
 </c:if>
+
+<style>
+
+	.glowingRed {
+		outline: none;
+	    border-color: #f00;
+		box-shadow: 0 0 10px #f00;
+	}
+	
+	.glowingGreen {
+		outline: none;
+	    border-color: #0f0;
+		box-shadow: 0 0 10px #0f0;
+	}
+
+</style>
+
+<script>
+	;(function($) {
+
+         // DOM Ready
+        $(function() {
+        
+            // Binding a click event
+            // From jQuery v.1.7.0 use .on() instead of .bind()
+            $('#newPopup').bind('click', function(e) {
+
+                // Prevents the default action to be triggered. 
+                e.preventDefault();
+
+                // Triggering bPopup when click event is fired
+                $('#newArena').bPopup();
+
+            });
+            
+        });
+
+    })(jQuery);
+	
+	function checkPasswords(){
+		if (document.getElementById('newPassword').value == document.getElementById('confirmPassword').value){
+			document.getElementById("Submit").disabled = false; 
+			$("#newPassword").addClass( "glowingGreen" );
+			$("#newPassword").removeClass( "glowingRed" );
+			$("#confirmPassword").addClass( "glowingGreen" );
+			$("#confirmPassword").removeClass( "glowingRed" );
+		}
+		else{
+			document.getElementById("Submit").disabled = true; 
+			$("#newPassword").addClass( "glowingRed" );
+			$("#newPassword").removeClass( "glowingGreen" );
+			$("#confirmPassword").addClass( "glowingRed" );
+			$("#confirmPassword").removeClass( "glowingGreen" );
+		}
+	}
+</script>

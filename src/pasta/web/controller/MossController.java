@@ -15,7 +15,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
 import pasta.service.MossManager;
-import pasta.service.SubmissionManager;
+import pasta.service.UserManager;
 
 /**
  * Controller class. 
@@ -31,12 +31,12 @@ public class MossController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	private SubmissionManager manager;
+	private UserManager userManager;
 	private MossManager mossManager;
 
 	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
 	}
 	
 	@Autowired
@@ -61,7 +61,7 @@ public class MossController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}

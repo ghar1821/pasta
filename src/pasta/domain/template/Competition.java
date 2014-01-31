@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.PASTATime;
 import pasta.domain.PASTAUser;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 public class Competition {
@@ -24,6 +25,7 @@ public class Competition {
 	
 	private String name;
 	// if null - calculated competition
+	private Arena officialArena = null;
 	private Collection<Arena> arenas = null;
 	private boolean studentCreatableArena;
 	private boolean studentCreatableRepeatableArena;
@@ -148,6 +150,14 @@ public class Competition {
 		return frequency.nextExecution(firstStartDate);
 	}
 	
+	public Arena getOfficialArena(){
+		return officialArena;
+	}
+	
+	public void setOfficialArena(Arena arena){
+		officialArena = arena;
+	}
+	
 	public String toString(){
 		String output = "<competitionProperties>" + System.getProperty("line.separator");
 		output += "\t<name>"+name+"</name>" + System.getProperty("line.separator");
@@ -160,7 +170,7 @@ public class Competition {
 			// make it next year (realistically afte the semester ended)
 			firstStartDate.setTime(firstStartDate.getTime()+31536000000l);
 		}
-		output += "\t<firstStartDate>"+ProjectProperties.formatDate(firstStartDate)+"</firstStartDate>" + System.getProperty("line.separator");
+		output += "\t<firstStartDate>"+PASTAUtil.formatDate(firstStartDate)+"</firstStartDate>" + System.getProperty("line.separator");
 		
 		output += "\t<frequency>";
 		if(frequency != null){
@@ -171,6 +181,12 @@ public class Competition {
 		}
 		output += "</frequency>" + System.getProperty("line.separator");
 			
+		if(officialArena != null){
+			output+= "\t<officialArena name=\"Official Arena\" firstStartDate=\""
+					+ PASTAUtil.formatDate(firstStartDate) + "\" ";
+			output += "repeats=\""+frequency+"\" ";
+			output += "/>" + System.getProperty("line.separator");;
+		}
 		if(arenas != null){
 			output += "\t<arenas>" + System.getProperty("line.separator");
 				for(Arena currArena: arenas){

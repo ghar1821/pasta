@@ -42,7 +42,11 @@ import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
+import pasta.service.AssessmentManager;
+import pasta.service.HandMarkingManager;
 import pasta.service.SubmissionManager;
+import pasta.service.UserManager;
+import pasta.util.PASTAUtil;
 import pasta.view.ExcelMarkView;
 
 @Controller
@@ -80,11 +84,27 @@ public class SubmissionController {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private SubmissionManager manager;
+	private UserManager userManager;
+	private AssessmentManager assessmentManager;
+	private HandMarkingManager handMarkingManager;
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
 		this.manager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
+	}
+	@Autowired
+	public void setMyService(AssessmentManager myService) {
+		this.assessmentManager = myService;
+	}
+	@Autowired
+	public void setMyService(HandMarkingManager myService) {
+		this.handMarkingManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -129,8 +149,12 @@ public class SubmissionController {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
+		return getOrCreateUser(username);
+	}
+	
+	public PASTAUser getOrCreateUser(String username) {
 		if (username != null) {
-			return manager.getOrCreateUser(username);
+			return userManager.getOrCreateUser(username);
 		}
 		return null;
 	}
@@ -139,8 +163,12 @@ public class SubmissionController {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
+		return getUser(username);
+	}
+	
+	public PASTAUser getUser(String username) {
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -164,7 +192,7 @@ public class SubmissionController {
 		PASTAUser user = getOrCreateUser();
 		if (user != null) {
 			model.addAttribute("unikey", user);
-			model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
+			model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 			model.addAttribute("results",
 					manager.getLatestResultsForUser(user.getUsername()));
 			if (user.isTutor()) {
@@ -195,7 +223,7 @@ public class SubmissionController {
 			result.rejectValue("file", "Submission.NotZip");
 		}
 		Date now = new Date();
-		if (manager.getAssessment(form.getAssessment()).isClosed() 
+		if (assessmentManager.getAssessment(form.getAssessment()).isClosed() 
 				&& (user.getExtensions() != null // no extension
 				&& user.getExtensions().get(form.getAssessment()) != null
 				&& user.getExtensions().get(form.getAssessment()).before(now))
@@ -205,7 +233,7 @@ public class SubmissionController {
 		if((!user.isTutor()) && 
 				manager.getLatestResultsForUser(user.getUsername()) != null &&
 				manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()) != null &&
-					manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= manager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()){
+					manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()){
 			result.rejectValue("file", "Submission.NoAttempts");
 		}
 		if(!result.hasErrors()){
@@ -227,11 +255,11 @@ public class SubmissionController {
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		model.addAttribute("assessment", manager.getAssessment(assessmentName));
-		model.addAttribute("history", manager.getAssessmentHistory(
+		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentName));
+		model.addAttribute("history", assessmentManager.getAssessmentHistory(
 				user.getUsername(), assessmentName));
 		model.addAttribute("nodeList",
-				manager.genereateFileTree(user.getUsername(), assessmentName));
+				PASTAUtil.genereateFileTree(user.getUsername(), assessmentName));
 		model.addAttribute("unikey", user);
 
 		return "user/viewAssessment";
@@ -256,9 +284,9 @@ public class SubmissionController {
 		}
 		Map<String, Object> data = new HashMap<String, Object>();
 
-		data.put("assessmentList", manager.getAssessmentList());
-		data.put("userList", manager.getUserList());
-		data.put("latestResults", manager.getLatestResults());
+		data.put("assessmentList", assessmentManager.getAssessmentList());
+		data.put("userList", userManager.getUserList());
+		data.put("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		
 		return new ModelAndView(new ExcelMarkView(), data);
 	}
@@ -276,7 +304,7 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		manager.saveComment(username, assessmentName, assessmentDate, newComment);
+		handMarkingManager.saveComment(username, assessmentName, assessmentDate, newComment);
 		return "redirect:../";
 	}
 
@@ -346,7 +374,7 @@ public class SubmissionController {
 				location.substring(location.lastIndexOf(".") + 1));
 	
 		if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))){
-			model.addAttribute("fileContents", manager.scrapeFile(location)
+			model.addAttribute("fileContents", PASTAUtil.scrapeFile(location)
 					.replace(">", "&gt;").replace("<", "&lt;"));
 
 			return "assessment/mark/viewFile";
@@ -377,10 +405,10 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		PASTAUser viewedUser = manager.getOrCreateUser(username);
+		PASTAUser viewedUser = getOrCreateUser(username);
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("assessments", manager.getAllAssessmentsByCategory());
+		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 		model.addAttribute("results", manager
 				.getLatestResultsForUser(viewedUser.getUsername()));
 		return "user/studentHome";
@@ -426,13 +454,13 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		model.addAttribute("assessment", manager.getAssessment(assessmentName));
+		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentName));
 		model.addAttribute("history",
-				manager.getAssessmentHistory(username, assessmentName));
+				assessmentManager.getAssessmentHistory(username, assessmentName));
 		model.addAttribute("unikey", user);
-		model.addAttribute("viewedUser", manager.getUser(username));
+		model.addAttribute("viewedUser", getUser(username));
 		model.addAttribute("nodeList",
-				manager.genereateFileTree(username, assessmentName));
+				PASTAUtil.genereateFileTree(username, assessmentName));
 
 		return "user/viewAssessment";
 	}
@@ -475,10 +503,10 @@ public class SubmissionController {
 		model.addAttribute("student", username);
 		model.addAttribute("assessmentName", assessmentName);
 
-		AssessmentResult result = manager.getAssessmentResult(username,
+		AssessmentResult result = assessmentManager.getAssessmentResult(username,
 				assessmentName, assessmentDate);
 
-		model.addAttribute("node", manager.generateFileTree(username,
+		model.addAttribute("node", PASTAUtil.generateFileTree(username,
 				assessmentName, assessmentDate));
 		model.addAttribute("assessmentResult", result);
 		model.addAttribute("handMarkingList", result.getAssessment()
@@ -506,12 +534,12 @@ public class SubmissionController {
 		// rebinding hand marking results with their hand marking templates
 		List<HandMarkingResult> results = form.getHandMarkingResults();
 		for (HandMarkingResult currResult : results) {
-			currResult.setMarkingTemplate(manager.getHandMarking(currResult
+			currResult.setMarkingTemplate(handMarkingManager.getHandMarking(currResult
 					.getHandMarkingTemplateShortName()));
 		}
-		manager.saveHandMarkingResults(username, assessmentName,
+		handMarkingManager.saveHandMarkingResults(username, assessmentName,
 				assessmentDate, form.getHandMarkingResults());
-		manager.saveComment(username, assessmentName, assessmentDate,
+		handMarkingManager.saveComment(username, assessmentName, assessmentDate,
 				form.getComments());
 
 		return "redirect:.";
@@ -538,7 +566,7 @@ public class SubmissionController {
 
 		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
 		for (String tutorial : user.getTutorClasses()) {
-			myUsers.addAll(manager.getUserListByTutorial(tutorial));
+			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
 		}
 
 		// save the latest submission
@@ -550,17 +578,17 @@ public class SubmissionController {
 			// rebinding hand marking results with their hand marking templates
 			List<HandMarkingResult> results = form.getHandMarkingResults();
 			for (HandMarkingResult currResult : results) {
-				currResult.setMarkingTemplate(manager.getHandMarking(currResult
+				currResult.setMarkingTemplate(handMarkingManager.getHandMarking(currResult
 						.getHandMarkingTemplateShortName()));
 			}
 
 			AssessmentResult result = manager.getLatestResultsForUser(
 					prevStudent.getUsername()).get(assessmentName);
 
-			manager.saveHandMarkingResults(prevStudent.getUsername(),
+			handMarkingManager.saveHandMarkingResults(prevStudent.getUsername(),
 					assessmentName, result.getFormattedSubmissionDate(),
 					form.getHandMarkingResults());
-			manager.saveComment(prevStudent.getUsername(), assessmentName,
+			handMarkingManager.saveComment(prevStudent.getUsername(), assessmentName,
 					result.getFormattedSubmissionDate(), form.getComments());
 		}
 
@@ -595,7 +623,7 @@ public class SubmissionController {
 
 			AssessmentResult result = manager.getLatestResultsForUser(
 					currStudent.getUsername()).get(assessmentName);
-			model.addAttribute("node", manager.generateFileTree(
+			model.addAttribute("node", PASTAUtil.generateFileTree(
 					currStudent.getUsername(), assessmentName,
 					result.getFormattedSubmissionDate()));
 			model.addAttribute("assessmentResult", result);
@@ -642,10 +670,9 @@ public class SubmissionController {
 			return "redirect:/home/.";
 		}
 
-		HashMap<String, HashMap<String, AssessmentResult>> allResults = manager
-				.getLatestResults();
+		HashMap<String, HashMap<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getUserList());
 		HashMap<String, TreeMap<Integer, Integer>> submissionDistribution = new HashMap<String, TreeMap<Integer, Integer>>();
-		Collection<Assessment> assessments = manager.getAssessmentList();
+		Collection<Assessment> assessments = assessmentManager.getAssessmentList();
 
 		int numBreaks = 10;
 
@@ -694,9 +721,9 @@ public class SubmissionController {
 		model.addAttribute("markDistribution", markDistribution);
 		model.addAttribute("submissionDistribution", submissionDistribution);
 
-		model.addAttribute("assessmentList", manager.getAssessmentList());
-		model.addAttribute("userList", manager.getUserList());
-		model.addAttribute("latestResults", manager.getLatestResults());
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
+		model.addAttribute("userList", userManager.getUserList());
+		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		model.addAttribute("unikey", user);
 
 		return "user/viewAll";
@@ -715,10 +742,10 @@ public class SubmissionController {
 			return "redirect:/home/.";
 		}
 		model.addAttribute("assessmentList",
-				manager.getAssessmentList());
+				assessmentManager.getAssessmentList());
 		model.addAttribute("userList",
-				manager.getUserListByTutorial(className));
-		model.addAttribute("latestResults", manager.getLatestResults());
+				userManager.getUserListByTutorial(className));
+		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		model.addAttribute("unikey", user);
 		model.addAttribute("classname", "Class - " + className);
 
@@ -738,10 +765,10 @@ public class SubmissionController {
 			return "redirect:/home/.";
 		}
 		model.addAttribute("assessmentList",
-				manager.getAssessmentList());
+				assessmentManager.getAssessmentList());
 		model.addAttribute("userList",
-				manager.getUserListByStream(streamName));
-		model.addAttribute("latestResults", manager.getLatestResults());
+				userManager.getUserListByStream(streamName));
+		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		model.addAttribute("unikey", user);
 		model.addAttribute("classname", "Stream - " + streamName);
 	
@@ -765,7 +792,7 @@ public class SubmissionController {
 		if (user.isInstructor()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 			try {
-				manager.giveExtension(username, assessmentName, sdf.parse(extension));
+				userManager.giveExtension(username, assessmentName, sdf.parse(extension));
 			} catch (ParseException e) {
 				logger.error("Parse Exception");
 			}

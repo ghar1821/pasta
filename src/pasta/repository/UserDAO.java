@@ -19,6 +19,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 /**
  * The Data access object for the User class.
@@ -172,7 +173,7 @@ public class UserDAO extends HibernateDaoSupport{
 						String[] line = in.nextLine().split(">");
 						if(line.length == 2){
 							try {
-								user.getExtensions().put(line[0], ProjectProperties.parseDate(line[1]));
+								user.getExtensions().put(line[0], PASTAUtil.parseDate(line[1]));
 							} catch (ParseException e) {
 								// ignore
 							}

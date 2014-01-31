@@ -1,4 +1,4 @@
-package pasta.domain;
+package pasta.domain.moss;
 
 public class MossPairings {
 	private String student1;

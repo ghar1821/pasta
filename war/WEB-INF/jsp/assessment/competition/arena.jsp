@@ -3,3 +3,155 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<h1>Official Arena</h1>
+<table style="width	:100%;">
+<tr><th>Name</th><th>First Run Date</th><th>Repeating Frequency</th><th>Password protected</th></tr>
+	<tr>
+		<td>${competition.officialArena.name}</td>
+		<td>${competition.officialArena.firstStartDate}</td>
+		<td>
+			<c:choose>
+				<c:when test="${competition.officialArena.repeatable}">
+					${competition.officialArena.frequency.niceStringRepresentation}
+				</c:when>
+				<c:otherwise>
+					Does not repeat
+				</c:otherwise>
+			</c:choose>
+		</td>
+		<td>
+		<c:choose>
+			<c:when test="${competition.officialArena.passwordProtected}">
+				YES 
+			</c:when>
+			<c:otherwise>
+				NO
+			</c:otherwise>
+		</c:choose>
+		</td>
+	</tr>
+</table>
+
+<h1>Unofficial Arenas</h1>
+
+<c:if test="${competition.studentCreatableArena}">
+	<div style="float:left">
+		<button style="float:left; text-align: center; " id="newPopup">Add Arena</button>
+	</div>
+</c:if>
+
+<table style="width	:100%;">
+	<tr><th>Name</th><th>First Run Date</th><th>Repeating Frequency</th><th>Password protected</th></tr>
+	<c:forEach var="arena" items="${competition.arenas}">
+		<tr>
+			<td>${arena.name}</td>
+			<td>${arena.firstStartDate}</td>
+			<td>
+				<c:choose>
+					<c:when test="${arena.repeatable}">
+						${arena.frequency.niceStringRepresentation}
+					</c:when>
+					<c:otherwise>
+						Does not repeat
+					</c:otherwise>
+				</c:choose>
+			</td>
+			<td>
+			<c:choose>
+				<c:when test="${arena.passwordProtected}">
+					YES 
+				</c:when>
+				<c:otherwise>
+					NO
+				</c:otherwise>
+			</c:choose>
+			</td>
+		</tr>
+	</c:forEach>
+</table>
+
+<c:if test="${competition.studentCreatableArena}">
+
+	<div id="newArena" >
+		<span class="button bClose">
+			<span><b>X</b></span>
+		</span>
+		<h1> New Arena </h1>
+		<form:form commandName="newArenaModel" enctype="multipart/form-data" method="POST">
+			<table>
+				<tr><td>Arena Name:</td><td><form:input autocomplete="off" type="text" path="name" value=""/></td></tr>
+				<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
+				<c:if test="${unikey.instructor || (unikey.tutor && competition.tutorCreatableRepeatableArena) || competition.studentCreatableRepeatableArena}">
+				<tr>
+					<td>Frequency:</td>
+					<td>
+						<form:input type="number" path="frequency.years" style="width:3em;"/> years
+						<form:input type="number" path="frequency.days" style="width:3em;"/> days
+						<form:input type="number" path="frequency.hours" style="width:3em;"/> hours
+						<form:input type="number" path="frequency.minutes" style="width:3em;"/> minutes
+						<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
+					</td>
+				</tr>
+				</c:if>
+				<tr><td>Password:</td><td><input autocomplete="off" type="password" path="password" onkeyup="checkPasswords();" value=""/></td></tr>
+				<tr><td>Confirm Password:</td><td><input autocomplete="off" type="password" onkeyup="checkPasswords();" value=""/></td></tr>
+			</table>
+	    	<button type="submit" id="submit">Create</button>
+		</form:form>
+	</div>
+
+	<style>
+	
+		.glowingRed {
+			outline: none;
+		    border-color: #f00;
+			box-shadow: 0 0 10px #f00;
+		}
+		
+		.glowingGreen {
+			outline: none;
+		    border-color: #0f0;
+			box-shadow: 0 0 10px #0f0;
+		}
+	
+	</style>
+	
+	<script>
+		;(function($) {
+	
+	         // DOM Ready
+	        $(function() {
+	        
+	            // Binding a click event
+	            // From jQuery v.1.7.0 use .on() instead of .bind()
+	            $('#newPopup').bind('click', function(e) {
+	
+	                // Prevents the default action to be triggered. 
+	                e.preventDefault();
+	
+	                // Triggering bPopup when click event is fired
+	                $('#newArena').bPopup();
+	
+	            });
+	            
+	        });
+	
+	    })(jQuery);
+		
+		function checkPasswords(){
+			var elements = $("input:password");
+			if (elements[0].value == elements[1].value){
+				document.getElementById("submit").disabled = false; 
+				$("input:password").addClass( "glowingGreen" );
+				$("input:password").removeClass( "glowingRed" );
+			}
+			else{
+				document.getElementById("submit").disabled = true; 
+				$("input:password").addClass( "glowingRed" );
+				$("input:password").removeClass( "glowingGreen" );
+			}
+		}
+	</script>
+
+</c:if>

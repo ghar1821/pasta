@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.ChangePasswordForm;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.form.ChangePasswordForm;
 import pasta.login.DBAuthValidator;
-import pasta.service.SubmissionManager;
+import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
 /**
@@ -42,11 +42,11 @@ public class AdminController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	private SubmissionManager manager;
+	private UserManager userManager;
 
 	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
 	}
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -66,7 +66,7 @@ public class AdminController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -87,7 +87,7 @@ public class AdminController {
 		model.addAttribute("unikey", user);
 		
 		if(user.isTutor()){
-			model.addAttribute("people", manager.getUserList());
+			model.addAttribute("people", userManager.getUserList());
 			model.addAttribute("addresses", ProjectProperties.getInstance().getServerAddresses());
 		}
 		
@@ -109,7 +109,7 @@ public class AdminController {
 			if(authenticator.authenticate(user.getUsername(), form.getOldPassword())
 					&& form.getNewPassword().equals(form.getConfirmPassword())){
 				logger.info("swapping password");
-				manager.updatePassword(user.getUsername(), form.getNewPassword());
+				userManager.updatePassword(user.getUsername(), form.getNewPassword());
 			}
 			else{
 				logger.info("an error occured");
@@ -148,7 +148,7 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
-			manager.replaceStudents(users);
+			userManager.replaceStudents(users);
 		}
 				
 		String referer = request.getHeader("Referer");
@@ -182,7 +182,7 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
-			manager.updateStudents(users);
+			userManager.updateStudents(users);
 		}
 				
 		String referer = request.getHeader("Referer");
@@ -228,7 +228,7 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
-			manager.replaceStudents(users);
+			userManager.replaceStudents(users);
 		}
 				
 		String referer = request.getHeader("Referer");
@@ -274,7 +274,7 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
-			manager.updateTutors(users);
+			userManager.updateTutors(users);
 		}
 				
 		String referer = request.getHeader("Referer");
@@ -294,7 +294,7 @@ public class AdminController {
 			// update classlist
 			PASTAUser toDelete = new PASTAUser();
 			toDelete.setUsername(username);
-			manager.deleteUser(toDelete);
+			userManager.deleteUser(toDelete);
 		}
 				
 		String referer = request.getHeader("Referer");

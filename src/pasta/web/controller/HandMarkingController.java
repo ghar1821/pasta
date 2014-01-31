@@ -1,60 +1,27 @@
 package pasta.web.controller;
 
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.servlet.ModelAndView;
 
-import pasta.domain.LoginForm;
 import pasta.domain.PASTAUser;
-import pasta.domain.ReleaseForm;
-import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.HandMarkingResult;
-import pasta.domain.template.Assessment;
-import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.UnitTest;
-import pasta.domain.template.WeightedCompetition;
-import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewHandMarking;
-import pasta.domain.upload.NewUnitTest;
-import pasta.domain.upload.Submission;
+import pasta.service.HandMarkingManager;
 import pasta.service.SubmissionManager;
-import pasta.util.ProjectProperties;
-import pasta.view.ExcelMarkView;
+import pasta.service.UserManager;
 
 @Controller
 @RequestMapping("handMarking/")
@@ -90,12 +57,18 @@ public class HandMarkingController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private SubmissionManager manager;
+	private UserManager userManager;
+	private HandMarkingManager handMarkingManager;
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(HandMarkingManager myService) {
+		this.handMarkingManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -121,22 +94,13 @@ public class HandMarkingController {
 	 * 
 	 * @return
 	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return manager.getOrCreateUser(username);
-		}
-		return null;
-	}
 
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -158,7 +122,7 @@ public class HandMarkingController {
 		}
 
 		model.addAttribute("handMarking",
-				manager.getHandMarking(handMarkingName));
+				handMarkingManager.getHandMarking(handMarkingName));
 		model.addAttribute("unikey", user);
 		return "assessment/view/handMarks";
 	}
@@ -178,7 +142,7 @@ public class HandMarkingController {
 		}
 		if (getUser().isInstructor()) {
 			form.setName(handMarkingName);
-			manager.updateHandMarking(form);
+			handMarkingManager.updateHandMarking(form);
 		}
 		return "redirect:.";
 	}
@@ -194,7 +158,7 @@ public class HandMarkingController {
 			return "redirect:/home/.";
 		}
 
-		model.addAttribute("allHandMarking", manager.getAllHandMarking());
+		model.addAttribute("allHandMarking", handMarkingManager.getAllHandMarking());
 		model.addAttribute("unikey", user);
 		return "assessment/viewAll/handMarks";
 	}
@@ -214,7 +178,7 @@ public class HandMarkingController {
 
 		// add it to the system
 		if (getUser().isInstructor()) {
-			manager.newHandMarking(form);
+			handMarkingManager.newHandMarking(form);
 			return "redirect:./" + form.getShortName() + "/";
 		}
 		return "redirect:.";
@@ -232,7 +196,7 @@ public class HandMarkingController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			manager.removeHandMarking(handMarkingName);
+			handMarkingManager.removeHandMarking(handMarkingName);
 		}
 		return "redirect:../../";
 	}

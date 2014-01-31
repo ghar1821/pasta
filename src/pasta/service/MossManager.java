@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -29,7 +26,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.MossResults;
+import pasta.domain.moss.MossResults;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 @Service("mossManager")
@@ -62,7 +60,7 @@ public class MossManager {
 	public void runMoss(String assessment){
 		String location = ProjectProperties.getInstance().getProjectLocation()
 				+ "/moss/" + assessment + "/"
-				+ ProjectProperties.getInstance().formatDate(new Date());
+				+ PASTAUtil.formatDate(new Date());
 		// copy moss somewhere safe for it to run (own folder. ->
 		// moss/assessmentName/dateRun)
 		try {
@@ -180,7 +178,7 @@ public class MossManager {
 			
 			in.close();
 			
-			results.setDate(ProjectProperties.parseDate(date).toString());
+			results.setDate(PASTAUtil.parseDate(date).toString());
 			
 		} catch (FileNotFoundException | ParseException e) {
 			// TODO Auto-generated catch block
@@ -205,7 +203,7 @@ public class MossManager {
 		if(filenames != null){
 			for(String file: filenames){
 				try {
-					mossList.put(file.replace(".csv", ""),ProjectProperties.parseDate(file.replace(".csv", "")).toString());
+					mossList.put(file.replace(".csv", ""),PASTAUtil.parseDate(file.replace(".csv", "")).toString());
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

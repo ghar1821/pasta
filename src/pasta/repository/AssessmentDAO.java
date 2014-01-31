@@ -30,7 +30,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.domain.PASTATime;
-import pasta.domain.ReleaseForm;
+import pasta.domain.form.ReleaseForm;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -40,8 +40,8 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewHandMarking;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 public class AssessmentDAO {
@@ -422,7 +422,7 @@ public class AssessmentDAO {
 			// first start date - only for calculated comps
 			if (doc.getElementsByTagName("firstStartDate") != null
 					&& doc.getElementsByTagName("firstStartDate").getLength() != 0) {
-				comp.setFirstStartDate(ProjectProperties.parseDate(doc
+				comp.setFirstStartDate(PASTAUtil.parseDate(doc
 						.getElementsByTagName("firstStartDate").item(0)
 						.getChildNodes().item(0).getNodeValue()));
 			}
@@ -436,6 +436,42 @@ public class AssessmentDAO {
 			}
 
 			// arenas
+			// official
+			if (doc.getElementsByTagName("officialArena") != null
+					&& doc.getElementsByTagName("officialArena").getLength() != 0) {
+				Arena officialArena = new Arena();
+				
+				NodeList arenaList = doc.getElementsByTagName("officialArena");
+				if (arenaList != null && arenaList.getLength() == 1) {
+					Node arenaNode = arenaList.item(0);
+					if (arenaNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element arenaElement = (Element) arenaNode;
+
+						officialArena.setName(arenaElement.getAttribute("name"));
+						try {
+							officialArena.setFirstStartDate(PASTAUtil.parseDate(arenaElement
+									.getAttribute("firstStartDate")));
+						} catch (Exception e) {
+							// couldn't parse date, it must be decades in
+							// the past.
+							officialArena.setFirstStartDate(new Date(0));
+						}
+						if (arenaElement.getAttribute("password").length() > 0) {
+							officialArena.setPassword(arenaElement
+									.getAttribute("password"));
+						}
+
+						if (arenaElement.getAttribute("repeats").length() > 0) {
+							officialArena.setFrequency(new PASTATime(arenaElement
+									.getAttribute("repeats")));
+						}
+					}
+				}
+				
+				comp.setOfficialArena(officialArena);
+			}
+					
+			// unofficial
 			if (doc.getElementsByTagName("arenas") != null
 					&& doc.getElementsByTagName("arenas").getLength() != 0) {
 				Collection<Arena> arenas = new LinkedList<Arena>();
@@ -449,7 +485,7 @@ public class AssessmentDAO {
 							Arena arena = new Arena();
 							arena.setName(arenaElement.getAttribute("name"));
 							try {
-								arena.setFirstStartDate(ProjectProperties.parseDate(arenaElement
+								arena.setFirstStartDate(PASTAUtil.parseDate(arenaElement
 										.getAttribute("firstStartDate")));
 							} catch (Exception e) {
 								// couldn't parse date, it must be decades in
@@ -861,6 +897,8 @@ public class AssessmentDAO {
 			// update
 			allCompetitions.get(comp.getShortName())
 					.setArenas(comp.getArenas());
+			allCompetitions.get(comp.getShortName())
+				.setOfficialArena(comp.getOfficialArena());
 			allCompetitions.get(comp.getShortName()).setStudentCreatableArena(
 					comp.isStudentCreatableArena());
 			allCompetitions.get(comp.getShortName())

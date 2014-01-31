@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.LoginForm;
-import pasta.service.SubmissionManager;
+import pasta.domain.form.LoginForm;
+import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
 /**
@@ -31,11 +31,11 @@ public class AuthenitcationController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	private SubmissionManager manager;
+	private UserManager userManager;
 
 	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ public class AuthenitcationController {
 
 		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
 		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && 
-				manager.getUser(userMsg.getUnikey()) == null){
+				userManager.getUser(userMsg.getUnikey()) == null){
 			result.rejectValue("password", "NotAvailable.loginForm.password");
 		}
 		if (result.hasErrors()) {

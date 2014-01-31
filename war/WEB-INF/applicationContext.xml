@@ -82,8 +82,14 @@
     <context:component-scan base-package="pasta.scheduler" />
     <context:component-scan base-package="pasta.domain" />
     
-    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
+    <bean id="assessmentManager" class="pasta.service.AssessmentManager" />
+    <bean id="competitionManager" class="pasta.service.CompetitionManager" />
+    <bean id="executionManager" class="pasta.service.ExecutionManager" />
+    <bean id="handMarkingManager" class="pasta.service.HandMarkingManager" />
     <bean id="mossManager" class="pasta.service.MossManager" />
+    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
+    <bean id="unitTestManager" class="pasta.service.UnitTestManager" />
+    <bean id="userManager" class="pasta.service.UserManager" />
     
     <context:component-scan base-package="pasta.service"/>
 	<task:annotation-driven />

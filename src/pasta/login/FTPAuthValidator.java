@@ -12,7 +12,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import pasta.domain.LoginForm;
+import pasta.domain.form.LoginForm;
 import pasta.util.ProjectProperties;
 
 public class FTPAuthValidator implements Validator{

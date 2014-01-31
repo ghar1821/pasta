@@ -1,8 +1,16 @@
 package pasta.domain.template;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import pasta.domain.PASTATime;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 public class Arena {
@@ -11,6 +19,11 @@ public class Arena {
 	// if null, only run once
 	private PASTATime frequency = null;
 	private Date firstStartDate;
+	
+	public final static SimpleDateFormat dateParser 
+	= new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	protected final Log logger = LogFactory.getLog(getClass());
+
 	
 	// getters and setters
 	public String getName() {
@@ -56,7 +69,7 @@ public class Arena {
 	
 	public String toString(){
 		String output = "<arena name=\"" + name + "\" firstStartDate=\""
-				+ ProjectProperties.formatDate(firstStartDate) + "\" ";
+				+ PASTAUtil.formatDate(firstStartDate) + "\" ";
 		if(isPasswordProtected()){
 			output += "password=\""+password+"\" ";
 		}
@@ -65,5 +78,25 @@ public class Arena {
 			output += "repeats=\""+frequency+"\" ";
 		}
 		return output + "/>";
+	}
+	
+	// calculated methods
+	public String getFirstStartDateStr(){
+		if(firstStartDate == null){
+			return dateParser.format(new Date());
+		}
+		return dateParser.format(firstStartDate);
+	}
+	
+	public void setFirstStartDateStr(String firstStartDateStr){
+		try {
+			firstStartDate = dateParser.parse(firstStartDateStr);
+		} catch (ParseException e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not parse " + firstStartDateStr
+					+ "\r\n" + sw.toString());
+		}
 	}
 }

@@ -124,7 +124,7 @@ smallbutton{
 	position:relative; 
 	top:-.7em;
 }
-.popup, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released, #newCompetition
+.popup, #newArena, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released, #newCompetition
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;

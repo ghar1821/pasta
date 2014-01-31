@@ -1,8 +1,6 @@
 package pasta.web.controller;
 
 
-import java.util.HashMap;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +15,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetition;
-import pasta.domain.upload.NewUnitTest;
-import pasta.domain.upload.Submission;
+import pasta.service.CompetitionManager;
 import pasta.service.SubmissionManager;
+import pasta.service.UserManager;
+import pasta.util.PASTAUtil;
 
 @Controller
 @RequestMapping("competition/")
@@ -35,53 +35,32 @@ import pasta.service.SubmissionManager;
  */
 public class CompetitionController {
 
-	public CompetitionController() {
-		codeStyle = new HashMap<String, String>();
-		codeStyle.put("c", "ccode");
-		codeStyle.put("cpp", "cppcode");
-		codeStyle.put("h", "cppcode");
-		codeStyle.put("cs", "csharpcode");
-		codeStyle.put("css", "csscode");
-		codeStyle.put("html", "htmlcode");
-		codeStyle.put("java", "javacode");
-		codeStyle.put("js", "javascriptcode");
-		codeStyle.put("pl", "perlcode");
-		codeStyle.put("pm", "perlcode");
-		codeStyle.put("php", "phpcode");
-		codeStyle.put("py", "pythoncode");
-		codeStyle.put("rb", "rubycode");
-		codeStyle.put("sql", "sqlcode");
-		codeStyle.put("xml", "xmlcode");
-
-	}
-
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private SubmissionManager manager;
-	private HashMap<String, String> codeStyle;
+	private UserManager userManager;
+	private CompetitionManager competitionManager;
 
 	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(CompetitionManager myService) {
+		this.competitionManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	@ModelAttribute("newUnitTestModel")
-	public NewUnitTest returnNewUnitTestModel() {
-		return new NewUnitTest();
-	}
-
 	@ModelAttribute("newCompetitionModel")
 	public NewCompetition returnNewCompetitionModel() {
 		return new NewCompetition();
 	}
-
-	@ModelAttribute("submission")
-	public Submission returnSubmissionModel() {
-		return new Submission();
+	@ModelAttribute("newArenaModel")
+	public Arena returnArenaModel() {
+		return new Arena();
 	}
 
 	@ModelAttribute("competition")
@@ -98,27 +77,12 @@ public class CompetitionController {
 	// Helper Methods //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return
-	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return manager.getOrCreateUser(username);
-		}
-		return null;
-	}
-
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -139,7 +103,7 @@ public class CompetitionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("allCompetitions", manager.getCompetitionList());
+		model.addAttribute("allCompetitions", competitionManager.getCompetitionList());
 
 		return "assessment/viewAll/competition";
 	}
@@ -155,7 +119,7 @@ public class CompetitionController {
 			return "redirect:/home/.";
 		}
 		if(user.isInstructor()){
-			manager.addCompetition(form);
+			competitionManager.addCompetition(form);
 		}
 
 		return "redirect:.";
@@ -192,7 +156,7 @@ public class CompetitionController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			manager.removeCompetition(competitionName);
+			competitionManager.removeCompetition(competitionName);
 		}
 		return "redirect:../../";
 	}
@@ -210,8 +174,8 @@ public class CompetitionController {
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("competition",
-				manager.getCompetition(competitionName));
-		model.addAttribute("node", manager.generateFileTree(manager
+				competitionManager.getCompetition(competitionName));
+		model.addAttribute("node", PASTAUtil.generateFileTree(competitionManager
 				.getCompetition(competitionName).getFileLocation() + "/code"));
 
 		return "assessment/view/competition";
@@ -233,13 +197,13 @@ public class CompetitionController {
 			if(form.getFile() != null && !form.getFile().isEmpty()){
 				// update contents
 				form.setTestName(competitionName);
-				manager.updateCompetition(form);
+				competitionManager.updateCompetition(form);
 			}
 			else{
 				// update competition
 				compForm.setName(competitionName);
-				compForm.setArenas(manager.getCompetition(competitionName).getArenas());
-				manager.addCompetition(compForm);
+				compForm.setArenas(competitionManager.getCompetition(competitionName).getArenas());
+				competitionManager.addCompetition(compForm);
 			}
 		}
 		
@@ -253,27 +217,52 @@ public class CompetitionController {
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (!user.isTutor()) {
+		Competition currComp = competitionManager.getCompetition(competitionName);
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
 			return "redirect:/home/.";
 		}
 
-		Competition currComp = manager.getCompetition(competitionName);
-		if (currComp == null) {
-			return "redirect:../../../home";
-		}
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("competition", currComp);
 
 		if (currComp.isCalculated()) {
 			model.addAttribute("arenaResult",
-					manager.getCalculatedCompetitionResult(competitionName));
+					competitionManager.getCalculatedCompetitionResult(competitionName));
 			model.addAttribute("marks",
-					manager.getCompetitionResult(competitionName));
+					competitionManager.getCompetitionResult(competitionName));
 			return "assessment/competition/calculated";
 		} else {
 			model.addAttribute("arenas", currComp.getArenas());
 			return "assessment/competition/arena";
 		}
+	}
+	
+	@RequestMapping(value = "view/{competitionName}/", method = RequestMethod.POST)
+	public String viewCompetitionPage(Model model,
+			@ModelAttribute(value = "newArenaModel") Arena arena,
+			@PathVariable("competitionName") String competitionName) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		
+		if(!currComp.isCalculated()){
+			if(currComp != null && (user.isTutor() || currComp.isStudentCreatableArena())){
+				if(!arena.isRepeatable() || user.isInstructor() || 
+						(currComp.isTutorCreatableRepeatableArena() && user.isTutor() && currComp.isTutorCreatableRepeatableArena())
+						|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())){
+					// accept arena
+					competitionManager.addArena(arena, currComp);
+				}
+			}
+		}
+		
+		return "redirect:/mirror/";
 	}
 }

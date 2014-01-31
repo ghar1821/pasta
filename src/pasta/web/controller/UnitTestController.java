@@ -18,13 +18,13 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.result.AssessmentResult;
-import pasta.domain.template.Competition;
 import pasta.domain.template.UnitTest;
-import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.service.SubmissionManager;
+import pasta.service.UnitTestManager;
+import pasta.service.UserManager;
+import pasta.util.PASTAUtil;
 
 @Controller
 @RequestMapping("unitTest/")
@@ -61,11 +61,23 @@ public class UnitTestController {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private SubmissionManager manager;
+	private UserManager userManager;
+	private UnitTestManager unitTestManager;
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
 		this.manager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(UnitTestManager myService) {
+		this.unitTestManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -75,26 +87,6 @@ public class UnitTestController {
 	@ModelAttribute("newUnitTestModel")
 	public NewUnitTest returnNewUnitTestModel() {
 		return new NewUnitTest();
-	}
-
-	@ModelAttribute("newCompetitionModel")
-	public NewCompetition returnNewCompetitionModel() {
-		return new NewCompetition();
-	}
-
-	@ModelAttribute("submission")
-	public Submission returnSubmissionModel() {
-		return new Submission();
-	}
-
-	@ModelAttribute("competition")
-	public Competition returnCompetitionModel() {
-		return new Competition();
-	}
-
-	@ModelAttribute("assessmentResult")
-	public AssessmentResult returnAssessmentResultModel() {
-		return new AssessmentResult();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -111,7 +103,7 @@ public class UnitTestController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getOrCreateUser(username);
+			return userManager.getOrCreateUser(username);
 		}
 		return null;
 	}
@@ -121,7 +113,7 @@ public class UnitTestController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -143,14 +135,14 @@ public class UnitTestController {
 			return "redirect:/home/.";
 		}
 
-		model.addAttribute("unitTest", manager.getUnitTest(testName));
+		model.addAttribute("unitTest", unitTestManager.getUnitTest(testName));
 		model.addAttribute(
 				"latestResult",
-				manager.getUnitTestResult(manager.getUnitTest(testName)
+				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testName)
 						.getFileLocation() + "/test"));
 		model.addAttribute(
 				"node",
-				manager.generateFileTree(manager.getUnitTest(testName)
+				PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testName)
 						.getFileLocation() + "/code"));
 		model.addAttribute("unikey", user);
 		return "assessment/view/unitTest";
@@ -174,7 +166,7 @@ public class UnitTestController {
 		if (form != null && form.getTestName() != null && form.getFile() != null && 
 				!form.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
-			manager.updateUpdateUnitTest(form);
+			unitTestManager.updateUpdateUnitTest(form);
 		}
 		
 		// if submission exists
@@ -182,7 +174,7 @@ public class UnitTestController {
 				&& subForm.getFile() != null && 
 				!subForm.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
-			manager.testUnitTest(subForm, testName);
+			unitTestManager.testUnitTest(subForm, testName);
 		}
 
 		return "redirect:.";
@@ -199,7 +191,7 @@ public class UnitTestController {
 			return "redirect:/home/.";
 		}
 
-		model.addAttribute("allUnitTests", manager.getUnitTestList());
+		model.addAttribute("allUnitTests", unitTestManager.getUnitTestList());
 		model.addAttribute("unikey", user);
 		return "assessment/viewAll/unitTest";
 	}
@@ -220,7 +212,7 @@ public class UnitTestController {
 		if (getUser().isInstructor()) {
 
 			// check if the name is unique
-			Collection<UnitTest> allUnitTests = manager.getUnitTestList();
+			Collection<UnitTest> allUnitTests = unitTestManager.getUnitTestList();
 
 			for (UnitTest test : allUnitTests) {
 				if (test.getName()
@@ -234,7 +226,7 @@ public class UnitTestController {
 
 			// add it.
 			if (!result.hasErrors()) {
-				manager.addUnitTest(form);
+				unitTestManager.addUnitTest(form);
 			}
 		}
 
@@ -253,7 +245,7 @@ public class UnitTestController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			manager.removeUnitTest(testName);
+			unitTestManager.removeUnitTest(testName);
 		}
 		return "redirect:../../";
 	}
@@ -270,8 +262,8 @@ public class UnitTestController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			manager.getUnitTest(testName).setTested(true);
-			manager.saveUnitTest(manager.getUnitTest(testName));
+			unitTestManager.getUnitTest(testName).setTested(true);
+			unitTestManager.saveUnitTest(unitTestManager.getUnitTest(testName));
 		}
 		return "redirect:../../" + testName + "/";
 	}

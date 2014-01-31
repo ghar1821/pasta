@@ -23,7 +23,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.ReleaseForm;
+import pasta.domain.form.ReleaseForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -32,8 +32,12 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.service.AssessmentManager;
+import pasta.service.CompetitionManager;
+import pasta.service.HandMarkingManager;
 import pasta.service.SubmissionManager;
-import pasta.util.ProjectProperties;
+import pasta.service.UnitTestManager;
+import pasta.service.UserManager;
 
 @Controller
 @RequestMapping("assessments/")
@@ -69,12 +73,43 @@ public class AssessmentsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private SubmissionManager manager;
+	private UserManager userManager;
+	private AssessmentManager assessmentManager;
+	private UnitTestManager unitTestManager;
+	private HandMarkingManager handMarkingManager;
+	private CompetitionManager competitionManager;
+	private SubmissionManager submissionManager;
+
 	private HashMap<String, String> codeStyle;
 
 	@Autowired
+	public void setMyService(CompetitionManager myService) {
+		this.competitionManager = myService;
+	}
+	
+	@Autowired
 	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
+		this.submissionManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(UserManager myService) {
+		this.userManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(AssessmentManager myService) {
+		this.assessmentManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(UnitTestManager myService) {
+		this.unitTestManager = myService;
+	}
+	
+	@Autowired
+	public void setMyService(HandMarkingManager myService) {
+		this.handMarkingManager = myService;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -111,7 +146,7 @@ public class AssessmentsController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getOrCreateUser(username);
+			return userManager.getOrCreateUser(username);
 		}
 		return null;
 	}
@@ -121,7 +156,7 @@ public class AssessmentsController {
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
 		if (username != null) {
-			return manager.getUser(username);
+			return userManager.getUser(username);
 		}
 		return null;
 	}
@@ -144,8 +179,8 @@ public class AssessmentsController {
 			return "redirect:/home/.";
 		}
 		if (user.isInstructor()) {
-			form.setName(manager.getAssessment(assessmentName).getName());
-			manager.addAssessment(form);
+			form.setName(assessmentManager.getAssessment(assessmentName).getName());
+			assessmentManager.addAssessment(form);
 		}
 		return "redirect:.";
 	}
@@ -164,7 +199,7 @@ public class AssessmentsController {
 			return "redirect:/home/.";
 		}
 		if (user.isInstructor()) {
-			manager.runAssessment(manager.getAssessment(assessmentName));
+			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
 		}
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
@@ -183,12 +218,12 @@ public class AssessmentsController {
 			return "redirect:/home/.";
 		}
 
-		Assessment currAssessment = manager.getAssessment(assessmentName);
+		Assessment currAssessment = assessmentManager.getAssessment(assessmentName);
 		model.addAttribute("assessment", currAssessment);
 
 		List<WeightedUnitTest> otherUnitTetsts = new LinkedList<WeightedUnitTest>();
 
-		for (UnitTest test : manager.getUnitTestList()) {
+		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
 			for (WeightedUnitTest weightedTest : currAssessment.getUnitTests()) {
 				if (weightedTest.getTest() == test) {
@@ -217,7 +252,7 @@ public class AssessmentsController {
 
 		List<WeightedHandMarking> otherHandMarking = new LinkedList<WeightedHandMarking>();
 
-		for (HandMarking test : manager.getHandMarkingList()) {
+		for (HandMarking test : handMarkingManager.getHandMarkingList()) {
 			boolean contains = false;
 			for (WeightedHandMarking weightedHandMarking : currAssessment
 					.getHandMarking()) {
@@ -237,7 +272,7 @@ public class AssessmentsController {
 
 		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
 
-		for (Competition test : manager.getCompetitionList()) {
+		for (Competition test : competitionManager.getCompetitionList()) {
 			boolean contains = false;
 			for (WeightedCompetition weightedComp : currAssessment
 					.getCompetitions()) {
@@ -255,7 +290,7 @@ public class AssessmentsController {
 			}
 		}
 
-		model.addAttribute("tutorialByStream", manager.getTutorialByStream());
+		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("otherUnitTests", otherUnitTetsts);
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
@@ -273,8 +308,8 @@ public class AssessmentsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		model.addAttribute("tutorialByStream", manager.getTutorialByStream());
-		model.addAttribute("allAssessments", manager.getAssessmentList());
+		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
+		model.addAttribute("allAssessments", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 		return "assessment/viewAll/assessment";
 	}
@@ -296,7 +331,7 @@ public class AssessmentsController {
 			if (form.getName() == null || form.getName().isEmpty()) {
 				result.reject("Assessment.new.noname");
 			} else {
-				manager.addAssessment(form);
+				assessmentManager.addAssessment(form);
 			}
 		}
 		return "redirect:.";
@@ -318,8 +353,8 @@ public class AssessmentsController {
 		}
 		if (getUser().isInstructor()) {
 
-			if (manager.getAssessment(assessmentName) != null) {
-				manager.releaseAssessment(form.getAssessmentName(),
+			if (assessmentManager.getAssessment(assessmentName) != null) {
+				assessmentManager.releaseAssessment(form.getAssessmentName(),
 						form);
 			}
 		}
@@ -338,7 +373,7 @@ public class AssessmentsController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			manager.removeAssessment(assessmentName);
+			assessmentManager.removeAssessment(assessmentName);
 		}
 		return "redirect:../../";
 	}
@@ -354,8 +389,8 @@ public class AssessmentsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		HashMap<String, HashMap<String, AssessmentResult>> allResults = manager
-				.getLatestResults();
+		HashMap<String, HashMap<String, AssessmentResult>> allResults = assessmentManager
+				.getLatestResults(userManager.getUserList());
 		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 
 		int maxBreaks = 10;
@@ -385,7 +420,7 @@ public class AssessmentsController {
 		}
 
 		model.addAttribute("assessment",
-				manager.getAssessment(assessmentName));
+				assessmentManager.getAssessment(assessmentName));
 		model.addAttribute("maxBreaks", maxBreaks);
 		model.addAttribute("markDistribution", markDistribution);
 		model.addAttribute("submissionDistribution", submissionDistribution);

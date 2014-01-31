@@ -1,4 +1,4 @@
-package pasta.domain;
+package pasta.domain.form;
 
 /**
  * Container for for the login informationS
