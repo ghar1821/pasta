@@ -31,6 +31,7 @@ import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
+import pasta.login.LDAPAuthValidator;
 import pasta.repository.LoginDAO;
 
 @Component
@@ -96,6 +97,10 @@ public class ProjectProperties {
 		else if(this.authType.toLowerCase().trim().equals("ftp")){
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
+		}
+		else if(this.authType.toLowerCase().trim().equals("ldap")){
+			authenticationValidator = new LDAPAuthValidator();
+			logger.info("Using ldap authentication");
 		}
 		else{
 			authenticationValidator = new DummyAuthValidator();
@@ -170,6 +175,10 @@ public class ProjectProperties {
 		else if(authType.toLowerCase().trim().equals("ftp")){
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
+		}
+		else if(authType.toLowerCase().trim().equals("ldap")){
+			authenticationValidator = new LDAPAuthValidator();
+			logger.info("Using ldap authentication");
 		}
 		else{
 			authenticationValidator = new DummyAuthValidator();

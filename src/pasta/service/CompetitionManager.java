@@ -2,63 +2,29 @@ package pasta.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.FileTreeNode;
-import pasta.domain.PASTAUser;
-import pasta.domain.UserPermissionLevel;
-import pasta.domain.form.ReleaseForm;
 import pasta.domain.result.ArenaResult;
-import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionResult;
-import pasta.domain.result.HandMarkingResult;
-import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Arena;
-import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
-import pasta.domain.template.HandMarking;
-import pasta.domain.template.UnitTest;
-import pasta.domain.template.WeightedCompetition;
-import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewCompetition;
-import pasta.domain.upload.NewHandMarking;
-import pasta.domain.upload.NewUnitTest;
-import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.LoginDAO;
 import pasta.repository.ResultDAO;
-import pasta.repository.UserDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 
 @Service("competitionManager")
 @Repository
@@ -91,15 +57,16 @@ public class CompetitionManager {
 			.getLogger(CompetitionManager.class);
 	
 
-	// new - unit test is guaranteed to have a unique name
+	// new 
 	public void addCompetition(NewCompetition form) {
 		Competition thisComp = new Competition();
-		thisComp.setName(form.getTestName());
+		thisComp.setName(form.getName());
 		thisComp.setTested(false);
 		thisComp.setFirstStartDate(form.getFirstStartDate());
 		thisComp.setFrequency(form.getFrequency());
 		if(form.getType().equalsIgnoreCase("arena")){
-			thisComp.setArenas(new LinkedList<Arena>());
+			thisComp.setOutstandingArenas(new LinkedList<Arena>());
+			thisComp.setCompletedArenas(new LinkedList<Arena>());
 			Arena officialArena = new Arena();
 			officialArena.setName("Official Arena");
 			officialArena.setFirstStartDate(form.getFirstStartDate());
@@ -144,11 +111,11 @@ public class CompetitionManager {
 	}
 	
 	public void updateCompetition(NewCompetition form) {
-		Competition thisComp = getCompetition(form.getTestName().replace(" ", ""));
+		Competition thisComp = getCompetition(form.getName().replace(" ", ""));
 		if (thisComp == null){
 			thisComp = new Competition();
 		}
-		thisComp.setName(form.getTestName());
+		thisComp.setName(form.getName());
 		if(!thisComp.isCalculated()){
 			thisComp.getOfficialArena().setFrequency(form.getFrequency());
 		}
@@ -240,7 +207,7 @@ public class CompetitionManager {
 
 	public void addArena(Arena arena, Competition currComp) {
 		try {
-			currComp.getArenas().add(arena);
+			currComp.getOutstandingArenas().add(arena);
 			assDao.addCompetition(currComp);
 			
 			PrintStream out = new PrintStream(currComp.getFileLocation()
@@ -253,7 +220,9 @@ public class CompetitionManager {
 		}
 		
 		// schedule it for execution
-		scheduler.save(new Job("PASTACompetitionRunner", currComp.getShortName()+"#PASTAArena#"+arena.getName(), arena.getFirstStartDate()));
+		if(currComp.isLive()){
+			scheduler.save(new Job("PASTACompetitionRunner", currComp.getShortName()+"#PASTAArena#"+arena.getName(), arena.getFirstStartDate()));
+		}
 	}
 	
 }

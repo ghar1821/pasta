@@ -11,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.PASTATime;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 
 public class Arena {
 	private String name;
@@ -19,6 +18,7 @@ public class Arena {
 	// if null, only run once
 	private PASTATime frequency = null;
 	private Date firstStartDate;
+	private boolean completed;
 	
 	public final static SimpleDateFormat dateParser 
 	= new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -99,4 +99,12 @@ public class Arena {
 					+ "\r\n" + sw.toString());
 		}
 	}
+	
+	public Date getNextRunDate(){
+		if(frequency == null || firstStartDate == null){
+			return null;
+		}
+		return frequency.nextExecution(firstStartDate);
+	}
+	
 }

@@ -196,13 +196,12 @@ public class CompetitionController {
 		if(user.isInstructor()){
 			if(form.getFile() != null && !form.getFile().isEmpty()){
 				// update contents
-				form.setTestName(competitionName);
+				form.setName(competitionName);
 				competitionManager.updateCompetition(form);
 			}
 			else{
 				// update competition
 				compForm.setName(competitionName);
-				compForm.setArenas(competitionManager.getCompetition(competitionName).getArenas());
 				competitionManager.addCompetition(compForm);
 			}
 		}
@@ -233,7 +232,6 @@ public class CompetitionController {
 					competitionManager.getCompetitionResult(competitionName));
 			return "assessment/competition/calculated";
 		} else {
-			model.addAttribute("arenas", currComp.getArenas());
 			return "assessment/competition/arena";
 		}
 	}
@@ -262,6 +260,51 @@ public class CompetitionController {
 				}
 			}
 		}
+		
+		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping(value = "view/{competitionName}/{arenaName}")
+	public String viewArenaPage(Model model,
+			@PathVariable("arenaName") String arenaName,
+			@PathVariable("competitionName") String competitionName) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		
+		if(!currComp.isCalculated()){
+			// check if official
+			if(arenaName.trim().equals("Official Arena")){
+				model.addAttribute("arena", currComp.getOfficialArena());
+				model.addAttribute("official", true);
+			}
+			else{
+				// TODO
+			}
+			return "assessment/competition/arenaDetails";	
+		}
+		
+		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping(value = "{competitionName}/myPlayers/")
+	public String manageMyPlayers(Model model,
+			@PathVariable("competitionName") String competitionName) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
 		
 		return "redirect:/mirror/";
 	}

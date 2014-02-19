@@ -6,30 +6,10 @@
 
 <h1>Official Arena</h1>
 <table style="width	:100%;">
-<tr><th>Name</th><th>First Run Date</th><th>Repeating Frequency</th><th>Password protected</th></tr>
+<tr><th>Name</th><th>Next Execution Date</th></tr>
 	<tr>
 		<td>${competition.officialArena.name}</td>
-		<td>${competition.officialArena.firstStartDate}</td>
-		<td>
-			<c:choose>
-				<c:when test="${competition.officialArena.repeatable}">
-					${competition.officialArena.frequency.niceStringRepresentation}
-				</c:when>
-				<c:otherwise>
-					Does not repeat
-				</c:otherwise>
-			</c:choose>
-		</td>
-		<td>
-		<c:choose>
-			<c:when test="${competition.officialArena.passwordProtected}">
-				YES 
-			</c:when>
-			<c:otherwise>
-				NO
-			</c:otherwise>
-		</c:choose>
-		</td>
+		<td>${competition.officialArena.nextRunDate}</td>
 	</tr>
 </table>
 
@@ -42,21 +22,11 @@
 </c:if>
 
 <table style="width	:100%;">
-	<tr><th>Name</th><th>First Run Date</th><th>Repeating Frequency</th><th>Password protected</th></tr>
-	<c:forEach var="arena" items="${competition.arenas}">
+	<tr><th>Name</th><th>Next Execution Date</th><th>Password protected</th></tr>
+	<c:forEach var="arena" items="${competition.outstandingArenas}">
 		<tr>
 			<td>${arena.name}</td>
-			<td>${arena.firstStartDate}</td>
-			<td>
-				<c:choose>
-					<c:when test="${arena.repeatable}">
-						${arena.frequency.niceStringRepresentation}
-					</c:when>
-					<c:otherwise>
-						Does not repeat
-					</c:otherwise>
-				</c:choose>
-			</td>
+			<td>${arena.nextRunDate}</td>
 			<td>
 			<c:choose>
 				<c:when test="${arena.passwordProtected}">
@@ -66,6 +36,32 @@
 					NO
 				</c:otherwise>
 			</c:choose>
+			</td>
+			<td>
+				<div style="float:right">
+					<button style="float:right; text-align: center;" >Details</button>
+				</div>
+			</td>
+		</tr>
+	</c:forEach>
+	<c:forEach var="arena" items="${competition.completedArenas}">
+		<tr>
+			<td>${arena.name}</td>
+			<td>Completed</td>
+			<td>
+			<c:choose>
+				<c:when test="${arena.passwordProtected}">
+					YES 
+				</c:when>
+				<c:otherwise>
+					NO
+				</c:otherwise>
+			</c:choose>
+			</td>
+			<td>
+				<div style="float:right">
+					<button style="float:right; text-align: center; " >Details</button>
+				</div>
 			</td>
 		</tr>
 	</c:forEach>

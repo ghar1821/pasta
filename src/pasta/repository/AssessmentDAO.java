@@ -507,7 +507,8 @@ public class AssessmentDAO {
 					}
 				}
 
-				comp.setArenas(arenas);
+				// TODO check if arena is complete first
+				comp.setOutstandingArenas(arenas);
 			}
 			return comp;
 		} catch (Exception e) {
@@ -896,7 +897,9 @@ public class AssessmentDAO {
 		if (allCompetitions.containsKey(comp.getShortName())) {
 			// update
 			allCompetitions.get(comp.getShortName())
-					.setArenas(comp.getArenas());
+					.setOutstandingArenas(comp.getOutstandingArenas());
+			allCompetitions.get(comp.getShortName())
+				.setCompletedArenas(comp.getCompletedArenas());
 			allCompetitions.get(comp.getShortName())
 				.setOfficialArena(comp.getOfficialArena());
 			allCompetitions.get(comp.getShortName()).setStudentCreatableArena(

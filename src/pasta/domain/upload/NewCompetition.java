@@ -13,7 +13,7 @@ import pasta.domain.PASTATime;
 import pasta.domain.template.Competition;
 
 public class NewCompetition {
-	private String testName;
+	private String name;
 	private String type;
 	private PASTATime frequency = new PASTATime();
 	private Date firstStartDate = new Date();
@@ -21,11 +21,11 @@ public class NewCompetition {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	public String getTestName() {
-		return testName;
+	public String getName() {
+		return name;
 	}
-	public void setTestName(String testName) {
-		this.testName = testName;
+	public void setName(String name) {
+		this.name = name;
 	}
 	public CommonsMultipartFile getFile() {
 		return file;

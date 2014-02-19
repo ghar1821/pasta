@@ -55,5 +55,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/hibernate-validator-4.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/commons-net-3.1.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/unboundid-ldapsdk-se.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

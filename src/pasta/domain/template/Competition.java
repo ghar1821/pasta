@@ -26,7 +26,8 @@ public class Competition {
 	private String name;
 	// if null - calculated competition
 	private Arena officialArena = null;
-	private Collection<Arena> arenas = null;
+	private Collection<Arena> outstandingArenas = null;
+	private Collection<Arena> completedArenas = null;
 	private boolean studentCreatableArena;
 	private boolean studentCreatableRepeatableArena;
 	private boolean tutorCreatableRepeatableArena;
@@ -44,11 +45,17 @@ public class Competition {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Collection<Arena> getArenas() {
-		return arenas;
+	public Collection<Arena> getOutstandingArenas() {
+		return outstandingArenas;
 	}
-	public void setArenas(Collection<Arena> arenas) {
-		this.arenas = arenas;
+	public void setOutstandingArenas(Collection<Arena> arenas) {
+		this.outstandingArenas = arenas;
+	}
+	public Collection<Arena> getCompletedArenas() {
+		return completedArenas;
+	}
+	public void setCompletedArenas(Collection<Arena> arenas) {
+		this.completedArenas = arenas;
 	}
 	public boolean isStudentCreatableArena() {
 		return studentCreatableArena;
@@ -114,7 +121,7 @@ public class Competition {
 	}
 	
 	public boolean isCalculated(){
-		return (arenas == null);
+		return (outstandingArenas == null);
 	}
 	
 	public boolean isLive() {
@@ -158,6 +165,11 @@ public class Competition {
 		officialArena = arena;
 	}
 	
+	public void completeArena(Arena arena){
+		outstandingArenas.remove(arena);
+		completedArenas.add(arena);
+	}
+	
 	public String toString(){
 		String output = "<competitionProperties>" + System.getProperty("line.separator");
 		output += "\t<name>"+name+"</name>" + System.getProperty("line.separator");
@@ -187,9 +199,9 @@ public class Competition {
 			output += "repeats=\""+frequency+"\" ";
 			output += "/>" + System.getProperty("line.separator");;
 		}
-		if(arenas != null){
+		if(outstandingArenas != null){
 			output += "\t<arenas>" + System.getProperty("line.separator");
-				for(Arena currArena: arenas){
+				for(Arena currArena: outstandingArenas){
 					output += "\t\t" + currArena + System.getProperty("line.separator");
 				}
 			output += "\t</arenas>" + System.getProperty("line.separator");

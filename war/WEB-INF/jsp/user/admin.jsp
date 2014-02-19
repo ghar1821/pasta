@@ -45,6 +45,7 @@
 			<option value="ftp" <c:if test="${authType == 'pasta.login.FTPAuthValidator'}"> selected="selected" </c:if> >FTP</option>
 			<option value="imap" <c:if test="${authType == 'pasta.login.ImapAuthValidator'}"> selected="selected" </c:if> >IMAP</option>
 			<option value="database" <c:if test="${authType == 'pasta.login.DBAuthValidator'}"> selected="selected" </c:if> >Database</option>
+			<option value="ldap" <c:if test="${authType == 'pasta.login.LDAPAuthValidator'}"> selected="selected" </c:if> >LDAP</option>
 			<option value="dummy" <c:if test="${authType == 'pasta.login.DummyAuthValidator'}"> selected="selected" </c:if> >No Authentication</option>
 		</select>
 		<div id="addressDiv" <c:if test="${authType == 'pasta.login.DBAuthValidator' or authType == 'pasta.login.DummyAuthValidator'}">style="display:none;"</c:if>>
