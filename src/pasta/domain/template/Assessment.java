@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -97,6 +98,13 @@ public class Assessment {
 
 	public List<WeightedUnitTest> getUnitTests() {
 		return unitTests;
+	}
+	
+	public List<WeightedUnitTest> getAllUnitTests() {
+		List<WeightedUnitTest> allUnitTests = new LinkedList<WeightedUnitTest>();
+		allUnitTests.addAll(unitTests);
+		allUnitTests.addAll(secretUnitTests);
+		return allUnitTests;
 	}
 
 	public void setUnitTests(List<WeightedUnitTest> unitTests) {

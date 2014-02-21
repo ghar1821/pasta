@@ -2,9 +2,19 @@
 	background-color:#DDD;
 }
 
+.handMarkingHighlight{
+	background-color:#EEE;
+}
+
+.tutorHighlight{
+	background-color:#EEE;
+	font-weight:bold;
+}
+
 /** susk-detail */
 pre {
 	margin: 0;
+	white-space: pre-wrap;
 }
 
 .pastaQuickFeedback {
@@ -124,7 +134,7 @@ smallbutton{
 	position:relative; 
 	top:-.7em;
 }
-.popup, #newArena, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released, #newCompetition
+.popup, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released, #newCompetition
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;
@@ -255,10 +265,32 @@ td.pastaTable{
 	background-color: #0C0;
 	height: 100%;
 	width: 100%;
+	border-style:outset;
+	border-color:#0C0;
 }
 
 .pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaTFfalse,.pastaUnitTestResulterror {
 	color: red;
+	border-style:outset;
+	border-color:red;
+}
+
+.pastaUnitTestBoxResultSecretpass{
+	background-color: #0C0;
+	border-style:outset;
+	border-color:lightgray;
+}
+
+.pastaUnitTestBoxResultSecret{
+	background-color: lightgray;
+	border-style:outset;
+	border-color:lightgray;
+}
+
+.pastaUnitTestResultSecreterror, .pastaUnitTestResultSecretfailure{
+	color: red;
+	border-style:outset;
+	border-color:lightgray;
 }
 
 .susk-detail label {

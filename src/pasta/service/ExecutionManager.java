@@ -157,7 +157,7 @@ public class ExecutionManager {
 					+ "/submissions/" + job.getUsername() + "/assessments/"
 					+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/unitTests";
 			// run unit tests
-			for(WeightedUnitTest test: currAssessment.getUnitTests()){
+			for(WeightedUnitTest test: currAssessment.getAllUnitTests()){
 				try {
 					// create folder
 					(new File(unitTestsLocation + "/" + test.getTest().getShortName())).mkdirs();

@@ -479,6 +479,25 @@ public class ResultDAO {
 				utresults.add(result);
 
 			}
+			
+			// secret unit tests;
+			for (WeightedUnitTest uTest : assessment.getSecretUnitTests()) {
+				UnitTestResult result = getUnitTestResult(ProjectProperties
+						.getInstance().getProjectLocation()
+						+ "/submissions/"
+						+ username
+						+ "/assessments/"
+						+ assessment.getShortName()
+						+ "/"
+						+ assessmentDate
+						+ "/unitTests/" + uTest.getTest().getShortName());
+				if (result == null) {
+					result = new UnitTestResult();
+				}
+				result.setSecret(true);
+				result.setTest(uTest.getTest());
+				utresults.add(result);
+			}
 
 			// handMarking
 			ArrayList<HandMarkingResult> handResults = new ArrayList<HandMarkingResult>();
