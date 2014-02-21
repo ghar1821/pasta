@@ -166,46 +166,6 @@ public class AssessmentsController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	// view an assessment
-	@RequestMapping(value = "{assessmentName}/", method = RequestMethod.POST)
-	public String viewAssessment(
-			@PathVariable("assessmentName") String assessmentName,
-			@ModelAttribute(value = "assessment") Assessment form,
-			BindingResult result, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
-		if (user.isInstructor()) {
-			form.setName(assessmentManager.getAssessment(assessmentName).getName());
-			assessmentManager.addAssessment(form);
-		}
-		return "redirect:.";
-	}
-
-	// view an assessment
-	@RequestMapping(value = "{assessmentName}/run/")
-	public String runAssessment(
-			@PathVariable("assessmentName") String assessmentName,
-			HttpServletRequest request) {
-
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
-		if (user.isInstructor()) {
-			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
-		}
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
-	}
-
-	// view an assessment
 	@RequestMapping(value = "{assessmentName}/")
 	public String viewAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
@@ -297,8 +257,50 @@ public class AssessmentsController {
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}
+	
+	// update an assessment
+	@RequestMapping(value = "{assessmentName}/", method = RequestMethod.POST)
+	public String updateAssessment(
+			@PathVariable("assessmentName") String assessmentName,
+			@ModelAttribute(value = "assessment") Assessment form,
+			BindingResult result, Model model) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		if (user.isInstructor()) {
+			form.setName(assessmentManager.getAssessment(assessmentName).getName());
+			assessmentManager.addAssessment(form);
+		}
+		return "redirect:.";
+	}
 
-	// view an assessment
+	// run an assessment
+	@RequestMapping(value = "{assessmentName}/run/")
+	public String runAssessment(
+			@PathVariable("assessmentName") String assessmentName,
+			HttpServletRequest request) {
+
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		if (user.isInstructor()) {
+			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
+		}
+		String referer = request.getHeader("Referer");
+		return "redirect:" + referer;
+	}
+
+	
+
+	// view all assessment
 	@RequestMapping(value = "")
 	public String viewAllAssessment(Model model) {
 		PASTAUser user = getUser();
@@ -314,7 +316,7 @@ public class AssessmentsController {
 		return "assessment/viewAll/assessment";
 	}
 
-	// view an assessment
+	// add a new assessment
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newAssessmentAssessment(
 			@ModelAttribute(value = "assessment") Assessment form,

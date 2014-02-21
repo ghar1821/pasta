@@ -235,7 +235,7 @@ public class ExecutionManager {
 		}
 	}
 	
-	@Scheduled(fixedDelay = 5000)
+	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingJobs(){
 		List<Job> outstandingJobs = scheduler.getOutstandingJobs();
 		while(outstandingJobs != null && !outstandingJobs.isEmpty()){

@@ -88,6 +88,11 @@ public class UnitTestController {
 	public NewUnitTest returnNewUnitTestModel() {
 		return new NewUnitTest();
 	}
+	
+	@ModelAttribute("submission")
+	public Submission returnSubmissionModel() {
+		return new Submission();
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //

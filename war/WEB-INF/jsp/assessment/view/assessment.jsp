@@ -52,6 +52,7 @@
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				
@@ -69,6 +70,7 @@
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -89,6 +91,7 @@
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -113,6 +116,7 @@
 									<td><form:input size="5" type="text" path="handMarking[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -132,6 +136,7 @@
 									<td><form:input size="5" type="text" path="handGarbage[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -156,6 +161,7 @@
 									<td><form:input size="5" type="text" path="competitions[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -175,6 +181,7 @@
 									<td><form:input size="5" type="text" path="compGarbage[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>
 							</c:forEach>
+							<tr id="buffer" class="sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -240,13 +247,15 @@
             		var childrenNodes = tables[i].children;
             		for(var j=0; j<childrenNodes.length; ++j){
             			
-            			// td -> input - unitTestName
-            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".unitTestName");
-            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".unitTestName");
-            			
-            			// td -> input - weight
-            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+						if(childrenNodes[j].getAttribute("id") != "buffer"){
+							// td -> input - unitTestName
+							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".unitTestName");
+							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".unitTestName");
+							
+							// td -> input - weight
+							childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
+							childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+						}
             		}
             	}
             }
@@ -315,5 +324,3 @@
         });
     });
 </script>
-
-<!-- TODO add for hand marking and competitions # 46-->
