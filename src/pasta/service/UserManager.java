@@ -35,20 +35,11 @@ import pasta.util.ProjectProperties;
  */
 public class UserManager {
 	
+	@Autowired
 	private UserDAO userDao;
+	@Autowired
 	private LoginDAO loginDao;
 	
-	@Autowired
-	public void setMyUserDAO(UserDAO myUserDao) {
-		this.userDao = myUserDao;
-	}
-	
-	@Autowired
-	public void setMyLoginDAO(LoginDAO myLoginDao) {
-		this.loginDao = myLoginDao;
-		ProjectProperties.getInstance().setDBDao(myLoginDao);
-	}
-
 	@Autowired
 	private ApplicationContext context;
 

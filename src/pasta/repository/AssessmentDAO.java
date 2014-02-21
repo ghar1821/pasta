@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,6 +45,7 @@ import pasta.domain.upload.NewHandMarking;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
+@Repository("assessmentDAO")
 public class AssessmentDAO {
 
 	// assessmentTemplates are cached
@@ -298,11 +300,11 @@ public class AssessmentDAO {
 
 			// load properties
 			for (String name : allAssessmentNames) {
-				Assessment test = getAssessmentFromDisk(allTestLocation + "/"
+				Assessment assessment = getAssessmentFromDisk(allTestLocation + "/"
 						+ name);
-				if (test != null) {
-					allAssessments.put(name, test);
-					String category = test.getCategory();
+				if (assessment != null) {
+					allAssessments.put(name, assessment);
+					String category = assessment.getCategory();
 					if (category == null) {
 						category = "";
 					}
@@ -310,7 +312,7 @@ public class AssessmentDAO {
 						allAssessmentsByCategory.put(category,
 								new LinkedList<Assessment>());
 					}
-					allAssessmentsByCategory.get(category).add(test);
+					allAssessmentsByCategory.get(category).add(assessment);
 				}
 			}
 		}

@@ -1,29 +1,20 @@
 package pasta.util;
 
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
@@ -32,7 +23,10 @@ import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
+import pasta.repository.AssessmentDAO;
 import pasta.repository.LoginDAO;
+import pasta.repository.ResultDAO;
+import pasta.repository.UserDAO;
 
 @Component
 /**
@@ -64,6 +58,8 @@ public class ProjectProperties {
 	private static Proxy proxy;
 	
 	private static LoginDAO loginDAO;
+	private static AssessmentDAO assessmentDAO;
+	private static ResultDAO resultDAO;
 	
 	private ProjectProperties(String projectLocation, String authType, Boolean createAccountOnSuccessfulLogin){
 		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
@@ -113,6 +109,9 @@ public class ProjectProperties {
 			this.proxy = new Proxy(Proxy.Type.HTTP, addr);
 			logger.info("Using proxy " + proxy.get(0) + " on port " + proxy.get(1));
 		}
+		
+		assessmentDAO = new AssessmentDAO();
+		resultDAO = new ResultDAO(assessmentDAO);
 	}
 
 	
@@ -229,5 +228,18 @@ public class ProjectProperties {
 	public Proxy getProxy(){
 		return proxy;
 	}
+	
+	public AssessmentDAO getAssessmentDAO(){
+		return assessmentDAO;
+	}
+	
+	public LoginDAO getLoginDAO(){
+			return loginDAO;
+	}
+	
+	public ResultDAO getResultDAO(){
+		return resultDAO;
+	}
+	
 	
 }

@@ -26,6 +26,7 @@ import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 @Service("unitTestManager")
 @Repository
@@ -39,8 +40,8 @@ import pasta.util.PASTAUtil;
  */
 public class UnitTestManager {
 	
-	private AssessmentDAO assDao = new AssessmentDAO();
-	private ResultDAO resultDAO = new ResultDAO(assDao);
+	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
 //	private ExecutionScheduler scheduler;
 	

@@ -72,8 +72,8 @@ import pasta.util.ProjectProperties;
  */
 public class HandMarkingManager {
 	
-	private AssessmentDAO assDao = new AssessmentDAO();
-	private ResultDAO resultDAO = new ResultDAO(assDao);
+	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
 	@Autowired
 	private ApplicationContext context;

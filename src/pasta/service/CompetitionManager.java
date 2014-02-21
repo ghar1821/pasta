@@ -25,6 +25,7 @@ import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 @Service("competitionManager")
 @Repository
@@ -38,8 +39,8 @@ import pasta.util.PASTAUtil;
  */
 public class CompetitionManager {
 	
-	private AssessmentDAO assDao = new AssessmentDAO();
-	private ResultDAO resultDAO = new ResultDAO(assDao);
+	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
 	private ExecutionScheduler scheduler;
 	
