@@ -81,6 +81,11 @@ public class PASTAUser implements Serializable{
 	}
 	
 	@Transient
+	public void setExtension(HashMap<String, Date> extensions){
+		this.extensions = extensions;
+	}
+	
+	@Transient
 	public void giveExtension(String assessmentName, Date newDueDate){
 		extensions.put(assessmentName, newDueDate);
 	}

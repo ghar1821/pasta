@@ -47,6 +47,7 @@ import pasta.service.HandMarkingManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
+import pasta.view.ExcelAutoMarkView;
 import pasta.view.ExcelMarkView;
 
 @Controller
@@ -224,9 +225,9 @@ public class SubmissionController {
 		}
 		Date now = new Date();
 		if (assessmentManager.getAssessment(form.getAssessment()).isClosed() 
-				&& (user.getExtensions() != null // no extension
-				&& user.getExtensions().get(form.getAssessment()) != null
-				&& user.getExtensions().get(form.getAssessment()).before(now))
+				&& (user.getExtensions() == null // no extension
+					|| user.getExtensions().get(form.getAssessment()) == null
+					|| user.getExtensions().get(form.getAssessment()).before(now))
 				&& (!user.isTutor())) {
 			result.rejectValue("file", "Submission.AfterClosingDate");
 		}
@@ -289,6 +290,28 @@ public class SubmissionController {
 		data.put("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		
 		return new ModelAndView(new ExcelMarkView(), data);
+	}
+	
+	@RequestMapping(value = "downloadAutoMarks/")
+	public ModelAndView viewAutoExcel(HttpServletRequest request, HttpServletResponse response) {
+		PASTAUser user = getUser();
+		ModelAndView model = new ModelAndView();
+		
+		if (user == null) {
+			model.setViewName("redirect:/login/");
+			return model;
+		}
+		if (!user.isTutor()) {
+			model.setViewName("redirect:/home/");
+			return model;
+		}
+		Map<String, Object> data = new HashMap<String, Object>();
+
+		data.put("assessmentList", assessmentManager.getAssessmentList());
+		data.put("userList", userManager.getUserList());
+		data.put("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
+		
+		return new ModelAndView(new ExcelAutoMarkView(), data);
 	}
 	
 	@RequestMapping(value = "student/{username}/info/{assessmentName}/updateComment/", method = RequestMethod.POST)

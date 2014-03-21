@@ -41,16 +41,75 @@ public class UserDAO extends HibernateDaoSupport{
 	public void setMySession(SessionFactory sessionFactory) {
 		setSessionFactory(sessionFactory);
 	}
+	
+	public void updateCachedUser(PASTAUser user){
+		if (user != null) {
+			PASTAUser oldUser = allUsers.get(user.getUsername());
+			if(!user.isTutor()){
+				if(oldUser.getExtensions() != null){
+					user.setExtension(oldUser.getExtensions());
+				}
+				allUsers.put(user.getUsername(), user);
+				
+				if(user.getTutorial() != null){
+					user.setTutorial("");
+				}
+				if(user.getStream() != null){
+					user.setStream("");
+				}
+				
+				// clean up after the old user
+				if (oldUser.getTutorial() != null && 
+						usersByTutorial.containsKey(oldUser.getTutorial())) {
+					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+				}
+				if (oldUser.getStream() != null && 
+						usersByStream.containsKey(oldUser.getStream())) {
+					usersByStream.get(oldUser.getStream()).remove(oldUser);
+				}
+				
+				// add new user
+				if(!usersByTutorial.containsKey(user.getTutorial())){
+					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
+				}
+				usersByTutorial.get(user.getTutorial()).add(user);
+				if(!usersByStream.containsKey(user.getStream())){
+					usersByStream.put(user.getStream(), new ArrayList<PASTAUser>());
+				}
+				usersByStream.get(user.getStream()).add(user);
+			}
+		}
+	}
+	
+	public void deleteCachedUser(PASTAUser user){
+		if (user != null) {
+			PASTAUser oldUser = allUsers.get(user.getUsername());
+			if(!user.isTutor()){
+				// clean up after the old user
+				if (oldUser.getTutorial() != null && 
+						usersByTutorial.containsKey(oldUser.getTutorial())) {
+					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+				}
+				if (oldUser.getStream() != null && 
+						usersByStream.containsKey(oldUser.getStream())) {
+					usersByStream.get(oldUser.getStream()).remove(oldUser);
+				}
+			}
+		}
+	}
 
 	public void save(PASTAUser user) {
+		updateCachedUser(user);
 		getHibernateTemplate().save(user);
 	}
 
 	public void update(PASTAUser user) {
+		updateCachedUser(user);
 		getHibernateTemplate().update(user);
 	}
 	
 	public void delete(PASTAUser user) {
+		deleteCachedUser(user);
 		getHibernateTemplate().delete(user);
 	}
 	

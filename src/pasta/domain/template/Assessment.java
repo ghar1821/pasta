@@ -48,6 +48,9 @@ public class Assessment {
 	}
 
 	public String getCategory() {
+		if(category == null){
+			return "";
+		}
 		return category;
 	}
 

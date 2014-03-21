@@ -104,6 +104,10 @@ public class AssessmentResult {
 		return getPercentage() * assessment.getMarks();
 	}
 	
+	public double getAutoMarks(){
+		return getAutoPercentage() * assessment.getMarks();
+	}
+	
 	public double getPercentage(){
 		double marks = 0;
 		double maxWeight = 0;
@@ -123,6 +127,37 @@ public class AssessmentResult {
 		for(HandMarkingResult result : handMarkingResults){
 			try{
 				marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
+				maxWeight += assessment.getWeighting(result.getMarkingTemplate());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions (probably a partially marked submission)
+			}
+		}
+		
+		if(maxWeight == 0){
+			return 0;
+		}
+		return (marks / maxWeight);
+	}
+	
+	public double getAutoPercentage(){
+		double marks = 0;
+		double maxWeight = 0;
+		// unit tests
+		// regular
+		for(UnitTestResult result : unitTests){
+			try{
+				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
+				maxWeight += assessment.getWeighting(result.getTest());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions
+			}
+		}
+		
+		// hand marking
+		for(HandMarkingResult result : handMarkingResults){
+			try{
 				maxWeight += assessment.getWeighting(result.getMarkingTemplate());
 			}
 			catch(Exception e){
