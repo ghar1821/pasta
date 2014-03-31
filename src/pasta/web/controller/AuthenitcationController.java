@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.form.LoginForm;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
@@ -37,6 +38,43 @@ public class AuthenitcationController {
 	public void setMyService(UserManager myService) {
 		this.userManager = myService;
 	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// Helper Methods //
+	// ///////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Get the currently logged in user.
+	 * 
+	 * @return
+	 */
+	public PASTAUser getOrCreateUser() {
+		String username = (String) RequestContextHolder
+				.currentRequestAttributes().getAttribute("user",
+						RequestAttributes.SCOPE_SESSION);
+		return getOrCreateUser(username);
+	}
+	
+	public PASTAUser getOrCreateUser(String username) {
+		if (username != null) {
+			return userManager.getOrCreateUser(username);
+		}
+		return null;
+	}
+
+	public PASTAUser getUser() {
+		String username = (String) RequestContextHolder
+				.currentRequestAttributes().getAttribute("user",
+						RequestAttributes.SCOPE_SESSION);
+		return getUser(username);
+	}
+	
+	public PASTAUser getUser(String username) {
+		if (username != null) {
+			return userManager.getUser(username);
+		}
+		return null;
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// LOGIN //
@@ -44,6 +82,10 @@ public class AuthenitcationController {
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String get(ModelMap model) {
+		if(getUser() != null){
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("LOGINFORM", new LoginForm());
 		// Because we're not specifying a logical view name, the
 		// DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.

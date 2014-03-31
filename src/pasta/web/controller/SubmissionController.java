@@ -99,10 +99,12 @@ public class SubmissionController {
 	public void setMyService(UserManager myService) {
 		this.userManager = myService;
 	}
+	
 	@Autowired
 	public void setMyService(AssessmentManager myService) {
 		this.assessmentManager = myService;
 	}
+	
 	@Autowired
 	public void setMyService(HandMarkingManager myService) {
 		this.handMarkingManager = myService;

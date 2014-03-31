@@ -46,26 +46,30 @@ public class UserDAO extends HibernateDaoSupport{
 		if (user != null) {
 			PASTAUser oldUser = allUsers.get(user.getUsername());
 			if(!user.isTutor()){
-				if(oldUser.getExtensions() != null){
-					user.setExtension(oldUser.getExtensions());
-				}
+				
 				allUsers.put(user.getUsername(), user);
 				
-				if(user.getTutorial() != null){
+				if(user.getTutorial() == null){
 					user.setTutorial("");
 				}
-				if(user.getStream() != null){
+				if(user.getStream() == null){
 					user.setStream("");
 				}
 				
-				// clean up after the old user
-				if (oldUser.getTutorial() != null && 
-						usersByTutorial.containsKey(oldUser.getTutorial())) {
-					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
-				}
-				if (oldUser.getStream() != null && 
-						usersByStream.containsKey(oldUser.getStream())) {
-					usersByStream.get(oldUser.getStream()).remove(oldUser);
+				if(oldUser != null){
+					if(oldUser.getExtensions() != null){
+						user.setExtension(oldUser.getExtensions());
+					}
+					
+					// clean up after the old user
+					if (oldUser.getTutorial() != null && 
+							usersByTutorial.containsKey(oldUser.getTutorial())) {
+						usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+					}
+					if (oldUser.getStream() != null && 
+							usersByStream.containsKey(oldUser.getStream())) {
+						usersByStream.get(oldUser.getStream()).remove(oldUser);
+					}
 				}
 				
 				// add new user
