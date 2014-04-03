@@ -1,5 +1,3 @@
-<%@page import="pasta.util.ProjectProperties"%>
-<%@page import="pasta.domain.PASTAUser"%>
 <%@ page session="true"%>
 <%@ page language="java" contentType="text/html; charset=utf-8"  pageEncoding="utf-8"%>
 <%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator"%>
@@ -24,6 +22,7 @@
 		<link href="<spring:url value="/static/scripts/jqplot/jquery.jqplot.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<spring:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.8.2.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui.js" htmlEscape="true" />"></script>
@@ -37,7 +36,9 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tristate.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/jquery.jqplot.min.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js" htmlEscape="true" />"></script>
 		<decorator:head />
+		
 		
 		<script>
 			$(document).ready(function(){
@@ -72,7 +73,7 @@
 						<div id="utilities">
 							<ul id="nav-global">
 								<li class="active">
-									<a href="<spring:url value="/" htmlEscape="true" />">BL Home</a>
+									<a href="<spring:url value="/" htmlEscape="true" />">PASTA Home</a>
 								</li>
 								<li>
 									<a href="http://www.sydney.edu.au">University Home</a>

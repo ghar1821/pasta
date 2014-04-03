@@ -3,9 +3,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<!-- IF using DBAuth - change password TODO-->
-<h1>Authentication</h1>
+<!-- IF using DBAuth-->
 <c:if test="${authType == 'pasta.login.DBAuthValidator'}">
+<h1>Authentication</h1>
 	<h2>Change Password</h2>
 	<form:form method="post" commandName="changePasswordForm" action="changePassword/" autocomplete="off">
 		<table>
@@ -65,7 +65,10 @@
 		</div>
 		<button type="submit" >Change Authentication System</button>
 	</form>
-			
+	
+</c:if>
+<c:if test="${unikey.tutor}">
+
 	<h1>Tutors</h1>
 		<table>
 			<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th></tr>

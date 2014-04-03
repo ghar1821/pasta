@@ -7,7 +7,7 @@
 
 Link: <a href="${mossResults.link}">${mossResults.link}</a> <br/>
 
-<table>
+<table id="mossTable" class="tablesorter">
 	<tr>
 		<th>Student</th>
 		<th>Percentage</th>
@@ -27,3 +27,12 @@ Link: <a href="${mossResults.link}">${mossResults.link}</a> <br/>
 		</tr>
 	</c:forEach>
 </table>
+
+<script>
+$(document).ready(function() 
+    { 
+        $("#mossTable").tablesorter(); 
+    } 
+); 
+
+</script>

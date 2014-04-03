@@ -13,6 +13,10 @@
 	<button style="float: left; text-align: center;"
 		onclick="window.location = '../downloadMarks/'">Download Marks</button>
 </div>
+<div style="float: left; width:100%">
+	<button style="float: left; text-align: center;"
+		onclick="window.location = '../downloadAutoMarks/'">Download Auto Marks ONLY</button>
+</div>
 
 <table id="gradeCentreTable" class="tablesorter">
 	<thead>

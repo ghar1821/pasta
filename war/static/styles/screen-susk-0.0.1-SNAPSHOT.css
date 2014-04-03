@@ -96,6 +96,8 @@ div.pastaUnitTestBoxResultpass {
 
 div.pastaUnitTestBoxResultfailure ,div.pastaUnitTestBoxResulterror{
 	background-color: red;
+	border-style:outset;
+	border-color:red;
 }
 
 div.pastaUnitTestBoxSecretResultpass {
@@ -103,7 +105,15 @@ div.pastaUnitTestBoxSecretResultpass {
 }
 
 div.pastaUnitTestBoxSecretResultfailure ,div.pastaUnitTestBoxSecretResulterror{
-	background-color: #333;
+	background-color: red;
+	border-style:outset;
+	border-color:lightgray;
+}
+
+div.pastaUnitTestBoxResultSecretfailure ,div.pastaUnitTestBoxResultSecreterror{
+	background-color: red;
+	border-style:outset;
+	border-color:lightgray;
 }
 
 /* Buttons */
@@ -269,10 +279,12 @@ td.pastaTable{
 	border-color:#0C0;
 }
 
-.pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaTFfalse,.pastaUnitTestResulterror {
+.pastaTFfalse{
 	color: red;
-	border-style:outset;
-	border-color:red;
+}
+
+.pastaUnitTestResulterror,.pastaUnitTestResultfailure,.pastaUnitTestResulterror {
+	color: red;
 }
 
 .pastaUnitTestBoxResultSecretpass{

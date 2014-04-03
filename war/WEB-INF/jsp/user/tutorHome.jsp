@@ -19,7 +19,6 @@
 <p>
 To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
 Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br/>
-<i><b>NOTE: Packages are not used in any task, but they are used in all of the assignments</b></i>
 
 <c:forEach var="assessmentCategory" items="${assessments}">
 	<h2>${assessmentCategory.key}</h2>
@@ -75,24 +74,34 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					</c:when>
 					<c:otherwise>
 						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
-							<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">
-								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-									<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-								</c:forEach>
-							</c:if>
-						</c:forEach>
+								<c:choose>
+									<c:when test="${allUnitTests.secret}">
+										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+										</c:forEach>
+									</c:when>
+									<c:otherwise>
+										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+										</c:forEach>
+									</c:otherwise>
+								</c:choose>
+							</c:forEach>
 					</c:otherwise>
 				</c:choose>
 				<td style="width:40px;">
 					<button type="button" style="float: left; text-align: center;"
 							onClick="submitAssessment('${assessment.shortName}');">Submit</button>
 				</td>
-				<td style="width:15em;">
-	                          <div style="float: left; width:100%">
-	                                  <button type="button" style="float: left; text-align: center;"
-	                                          onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
-	                          </div>
-	                     </td>
+				<c:if test="${ not empty unikey.tutorial}">
+
+					<td style="width:15em;">
+		                          <div style="float: left; width:100%">
+		                                  <button type="button" style="float: left; text-align: center;"
+		                                          onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
+		                          </div>
+		                     </td>
+				</c:if>
 				<c:if test="${ not empty viewedUser}">
 					<!-- tutor is viewing a user and they may give out an extension -->
 					<td style="width:40px;">

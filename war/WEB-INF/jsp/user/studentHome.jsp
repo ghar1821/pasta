@@ -29,7 +29,6 @@
 <p>
 To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
 Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.</br>
-<i><b>NOTE: Packages are not used in any task, but they are used in all of the assignments</b></i><br/>
 <div class="ui-state-error" style="font-size:1.5em">
 <i><b>NOTE: These marks are provisional, your final marks will appear on eLearning and may differ from these marks.</b></i>
 </div>
@@ -134,13 +133,6 @@ Your zip file should contain the src folder. If you are unsure, please email you
 										</c:forEach>
 									</c:otherwise>
 								</c:choose>
-								<!--
-								<c:if test="${not allUnitTests.secret or ((not empty viewedUser.extensions[assessment.shortName] and viewedUser.extensions[assessment.shortName] lt now) or (assessment.dueDate lt now))}">
-									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
-									</c:forEach>
-								</c:if>
-								-->
 							</c:forEach>
 						</c:otherwise>
 					</c:choose>
