@@ -70,7 +70,7 @@
 	<h1> New Competition </h1>
 	<form:form commandName="newCompetitionModel" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Competition Name:</td><td><form:input autocomplete="off" type="text" path="testName" value=""/></td></tr>
+			<tr><td>Competition Name:</td><td><form:input autocomplete="off" type="text" path="name" value=""/></td></tr>
 			<tr><td>Competition Type:</td>
 				<td>
 					<form:select path="type">
