@@ -251,4 +251,3 @@ ${fn:length(assessment.competitions)} Competitions </br>
 		}
 	}
 </script>
-<!--

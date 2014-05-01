@@ -55,7 +55,7 @@ public class Competition {
 	public void setOutstandingArenas(Collection<Arena> arenas) {
 		this.outstandingArenas.clear();
 		for(Arena arena: arenas){
-			this.outstandingArenas.put(arena.getName(), arena);
+			this.outstandingArenas.put(arena.getShortName(), arena);
 		}
 	}
 	public Collection<Arena> getCompletedArenas() {
@@ -67,7 +67,7 @@ public class Competition {
 	public void setCompletedArenas(Collection<Arena> arenas) {
 		this.completedArenas.clear();
 		for(Arena arena: arenas){
-			this.completedArenas.put(arena.getName(), arena);
+			this.completedArenas.put(arena.getShortName(), arena);
 		}
 	}
 	public Arena getArena(String name){
@@ -196,7 +196,7 @@ public class Competition {
 	}
 	
 	public void addNewArena(Arena arena){
-		outstandingArenas.put(arena.getName(), arena);
+		outstandingArenas.put(arena.getName().replace(" ", ""), arena);
 	}
 	
 	public boolean isCompleted(String arenaName){
