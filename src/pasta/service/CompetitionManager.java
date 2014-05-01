@@ -452,6 +452,16 @@ public class CompetitionManager {
 				assDao.getCompetition(competitionName).getArena(arenaName) != null){
 			// add player to arena if arena exists
 			assDao.getCompetition(competitionName).getArena(arenaName).removePlayer(username, playerName);
+			
+			// if no player
+			if(assDao.getCompetition(competitionName).getArena(arenaName).getPlayers() == null ||
+					assDao.getCompetition(competitionName).getArena(arenaName).getPlayers().get(username) == null ||
+					assDao.getCompetition(competitionName).getArena(arenaName).getPlayers().get(username).isEmpty()){
+				// delete file
+				new File(assDao.getCompetition(competitionName).getFileLocation() 
+						+ "/arenas/" + assDao.getCompetition(competitionName).getArena(arenaName).getName()
+						+ "/players/"+ username + ".players").delete();
+			}
 		}
 	}
 
