@@ -16,15 +16,30 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	}
 
 	public void save(Job job) {
-		getHibernateTemplate().save(job);
+		try{
+			getHibernateTemplate().save(job);
+		}
+		catch (Exception e){
+			logger.info("Exception while saving job " + e);
+		}
 	}
 
 	public void update(Job job) {
-		getHibernateTemplate().update(job);
+		try{
+			getHibernateTemplate().update(job);
+		}
+		catch (Exception e){
+			logger.info("Exception while updating job " + e);
+		}
 	}
 	
 	public void delete(Job job) {
-		getHibernateTemplate().delete(job);
+		try{
+			getHibernateTemplate().delete(job);
+		}
+		catch (Exception e){
+			logger.info("Exception while deleting job " + e);
+		}
 	}
 
 	public List<Job> getOutstandingJobs(){

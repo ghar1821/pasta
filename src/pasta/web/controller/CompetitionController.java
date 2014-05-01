@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +19,8 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetition;
+import pasta.domain.upload.NewPlayer;
 import pasta.service.CompetitionManager;
-import pasta.service.SubmissionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 
@@ -58,9 +59,15 @@ public class CompetitionController {
 	public NewCompetition returnNewCompetitionModel() {
 		return new NewCompetition();
 	}
+	
 	@ModelAttribute("newArenaModel")
 	public Arena returnArenaModel() {
 		return new Arena();
+	}
+	
+	@ModelAttribute("newPlayerModel")
+	public NewPlayer returnPlayerModel() {
+		return new NewPlayer();
 	}
 
 	@ModelAttribute("competition")
@@ -98,9 +105,9 @@ public class CompetitionController {
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+//		if (!user.isTutor()) {
+//			return "redirect:/home/.";
+//		}
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("allCompetitions", competitionManager.getCompetitionList());
@@ -122,29 +129,10 @@ public class CompetitionController {
 			competitionManager.addCompetition(form);
 		}
 
-		return "redirect:.";
+		return "redirect:/mirror/";
 	}
 
-//	@RequestMapping(value = "{competitionName}/", method = RequestMethod.POST)
-//	public String updateCompetition(Model model,
-//			@PathVariable("competitionName") String competitionName,
-//			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
-//		PASTAUser user = getUser();
-//		if (user == null) {
-//			return "redirect:/login/";
-//		}
-//		if (!user.isTutor()) {
-//			return "redirect:/home/.";
-//		}
-//		if(user.isInstructor()){
-//			form.setTestName(competitionName);
-//			manager.updateCompetition(form);
-//		}
-//
-//		return "redirect:.";
-//	}
-
-	// delete a unit test
+	// delete a competition
 	@RequestMapping(value = "delete/{competitionName}/")
 	public String deleteCompetition(
 			@PathVariable("competitionName") String competitionName, Model model) {
@@ -155,13 +143,13 @@ public class CompetitionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		if (getUser().isInstructor()) {
+		if (user.isInstructor()) {
 			competitionManager.removeCompetition(competitionName);
 		}
 		return "redirect:../../";
 	}
 
-	@RequestMapping(value = "{competitionName}")
+	@RequestMapping(value = "{competitionName}/")
 	public String viewCompetition(
 			@PathVariable("competitionName") String competitionName, Model model) {
 		PASTAUser user = getUser();
@@ -202,7 +190,7 @@ public class CompetitionController {
 			else{
 				// update competition
 				compForm.setName(competitionName);
-				competitionManager.addCompetition(compForm);
+				competitionManager.updateCompetition(compForm);
 			}
 		}
 		
@@ -237,7 +225,7 @@ public class CompetitionController {
 	}
 	
 	@RequestMapping(value = "view/{competitionName}/", method = RequestMethod.POST)
-	public String viewCompetitionPage(Model model,
+	public String addArena(Model model,
 			@ModelAttribute(value = "newArenaModel") Arena arena,
 			@PathVariable("competitionName") String competitionName) {
 		PASTAUser user = getUser();
@@ -254,7 +242,8 @@ public class CompetitionController {
 			if(currComp != null && (user.isTutor() || currComp.isStudentCreatableArena())){
 				if(!arena.isRepeatable() || user.isInstructor() || 
 						(currComp.isTutorCreatableRepeatableArena() && user.isTutor() && currComp.isTutorCreatableRepeatableArena())
-						|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())){
+						|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())
+						&& currComp.getArena(arena.getName()) == null){
 					// accept arena
 					competitionManager.addArena(arena, currComp);
 				}
@@ -278,19 +267,81 @@ public class CompetitionController {
 			return "redirect:/home/.";
 		}		
 		
+		model.addAttribute("unikey", user);
+
 		if(!currComp.isCalculated()){
 			// check if official
-			if(arenaName.trim().equals("Official Arena")){
-				model.addAttribute("arena", currComp.getOfficialArena());
+			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
+			model.addAttribute("arena", currComp.getArena(arenaName));
+			model.addAttribute("completed", currComp.isCompleted(arenaName));
+			model.addAttribute("results", competitionManager.getArenaResults(currComp, currComp.getArena(arenaName)));
+			if(arenaName.replace(" ", "").toLowerCase().equals("officialarena")){
 				model.addAttribute("official", true);
 			}
 			else{
-				// TODO
+				model.addAttribute("official", false);
 			}
 			return "assessment/competition/arenaDetails";	
 		}
 		
 		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping(value = "view/{competitionName}/{arenaName}/add/{playerName}")
+	public String addPlayerToArena(Model model,
+			@PathVariable("arenaName") String arenaName,
+			@PathVariable("competitionName") String competitionName,
+			@PathVariable("playerName") String playername) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		competitionManager.addPlayerToArena(user.getUsername(), competitionName, arenaName, playername);
+		
+		return "redirect:../..";
+	}
+	
+	@RequestMapping(value = "view/{competitionName}/{arenaName}/remove/{playerName}")
+	public String removePlayerFromArena(Model model,
+			@PathVariable("arenaName") String arenaName,
+			@PathVariable("competitionName") String competitionName,
+			@PathVariable("playerName") String playername) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		competitionManager.removePlayerFromArena(user.getUsername(), competitionName, arenaName, playername);
+		
+		return "redirect:../..";
+	}
+	
+	@RequestMapping(value = "{competitionName}/myPlayers/retire/{playerName}/")
+	public String retirePlayer(Model model,
+			@PathVariable("competitionName") String competitionName,
+			@PathVariable("playerName") String playerName) {
+		
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}	
+		competitionManager.retirePlayer(user.getUsername(), competitionName, playerName);
+		
+		return "redirect:../..";
 	}
 	
 	@RequestMapping(value = "{competitionName}/myPlayers/")
@@ -305,6 +356,38 @@ public class CompetitionController {
 		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
 			return "redirect:/home/.";
 		}		
+		
+		model.addAttribute("unikey", user);
+		model.addAttribute("competition", currComp);
+		model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
+		
+		return "assessment/competition/players";
+	}
+	
+	@RequestMapping(value = "{competitionName}/myPlayers/", method = RequestMethod.POST)
+	public String submitNewPlayer(Model model,
+			@PathVariable("competitionName") String competitionName,
+			@ModelAttribute(value = "newPlayerModel") NewPlayer playerForm,
+			BindingResult result) {
+		PASTAUser user = getUser();
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		
+		// validate player
+		competitionManager.addPlayer(playerForm, user.getUsername(), currComp.getShortName(), result);
+		
+		if(result.hasErrors()){
+			model.addAttribute("unikey", user);
+			model.addAttribute("competition", currComp);
+			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
+			return "assessment/competition/players";
+		}
 		
 		return "redirect:/mirror/";
 	}

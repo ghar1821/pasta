@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
@@ -26,8 +27,8 @@ public class Competition {
 	private String name;
 	// if null - calculated competition
 	private Arena officialArena = null;
-	private Collection<Arena> outstandingArenas = null;
-	private Collection<Arena> completedArenas = null;
+	private HashMap<String, Arena> outstandingArenas =  new HashMap<String, Arena>();
+	private HashMap<String, Arena> completedArenas = new HashMap<String, Arena>();
 	private boolean studentCreatableArena;
 	private boolean studentCreatableRepeatableArena;
 	private boolean tutorCreatableRepeatableArena;
@@ -46,16 +47,40 @@ public class Competition {
 		this.name = name;
 	}
 	public Collection<Arena> getOutstandingArenas() {
-		return outstandingArenas;
+		return outstandingArenas.values();
 	}
-	public void setOutstandingArenas(Collection<Arena> arenas) {
+	public void setOutstandingArenas(HashMap<String, Arena> arenas) {
 		this.outstandingArenas = arenas;
 	}
+	public void setOutstandingArenas(Collection<Arena> arenas) {
+		this.outstandingArenas.clear();
+		for(Arena arena: arenas){
+			this.outstandingArenas.put(arena.getName(), arena);
+		}
+	}
 	public Collection<Arena> getCompletedArenas() {
-		return completedArenas;
+		return completedArenas.values();
+	}
+	public void setCompletedArenas(HashMap<String, Arena> arenas) {
+		this.completedArenas = arenas;
 	}
 	public void setCompletedArenas(Collection<Arena> arenas) {
-		this.completedArenas = arenas;
+		this.completedArenas.clear();
+		for(Arena arena: arenas){
+			this.completedArenas.put(arena.getName(), arena);
+		}
+	}
+	public Arena getArena(String name){
+		if(name.replace(" ", "").toLowerCase().equals("officialarena")){
+			return officialArena;
+		}
+		if(completedArenas.containsKey(name)){
+			return completedArenas.get(name);
+		}
+		if(outstandingArenas.containsKey(name)){
+			return outstandingArenas.get(name);
+		}
+		return null;
 	}
 	public boolean isStudentCreatableArena() {
 		return studentCreatableArena;
@@ -166,8 +191,16 @@ public class Competition {
 	}
 	
 	public void completeArena(Arena arena){
-		outstandingArenas.remove(arena);
-		completedArenas.add(arena);
+		outstandingArenas.remove(arena.getName());
+		completedArenas.put(arena.getName(), arena);
+	}
+	
+	public void addNewArena(Arena arena){
+		outstandingArenas.put(arena.getName(), arena);
+	}
+	
+	public boolean isCompleted(String arenaName){
+		return completedArenas.containsKey(arenaName);
 	}
 	
 	public String toString(){
@@ -191,23 +224,7 @@ public class Competition {
 		else{
 			output += "0s";
 		}
-		output += "</frequency>" + System.getProperty("line.separator");
-			
-		if(officialArena != null){
-			output+= "\t<officialArena name=\"Official Arena\" firstStartDate=\""
-					+ PASTAUtil.formatDate(firstStartDate) + "\" ";
-			output += "repeats=\""+frequency+"\" ";
-			output += "/>" + System.getProperty("line.separator");;
-		}
-		if(outstandingArenas != null){
-			output += "\t<arenas>" + System.getProperty("line.separator");
-				for(Arena currArena: outstandingArenas){
-					output += "\t\t" + currArena + System.getProperty("line.separator");
-				}
-			output += "\t</arenas>" + System.getProperty("line.separator");
-		}
-		
-		output += "</competitionProperties>";
+		output += "</frequency>" + System.getProperty("line.separator") + "</competitionProperties>";			
 		return output;
 	}
 	

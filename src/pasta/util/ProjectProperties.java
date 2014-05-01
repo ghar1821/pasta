@@ -25,6 +25,7 @@ import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.LoginDAO;
+import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 
@@ -60,6 +61,7 @@ public class ProjectProperties {
 	private static LoginDAO loginDAO;
 	private static AssessmentDAO assessmentDAO;
 	private static ResultDAO resultDAO;
+	private static PlayerDAO playerDAO;
 	
 	private ProjectProperties(String projectLocation, String authType, Boolean createAccountOnSuccessfulLogin){
 		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
@@ -112,6 +114,7 @@ public class ProjectProperties {
 		
 		assessmentDAO = new AssessmentDAO();
 		resultDAO = new ResultDAO(assessmentDAO);
+		playerDAO = new PlayerDAO();
 	}
 
 	
@@ -241,5 +244,7 @@ public class ProjectProperties {
 		return resultDAO;
 	}
 	
-	
+	public PlayerDAO getPlayerDAO(){
+		return playerDAO;
+	}
 }

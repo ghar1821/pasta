@@ -90,4 +90,9 @@ public class PASTAUser implements Serializable{
 		extensions.put(assessmentName, newDueDate);
 	}
 	
+	@Transient
+	public boolean equals(PASTAUser user){
+		return (username.equals(user.getUsername()));
+	}
+	
 }

@@ -3,6 +3,7 @@ package pasta.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -11,18 +12,22 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.form.ReleaseForm;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
+import pasta.scheduler.ExecutionScheduler;
+import pasta.scheduler.Job;
 import pasta.util.ProjectProperties;
 
 @Service("assessmentManager")
@@ -39,6 +44,14 @@ public class AssessmentManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	
+	private ExecutionScheduler scheduler;
+	
+	@Autowired
+	public void setMyScheduler(ExecutionScheduler myScheduler) {
+		this.scheduler = myScheduler;
+	}
+	
 	
 	@Autowired
 	private ApplicationContext context;
@@ -94,19 +107,48 @@ public class AssessmentManager {
 			}
 			
 			// hand marking
-			for (WeightedHandMarking test : assessmentToAdd.getHandMarking()) {
-				if (assDao.getHandMarking(test.getHandMarkingName().replace(" ", "")) != null) {
-					test.setHandMarking(assDao.getHandMarking(test.getHandMarkingName().replace(
+			for (WeightedHandMarking handMarking : assessmentToAdd.getHandMarking()) {
+				if (assDao.getHandMarking(handMarking.getHandMarkingName().replace(" ", "")) != null) {
+					handMarking.setHandMarking(assDao.getHandMarking(handMarking.getHandMarkingName().replace(
 							" ", "")));
 				}
 			}
 			
 			// competitions
-			for (WeightedCompetition test : assessmentToAdd.getCompetitions()) {
-				if (assDao.getCompetition(test.getCompName().replace(" ", "")) != null) {
-					test.setTest(assDao.getCompetition(test.getCompName().replace(
+			for (WeightedCompetition compeition : assessmentToAdd.getCompetitions()) {
+				if (assDao.getCompetition(compeition.getCompName().replace(" ", "")) != null) {
+					compeition.setTest(assDao.getCompetition(compeition.getCompName().replace(
 							" ", "")));
-					assDao.getCompetition(test.getCompName().replace(" ", "")).addAssessment(assessmentToAdd);
+					
+					// if the competition is not already live, add comp/arenas to the scheduler
+					if(!assDao.getCompetition(compeition.getCompName().replace(" ", "")).isLive()){
+						if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).isCalculated()){
+							// add competition 
+							scheduler.save(new Job("PASTACompetitionRunner", 
+									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName(), 
+									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getNextRunDate()));
+						}
+						else{
+							// add arenas
+							// official
+							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena() != null){
+								Arena arena = assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena();
+								scheduler.save(new Job("PASTACompetitionRunner", 
+										assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+										arena.getNextRunDate()));
+							}
+							// outstanding
+							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
+								for(Arena arena : assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas()){
+									scheduler.save(new Job("PASTACompetitionRunner", 
+											assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+											arena.getNextRunDate()));
+								}
+							}
+						}
+					}
+					
+					assDao.getCompetition(compeition.getCompName().replace(" ", "")).addAssessment(assessmentToAdd);
 				}
 			}
 

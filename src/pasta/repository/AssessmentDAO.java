@@ -3,9 +3,9 @@ package pasta.repository;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -149,7 +150,24 @@ public class AssessmentDAO {
 			curAss.setSecretUnitTests(newAssessment.getSecretUnitTests());
 			curAss.setUnitTests(newAssessment.getUnitTests());
 			curAss.setHandMarking(newAssessment.getHandMarking());
+			
+			// unlink competitions
+			for(WeightedCompetition comp: curAss.getCompetitions()){
+				// if not in newAssessment.getCompetitions()
+				boolean found = false;
+				for(WeightedCompetition newComp: newAssessment.getCompetitions()){
+					if(comp.getTest() == newComp.getTest()){
+						found = true;
+						break;
+					}
+				}
+				if(!found){
+					// remove
+					comp.getTest().removeAssessment(curAss);
+				}
+			}
 			curAss.setCompetitions(newAssessment.getCompetitions());
+			
 		} else {
 			allAssessments.put(newAssessment.getShortName(), newAssessment);
 			String category = "";
@@ -300,8 +318,8 @@ public class AssessmentDAO {
 
 			// load properties
 			for (String name : allAssessmentNames) {
-				Assessment assessment = getAssessmentFromDisk(allTestLocation + "/"
-						+ name);
+				Assessment assessment = getAssessmentFromDisk(allTestLocation
+						+ "/" + name);
 				if (assessment != null) {
 					allAssessments.put(name, assessment);
 					String category = assessment.getCategory();
@@ -439,79 +457,34 @@ public class AssessmentDAO {
 
 			// arenas
 			// official
-			if (doc.getElementsByTagName("officialArena") != null
-					&& doc.getElementsByTagName("officialArena").getLength() != 0) {
-				Arena officialArena = new Arena();
+			
+			String[] arenaList = new File(location + "/arenas/").list();
+			
+			if(arenaList != null){
 				
-				NodeList arenaList = doc.getElementsByTagName("officialArena");
-				if (arenaList != null && arenaList.getLength() == 1) {
-					Node arenaNode = arenaList.item(0);
-					if (arenaNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element arenaElement = (Element) arenaNode;
-
-						officialArena.setName(arenaElement.getAttribute("name"));
-						try {
-							officialArena.setFirstStartDate(PASTAUtil.parseDate(arenaElement
-									.getAttribute("firstStartDate")));
-						} catch (Exception e) {
-							// couldn't parse date, it must be decades in
-							// the past.
-							officialArena.setFirstStartDate(new Date(0));
+				LinkedList<Arena> completedArenas = new LinkedList<Arena>();
+				LinkedList<Arena> outstandingArenas = new LinkedList<Arena>();
+				
+				for(String arenaName: arenaList){
+					Arena arena = getArenaFromDisk(location + "/arenas/" + arenaName);
+					if(arena != null){
+						if(arena.getName().replace(" ", "").toLowerCase().equals("officialarena")){
+							comp.setOfficialArena(arena);
 						}
-						if (arenaElement.getAttribute("password").length() > 0) {
-							officialArena.setPassword(arenaElement
-									.getAttribute("password"));
+						else if(new File(location + "/arenas/" + arenaName + "/results.csv").exists()
+								&& !arena.isRepeatable()){
+							completedArenas.add(arena);
 						}
-
-						if (arenaElement.getAttribute("repeats").length() > 0) {
-							officialArena.setFrequency(new PASTATime(arenaElement
-									.getAttribute("repeats")));
+						else{
+							outstandingArenas.add(arena);
 						}
 					}
 				}
 				
-				comp.setOfficialArena(officialArena);
+				comp.setCompletedArenas(completedArenas);
+				comp.setOutstandingArenas(outstandingArenas);
 			}
-					
-			// unofficial
-			if (doc.getElementsByTagName("arenas") != null
-					&& doc.getElementsByTagName("arenas").getLength() != 0) {
-				Collection<Arena> arenas = new LinkedList<Arena>();
-				NodeList arenaList = doc.getElementsByTagName("arena");
-				if (arenaList != null) {
-					for (int i = 0; i < arenaList.getLength(); i++) {
-						Node arenaNode = arenaList.item(i);
-						if (arenaNode.getNodeType() == Node.ELEMENT_NODE) {
-							Element arenaElement = (Element) arenaNode;
-
-							Arena arena = new Arena();
-							arena.setName(arenaElement.getAttribute("name"));
-							try {
-								arena.setFirstStartDate(PASTAUtil.parseDate(arenaElement
-										.getAttribute("firstStartDate")));
-							} catch (Exception e) {
-								// couldn't parse date, it must be decades in
-								// the past.
-								arena.setFirstStartDate(new Date(0));
-							}
-							if (arenaElement.getAttribute("password").length() > 0) {
-								arena.setPassword(arenaElement
-										.getAttribute("password"));
-							}
-
-							if (arenaElement.getAttribute("repeats").length() > 0) {
-								arena.setFrequency(new PASTATime(arenaElement
-										.getAttribute("repeats")));
-							}
-
-							arenas.add(arena);
-						}
-					}
-				}
-
-				// TODO check if arena is complete first
-				comp.setOutstandingArenas(arenas);
-			}
+			
 			return comp;
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();
@@ -524,12 +497,87 @@ public class AssessmentDAO {
 	}
 
 	/**
+	 * Method to get an arena from a location
+	 * 
+	 * @param location
+	 *            - the location of the arena
+	 * @return null - there is no arena at that location to be retrieved
+	 * @return arena - the arena at that location.
+	 */
+	private Arena getArenaFromDisk(String location) {
+
+		try {
+			File fXmlFile = new File(location + "/arenaProperties.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder dBuilder;
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			
+			Arena arena = new Arena();
+			
+			// name
+			arena.setName(doc.getElementsByTagName("name").item(0)
+					.getChildNodes().item(0).getNodeValue());
+			
+			// first start date
+			if (doc.getElementsByTagName("firstStartDate") != null
+					&& doc.getElementsByTagName("firstStartDate").getLength() != 0) {
+				arena.setFirstStartDate(PASTAUtil.parseDate(doc
+						.getElementsByTagName("firstStartDate").item(0)
+						.getChildNodes().item(0).getNodeValue()));
+			}
+
+			// frequency
+			if (doc.getElementsByTagName("repeats") != null
+					&& doc.getElementsByTagName("repeats").getLength() != 0) {
+				arena.setFrequency(new PASTATime(doc
+						.getElementsByTagName("repeats").item(0)
+						.getChildNodes().item(0).getNodeValue()));
+			}
+			
+			// password
+			if (doc.getElementsByTagName("password") != null
+					&& doc.getElementsByTagName("password").getLength() != 0) {
+				arena.setPassword(doc.getElementsByTagName("password").item(0)
+						.getChildNodes().item(0).getNodeValue());
+			}
+			
+			// players
+			String[] players = new File(location + "/players/").list();
+			
+			if(players != null){
+				for(String player : players){
+					Scanner in = new Scanner(new File(location + "/players/" + player));
+					
+					String username = player.split("\\.")[0];
+					while(in.hasNextLine()){
+						arena.addPlayer(username, in.nextLine());
+					}
+					
+					in.close();
+				}
+			}
+			
+			return arena;
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not read arena " + location
+					+ System.getProperty("line.separator") + sw.toString());
+			return null;
+		}
+	}
+
+	/**
 	 * Method to get an assessment from a location
 	 * 
 	 * @param location
 	 *            - the location of the assessment
 	 * @return null - there is no assessment at that location to be retrieved
-	 * @return test - the assessment at that location.
+	 * @return assessment - the assessment at that location.
 	 */
 	private Assessment getAssessmentFromDisk(String location) {
 		try {
@@ -752,6 +800,7 @@ public class AssessmentDAO {
 									+ System.getProperty("line.separator");
 						}
 						currDescriptionMap.put(row.getName(), description);
+						in.close();
 					} catch (Exception e) {
 						// do nothing
 					}
@@ -897,13 +946,15 @@ public class AssessmentDAO {
 
 	public void addCompetition(Competition comp) {
 		if (allCompetitions.containsKey(comp.getShortName())) {
-			// update
-			allCompetitions.get(comp.getShortName())
-					.setOutstandingArenas(comp.getOutstandingArenas());
-			allCompetitions.get(comp.getShortName())
-				.setCompletedArenas(comp.getCompletedArenas());
-			allCompetitions.get(comp.getShortName())
-				.setOfficialArena(comp.getOfficialArena());
+			// update - arenas
+//			allCompetitions.get(comp.getShortName()).setOutstandingArenas(
+//					comp.getOutstandingArenas());
+//			allCompetitions.get(comp.getShortName()).setCompletedArenas(
+//					comp.getCompletedArenas());
+//			allCompetitions.get(comp.getShortName()).setOfficialArena(
+//					comp.getOfficialArena());
+			
+			// update - flags
 			allCompetitions.get(comp.getShortName()).setStudentCreatableArena(
 					comp.isStudentCreatableArena());
 			allCompetitions.get(comp.getShortName())
@@ -913,13 +964,110 @@ public class AssessmentDAO {
 			allCompetitions.get(comp.getShortName())
 					.setTutorCreatableRepeatableArena(
 							comp.isTutorCreatableRepeatableArena());
+			
+			// update - dates
 			allCompetitions.get(comp.getShortName()).setFirstStartDateStr(
 					comp.getFirstStartDateStr());
 			allCompetitions.get(comp.getShortName()).setFrequency(
 					comp.getFrequency());
+			
+			// arena based competition
+			if(!allCompetitions.get(comp.getShortName()).isCalculated()){
+				allCompetitions.get(comp.getShortName()).getOfficialArena().setFirstStartDate(comp.getFirstStartDate());
+				allCompetitions.get(comp.getShortName()).getOfficialArena().setFrequency(comp.getFrequency());
+			}
 		} else {
 			// add
 			allCompetitions.put(comp.getShortName(), comp);
+		}
+		// write to disk
+		try {
+
+			// create space on the file system.
+			(new File(comp.getFileLocation() + "/code/")).mkdirs();
+			
+			// generate competitionProperties
+			PrintStream out = new PrintStream(comp.getFileLocation()
+					+ "/competitionProperties.xml");
+			out.print(comp);
+			out.close();
+			
+			// arenas
+			if(!comp.isCalculated()){
+				// official arenas
+				writeArenaToDisk(comp.getOfficialArena(), comp);
+				
+				// other arenas
+				for(Arena arena: comp.getOutstandingArenas()){
+					writeArenaToDisk(arena, comp);
+				}
+				
+				for(Arena arena: comp.getCompletedArenas()){
+					writeArenaToDisk(arena, comp);
+				}
+				
+				
+			}
+
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			(new File(comp.getFileLocation())).delete();
+			logger.error("Competition " + comp.getName()
+					+ " could not be created successfully!"
+					+ System.getProperty("line.separator") + sw.toString());
+		}
+	}
+	
+	public void writeArenaToDisk(Arena arena, Competition comp){
+		if(arena != null && comp!= null){
+			// ensure folder exists for plaers
+			(new File(comp.getFileLocation() 
+					+ "/arenas/" + arena.getName()
+					+ "/players/")).mkdirs();
+			
+			// write arena properties
+			try {
+				
+				new File(comp.getFileLocation() + "/arenas/" + arena.getName()).mkdirs();
+				
+				PrintStream arenaOut = new PrintStream(comp.getFileLocation() + "/arenas/" + arena.getName()
+						+ "/arenaProperties.xml");
+				arenaOut.print(arena);
+				arenaOut.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			
+			// write players
+			for(Entry<String, Set<String>> entry: arena.getPlayers().entrySet()){
+				updatePlayerInArena(comp, arena, entry.getKey(), entry.getValue());
+			}
+			
+		}
+	}
+	
+	public void updatePlayerInArena(Competition comp, Arena arena, String username, Set<String> players){
+		if(comp != null && arena != null && username != null 
+				&& !username.isEmpty() && players!= null && !players.isEmpty()){
+			try {
+				(new File(comp.getFileLocation() 
+						+ "/arenas/" + arena.getName()
+						+ "/players/")).mkdirs();
+				
+				PrintStream out = new PrintStream(comp.getFileLocation() 
+						+ "/arenas/" + arena.getName()
+						+ "/players/"+ username + ".players");
+				
+				for(String player: players){
+					out.println(player);
+				}
+				
+				out.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

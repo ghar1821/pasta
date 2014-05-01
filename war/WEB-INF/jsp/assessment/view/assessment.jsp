@@ -274,13 +274,15 @@
             		var childrenNodes = tables[i].children;
             		for(var j=0; j<childrenNodes.length; ++j){
             			
-            			// td -> input - unitTestName
-            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".handMarkingName");
-            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".handMarkingName");
-            			
-            			// td -> input - weight
-            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+						if(childrenNodes[j].getAttribute("id") != "buffer"){
+	            			// td -> input - unitTestName
+	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".handMarkingName");
+	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".handMarkingName");
+	            			
+	            			// td -> input - weight
+	            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
+	            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+						}
             		}
             	}
             }
@@ -298,14 +300,16 @@
             		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
             		var childrenNodes = tables[i].children;
             		for(var j=0; j<childrenNodes.length; ++j){
-            			
-            			// td -> input - compName
-            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".compName");
-            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".compName");
-            			
-            			// td -> input - weight
-            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+
+            			if(childrenNodes[j].getAttribute("id") != "buffer"){
+	            			// td -> input - compName
+	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".compName");
+	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".compName");
+	            			
+	            			// td -> input - weight
+	            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
+	            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
+            			}
             		}
             	}
             }

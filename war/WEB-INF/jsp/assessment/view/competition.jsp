@@ -57,7 +57,57 @@
 <c:if test="${not competition.calculated}">
 	<table style="width	:100%;">
 		<tr><th>Name</th><th>First Run Date</th><th>Repeating Frequency</th><th>Password protected</th></tr>
-		<c:forEach var="arena" items="${competition.arenas}">
+		<tr>
+			<td>${competition.officialArena.name}</td>
+			<td>${competition.officialArena.firstStartDate}</td>
+			<td>
+				<c:choose>
+					<c:when test="${competition.officialArena.repeatable}">
+						${competition.officialArena.frequency.niceStringRepresentation}
+					</c:when>
+					<c:otherwise>
+						Does not repeat
+					</c:otherwise>
+				</c:choose>
+			</td>
+			<td>
+			<c:choose>
+				<c:when test="${competition.officialArena.passwordProtected}">
+					YES 
+				</c:when>
+				<c:otherwise>
+					NO
+				</c:otherwise>
+			</c:choose>
+			</td>
+		</tr>
+		<c:forEach var="arena" items="${competition.outstandingArenas}">
+			<tr>
+				<td>${arena.name}</td>
+				<td>${arena.firstStartDate}</td>
+				<td>
+					<c:choose>
+						<c:when test="${arena.repeatable}">
+							${arena.frequency.niceStringRepresentation}
+						</c:when>
+						<c:otherwise>
+							Does not repeat
+						</c:otherwise>
+					</c:choose>
+				</td>
+				<td>
+				<c:choose>
+					<c:when test="${arena.passwordProtected}">
+						YES 
+					</c:when>
+					<c:otherwise>
+						NO
+					</c:otherwise>
+				</c:choose>
+				</td>
+			</tr>
+		</c:forEach>
+		<c:forEach var="arena" items="${competition.completedArenas}">
 			<tr>
 				<td>${arena.name}</td>
 				<td>${arena.firstStartDate}</td>
@@ -95,7 +145,7 @@
 		<table>
 			<tr><td>Competition Code:</td><td><form:input type="file" path="file"/></td></tr>
 		</table>
-    	<input type="submit" value="Create" id="submit"/>
+    	<input type="submit" value="Update" id="submit"/>
 	</form:form>
 </div>
 

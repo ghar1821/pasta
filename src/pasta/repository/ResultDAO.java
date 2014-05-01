@@ -625,9 +625,38 @@ public class ResultDAO {
 	public CompetitionResult getCompetitionResult(String competitionName) {
 		return competitionResults.get(competitionName);
 	}
-
-	public void updateCompetitionResults(String compName) {
+	
+	private void updateCompetitionResults(String compName, String filename){
 		List<PASTACompUserResult> compUserResult = new LinkedList<PASTACompUserResult>();
+
+		try{
+			Scanner in = new Scanner(new File(filename));
+			
+			while(in.hasNextLine()){
+				try{
+					String line = in.nextLine();
+					PASTACompUserResult user = new PASTACompUserResult(line.split(",")[0].trim(), Double.parseDouble(line.split(",")[1].trim()));
+					compUserResult.add(user);
+				}
+				catch(Exception e){
+					logger.error(e);
+				}
+			}
+			in.close();
+			
+			CompetitionResult result = competitionResults.get(compName);
+			if(result == null){
+				result = new CompetitionResult();
+				competitionResults.put(compName, result);
+			}
+			result.updatePositions(compUserResult);
+		}
+		catch(Exception e){
+			logger.error(e);
+		}
+	}
+
+	public void updateCalculatedCompetitionResults(String compName) {
 		
 		// get latest
 		String[] allFiles = (new File(ProjectProperties
@@ -638,38 +667,37 @@ public class ResultDAO {
 		
 		if (allFiles != null) {
 			Arrays.sort(allFiles);
-			try{
-				Scanner in = new Scanner(new File(ProjectProperties
-					.getInstance().getProjectLocation()
-					+ "/competitions/"
-					+ compName
-					+ "/competition/"
-					+ allFiles[allFiles.length -1]
-					+ "/marks.csv"));
 				
-				while(in.hasNextLine()){
-					try{
-						String line = in.nextLine();
-						PASTACompUserResult user = new PASTACompUserResult(line.split(",")[0].trim(), Double.parseDouble(line.split(",")[1].trim()));
-						compUserResult.add(user);
-					}
-					catch(Exception e){
-						logger.error(e);
-					}
-				}
-				in.close();
-			}
-			catch(Exception e){
-				logger.error(e);
-			}
+			updateCompetitionResults(compName, ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/competitions/"
+				+ compName
+				+ "/competition/"
+				+ allFiles[allFiles.length -1]
+				+ "/marks.csv");
 		}
+	}
+	
+	public void updateArenaCompetitionResults(String compName) {
 		
-		CompetitionResult result = competitionResults.get(compName);
-		if(result == null){
-			result = new CompetitionResult();
-			competitionResults.put(compName, result);
+		// get latest
+		String[] allFiles = (new File(ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/template/competitions/"
+				+ compName
+				+ "/arenas/Official Arena/")).list();
+		
+		if (allFiles != null) {
+			Arrays.sort(allFiles);
+				
+			updateCompetitionResults(compName, ProjectProperties
+				.getInstance().getProjectLocation()
+				+ "/template/competitions/"
+				+ compName
+				+ "/arenas/Official Arena/"
+				+ allFiles[allFiles.length -1]
+				+ "/marks.csv");
 		}
-		result.updatePositions(compUserResult);
 	}
 	
 	public ArenaResult getCalculatedCompetitionResult(String competitionName){
@@ -717,7 +745,11 @@ public class ResultDAO {
 					
 					HashMap<String, String> userData = new HashMap<String, String>();
 					for(int i=1; i< cat.length; ++i){
-						userData.put(cat[i], line[i]);
+						String category = cat[i];
+						if(category.startsWith("*")){
+							category = category.replaceFirst("\\*", "");
+						}
+						userData.put(category, line[i]);
 					}
 					
 					data.put(line[0], userData);

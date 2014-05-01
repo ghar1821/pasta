@@ -70,11 +70,16 @@ public class PASTATime {
 	}
 
 	public Date nextExecution(Date currentDate){
+		if(getTime() == 0){
+			return currentDate;
+		}
 		Date next = new Date();
 		Date now = new Date();
 		next.setTime(currentDate.getTime() + getTime());
-		while(next.before(now)){
-			next.setTime(next.getTime() + getTime());
+		if(getTime() > 0){
+			while(next.before(now)){
+				next.setTime(next.getTime() + getTime());
+			}
 		}
 		return next;
 	}

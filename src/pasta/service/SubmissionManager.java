@@ -80,13 +80,6 @@ public class SubmissionManager {
 	@Autowired
 	public void setMyScheduler(ExecutionScheduler myScheduler) {
 		this.scheduler = myScheduler;
-		
-//		// start up competitions - competitions should schedule themselves
-//		for(Competition comp: assDao.getCompetitionList()){
-//			if(comp.isLive()){
-//				scheduler.save(new Job("PASTACompetitionRunner", comp.getShortName(), comp.getNextRunDate()));
-//			}
-//		}
 	}
 	
 	@Autowired

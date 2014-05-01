@@ -5,9 +5,12 @@
 
 <div style="float: left">
 	<button style="float: left; text-align: center;"
-		onclick="location.href='../../run/${assessmentName}/'">Run MOSS</button>
+		onclick="location.href='../../run/${assessmentName}/'">Run
+		MOSS</button>
 </div>
 
 <c:forEach var="moss" items="${mossList}">
-	<h2><a href="${moss.key}/">${moss.value}</a></h2>
+	<h2>
+		<a href="${moss.key}/">${moss.value}</a>
+	</h2>
 </c:forEach>

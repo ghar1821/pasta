@@ -121,13 +121,13 @@
 										<a href="<spring:url value="/handMarking/" htmlEscape="true" />"><span>Hand Marking</span></a>
 									</span>
 								</li>
+							</c:if>
+							<c:if test="${not empty unikey}">
 								<li>
 									<span>
 										<a href="<spring:url value="/competition/" htmlEscape="true" />"><span>Competitions</span></a>
 									</span>
 								</li>
-							</c:if>
-							<c:if test="${not empty unikey}">
 								<li>
 									<span>
 										<a href="<spring:url value="/admin/" htmlEscape="true" />"><span>Admin</span></a>

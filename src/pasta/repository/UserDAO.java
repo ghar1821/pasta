@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,42 +46,65 @@ public class UserDAO extends HibernateDaoSupport{
 	public void updateCachedUser(PASTAUser user){
 		if (user != null) {
 			PASTAUser oldUser = allUsers.get(user.getUsername());
-			if(!user.isTutor()){
-				
-				allUsers.put(user.getUsername(), user);
-				
-				if(user.getTutorial() == null){
-					user.setTutorial("");
+			
+			if(user.isTutor()){
+				// TUTOR
+				if(oldUser == null){
+					// add like normal
+					allUsers.put(user.getUsername(), user);
 				}
-				if(user.getStream() == null){
-					user.setStream("");
+				else{
+					// update
+					oldUser.setTutorial(user.getTutorial());
+					oldUser.setStream(user.getStream());
 				}
-				
-				if(oldUser != null){
-					if(oldUser.getExtensions() != null){
-						user.setExtension(oldUser.getExtensions());
+			}
+			else{
+				// STUDENT
+				if(oldUser == null){
+					// add new
+					allUsers.put(user.getUsername(), user);
+					// tutorial cache
+					if(!usersByStream.containsKey(user.getStream())){
+						usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
 					}
-					
-					// clean up after the old user
-					if (oldUser.getTutorial() != null && 
-							usersByTutorial.containsKey(oldUser.getTutorial())) {
+					usersByStream.get(user.getStream()).add(user);
+					// stream cache
+					if(!usersByTutorial.containsKey(user.getTutorial())){
+						usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+					}
+					usersByTutorial.get(user.getTutorial()).add(user);
+				}
+				else{
+					// update
+
+					// check if tutorial has changed
+					if(!user.getTutorial().equals(oldUser.getTutorial())){
+						// update caching
 						usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+						if(usersByTutorial.get(oldUser.getTutorial()).isEmpty()){
+							usersByTutorial.remove(oldUser.getTutorial());
+						}
+						oldUser.setTutorial(user.getTutorial());
+						if(!usersByTutorial.containsKey(user.getTutorial())){
+							usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+						}
+						usersByTutorial.get(user.getTutorial()).add(oldUser);
 					}
-					if (oldUser.getStream() != null && 
-							usersByStream.containsKey(oldUser.getStream())) {
+					// check if stream has changed
+					if(!user.getStream().equals(oldUser.getStream())){
+						// remove from caching
 						usersByStream.get(oldUser.getStream()).remove(oldUser);
+						if(usersByStream.get(oldUser.getStream()).isEmpty()){
+							usersByStream.remove(oldUser.getStream());
+						}
+						oldUser.setStream(user.getStream());
+						if(!usersByStream.containsKey(user.getStream())){
+							usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
+						}
+						usersByStream.get(user.getStream()).add(oldUser);
 					}
 				}
-				
-				// add new user
-				if(!usersByTutorial.containsKey(user.getTutorial())){
-					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
-				}
-				usersByTutorial.get(user.getTutorial()).add(user);
-				if(!usersByStream.containsKey(user.getStream())){
-					usersByStream.put(user.getStream(), new ArrayList<PASTAUser>());
-				}
-				usersByStream.get(user.getStream()).add(user);
 			}
 		}
 	}
@@ -213,7 +237,7 @@ public class UserDAO extends HibernateDaoSupport{
 				allUsers.put(user.getUsername().toLowerCase(), user);
 				
 				if(!usersByStream.containsKey(user.getStream())){
-					usersByStream.put(user.getStream(), new ArrayList<PASTAUser>());
+					usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
 					tutorialByStream.put(user.getStream(), new HashSet<String>());
 				}
 				usersByStream.get(user.getStream()).add(user);
@@ -222,7 +246,7 @@ public class UserDAO extends HibernateDaoSupport{
 					tutorialByStream.get(user.getStream()).add(user.getTutorial());
 				}
 				if(!usersByTutorial.containsKey(user.getTutorial())){
-					usersByTutorial.put(user.getTutorial(), new ArrayList<PASTAUser>());
+					usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
 				}
 				usersByTutorial.get(user.getTutorial()).add(user);
 				
