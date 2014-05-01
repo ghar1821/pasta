@@ -283,23 +283,6 @@ public class ExecutionManager {
 				}
 				
 				if(worked){
-					// delete everything else
-					String[] allFiles = (new File(comp.getFileLocation() + "/arenas/" + arena.getName() + "/" + PASTAUtil.formatDate(job.getRunDate())))
-							.list();
-					for (String file : allFiles) {
-						File actualFile = new File(comp.getFileLocation()
-								+ "/arenas/" + arena.getName() + "/"
-								+ PASTAUtil.formatDate(job.getRunDate()) + "/"
-								+ file);
-						if (actualFile.isDirectory()) {
-							FileUtils.deleteDirectory(actualFile);
-						} else {
-							if (!file.equals("marks.csv")
-									&& !file.equals("results.csv")) {
-								FileUtils.forceDelete(actualFile);
-							}
-						}
-					}
 					
 					// send updates to players
 					Scanner resultsIn = new Scanner(new File(comp.getFileLocation() + "/arenas/" + arena.getName() + "/results.csv"));
@@ -334,13 +317,30 @@ public class ExecutionManager {
 					
 					resultsIn.close();
 					
-				}
-				
-				if(arena.isRepeatable()){
-					scheduler.save(new Job(job.getUsername(), job.getAssessmentName(), arena.getNextRunDate()));
-				}
-				else{
-					comp.completeArena(arena);
+					if(arena.isRepeatable()){
+						scheduler.save(new Job(job.getUsername(), job.getAssessmentName(), arena.getNextRunDate()));
+					}
+					else{
+						comp.completeArena(arena);
+					}
+					
+					// delete everything else
+					String[] allFiles = (new File(comp.getFileLocation() + "/arenas/" + arena.getName() + "/" + PASTAUtil.formatDate(job.getRunDate())))
+							.list();
+					for (String file : allFiles) {
+						File actualFile = new File(comp.getFileLocation()
+								+ "/arenas/" + arena.getName() + "/"
+								+ PASTAUtil.formatDate(job.getRunDate()) + "/"
+								+ file);
+						if (actualFile.isDirectory()) {
+							FileUtils.deleteDirectory(actualFile);
+						} else {
+							if (!file.equals("marks.csv")
+									&& !file.equals("results.csv")) {
+								FileUtils.forceDelete(actualFile);
+							}
+						}
+					}
 				}
 				
 			} catch (IOException e) {
