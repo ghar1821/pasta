@@ -159,4 +159,16 @@ public class Arena {
 			players.get(user).remove(playerName);
 		}
 	}
+	
+	public int getNumPlayers(){
+		int numPlayers = 0;
+		if(players != null){
+			for(Set<String> playerSet: players.values()){
+				if(playerSet != null){
+					numPlayers += playerSet.size();
+				}
+			}
+		}
+		return numPlayers;
+	}
 }

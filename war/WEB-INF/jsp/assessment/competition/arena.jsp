@@ -8,10 +8,12 @@
 <table style="width: 100%;">
 	<tr>
 		<th>Name</th>
+		<th>Number of Players</th>
 		<th>Next Execution Date</th>
 	</tr>
 	<tr>
 		<td><a href="${competition.officialArena.shortName}/">${competition.officialArena.name}</a></td>
+		<td>${competition.officialArena.numPlayers}</td>
 		<td>${competition.officialArena.nextRunDate}</td>
 	</tr>
 </table>
@@ -28,12 +30,14 @@
 <table style="width: 100%;">
 	<tr>
 		<th>Name</th>
+		<th>Number of Players</th>
 		<th>Next Execution Date</th>
 		<!--  <th>Password protected</th> -->
 	</tr>
 	<c:forEach var="arena" items="${competition.outstandingArenas}">
 		<tr>
 			<td><a href="${arena.shortName}/">${arena.name}</a></td>
+			<td>${arena.numPlayers}</td>
 			<td>${arena.nextRunDate}</td>
 			<!-- 
 			<td><c:choose>
@@ -51,6 +55,7 @@
 	<c:forEach var="arena" items="${competition.completedArenas}">
 		<tr>
 			<td><a href="${arena.shortName}/">${arena.name}</a></td>
+			<td>${arena.numPlayers}</td>
 			<td>Completed</td>
 			<!-- 
 			<td><c:choose>

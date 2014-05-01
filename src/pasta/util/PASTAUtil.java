@@ -13,6 +13,7 @@ import java.net.Proxy;
 import java.net.SocketAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.players.PlayerHistory;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
@@ -176,6 +178,29 @@ public class PASTAUtil {
 		}
 		
 		return allsubmissions;
+	}
+
+	public static HashMap<String, FileTreeNode> generateFileTree(String username,
+			String competitionName, Collection<PlayerHistory> players) {
+		HashMap<String, FileTreeNode> allPlayers = new HashMap<String, FileTreeNode>();
+		
+		for(PlayerHistory player: players){
+			if(player.getActivePlayer() != null){
+				FileTreeNode node = generateFileTree(ProjectProperties.getInstance().getProjectLocation()
+						+ "/submissions/"
+						+ username
+						+ "/competitions/"
+						+ competitionName
+						+ "/"
+						+ player.getPlayerName()
+						+ "/active/code/");
+				if(node != null){
+					allPlayers.put(player.getPlayerName(), node);
+				}
+			}
+		}
+		
+		return allPlayers;
 	}
 	
 }

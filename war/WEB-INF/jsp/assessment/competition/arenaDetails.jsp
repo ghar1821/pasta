@@ -68,7 +68,7 @@
 	<tbody>
 		<c:forEach items="${results.data}" var="dataLine">
 			<tr>
-				<td>${dataLine.key}</td>
+				<td><a href="../${fn:split(dataLine.key, '.')[0]}/players/">${dataLine.key}</a></td>
 				<c:forEach items="${categories}" var="category">
 					<td><fmt:formatNumber type="number" maxFractionDigits="3" value="${dataLine.value[category]}" /></td>
 				</c:forEach>
@@ -91,7 +91,7 @@
 <c:forEach items="${arena.players}" var="user">
 	<c:if test="${not empty user.value}">
 		<c:forEach items="${user.value}" var="player">
-			${user.key} : ${player} <br/>
+			<a href="../${user.key}/players/">${user.key} : ${player} </a><br/>
 		</c:forEach>
 	</c:if>
 </c:forEach>

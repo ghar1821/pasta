@@ -88,6 +88,10 @@ public class CompetitionController {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
+		return getUser(username);
+	}
+	
+	public PASTAUser getUser(String username) {
 		if (username != null) {
 			return userManager.getUser(username);
 		}
@@ -359,7 +363,34 @@ public class CompetitionController {
 		
 		model.addAttribute("unikey", user);
 		model.addAttribute("competition", currComp);
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(), 
+				competitionName, competitionManager.getPlayers(user.getUsername(), competitionName)));
 		model.addAttribute("players", competitionManager.getLatestPlayers(user.getUsername(), competitionName));
+		
+		return "assessment/competition/players";
+	}
+	
+	@RequestMapping(value = "view/{competitionName}/{unikey}/players/")
+	public String viewOthersPlayers(Model model,
+			@PathVariable("unikey") String unikey,
+			@PathVariable("competitionName") String competitionName) {
+		PASTAUser user = getUser();
+		PASTAUser viewedUser = getUser(unikey);
+		Competition currComp = competitionManager.getCompetition(competitionName);
+
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (viewedUser == null || currComp == null || (!user.isTutor() && !currComp.isLive())) {
+			return "redirect:/home/.";
+		}		
+		
+		model.addAttribute("unikey", user);
+		model.addAttribute("viewedUser", viewedUser);
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser.getUsername(), 
+				competitionName, competitionManager.getPlayers(viewedUser.getUsername(), competitionName)));
+		model.addAttribute("competition", currComp);
+		model.addAttribute("players", competitionManager.getLatestPlayers(viewedUser.getUsername(), competitionName));
 		
 		return "assessment/competition/players";
 	}

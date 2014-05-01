@@ -5,7 +5,14 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <h1>Competition: ${competition.name}</h1>
-<button id="newPopup">Add a new Player</button>
+<c:choose>
+	<c:when test="${empty viewedUser}">					
+		<button id="newPopup">Add a new Player</button>
+	</c:when>
+	<c:otherwise>
+		<h1>Username: ${viewedUser.username}</h1>
+	</c:otherwise>
+</c:choose>
 
 <h2>Active Players:</h2>
 <table>
@@ -14,6 +21,16 @@
 			<tr>
 				<td><h5>${player.activePlayer.name}</h5></td><td><h5>Uploaded: ${player.activePlayer.firstUploaded}</h5></td>
 			</tr>
+			<c:if test="${unikey.tutor}">
+				<tr>
+					<td>
+						<c:set var="node" value="${nodeList[player.activePlayer.name]}" scope="request"/>
+						<ul class="list">
+							<jsp:include page="../../recursive/fileWriter.jsp"/>
+						</ul>
+					</td>
+				</tr>
+			</c:if>
 			<tr>
 				<td>
 					<div style="position: absolute; float:left; z-index:2; margin:145px 105px"><strong>#${player.activePlayer.officialRanking}</strong></div>
@@ -58,12 +75,14 @@
 				</script>
 				</td>
 				
-			</tr>					
-			<tr>
-				<td>
-					<button onclick="location.href='retire/${player.activePlayer.name}/'">RETIRE</button>
-				</td>
 			</tr>
+			<c:if test="${empty viewedUser}">					
+				<tr>
+					<td>
+						<button onclick="location.href='retire/${player.activePlayer.name}/'">RETIRE</button>
+					</td>
+				</tr>
+			</c:if>
 		</c:if>
 	</c:forEach>
 </table>
@@ -77,39 +96,42 @@
 	</c:forEach>
 </table>
 
-<div id="newPlayer" class="popup">
-	<span class="button bClose">
-		<span><b>X</b></span>
-	</span>
-	<h1> New Player </h1>
-	<form:form commandName="newPlayerModel" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Player Code:</td><td><form:input type="file" path="file"/></td></tr>
-		</table>
-    	<input type="submit" value="Create" id="submit"/>
-	</form:form>
-</div>
+<c:if test="${empty viewedUser}">					
 
+	<div id="newPlayer" class="popup">
+		<span class="button bClose">
+			<span><b>X</b></span>
+		</span>
+		<h1> New Player </h1>
+		<form:form commandName="newPlayerModel" enctype="multipart/form-data" method="POST">
+			<table>
+				<tr><td>Player Code:</td><td><form:input type="file" path="file"/></td></tr>
+			</table>
+	    	<input type="submit" value="Create" id="submit"/>
+		</form:form>
+	</div>
 	
-<script>
-	;(function($) {
-
-         // DOM Ready
-        $(function() {
-        	
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#newPopup').bind('click', function(e) {
-
-                // Prevents the default action to be triggered. 
-                e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('.popup').bPopup();
-
-            });
-            
-        });
-
-    })(jQuery);
-</script>
+		
+	<script>
+		;(function($) {
+	
+	         // DOM Ready
+	        $(function() {
+	        	
+	            // Binding a click event
+	            // From jQuery v.1.7.0 use .on() instead of .bind()
+	            $('#newPopup').bind('click', function(e) {
+	
+	                // Prevents the default action to be triggered. 
+	                e.preventDefault();
+	
+	                // Triggering bPopup when click event is fired
+	                $('.popup').bPopup();
+	
+	            });
+	            
+	        });
+	
+	    })(jQuery);
+	</script>
+</c:if>
