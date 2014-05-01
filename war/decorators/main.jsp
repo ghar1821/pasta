@@ -24,6 +24,7 @@
 		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<spring:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
 		
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.8.2.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>

@@ -11,8 +11,52 @@
 <table>
 	<c:forEach var="player" items="${players}">
 		<c:if test="${not empty player.activePlayer}">
-			<tr><td>${player.activePlayer.name} - ${player.activePlayer.firstUploaded} W: ${player.activePlayer.officialWin} D: ${player.activePlayer.officialDraw} L: ${player.activePlayer.officialLoss}</td>
-			<td><a href="retire/${player.activePlayer.name}/">RETIRE</a></td></tr>
+			<tr>
+				<td><h5>${player.activePlayer.name}</h5></td><td>Uploaded: ${player.activePlayer.firstUploaded}</td>
+			</tr>
+			<tr>
+				<td>
+					<div style="position: absolute; float:left; z-index:2; padding:145px 105px"><strong>#${player.activePlayer.officialRanking}</strong></div>
+					<div id="officialdonut${player.activePlayer.name}" style="width: 300px; height: 300px;"></div>
+				</td>
+				<td>
+					<div id="unofficialdonut${player.activePlayer.name}" style="width: 300px; height: 300px;"></div>
+				</td>
+				<script type="text/javascript">
+					  google.load("visualization", "1", {packages:["corechart"]});
+					  google.setOnLoadCallback(drawChart);
+					  function drawChart() {
+						var officialData = google.visualization.arrayToDataTable([
+						  ['Outcome', 'Numbers'],
+						  ['Win', ${player.activePlayer.officialWin}],
+						  ['Loss', ${player.activePlayer.officialLoss}],
+						  ['Draw', ${player.activePlayer.officialDraw}]
+						]);
+						
+						var unofficialData = google.visualization.arrayToDataTable([
+						  ['Outcome', 'Numbers'],
+						  ['Win', ${player.activePlayer.unofficialWin}],
+						  ['Loss', ${player.activePlayer.unofficialLoss}],
+						  ['Draw', ${player.activePlayer.unofficialDraw}]
+						]);
+
+						var officialOptions = {
+						  title: 'Official Stats',
+						  pieHole: 0.4,
+						};
+						var unofficialOptions = {
+						  title: 'Unofficial Stats',
+						  pieHole: 0.4,
+						};
+
+						var officialChart = new google.visualization.PieChart(document.getElementById('officialdonut${player.activePlayer.name}'));
+						officialChart.draw(officialData, officialOptions);
+						var unofficialChart = new google.visualization.PieChart(document.getElementById('unofficialdonut${player.activePlayer.name}'));
+						unofficialChart.draw(unofficialData, unofficialOptions);
+					  }
+					</script>
+			</tr>					
+			<tr><button onclick="location.href='retire/${player.activePlayer.name}/'">RETIRE</button></tr>
 		</c:if>
 	</c:forEach>
 </table>
