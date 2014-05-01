@@ -422,6 +422,10 @@ public class CompetitionManager {
 	public Collection<PlayerHistory> getPlayers(String username, String competitionName) {
 		return playerDAO.getPlayerHistory(username, competitionName);
 	}
+	
+	public Collection<PlayerHistory> getLatestPlayers(String username, String competitionName) {
+		return playerDAO.loadPlayerHistory(username, competitionName).values();
+	}
 
 	public void addPlayerToArena(String username, String competitionName,
 			String arenaName, String playerName) {

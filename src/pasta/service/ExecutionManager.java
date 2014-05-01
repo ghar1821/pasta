@@ -25,11 +25,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.players.PlayerResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
@@ -50,6 +52,7 @@ public class ExecutionManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	private PlayerDAO playerDAO = ProjectProperties.getInstance().getPlayerDAO();
 	
 	private ExecutionScheduler scheduler;
 	

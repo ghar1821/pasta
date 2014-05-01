@@ -359,7 +359,7 @@ public class CompetitionController {
 		
 		model.addAttribute("unikey", user);
 		model.addAttribute("competition", currComp);
-		model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
+		model.addAttribute("players", competitionManager.getLatestPlayers(user.getUsername(), competitionName));
 		
 		return "assessment/competition/players";
 	}

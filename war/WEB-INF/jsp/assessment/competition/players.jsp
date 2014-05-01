@@ -12,17 +12,16 @@
 	<c:forEach var="player" items="${players}">
 		<c:if test="${not empty player.activePlayer}">
 			<tr>
-				<td><h5>${player.activePlayer.name}</h5></td><td>Uploaded: ${player.activePlayer.firstUploaded}</td>
+				<td><h5>${player.activePlayer.name}</h5></td><td><h5>Uploaded: ${player.activePlayer.firstUploaded}</h5></td>
 			</tr>
 			<tr>
 				<td>
-					<div style="position: absolute; float:left; z-index:2; padding:145px 105px"><strong>#${player.activePlayer.officialRanking}</strong></div>
+					<div style="position: absolute; float:left; z-index:2; margin:145px 105px"><strong>#${player.activePlayer.officialRanking}</strong></div>
 					<div id="officialdonut${player.activePlayer.name}" style="width: 300px; height: 300px;"></div>
 				</td>
 				<td>
 					<div id="unofficialdonut${player.activePlayer.name}" style="width: 300px; height: 300px;"></div>
-				</td>
-				<script type="text/javascript">
+					<script type="text/javascript">
 					  google.load("visualization", "1", {packages:["corechart"]});
 					  google.setOnLoadCallback(drawChart);
 					  function drawChart() {
@@ -42,10 +41,12 @@
 
 						var officialOptions = {
 						  title: 'Official Stats',
+					      pieSliceText: 'none',
 						  pieHole: 0.4,
 						};
 						var unofficialOptions = {
 						  title: 'Unofficial Stats',
+						  pieSliceText: 'none',
 						  pieHole: 0.4,
 						};
 
@@ -54,9 +55,15 @@
 						var unofficialChart = new google.visualization.PieChart(document.getElementById('unofficialdonut${player.activePlayer.name}'));
 						unofficialChart.draw(unofficialData, unofficialOptions);
 					  }
-					</script>
+				</script>
+				</td>
+				
 			</tr>					
-			<tr><button onclick="location.href='retire/${player.activePlayer.name}/'">RETIRE</button></tr>
+			<tr>
+				<td>
+					<button onclick="location.href='retire/${player.activePlayer.name}/'">RETIRE</button>
+				</td>
+			</tr>
 		</c:if>
 	</c:forEach>
 </table>

@@ -79,7 +79,7 @@ public class PlayerDAO {
 		return players.get(username).get(competitionName).get(playerName);
 	}
 	
-	private HashMap<String, PlayerHistory> loadPlayerHistory(String username,
+	public HashMap<String, PlayerHistory> loadPlayerHistory(String username,
 			String competitionName) {
 		HashMap<String, PlayerHistory> playerHistory = new HashMap<String, PlayerHistory>();
 		
