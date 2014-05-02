@@ -290,8 +290,6 @@ public class CompetitionManager {
 			return;
 		}
 		
-		String errors="";
-		
 		// validate player
 		try {
 			// copy over competition
@@ -326,11 +324,10 @@ public class CompetitionManager {
 				project.executeTarget("build");
 				project.executeTarget("validate");
 			} catch (BuildException e) {
-				logger.error("Could not validate player for user: " + username + "\r\n" + e);
-				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
-				compileErrors.print(e.toString().replaceAll(".*/temp/test/" , "folder "));
-				errors = e.toString();
-				compileErrors.close();
+//				logger.error("Could not validate player for user: " + username + "\r\n" + e);
+//				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
+//				compileErrors.print(e.toString().replaceAll(".*/temp/test/" , "folder "));
+//				compileErrors.close();
 			}
 			
 			runErrors.flush();
@@ -360,48 +357,58 @@ public class CompetitionManager {
 			}
 			in.close();
 			
+			if(new File(compLocation + "/temp/validation.errors").exists()){
+				if(!containsError){
+					output = "";
+				}
+				Scanner valIn = new Scanner(new File(compLocation + "/temp/validation.errors"));
+				while(valIn.hasNextLine()){
+					output += valIn.nextLine() + System.getProperty("line.separator");;
+				}
+				valIn.close();
+				containsError=true;
+			}
+			
 			if(containsError){
 				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
 				compileErrors.print(output);
 				compileErrors.close();
 				result.rejectValue("file", "Player.errors", output);
-				return;
 			}
 		}
 		catch (Exception e){
 			// do nothing
 		}
-		
-		PlayerResult newPlayer = new PlayerResult();
-		
-		try {
-			Scanner in = new Scanner(new File(compLocation + "/temp/player.info"));
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				if(line.startsWith("name=")){
-					newPlayer.setName(line.replaceFirst("name=", ""));
-				}
-				else if(line.startsWith("uploadDate=")){
-					try {
-						newPlayer.setFirstUploaded(PASTAUtil.parseDate(line.replaceFirst("uploadDate=", "")));
-					} catch (ParseException e) {
-						e.printStackTrace();
+		if(!result.hasErrors()){
+			PlayerResult newPlayer = new PlayerResult();
+			
+			try {
+				Scanner in = new Scanner(new File(compLocation + "/temp/player.info"));
+				while(in.hasNextLine()){
+					String line = in.nextLine();
+					if(line.startsWith("name=")){
+						newPlayer.setName(line.replaceFirst("name=", ""));
+					}
+					else if(line.startsWith("uploadDate=")){
+						try {
+							newPlayer.setFirstUploaded(PASTAUtil.parseDate(line.replaceFirst("uploadDate=", "")));
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
 					}
 				}
+				in.close();
+			} catch (FileNotFoundException e) {
+				logger.error("player.info was not created for user " + username);
+				return;
 			}
-			in.close();
-		} catch (FileNotFoundException e) {
-			logger.error("player.info was not created for user " + username);
-			return;
-		}
-		
-		PlayerHistory history = playerDAO.getPlayerHistory(username, competitionShortName, newPlayer.getName());
-		if(history == null){
-			history = new PlayerHistory(newPlayer.getName());
-		}
-		
-		// if no errors and the player has the same name as an existing player
-		if(!result.hasErrors()){
+			
+			PlayerHistory history = playerDAO.getPlayerHistory(username, competitionShortName, newPlayer.getName());
+			if(history == null){
+				history = new PlayerHistory(newPlayer.getName());
+			}
+			
+			// if no errors and the player has the same name as an existing player
 			// retire the old player.
 			retirePlayer(username, competitionShortName, newPlayer.getName());
 			history.setActivePlayer(newPlayer);
