@@ -14,6 +14,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.hibernate.persister.entity.Loadable;
@@ -310,6 +311,11 @@ public class CompetitionManager {
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 			project.setBasedir(compLocation + "/temp/test/");
+			DefaultLogger consoleLogger = new DefaultLogger();
+			PrintStream runErrors = new PrintStream(compLocation + "/temp/run.errors");
+			consoleLogger.setOutputPrintStream(runErrors);
+			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
+			project.addBuildListener(consoleLogger);
 			project.init();
 
 			project.addReference("ant.projectHelper", projectHelper);
@@ -317,23 +323,53 @@ public class CompetitionManager {
 			
 			// run validate target
 			try {
+				project.executeTarget("build");
 				project.executeTarget("validate");
 			} catch (BuildException e) {
 				logger.error("Could not validate player for user: " + username + "\r\n" + e);
 				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
-				compileErrors.print(e.toString().replaceAll(".*" +
-						compLocation + "/temp/test/" , "folder "));
+				compileErrors.print(e.toString().replaceAll(".*/temp/test/" , "folder "));
 				errors = e.toString();
 				compileErrors.close();
 			}
+			
+			runErrors.flush();
+			runErrors.close();
 		} catch (IOException e) {
 			logger.error("Could not validate player for user: " + username + "\r\n" + e);
 		}
 		
 		// if validation.errors exist, read then report them
-		if(new File(compLocation + "/temp/validation.errors").exists()){
-			result.rejectValue("file", "Player.errors", errors);
-			return;
+		// scrape compiler errors from run.errors
+		try{
+			Scanner in = new Scanner (new File(compLocation + "/temp/run.errors"));
+			boolean containsError = false;
+			boolean importantData = false;
+			String output = "";
+			while(in.hasNextLine()){
+				String line = in.nextLine();
+				if(line.contains(": error:")){
+					containsError = true;
+				}
+				if(line.contains("[javac] Files to be compiled:")){
+					importantData = true;
+				}
+				if(importantData){
+					output += line.replace("[javac]", "").replaceAll(".*temp\\\\test\\\\","") + System.getProperty("line.separator");
+				}
+			}
+			in.close();
+			
+			if(containsError){
+				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
+				compileErrors.print(output);
+				compileErrors.close();
+				result.rejectValue("file", "Player.errors", output);
+				return;
+			}
+		}
+		catch (Exception e){
+			// do nothing
 		}
 		
 		PlayerResult newPlayer = new PlayerResult();

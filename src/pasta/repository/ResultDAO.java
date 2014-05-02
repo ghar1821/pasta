@@ -766,7 +766,7 @@ public class ResultDAO {
 			return result;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 			return null;
 		}
 	}

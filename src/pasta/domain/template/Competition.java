@@ -74,11 +74,11 @@ public class Competition {
 		if(name.replace(" ", "").toLowerCase().equals("officialarena")){
 			return officialArena;
 		}
-		if(completedArenas.containsKey(name)){
-			return completedArenas.get(name);
+		if(completedArenas.containsKey(name.replace(" ", ""))){
+			return completedArenas.get(name.replace(" ", ""));
 		}
-		if(outstandingArenas.containsKey(name)){
-			return outstandingArenas.get(name);
+		if(outstandingArenas.containsKey(name.replace(" ", ""))){
+			return outstandingArenas.get(name.replace(" ", ""));
 		}
 		return null;
 	}

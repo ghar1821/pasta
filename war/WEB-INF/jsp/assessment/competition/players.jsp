@@ -14,6 +14,13 @@
 	</c:otherwise>
 </c:choose>
 
+<spring:hasBindErrors name="newPlayerModel">
+	<form:form commandName="newPlayerModel" enctype="multipart/form-data" method="POST">
+		<h3>Submission Errors</h3>
+		<form:errors path="file" cssClass="ui-state-error" element="pre" />
+	</form:form>
+</spring:hasBindErrors>
+
 <h2>Active Players:</h2>
 <table>
 	<c:forEach var="player" items="${players}">
