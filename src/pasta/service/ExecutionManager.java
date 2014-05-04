@@ -264,6 +264,13 @@ public class ExecutionManager {
 				
 				// remove job from queue
 				scheduler.delete(job);
+				
+				if(arena.isRepeatable()){
+					scheduler.save(new Job(job.getUsername(), job.getAssessmentName(), arena.getNextRunDate()));
+				}
+				else{
+					comp.completeArena(arena);
+				}
 								 
 				// clean up
 				boolean worked = true;
@@ -316,13 +323,6 @@ public class ExecutionManager {
 					}
 					
 					resultsIn.close();
-					
-					if(arena.isRepeatable()){
-						scheduler.save(new Job(job.getUsername(), job.getAssessmentName(), arena.getNextRunDate()));
-					}
-					else{
-						comp.completeArena(arena);
-					}
 					
 					// delete everything else
 					String[] allFiles = (new File(comp.getFileLocation() + "/arenas/" + arena.getName() + "/" + PASTAUtil.formatDate(job.getRunDate())))
