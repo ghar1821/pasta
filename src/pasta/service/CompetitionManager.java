@@ -145,25 +145,35 @@ public class CompetitionManager {
 	
 	public void updateCompetition(NewCompetition form) {
 		Competition thisComp = getCompetition(form.getName().replace(" ", ""));
+		boolean newComp = false;
 		if (thisComp == null){
 			thisComp = new Competition();
+			newComp = true;
 		}
-		thisComp.setName(form.getName());
-		if(!thisComp.isCalculated()){
-			thisComp.getOfficialArena().setFrequency(form.getFrequency());
+		if(newComp){
+			thisComp.setName(form.getName());
+			if(!thisComp.isCalculated()){
+				thisComp.getOfficialArena().setFrequency(form.getFrequency());
+			}
+			thisComp.setFirstStartDate(form.getFirstStartDate());
+			thisComp.setFrequency(form.getFrequency());
 		}
-		thisComp.setFirstStartDate(form.getFirstStartDate());
-		thisComp.setFrequency(form.getFrequency());
 		try {
 
+			if((new File(thisComp.getFileLocation() + "/code/")).exists()){
+				FileUtils.deleteDirectory((new File(thisComp.getFileLocation() + "/code/")));
+			}
+			
 			// create space on the file system.
 			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
 
 			// generate competitionProperties
-			PrintStream out = new PrintStream(thisComp.getFileLocation()
-					+ "/competitionProperties.xml");
-			out.print(thisComp);
-			out.close();
+			if(newComp){
+				PrintStream out = new PrintStream(thisComp.getFileLocation()
+						+ "/competitionProperties.xml");
+				out.print(thisComp);
+				out.close();
+			}
 
 			// unzip the uploaded code into the code folder. (if exists)
 			if (form.getFile() != null && !form.getFile().isEmpty()) {
