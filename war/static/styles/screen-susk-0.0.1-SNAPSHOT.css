@@ -11,6 +11,31 @@
 	font-weight:bold;
 }
 
+.handMarkingStudent.didnotsubmit{
+	background-color: lightgray;
+	border-style: outset;
+	border-color: lightgray;
+	cursor: default;
+}
+
+.handMarkingStudent.submitted{
+	background-color: red;
+	border-style: outset;
+	border-color: red;
+}
+
+.handMarkingStudent.current{
+	border-color: yellow;
+}
+
+.handMarkingStudent{
+	width: 1em;
+	height: 2em;
+	float: left;
+	margin: 1px;
+	cursor: pointer;
+}
+
 /** susk-detail */
 pre {
 	margin: 0;

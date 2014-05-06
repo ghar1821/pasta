@@ -98,7 +98,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<td style="width:15em;">
 		                          <div style="float: left; width:100%">
 		                                  <button type="button" style="float: left; text-align: center;"
-		                                          onClick="markBatch('${assessment.shortName}')">Mark my classes</button>
+		                                          onclick="location.href='../mark/${assessment.shortName}/'">Mark my classes</button>
 		                          </div>
 		                     </td>
 				</c:if>

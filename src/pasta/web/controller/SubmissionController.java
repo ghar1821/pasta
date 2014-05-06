@@ -569,7 +569,127 @@ public class SubmissionController {
 
 		return "redirect:.";
 	}
+	
+	@RequestMapping(value = "mark/{assessmentName}/{studentIndex}/", method = {RequestMethod.POST, RequestMethod.GET})
+	public String handMarkAssessmentBatch(
+			@PathVariable("studentIndex") String studentIndex,
+			@PathVariable("assessmentName") String assessmentName,
+			@RequestParam(value="student", required=false) String student,
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
+			HttpServletRequest request, Model model){
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
 
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessmentName", assessmentName);
+		
+		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
+		for (String tutorial : user.getTutorClasses()) {
+			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
+		}
+		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
+		boolean[] hasSubmission = new boolean[myStudents.length];
+		for(int i=0; i<myStudents.length; ++i){
+			hasSubmission[i] = (manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
+		}
+		
+		// if submitted 
+		if(form != null && student != null 
+				&& getUser(student) != null 
+				&& manager.getLatestResultsForUser(student) != null
+				&& manager.getLatestResultsForUser(student).get(assessmentName) != null){
+
+			// save changes
+			List<HandMarkingResult> results = form.getHandMarkingResults();
+			for (HandMarkingResult currResult : results) {
+				currResult.setMarkingTemplate(handMarkingManager.getHandMarking(currResult
+						.getHandMarkingTemplateShortName()));
+			}
+
+			AssessmentResult result = manager.getLatestResultsForUser(student).get(assessmentName);
+
+			handMarkingManager.saveHandMarkingResults(student, assessmentName
+					, result.getFormattedSubmissionDate(), form.getHandMarkingResults());
+			handMarkingManager.saveComment(student, assessmentName,
+					result.getFormattedSubmissionDate(), form.getComments());
+		}
+		
+		// get the current student's submission
+		try{
+			int i_studentIndex = Integer.parseInt(studentIndex);
+			if(i_studentIndex >= 0 
+					&& i_studentIndex < myStudents.length
+					&& myStudents[i_studentIndex] != null
+					&& hasSubmission[i_studentIndex]){
+				
+				PASTAUser currStudent = myStudents[i_studentIndex];
+				
+				model.addAttribute("student", currStudent.getUsername());
+
+				AssessmentResult result = manager.getLatestResultsForUser(
+						currStudent.getUsername()).get(assessmentName);
+				model.addAttribute("node", PASTAUtil.generateFileTree(
+						currStudent.getUsername(), assessmentName,
+						result.getFormattedSubmissionDate()));
+				model.addAttribute("assessmentResult", result);
+				model.addAttribute("handMarkingList", result.getAssessment()
+						.getHandMarking());
+
+				model.addAttribute("savingStudentIndex", i_studentIndex);
+				model.addAttribute("hasSubmission", hasSubmission);
+				model.addAttribute("myStudents", myStudents);
+				
+			}
+			else{
+				return "redirect:/home/.";
+			}
+			
+			
+		} catch(NumberFormatException e){
+			return "redirect:/home/.";
+		}
+		
+		return "assessment/mark/handMarkBatch";
+	}
+	
+	// hand mark assessment
+		@RequestMapping(value = "mark/{assessmentName}/", method = RequestMethod.GET)
+		public String handMarkAssessmentBatchStart(
+				@PathVariable("assessmentName") String assessmentName,
+				HttpServletRequest request, Model model) {
+			
+			PASTAUser user = getUser();
+			if (user == null) {
+				return "redirect:/login/";
+			}
+			if (!user.isTutor()) {
+				return "redirect:/home/.";
+			}
+
+			model.addAttribute("unikey", user);
+			model.addAttribute("assessmentName", assessmentName);
+			
+			if(assessmentManager.getAssessment(assessmentName)!=null){
+				// find the first student with a submission
+				int i=0;
+				for (String tutorial : user.getTutorClasses()) {
+					for(PASTAUser student: userManager.getUserListByTutorial(tutorial)){
+						if(manager.getLatestResultsForUser(student.getUsername()) != null &&
+								manager.getLatestResultsForUser(student.getUsername()).get(assessmentName) != null){
+							return "redirect:"+i+"/";
+						}
+						++i;
+					}
+				}
+			}
+			return "redirect:/home/.";
+		}
+	
 	// hand mark assessment
 	@RequestMapping(value = "mark/{assessmentName}/", method = RequestMethod.POST)
 	public String handMarkAssessment(

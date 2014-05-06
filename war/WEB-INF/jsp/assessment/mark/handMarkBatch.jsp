@@ -4,7 +4,25 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<h1>${assessmentName} - ${student} (${currStudentIndex} of ${maxStudentIndex})</h1>
+<c:set var="nextStudent" value="-1"/>
+<c:forEach var="student" items="${hasSubmission}" varStatus="studentStatus">
+		<c:choose>
+			<c:when test="${student && savingStudentIndex == studentStatus.index}">
+				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted current">&nbsp;</div></a>
+			</c:when>
+			<c:when test="${student}">
+				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted">&nbsp;</div></a>
+				<c:if test="${savingStudentIndex < studentStatus.index && nextStudent == -1}">
+					<c:set var="nextStudent" value="${studentStatus.index}"/>
+				</c:if>
+			</c:when>
+			<c:otherwise>
+				<div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent didnotsubmit">&nbsp;</div>
+			</c:otherwise>
+		</c:choose>
+</c:forEach>
+
+<h1>${assessmentName} - ${student} -  Submitted: ${assessmentResult.submissionDate}</h1>
 
 <ul class="list">
 <jsp:include page="../../recursive/fileWriter.jsp"/>
@@ -17,7 +35,7 @@ th, td{
 </style>
 <c:choose>
 	<c:when test="${not empty student}">
-		<form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
+		<form:form commandName="assessmentResult" action="../${nextStudent}/" enctype="multipart/form-data" method="POST">
 		<c:choose>
 				<c:when test="${assessmentResult.compileError}">
 					<div style="width:100%; text-align:right;">
@@ -76,13 +94,13 @@ th, td{
 
 			<h3>Hand Marking Guidelines</h3>
 			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
-				<input type="hidden" name="currStudentIndex" value="${currStudentIndex+1}"/>
+				<input type="hidden" name="student" value="${student}"/>
 				<c:choose>
 					<c:when test="${empty last}">
-						<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
+						<input type="submit" onclick="changed = false;" value="Save and continue" id="submit" style="margin-top:1em;"/>
 					</c:when>
 					<c:otherwise>
-						<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
+						<input type="submit" onclick="changed = false;" value="Save and exit" id="submit" style="margin-top:1em;"/>
 					</c:otherwise>
 				</c:choose>
 				<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].handMarkingTemplateShortName" value="${handMarking.handMarking.shortName}"/>
@@ -123,13 +141,13 @@ th, td{
 				</div>
 			</c:forEach>
 			
-			<form:textarea style="height:200px; width:95%" path="comments"/>
+			<form:textarea style="height:200px; width:95%" path="comments" onkeydown="changed=true;"/>
 			<c:choose>
 				<c:when test="${empty last}">
-					<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
+					<input type="submit" onclick="changed = false;" value="Save and continue" id="submit" style="margin-top:1em;"/>
 				</c:when>
 				<c:otherwise>
-					<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
+					<input type="submit" onclick="changed = false;" value="Save and exit" id="submit" style="margin-top:1em;"/>
 				</c:otherwise>
 			</c:choose>
 			
@@ -140,9 +158,18 @@ th, td{
 	</c:otherwise>
 </c:choose>
 
+<div class="popup" id="comfirmPopup">
+	<span class="button bClose"> <span><b>X</b></span>
+	</span>
+	<h1>Would you like to save your changes?</h1>
+	<button id="yesButton" onClick="">Yes</button>
+	<button id="noButton" onClick="">No</button>
+</div>
 
 <script>
+	var changed = false;
 	function clickAllInColumn(column, tableIndex){
+		changed = true;
 		var table=document.getElementById("handMarkingTable"+tableIndex);
 		for (var i=1; i<table.rows.length; i++) {
 			var currHeader = table.rows[i].cells[column].getElementsByTagName("input");
@@ -154,6 +181,7 @@ th, td{
 	}
 	
 	function clickCell(column,  row, tableIndex){
+		changed = true;
 		var table=document.getElementById("handMarkingTable"+tableIndex);
 		var currHeader = table.rows[row].cells[column].getElementsByTagName("input");
 			
@@ -164,6 +192,13 @@ th, td{
 	
 	(function($) {
 	$(document).ready(function() {
+
+		window.onbeforeunload = function() {
+			if(window.changed){
+		    	return "You have unsaved changes!";
+			}
+		}
+		
 		$('#comments').wysiwyg({
 			initialContent: function() {
 				return value_of_textarea;

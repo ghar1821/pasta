@@ -242,13 +242,15 @@ public class UserDAO extends HibernateDaoSupport{
 				}
 				usersByStream.get(user.getStream()).add(user);
 				// ensure you don't get grouping of tutorials (e.g. tutors have multiple tutorials
-				if(!user.getTutorial().contains(",")){
-					tutorialByStream.get(user.getStream()).add(user.getTutorial());
+				if(!user.isTutor()){
+					if(!user.getTutorial().contains(",")){
+						tutorialByStream.get(user.getStream()).add(user.getTutorial());
+					}
+					if(!usersByTutorial.containsKey(user.getTutorial())){
+						usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+					}
+					usersByTutorial.get(user.getTutorial()).add(user);
 				}
-				if(!usersByTutorial.containsKey(user.getTutorial())){
-					usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
-				}
-				usersByTutorial.get(user.getTutorial()).add(user);
 				
 				
 				// load extension file
