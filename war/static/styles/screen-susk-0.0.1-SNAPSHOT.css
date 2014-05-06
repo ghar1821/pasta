@@ -13,27 +13,30 @@
 
 .handMarkingStudent.didnotsubmit{
 	background-color: lightgray;
-	border-style: outset;
-	border-color: lightgray;
 	cursor: default;
+	border-style: solid;
+	border-color: white;
 }
 
 .handMarkingStudent.submitted{
-	background-color: red;
-	border-style: outset;
-	border-color: red;
+	background-color: #0C0;
+	border-style: solid;
+	border-color: white;
 }
 
 .handMarkingStudent.current{
-	border-color: yellow;
+	border-style: outset;
+	border-color: #0C0;
 }
 
 .handMarkingStudent{
 	width: 1em;
-	height: 2em;
+	height: 1em;
 	float: left;
 	margin: 1px;
 	cursor: pointer;
+	border-radius: 50%;
+    behavior: url(PIE.htc); /* remove if you don't care about IE8 */
 }
 
 /** susk-detail */

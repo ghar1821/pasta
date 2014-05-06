@@ -30,8 +30,8 @@ import pasta.util.ProjectProperties;
 public class UserDAO extends HibernateDaoSupport{
 	
 	HashMap<String, PASTAUser> allUsers = null;
-	HashMap<String, Set<PASTAUser>> usersByTutorial = null;
-	HashMap<String, Set<PASTAUser>> usersByStream = null;
+	HashMap<String, Set<String>> usersByTutorial = null;
+	HashMap<String, Set<String>> usersByStream = null;
 	HashMap<String, Collection<String>> tutorialByStream = null;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -65,14 +65,14 @@ public class UserDAO extends HibernateDaoSupport{
 					allUsers.put(user.getUsername(), user);
 					// tutorial cache
 					if(!usersByStream.containsKey(user.getStream())){
-						usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
+						usersByStream.put(user.getStream(), new HashSet<String>());
 					}
-					usersByStream.get(user.getStream()).add(user);
+					usersByStream.get(user.getStream()).add(user.getUsername());
 					// stream cache
 					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+						usersByTutorial.put(user.getTutorial(), new HashSet<String>());
 					}
-					usersByTutorial.get(user.getTutorial()).add(user);
+					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
 				}
 				else{
 					// update
@@ -86,9 +86,9 @@ public class UserDAO extends HibernateDaoSupport{
 						}
 						oldUser.setTutorial(user.getTutorial());
 						if(!usersByTutorial.containsKey(user.getTutorial())){
-							usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+							usersByTutorial.put(user.getTutorial(), new HashSet<String>());
 						}
-						usersByTutorial.get(user.getTutorial()).add(oldUser);
+						usersByTutorial.get(user.getTutorial()).add(oldUser.getUsername());
 					}
 					// check if stream has changed
 					if(!user.getStream().equals(oldUser.getStream())){
@@ -99,9 +99,9 @@ public class UserDAO extends HibernateDaoSupport{
 						}
 						oldUser.setStream(user.getStream());
 						if(!usersByStream.containsKey(user.getStream())){
-							usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
+							usersByStream.put(user.getStream(), new HashSet<String>());
 						}
-						usersByStream.get(user.getStream()).add(oldUser);
+						usersByStream.get(user.getStream()).add(oldUser.getUsername());
 					}
 				}
 			}
@@ -208,11 +208,23 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public Collection<PASTAUser> getUserListByTutorial(String tutorialName){
-		return usersByTutorial.get(tutorialName);
+		HashSet<PASTAUser> users = new HashSet<PASTAUser>();
+		if(usersByTutorial.get(tutorialName) != null){
+			for(String user: usersByTutorial.get(tutorialName)){
+				users.add(allUsers.get(user));
+			}
+		}
+		return users;
 	}
 	
 	public Collection<PASTAUser> getUserListByStream(String streamName){
-		return usersByStream.get(streamName);
+		HashSet<PASTAUser> users = new HashSet<PASTAUser>();
+		if(usersByTutorial.get(streamName) != null){
+			for(String user: usersByStream.get(streamName)){
+				users.add(allUsers.get(user));
+			}
+		}
+		return users;
 	}
 	
 	public HashMap<String, Collection<String>> getTutorialByStream(){
@@ -228,27 +240,27 @@ public class UserDAO extends HibernateDaoSupport{
 	private void loadUsersFromDB(){
 		List<PASTAUser> users = getHibernateTemplate().loadAll(PASTAUser.class);
 		allUsers = new HashMap<String, PASTAUser>();
-		usersByTutorial = new HashMap<String, Set<PASTAUser>>();
-		usersByStream = new HashMap<String, Set<PASTAUser>>();
+		usersByTutorial = new HashMap<String, Set<String>>();
+		usersByStream = new HashMap<String, Set<String>>();
 		tutorialByStream = new HashMap<String, Collection<String>>();
 		if(users != null){
 			for(PASTAUser user: users){
 				allUsers.put(user.getUsername().toLowerCase(), user);
 				
 				if(!usersByStream.containsKey(user.getStream())){
-					usersByStream.put(user.getStream(), new HashSet<PASTAUser>());
+					usersByStream.put(user.getStream(), new HashSet<String>());
 					tutorialByStream.put(user.getStream(), new HashSet<String>());
 				}
-				usersByStream.get(user.getStream()).add(user);
+				usersByStream.get(user.getStream()).add(user.getUsername());
 				// ensure you don't get grouping of tutorials (e.g. tutors have multiple tutorials
 				if(!user.isTutor()){
 					if(!user.getTutorial().contains(",")){
 						tutorialByStream.get(user.getStream()).add(user.getTutorial());
 					}
 					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new HashSet<PASTAUser>());
+						usersByTutorial.put(user.getTutorial(), new HashSet<String>());
 					}
-					usersByTutorial.get(user.getTutorial()).add(user);
+					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
 				}
 				
 				
