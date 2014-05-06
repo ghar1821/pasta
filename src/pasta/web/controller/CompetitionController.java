@@ -242,14 +242,16 @@ public class CompetitionController {
 			return "redirect:/home/.";
 		}		
 		
-		if(!currComp.isCalculated()){
-			if(currComp != null && (user.isTutor() || currComp.isStudentCreatableArena())){
-				if(!arena.isRepeatable() || user.isInstructor() || 
-						(currComp.isTutorCreatableRepeatableArena() && user.isTutor() && currComp.isTutorCreatableRepeatableArena())
-						|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())
-						&& currComp.getArena(arena.getName()) == null){
-					// accept arena
-					competitionManager.addArena(arena, currComp);
+		if(!arena.isInvalidName()){
+			if(!currComp.isCalculated()){
+				if(currComp != null && (user.isTutor() || currComp.isStudentCreatableArena())){
+					if(!arena.isRepeatable() || user.isInstructor() || 
+							(currComp.isTutorCreatableRepeatableArena() && user.isTutor() && currComp.isTutorCreatableRepeatableArena())
+							|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())
+							&& currComp.getArena(arena.getName()) == null){
+						// accept arena
+						competitionManager.addArena(arena, currComp);
+					}
 				}
 			}
 		}

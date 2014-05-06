@@ -128,6 +128,20 @@ public class Arena {
 		}
 	}
 	
+	public boolean isInvalidName(){
+		return getName().contains("/") 
+				|| getName().contains("\\")
+				|| getName().contains("?")
+				|| getName().contains("%")
+				|| getName().contains("*")
+				|| getName().contains(":")
+				|| getName().contains("|")
+				|| getName().contains("\"")
+				|| getName().contains("<")
+				|| getName().contains(">")
+				|| getName().contains(".");
+	}
+	
 	public Date getNextRunDate(){
 		
 		if(firstStartDate == null){

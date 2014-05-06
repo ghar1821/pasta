@@ -4,13 +4,12 @@ package pasta.repository;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.TreeSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,8 +30,8 @@ import pasta.util.ProjectProperties;
 public class UserDAO extends HibernateDaoSupport{
 	
 	HashMap<String, PASTAUser> allUsers = null;
-	HashMap<String, Collection<PASTAUser>> usersByTutorial = null;
-	HashMap<String, Collection<PASTAUser>> usersByStream = null;
+	HashMap<String, Set<PASTAUser>> usersByTutorial = null;
+	HashMap<String, Set<PASTAUser>> usersByStream = null;
 	HashMap<String, Collection<String>> tutorialByStream = null;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -229,8 +228,8 @@ public class UserDAO extends HibernateDaoSupport{
 	private void loadUsersFromDB(){
 		List<PASTAUser> users = getHibernateTemplate().loadAll(PASTAUser.class);
 		allUsers = new HashMap<String, PASTAUser>();
-		usersByTutorial = new HashMap<String, Collection<PASTAUser>>();
-		usersByStream = new HashMap<String, Collection<PASTAUser>>();
+		usersByTutorial = new HashMap<String, Set<PASTAUser>>();
+		usersByStream = new HashMap<String, Set<PASTAUser>>();
 		tutorialByStream = new HashMap<String, Collection<String>>();
 		if(users != null){
 			for(PASTAUser user: users){
