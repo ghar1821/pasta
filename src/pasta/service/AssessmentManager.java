@@ -147,8 +147,17 @@ public class AssessmentManager {
 							}
 						}
 					}
-					
-					assDao.getCompetition(compeition.getCompName().replace(" ", "")).addAssessment(assessmentToAdd);
+					if (assDao.getAssessment(assessmentToAdd.getShortName()) == null) {
+						assDao.getCompetition(
+								compeition.getCompName().replace(" ", ""))
+								.addAssessment(assessmentToAdd);
+					} else {
+						assDao.getCompetition(
+								compeition.getCompName().replace(" ", ""))
+								.addAssessment(
+										assDao.getAssessment(assessmentToAdd
+												.getShortName()));
+					}
 				}
 			}
 
