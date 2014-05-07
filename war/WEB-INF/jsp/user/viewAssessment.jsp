@@ -29,11 +29,51 @@ ${assessment.description}
 					<jsp:include page="../recursive/fileWriter.jsp"/>
 				</ul>
 			</c:if>
+			<div style="width:100%; text-align:right;">
+				<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
+				<c:if test="${ unikey.tutor }" >
+					<!-- tutor abilities -->
+					<!-- if assessment has hand marking -->
+					<c:if test="${not empty result.assessment.handMarking}">
+						<!-- edit marking if already marked -->
+						<c:choose>
+							<c:when test="${not empty viewedUser}">
+								<c:choose>
+									<c:when test="${ not result.finishedHandMarking }">
+										<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+									</c:when>
+									<c:otherwise>
+										<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+									</c:otherwise>
+								</c:choose>
+							</c:when>
+							<c:otherwise>
+								<c:choose>
+									<c:when test="${ not result.finishedHandMarking }">
+										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+									</c:when>
+									<c:otherwise>
+										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+									</c:otherwise>
+								</c:choose>
+							</c:otherwise>
+						</c:choose>
+					</c:if>
+					<!-- if the assessment contains unit tests -->
+					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+						<c:choose>
+							<c:when test="${not empty viewedUser}">	
+								<button onClick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+							</c:when>
+							<c:otherwise>
+								<button onClick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+							</c:otherwise>
+						</c:choose>
+					</c:if>
+				</c:if>
+			</div>
 			<c:choose>
 				<c:when test="${result.compileError}">
-					<div style="width:100%; text-align:right;">
-						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
-					</div>
 					<h5>Compile Errors</h5>
 					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
 						<pre>
@@ -67,49 +107,6 @@ ${assessment.description}
 							</c:choose>
 						</c:forEach>
 					</c:if>
-					<div style="width:100%; text-align:right;">
-						<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
-						<c:if test="${ unikey.tutor }" >
-							<!-- tutor abilities -->
-							<!-- if assessment has hand marking -->
-							<c:if test="${not empty result.assessment.handMarking}">
-								<!-- edit marking if already marked -->
-								<c:choose>
-									<c:when test="${not empty viewedUser}">
-										<c:choose>
-											<c:when test="${ not result.finishedHandMarking }">
-												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-											</c:when>
-											<c:otherwise>
-												<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-											</c:otherwise>
-										</c:choose>
-									</c:when>
-									<c:otherwise>
-										<c:choose>
-											<c:when test="${ not result.finishedHandMarking }">
-												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-											</c:when>
-											<c:otherwise>
-												<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-											</c:otherwise>
-										</c:choose>
-									</c:otherwise>
-								</c:choose>
-							</c:if>
-							<!-- if the assessment contains unit tests -->
-							<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-								<c:choose>
-									<c:when test="${not empty viewedUser}">	
-										<button onClick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-									</c:when>
-									<c:otherwise>
-										<button onClick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-									</c:otherwise>
-								</c:choose>
-							</c:if>
-						</c:if>
-					</div>
 					<div id="${resultStatus.index}" style="display:none">
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 							<table class="pastaTable" >
