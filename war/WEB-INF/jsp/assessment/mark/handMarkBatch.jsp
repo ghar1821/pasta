@@ -93,6 +93,7 @@ th, td{
 			</c:choose>
 
 			<h3>Hand Marking Guidelines</h3>
+			<c:set var="totalHandMarkingCategories" value="0" />
 			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
 				<input type="hidden" name="student" value="${student}"/>
 				<c:choose>
@@ -119,6 +120,7 @@ th, td{
 						</thead>
 						<tbody>
 							<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+								<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
 								<tr>
 									<th>
 										${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
@@ -192,10 +194,13 @@ th, td{
 	
 	(function($) {
 	$(document).ready(function() {
-
+	
 		window.onbeforeunload = function() {
 			if(window.changed){
 		    	return "You have unsaved changes!";
+			}
+			else if($('input[type=radio]:checked').size() != ${totalHandMarkingCategories}){
+				return "You have not completed marking."
 			}
 		}
 		

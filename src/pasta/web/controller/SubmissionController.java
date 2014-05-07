@@ -595,7 +595,10 @@ public class SubmissionController {
 		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
 		boolean[] hasSubmission = new boolean[myStudents.length];
 		for(int i=0; i<myStudents.length; ++i){
-			hasSubmission[i] = (manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
+			
+			hasSubmission[i] = (myStudents[i] != null 
+					&& manager.getLatestResultsForUser(myStudents[i].getUsername()) != null 
+					&& manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
 		}
 		
 		// if submitted 
