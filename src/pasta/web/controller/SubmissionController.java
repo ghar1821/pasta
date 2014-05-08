@@ -684,7 +684,7 @@ public class SubmissionController {
 					for(PASTAUser student: userManager.getUserListByTutorial(tutorial)){
 						if(manager.getLatestResultsForUser(student.getUsername()) != null &&
 								manager.getLatestResultsForUser(student.getUsername()).get(assessmentName) != null){
-							return "redirect:"+i+"/";
+							return "redirect:" + request.getServletPath() + i +"/";
 						}
 						++i;
 					}
