@@ -107,7 +107,7 @@ ${assessment.description}
 							</c:choose>
 						</c:forEach>
 					</c:if>
-					<div id="${resultStatus.index}" style="display:none">
+					<div id="${resultStatus.index}" style="display:none; clear:left;">
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 							<table class="pastaTable" >
 								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
