@@ -10,18 +10,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,8 +44,8 @@ public class ResultDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
-	HashMap<String, HashMap<String, AssessmentResult>> results;
-	HashMap<String, CompetitionResult> competitionResults;
+	Map<String, Map<String, AssessmentResult>> results;
+	Map<String, CompetitionResult> competitionResults;
 	
 	/**
 	 * loads up all of the latest results
@@ -58,7 +58,7 @@ public class ResultDAO {
 
 	private void loadCompetitionsFromFile(AssessmentDAO assDao) {
 		Collection<Competition> comps = assDao.getCompetitionList();
-		competitionResults = new HashMap<String, CompetitionResult>();
+		competitionResults = new TreeMap<String, CompetitionResult>();
 		
 		for(Competition comp: comps){
 			CompetitionResult result = new CompetitionResult();
@@ -230,7 +230,7 @@ public class ResultDAO {
 	 * @param username - the username of the user
 	 * @return
 	 */
-	public HashMap<String, AssessmentResult> getLatestResults(String username){
+	public Map<String, AssessmentResult> getLatestResults(String username){
 		return results.get(username);
 	}
 	
@@ -273,7 +273,7 @@ public class ResultDAO {
 	 * @param assDao - the Assessment Data Access Object
 	 */
 	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
-		results = new HashMap<String, HashMap<String, AssessmentResult>>();
+		results = new TreeMap<String, Map<String, AssessmentResult>>();
 		
 		// scan all users
 		String[] allUsers = (new File(ProjectProperties.getInstance()
@@ -284,7 +284,7 @@ public class ResultDAO {
 				Collection<Assessment> allAssessments = assDao
 						.getAssessmentList();
 
-				HashMap<String, AssessmentResult> currUserResults = new HashMap<String, AssessmentResult>();
+				Map<String, AssessmentResult> currUserResults = new TreeMap<String, AssessmentResult>();
 				for (Assessment assessment : allAssessments) {
 					// scan all submissions
 
@@ -365,7 +365,7 @@ public class ResultDAO {
 		try {
 			// read in the file
 			Scanner in = new Scanner(new File(location+"/result.txt"));
-			HashMap<String,String> resultMap = new HashMap<String, String>();
+			Map<String,String> resultMap = new TreeMap<String, String>();
 			while(in.hasNextLine()){
 				String[] currResults = in.nextLine().split(",");
 				if(currResults.length >= 2){
@@ -613,7 +613,7 @@ public class ResultDAO {
 		// check if latest
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		if(results.get(username)==null){
-			results.put(username, new HashMap<String, AssessmentResult>());
+			results.put(username, new TreeMap<String, AssessmentResult>());
 		}
 		if(results.get(username).get(assessment.getShortName()) == null ||
 				results.get(username).get(assessment.getShortName()).getSubmissionDate().before(runDate) || 
@@ -727,7 +727,7 @@ public class ResultDAO {
 	}
 	
 	public ArenaResult loadArenaResult(String location){
-		HashMap<String, HashMap<String, String>> data = new HashMap<String, HashMap<String, String>>();
+		Map<String, Map<String, String>> data = new TreeMap<String, Map<String, String>>();
 		Collection<String> categories = new LinkedList<String>();
 		
 		try {
@@ -743,7 +743,7 @@ public class ResultDAO {
 				try{
 					String[] line = in.nextLine().split(",");
 					
-					HashMap<String, String> userData = new HashMap<String, String>();
+					Map<String, String> userData = new TreeMap<String, String>();
 					for(int i=1; i< cat.length; ++i){
 						String category = cat[i];
 						if(category.startsWith("*")){

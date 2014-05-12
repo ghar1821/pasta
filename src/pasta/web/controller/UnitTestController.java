@@ -2,7 +2,8 @@ package pasta.web.controller;
 
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +40,7 @@ import pasta.util.PASTAUtil;
 public class UnitTestController {
 
 	public UnitTestController() {
-		codeStyle = new HashMap<String, String>();
+		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
 		codeStyle.put("cpp", "cppcode");
 		codeStyle.put("h", "cppcode");
@@ -63,7 +64,7 @@ public class UnitTestController {
 	private SubmissionManager manager;
 	private UserManager userManager;
 	private UnitTestManager unitTestManager;
-	private HashMap<String, String> codeStyle;
+	private Map<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {

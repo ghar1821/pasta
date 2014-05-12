@@ -8,7 +8,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,7 @@ import pasta.view.ExcelMarkView;
 public class SubmissionController {
 
 	public SubmissionController() {
-		codeStyle = new HashMap<String, String>();
+		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
 		codeStyle.put("cpp", "cppcode");
 		codeStyle.put("h", "cppcode");
@@ -88,7 +87,7 @@ public class SubmissionController {
 	private UserManager userManager;
 	private AssessmentManager assessmentManager;
 	private HandMarkingManager handMarkingManager;
-	private HashMap<String, String> codeStyle;
+	private Map<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
@@ -285,7 +284,7 @@ public class SubmissionController {
 			model.setViewName("redirect:/home/");
 			return model;
 		}
-		Map<String, Object> data = new HashMap<String, Object>();
+		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
 		data.put("userList", userManager.getUserList());
@@ -307,7 +306,7 @@ public class SubmissionController {
 			model.setViewName("redirect:/home/");
 			return model;
 		}
-		Map<String, Object> data = new HashMap<String, Object>();
+		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
 		data.put("userList", userManager.getUserList());
@@ -818,18 +817,18 @@ public class SubmissionController {
 			return "redirect:/home/.";
 		}
 
-		HashMap<String, HashMap<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getUserList());
-		HashMap<String, TreeMap<Integer, Integer>> submissionDistribution = new HashMap<String, TreeMap<Integer, Integer>>();
+		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getUserList());
+		Map<String, Map<Integer, Integer>> submissionDistribution = new TreeMap<String, Map<Integer, Integer>>();
 		Collection<Assessment> assessments = assessmentManager.getAssessmentList();
 
 		int numBreaks = 10;
 
-		HashMap<String, Integer[]> markDistribution = new HashMap<String, Integer[]>();
+		Map<String, Integer[]> markDistribution = new TreeMap<String, Integer[]>();
 
 		for (Assessment assessment : assessments) {
 			int[] currMarkDist = new int[numBreaks + 1];
-			TreeMap<Integer, Integer> currSubmissionDistribution = new TreeMap<Integer, Integer>();
-			for (Entry<String, HashMap<String, AssessmentResult>> entry : allResults
+			Map<Integer, Integer> currSubmissionDistribution = new TreeMap<Integer, Integer>();
+			for (Entry<String, Map<String, AssessmentResult>> entry : allResults
 					.entrySet()) {
 				int spot = 0;
 				int numSubmissionsMade = 0;

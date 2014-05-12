@@ -6,8 +6,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,14 +28,14 @@ public class Competition {
 	private String name;
 	// if null - calculated competition
 	private Arena officialArena = null;
-	private HashMap<String, Arena> outstandingArenas =  new HashMap<String, Arena>();
-	private HashMap<String, Arena> completedArenas = new HashMap<String, Arena>();
+	private Map<String, Arena> outstandingArenas =  new TreeMap<String, Arena>();
+	private Map<String, Arena> completedArenas = new TreeMap<String, Arena>();
 	private boolean studentCreatableArena;
 	private boolean studentCreatableRepeatableArena;
 	private boolean tutorCreatableRepeatableArena;
 	private boolean tested;
 	
-	private Collection<Assessment> linkedAssessments = new HashSet<Assessment>();
+	private Collection<Assessment> linkedAssessments = new TreeSet<Assessment>();
 	
 	private PASTATime frequency = null;
 	private Date firstStartDate;
@@ -49,7 +50,7 @@ public class Competition {
 	public Collection<Arena> getOutstandingArenas() {
 		return outstandingArenas.values();
 	}
-	public void setOutstandingArenas(HashMap<String, Arena> arenas) {
+	public void setOutstandingArenas(Map<String, Arena> arenas) {
 		this.outstandingArenas = arenas;
 	}
 	public void setOutstandingArenas(Collection<Arena> arenas) {
@@ -61,7 +62,7 @@ public class Competition {
 	public Collection<Arena> getCompletedArenas() {
 		return completedArenas.values();
 	}
-	public void setCompletedArenas(HashMap<String, Arena> arenas) {
+	public void setCompletedArenas(Map<String, Arena> arenas) {
 		this.completedArenas = arenas;
 	}
 	public void setCompletedArenas(Collection<Arena> arenas) {

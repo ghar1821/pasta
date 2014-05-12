@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -57,7 +57,7 @@ public class UserManager {
 		return userDao.getUserList();
 	}
 	
-	public HashMap<String, Collection<String>> getTutorialByStream(){
+	public Map<String, Collection<String>> getTutorialByStream(){
 		return userDao.getTutorialByStream();
 	}
 	

@@ -7,19 +7,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -27,15 +24,9 @@ import java.util.zip.ZipFile;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Validator;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
-import pasta.login.DBAuthValidator;
-import pasta.login.DummyAuthValidator;
-import pasta.login.FTPAuthValidator;
-import pasta.login.ImapAuthValidator;
-import pasta.repository.LoginDAO;
 
 @Component
 /**
@@ -161,8 +152,8 @@ public class PASTAUtil {
 		return file;
 	}
 	
-	public static HashMap<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
-		HashMap<String, FileTreeNode> allsubmissions = new HashMap<String, FileTreeNode>();
+	public static Map<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
+		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
 		String[] allSubs = (new File(ProjectProperties.getInstance().getProjectLocation()
 				+ "/submissions/"
@@ -180,9 +171,9 @@ public class PASTAUtil {
 		return allsubmissions;
 	}
 
-	public static HashMap<String, FileTreeNode> generateFileTree(String username,
+	public static Map<String, FileTreeNode> generateFileTree(String username,
 			String competitionName, Collection<PlayerHistory> players) {
-		HashMap<String, FileTreeNode> allPlayers = new HashMap<String, FileTreeNode>();
+		Map<String, FileTreeNode> allPlayers = new TreeMap<String, FileTreeNode>();
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){

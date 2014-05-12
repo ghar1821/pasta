@@ -8,11 +8,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -25,7 +26,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.players.PlayerResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -155,7 +155,7 @@ public class ExecutionManager {
 			
 			logger.info("Executing " + job.getAssessmentName());
 			
-			HashMap<String, String> playerLocations = new HashMap<String, String>();
+			Map<String, String> playerLocations = new TreeMap<String, String>();
 			
 			// copy across players
 			for(Entry<String, Set<String>> players: arena.getPlayers().entrySet()){

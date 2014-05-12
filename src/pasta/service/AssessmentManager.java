@@ -3,16 +3,14 @@ package pasta.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
@@ -187,15 +185,15 @@ public class AssessmentManager {
 		}
 	}
 
-	public HashMap<String, AssessmentResult> getLatestResultsForUser(String username){
+	public Map<String, AssessmentResult> getLatestResultsForUser(String username){
 		return resultDAO.getLatestResults(username);
 	}
 	
-	public HashMap<String, HashMap<String, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
-		HashMap<String, HashMap<String, AssessmentResult>> results = new HashMap<String, HashMap<String, AssessmentResult>>();
+	public Map<String, Map<String, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
+		Map<String, Map<String, AssessmentResult>> results = new TreeMap<String, Map<String, AssessmentResult>>();
 		
 		for(PASTAUser user: allUsers){
-			HashMap<String, AssessmentResult> currResultMap = resultDAO.getLatestResults(user.getUsername());
+			Map<String, AssessmentResult> currResultMap = resultDAO.getLatestResults(user.getUsername());
 			results.put(user.getUsername(), currResultMap);
 		}
 		

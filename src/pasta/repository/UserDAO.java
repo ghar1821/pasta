@@ -5,11 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,10 +30,10 @@ import pasta.util.ProjectProperties;
 @Repository("userDAO")
 public class UserDAO extends HibernateDaoSupport{
 	
-	HashMap<String, PASTAUser> allUsers = null;
-	HashMap<String, Set<String>> usersByTutorial = null;
-	HashMap<String, Set<String>> usersByStream = null;
-	HashMap<String, Collection<String>> tutorialByStream = null;
+	Map<String, PASTAUser> allUsers = null;
+	Map<String, Set<String>> usersByTutorial = null;
+	Map<String, Set<String>> usersByStream = null;
+	Map<String, Collection<String>> tutorialByStream = null;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -65,12 +66,12 @@ public class UserDAO extends HibernateDaoSupport{
 					allUsers.put(user.getUsername(), user);
 					// tutorial cache
 					if(!usersByStream.containsKey(user.getStream())){
-						usersByStream.put(user.getStream(), new HashSet<String>());
+						usersByStream.put(user.getStream(), new TreeSet<String>());
 					}
 					usersByStream.get(user.getStream()).add(user.getUsername());
 					// stream cache
 					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new HashSet<String>());
+						usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
 					}
 					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
 				}
@@ -86,7 +87,7 @@ public class UserDAO extends HibernateDaoSupport{
 						}
 						oldUser.setTutorial(user.getTutorial());
 						if(!usersByTutorial.containsKey(user.getTutorial())){
-							usersByTutorial.put(user.getTutorial(), new HashSet<String>());
+							usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
 						}
 						usersByTutorial.get(user.getTutorial()).add(oldUser.getUsername());
 					}
@@ -99,7 +100,7 @@ public class UserDAO extends HibernateDaoSupport{
 						}
 						oldUser.setStream(user.getStream());
 						if(!usersByStream.containsKey(user.getStream())){
-							usersByStream.put(user.getStream(), new HashSet<String>());
+							usersByStream.put(user.getStream(), new TreeSet<String>());
 						}
 						usersByStream.get(user.getStream()).add(oldUser.getUsername());
 					}
@@ -208,7 +209,7 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public Collection<PASTAUser> getUserListByTutorial(String tutorialName){
-		HashSet<PASTAUser> users = new HashSet<PASTAUser>();
+		Set<PASTAUser> users = new TreeSet<PASTAUser>();
 		if(usersByTutorial.get(tutorialName) != null){
 			for(String user: usersByTutorial.get(tutorialName)){
 				users.add(allUsers.get(user));
@@ -218,7 +219,7 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public Collection<PASTAUser> getUserListByStream(String streamName){
-		HashSet<PASTAUser> users = new HashSet<PASTAUser>();
+		Set<PASTAUser> users = new TreeSet<PASTAUser>();
 		if(usersByTutorial.get(streamName) != null){
 			for(String user: usersByStream.get(streamName)){
 				users.add(allUsers.get(user));
@@ -227,7 +228,7 @@ public class UserDAO extends HibernateDaoSupport{
 		return users;
 	}
 	
-	public HashMap<String, Collection<String>> getTutorialByStream(){
+	public Map<String, Collection<String>> getTutorialByStream(){
 		return tutorialByStream;
 	}
 	
@@ -239,17 +240,17 @@ public class UserDAO extends HibernateDaoSupport{
 	
 	private void loadUsersFromDB(){
 		List<PASTAUser> users = getHibernateTemplate().loadAll(PASTAUser.class);
-		allUsers = new HashMap<String, PASTAUser>();
-		usersByTutorial = new HashMap<String, Set<String>>();
-		usersByStream = new HashMap<String, Set<String>>();
-		tutorialByStream = new HashMap<String, Collection<String>>();
+		allUsers = new TreeMap<String, PASTAUser>();
+		usersByTutorial = new TreeMap<String, Set<String>>();
+		usersByStream = new TreeMap<String, Set<String>>();
+		tutorialByStream = new TreeMap<String, Collection<String>>();
 		if(users != null){
 			for(PASTAUser user: users){
 				allUsers.put(user.getUsername().toLowerCase(), user);
 				
 				if(!usersByStream.containsKey(user.getStream())){
-					usersByStream.put(user.getStream(), new HashSet<String>());
-					tutorialByStream.put(user.getStream(), new HashSet<String>());
+					usersByStream.put(user.getStream(), new TreeSet<String>());
+					tutorialByStream.put(user.getStream(), new TreeSet<String>());
 				}
 				usersByStream.get(user.getStream()).add(user.getUsername());
 				// ensure you don't get grouping of tutorials (e.g. tutors have multiple tutorials
@@ -258,7 +259,7 @@ public class UserDAO extends HibernateDaoSupport{
 						tutorialByStream.get(user.getStream()).add(user.getTutorial());
 					}
 					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new HashSet<String>());
+						usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
 					}
 					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
 				}

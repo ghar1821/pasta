@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -786,9 +785,9 @@ public class AssessmentDAO {
 			markingTemplate.setRowHeader(rowHeaderList);
 
 			// load data
-			HashMap<String, HashMap<String, String>> descriptionMap = new HashMap<String, HashMap<String, String>>();
+			Map<String, Map<String, String>> descriptionMap = new TreeMap<String, Map<String, String>>();
 			for (Tuple column : markingTemplate.getColumnHeader()) {
-				HashMap<String, String> currDescriptionMap = new HashMap<String, String>();
+				Map<String, String> currDescriptionMap = new TreeMap<String, String>();
 				for (Tuple row : markingTemplate.getRowHeader()) {
 					try {
 						Scanner in = new Scanner(new File(location + "/"
@@ -877,7 +876,7 @@ public class AssessmentDAO {
 			handMarkingProperties.println("</handMarkingProperties>");
 			handMarkingProperties.close();
 
-			for (Entry<String, HashMap<String, String>> entry1 : newHandMarking
+			for (Entry<String, Map<String, String>> entry1 : newHandMarking
 					.getData().entrySet()) {
 				for (Entry<String, String> entry2 : entry1.getValue()
 						.entrySet()) {
@@ -915,9 +914,9 @@ public class AssessmentDAO {
 		rows.add(new Tuple("Variable naming", 0.4));
 		newMarking.setRowHeader(rows);
 
-		HashMap<String, HashMap<String, String>> data = new HashMap<String, HashMap<String, String>>();
+		Map<String, Map<String, String>> data = new TreeMap<String, Map<String, String>>();
 		for (Tuple column : columns) {
-			HashMap<String, String> currData = new HashMap<String, String>();
+			Map<String, String> currData = new TreeMap<String, String>();
 			for (Tuple row : rows) {
 				currData.put(row.getName(), "");
 			}

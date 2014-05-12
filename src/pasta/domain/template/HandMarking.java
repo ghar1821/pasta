@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
@@ -17,10 +18,10 @@ public class HandMarking {
 			FactoryUtils.instantiateFactory(Tuple.class));;
 	private List<Tuple> rowHeader = LazyList.decorate(new ArrayList<Tuple>(),
 			FactoryUtils.instantiateFactory(Tuple.class));
-	private Map<String, HashMap<String, String>> data = LazyMap.decorate(new HashMap<String, HashMap<String, String>>(), 
+	private Map<String, Map<String, String>> data = LazyMap.decorate(new TreeMap<String, TreeMap<String, String>>(), 
 			FactoryUtils.instantiateFactory(HashMap.class));
 	
-	private HashMap<String, Double> columnHeaderMap = new HashMap<String, Double>();
+	private Map<String, Double> columnHeaderMap = new TreeMap<String, Double>();
 
 	public String getName() {
 		return name;
@@ -60,11 +61,11 @@ public class HandMarking {
 		this.rowHeader.addAll(rowHeader);
 	}
 
-	public Map<String, HashMap<String, String>> getData() {
+	public Map<String, Map<String, String>> getData() {
 		return data;
 	}
 
-	public void setData(Map<String, HashMap<String, String>> data) {
+	public void setData(Map<String, Map<String, String>> data) {
 		this.data.clear();
 		this.data.putAll(data);
 	}

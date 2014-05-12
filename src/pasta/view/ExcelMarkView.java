@@ -3,7 +3,6 @@ package pasta.view;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +29,7 @@ public class ExcelMarkView extends AbstractExcelView{
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		// get data
-		HashMap<String, HashMap<String, AssessmentResult>> resultList = (HashMap<String, HashMap<String, AssessmentResult>>) map.get("latestResults");
+		Map<String, Map<String, AssessmentResult>> resultList = (Map<String, Map<String, AssessmentResult>>) map.get("latestResults");
 		ArrayList<Assessment> assList = new ArrayList<Assessment>((Collection<Assessment>) map.get("assessmentList"));
 		Collection<PASTAUser> userList = (Collection<PASTAUser>)map.get("userList");
 		

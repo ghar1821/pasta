@@ -5,9 +5,10 @@ import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +22,7 @@ public class Arena {
 	// if null, only run once
 	private PASTATime frequency = null;
 	private Date firstStartDate;
-	private HashMap<String, Set<String>> players = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> players = new TreeMap<String, Set<String>>();
 	
 	public final static SimpleDateFormat dateParser 
 	= new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -73,11 +74,11 @@ public class Arena {
 		return false;
 	}
 	
-	public HashMap<String, Set<String>> getPlayers() {
+	public Map<String, Set<String>> getPlayers() {
 		return players;
 	}
 	
-	public void setPlayers(HashMap<String, Set<String>> players) {
+	public void setPlayers(Map<String, Set<String>> players) {
 		this.players = players;
 	}
 	
@@ -156,8 +157,8 @@ public class Arena {
 	public void addPlayer(String user, String playerName){
 		logger.info("adding " + user + "-" + playerName);
 		if(!players.containsKey(user)){
-			logger.info("user not there, adding hashset");
-			players.put(user, new HashSet<String>());
+			logger.info("user not there, adding set");
+			players.put(user, new TreeSet<String>());
 		}
 		// if the official arena
 		if(name.replace(" ", "").toLowerCase().equals("officialarena")){

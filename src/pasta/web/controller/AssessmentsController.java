@@ -1,9 +1,9 @@
 package pasta.web.controller;
 
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -52,7 +52,7 @@ import pasta.service.UserManager;
 public class AssessmentsController {
 
 	public AssessmentsController() {
-		codeStyle = new HashMap<String, String>();
+		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
 		codeStyle.put("cpp", "cppcode");
 		codeStyle.put("h", "cppcode");
@@ -80,7 +80,7 @@ public class AssessmentsController {
 	private CompetitionManager competitionManager;
 	private SubmissionManager submissionManager;
 
-	private HashMap<String, String> codeStyle;
+	private Map<String, String> codeStyle;
 
 	@Autowired
 	public void setMyService(CompetitionManager myService) {
@@ -391,7 +391,7 @@ public class AssessmentsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		HashMap<String, HashMap<String, AssessmentResult>> allResults = assessmentManager
+		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager
 				.getLatestResults(userManager.getUserList());
 		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 
@@ -399,7 +399,7 @@ public class AssessmentsController {
 
 		int[] markDistribution = new int[maxBreaks + 1];
 
-		for (Entry<String, HashMap<String, AssessmentResult>> entry : allResults
+		for (Entry<String, Map<String, AssessmentResult>> entry : allResults
 				.entrySet()) {
 			int spot = 0;
 			int numSubmissionsMade = 0;

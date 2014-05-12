@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +26,6 @@ import pasta.domain.form.LoginForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.service.AssessmentManager;
-import pasta.service.SubmissionManager;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
@@ -87,10 +86,10 @@ public class APIController {
 				out.println();
 
 				// username, assessment name, result
-				HashMap<String, HashMap<String, AssessmentResult>> latestResults = assessmentManager
+				Map<String, Map<String, AssessmentResult>> latestResults = assessmentManager
 						.getLatestResults(userManager.getUserList());
 
-				for (Entry<String, HashMap<String, AssessmentResult>> entry : latestResults
+				for (Entry<String, Map<String, AssessmentResult>> entry : latestResults
 						.entrySet()) {
 					PASTAUser user = userManager.getUser(entry.getKey());
 					if (user != null) {

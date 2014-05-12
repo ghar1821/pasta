@@ -3,8 +3,8 @@ package pasta.view;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ public class ExcelAutoMarkView extends AbstractExcelView{
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		// get data
-		HashMap<String, HashMap<String, AssessmentResult>> resultList = (HashMap<String, HashMap<String, AssessmentResult>>) map.get("latestResults");
+		Map<String, Map<String, AssessmentResult>> resultList = (Map<String, Map<String, AssessmentResult>>) map.get("latestResults");
 		ArrayList<Assessment> assList = new ArrayList<Assessment>((Collection<Assessment>) map.get("assessmentList"));
 		Collection<PASTAUser> userList = (Collection<PASTAUser>)map.get("userList");
 		

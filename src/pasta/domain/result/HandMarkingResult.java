@@ -1,7 +1,7 @@
 package pasta.domain.result;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.map.LazyMap;
@@ -12,8 +12,8 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
 
 public class HandMarkingResult implements Comparable{
-	private Map<String, String> result = LazyMap.decorate(new HashMap<String, String>(), 
-			FactoryUtils.instantiateFactory(HashMap.class));
+	private Map<String, String> result = LazyMap.decorate(new TreeMap<String, String>(), 
+			FactoryUtils.instantiateFactory(TreeMap.class));
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 

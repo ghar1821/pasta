@@ -2,16 +2,14 @@ package pasta.repository;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -25,11 +23,11 @@ public class PlayerDAO {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	// username, competition, player
-	HashMap<String, HashMap<String, HashMap<String, PlayerHistory>>> players;
+	Map<String, Map<String, Map<String, PlayerHistory>>> players;
 	
 	public PlayerDAO(){
 		// load all players.
-		players = new HashMap<String, HashMap<String, HashMap<String, PlayerHistory>>>();
+		players = new TreeMap<String, Map<String, Map<String, PlayerHistory>>>();
 		
 		// list of all students
 		String[] allStudents = (new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/")).list();
@@ -41,7 +39,7 @@ public class PlayerDAO {
 			for(String student : allStudents){
 				if(new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/"+student+"/competitions/").exists()){
 					if(!players.containsKey(student)){
-						players.put(student, new HashMap<String, HashMap<String, PlayerHistory>>());
+						players.put(student, new TreeMap<String, Map<String, PlayerHistory>>());
 					}
 					for(String competition: allCompetitions){
 						players.get(student).put(competition, loadPlayerHistory(student, competition));
@@ -55,10 +53,10 @@ public class PlayerDAO {
 			String competitionName){
 		
 		if(!players.containsKey(username)){
-			players.put(username, new HashMap<String, HashMap<String, PlayerHistory>>());
+			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
 		}
 		if(!players.get(username).containsKey(competitionName)){
-			players.get(username).put(competitionName, new HashMap<String, PlayerHistory>());
+			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
 		}
 		
 		return players.get(username).get(competitionName).values();
@@ -68,10 +66,10 @@ public class PlayerDAO {
 			String competitionName, String playerName) {
 		
 		if(!players.containsKey(username)){
-			players.put(username, new HashMap<String, HashMap<String, PlayerHistory>>());
+			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
 		}
 		if(!players.get(username).containsKey(competitionName)){
-			players.get(username).put(competitionName, new HashMap<String, PlayerHistory>());
+			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
 		}
 		if(!players.get(username).get(competitionName).containsKey(playerName)){
 			players.get(username).get(competitionName).put(playerName, new PlayerHistory(playerName));
@@ -79,9 +77,9 @@ public class PlayerDAO {
 		return players.get(username).get(competitionName).get(playerName);
 	}
 	
-	public HashMap<String, PlayerHistory> loadPlayerHistory(String username,
+	public Map<String, PlayerHistory> loadPlayerHistory(String username,
 			String competitionName) {
-		HashMap<String, PlayerHistory> playerHistory = new HashMap<String, PlayerHistory>();
+		Map<String, PlayerHistory> playerHistory = new TreeMap<String, PlayerHistory>();
 		
 		String[] allPlayers = (new File(ProjectProperties.getInstance().getProjectLocation()
 				+ "/submissions/"
