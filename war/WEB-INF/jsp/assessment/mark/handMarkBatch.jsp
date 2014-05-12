@@ -95,6 +95,7 @@ th, td{
 			<h3>Hand Marking Guidelines</h3>
 			<c:set var="totalHandMarkingCategories" value="0" />
 			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
+				<h4>${handMarking.handMarking.name}</h4>
 				<input type="hidden" name="student" value="${student}"/>
 				<c:choose>
 					<c:when test="${empty last}">

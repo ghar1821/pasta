@@ -76,6 +76,7 @@ th, td{
 			<h3>Hand Marking Guidelines</h3>
 			<c:set var="totalHandMarkingCategories" value="0" />
 			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
+				<h4>${handMarking.handMarking.name}</h4>
 				<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 				<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].handMarkingTemplateShortName" value="${handMarking.handMarking.shortName}"/>
 				<div style="width:100%; overflow:auto">
