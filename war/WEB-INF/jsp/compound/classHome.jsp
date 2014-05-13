@@ -51,16 +51,10 @@
 <script>
 	$(document).ready(function() 
 	    { 			
-			var oTable = $('#gradeCentreTable').dataTable( {
-		 		"sScrollX": "100%",
-		 		"sScrollXInner": "150%",
-		 		"bScrollCollapse": true,
-		 		"iDisplayLength": 25
-		 	} );
-		 	new FixedColumns( oTable, {
-		 		"iLeftColumns": 3,
-				"iLeftWidth": 250
-		 	} );
+			var oTable = $('#gradeCentreTable').dataTable({
+				"scrollX": true,
+				"iDisplayLength": 25
+			} );
 	    } 
 	); 
 	
