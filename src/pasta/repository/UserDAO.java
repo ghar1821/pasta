@@ -81,7 +81,7 @@ public class UserDAO extends HibernateDaoSupport{
 					// check if tutorial has changed
 					if(!user.getTutorial().equals(oldUser.getTutorial())){
 						// update caching
-						usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+						usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
 						if(usersByTutorial.get(oldUser.getTutorial()).isEmpty()){
 							usersByTutorial.remove(oldUser.getTutorial());
 						}
@@ -94,7 +94,7 @@ public class UserDAO extends HibernateDaoSupport{
 					// check if stream has changed
 					if(!user.getStream().equals(oldUser.getStream())){
 						// remove from caching
-						usersByStream.get(oldUser.getStream()).remove(oldUser);
+						usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
 						if(usersByStream.get(oldUser.getStream()).isEmpty()){
 							usersByStream.remove(oldUser.getStream());
 						}
@@ -116,11 +116,11 @@ public class UserDAO extends HibernateDaoSupport{
 				// clean up after the old user
 				if (oldUser.getTutorial() != null && 
 						usersByTutorial.containsKey(oldUser.getTutorial())) {
-					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser);
+					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
 				}
 				if (oldUser.getStream() != null && 
 						usersByStream.containsKey(oldUser.getStream())) {
-					usersByStream.get(oldUser.getStream()).remove(oldUser);
+					usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
 				}
 			}
 		}
@@ -292,8 +292,8 @@ public class UserDAO extends HibernateDaoSupport{
 		delete(toDelete);
 		PASTAUser fullUser = allUsers.get(toDelete.getUsername());
 		if(fullUser != null){
-			usersByTutorial.get(fullUser.getTutorial()).remove(fullUser);
-			usersByStream.get(fullUser.getStream()).remove(fullUser);
+			usersByTutorial.get(fullUser.getTutorial()).remove(fullUser.getUsername());
+			usersByStream.get(fullUser.getStream()).remove(fullUser.getUsername());
 			allUsers.remove(toDelete.getUsername());
 		}
 	}
