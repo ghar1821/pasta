@@ -8,10 +8,10 @@
 <c:forEach var="student" items="${hasSubmission}" varStatus="studentStatus">
 		<c:choose>
 			<c:when test="${student && savingStudentIndex == studentStatus.index}">
-				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted current">&nbsp;</div></a>
+				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted${completedMarking[studentStatus.index]} current">&nbsp;</div></a>
 			</c:when>
 			<c:when test="${student}">
-				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted">&nbsp;</div></a>
+				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted${completedMarking[studentStatus.index]}">&nbsp;</div></a>
 				<c:if test="${savingStudentIndex < studentStatus.index && nextStudent == -1}">
 					<c:set var="nextStudent" value="${studentStatus.index}"/>
 				</c:if>

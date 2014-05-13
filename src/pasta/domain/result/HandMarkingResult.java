@@ -1,6 +1,7 @@
 package pasta.domain.result;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.collections.FactoryUtils;
@@ -59,7 +60,19 @@ public class HandMarkingResult implements Comparable{
 	
 	public boolean isFinishedMarking(){
 		//logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
-		return (result.size() >= markingTemplate.getRowHeader().size());  
+		if(result.size() >= markingTemplate.getRowHeader().size()){
+			for(Entry<String, String> entry: result.entrySet()){
+				logger.info(entry.getKey());
+				logger.info(entry.getValue());
+				if(entry.getKey() == null 
+						|| !(entry.getValue() instanceof String)
+						|| entry.getValue() == null){
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;  
 	}
 
 	@Override

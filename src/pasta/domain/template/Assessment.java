@@ -19,7 +19,7 @@ import org.apache.commons.logging.LogFactory;
 
 
 
-public class Assessment {
+public class Assessment implements Comparable<Assessment>{
 	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
@@ -320,5 +320,10 @@ public class Assessment {
 
 	public void addCompetition(WeightedCompetition weightedComp) {
 		competitions.add(weightedComp);
+	}
+
+	@Override
+	public int compareTo(Assessment o) {
+		return getName().compareTo(o.getName());
 	}
 }

@@ -18,7 +18,13 @@
 	border-color: white;
 }
 
-.handMarkingStudent.submitted{
+.handMarkingStudent.submittedfalse{
+	background-color: gold;
+	border-style: solid;
+	border-color: white;
+}
+
+.handMarkingStudent.submittedtrue{
 	background-color: #0C0;
 	border-style: solid;
 	border-color: white;
@@ -27,6 +33,11 @@
 .handMarkingStudent.current{
 	border-style: outset;
 	border-color: #0C0;
+}
+
+.handMarkingStudent.submittedfalse.current{
+	border-style: outset;
+	border-color: gold;
 }
 
 .handMarkingStudent{

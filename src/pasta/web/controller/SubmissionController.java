@@ -593,11 +593,17 @@ public class SubmissionController {
 		}
 		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
 		boolean[] hasSubmission = new boolean[myStudents.length];
+		boolean[] completedMarking = new boolean[myStudents.length];
 		for(int i=0; i<myStudents.length; ++i){
 			
 			hasSubmission[i] = (myStudents[i] != null 
 					&& manager.getLatestResultsForUser(myStudents[i].getUsername()) != null 
 					&& manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
+			if (hasSubmission[i]) {
+				completedMarking[i] = manager
+						.getLatestResultsForUser(myStudents[i].getUsername())
+						.get(assessmentName).isFinishedHandMarking();
+			}
 		}
 		
 		// if submitted 
@@ -642,6 +648,7 @@ public class SubmissionController {
 
 				model.addAttribute("savingStudentIndex", i_studentIndex);
 				model.addAttribute("hasSubmission", hasSubmission);
+				model.addAttribute("completedMarking", completedMarking);
 				model.addAttribute("myStudents", myStudents);
 				
 			}
