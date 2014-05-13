@@ -93,14 +93,13 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<button type="button" style="float: left; text-align: center;"
 							onClick="submitAssessment('${assessment.shortName}');">Submit</button>
 				</td>
-				<c:if test="${ not empty unikey.tutorial}">
-
+				<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
 					<td style="width:15em;">
-		                          <div style="float: left; width:100%">
-		                                  <button type="button" style="float: left; text-align: center;"
-		                                          onclick="location.href='../mark/${assessment.shortName}/'">Mark my classes</button>
-		                          </div>
-		                     </td>
+                          <div style="float: left; width:100%">
+                                  <button type="button" style="float: left; text-align: center;"
+                                          onclick="location.href='../mark/${assessment.shortName}/'">Mark my classes</button>
+                          </div>
+                     </td>
 				</c:if>
 				<c:if test="${ not empty viewedUser}">
 					<!-- tutor is viewing a user and they may give out an extension -->

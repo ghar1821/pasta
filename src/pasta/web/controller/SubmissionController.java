@@ -592,19 +592,6 @@ public class SubmissionController {
 			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
 		}
 		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
-		boolean[] hasSubmission = new boolean[myStudents.length];
-		boolean[] completedMarking = new boolean[myStudents.length];
-		for(int i=0; i<myStudents.length; ++i){
-			
-			hasSubmission[i] = (myStudents[i] != null 
-					&& manager.getLatestResultsForUser(myStudents[i].getUsername()) != null 
-					&& manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
-			if (hasSubmission[i]) {
-				completedMarking[i] = manager
-						.getLatestResultsForUser(myStudents[i].getUsername())
-						.get(assessmentName).isFinishedHandMarking();
-			}
-		}
 		
 		// if submitted 
 		if(form != null && student != null 
@@ -624,7 +611,21 @@ public class SubmissionController {
 					.getLatestResultsForUser(student).get(assessmentName)
 					.getFormattedSubmissionDate(), form.getComments());
 		}
-
+		
+		boolean[] hasSubmission = new boolean[myStudents.length];
+		boolean[] completedMarking = new boolean[myStudents.length];
+		for(int i=0; i<myStudents.length; ++i){
+			
+			hasSubmission[i] = (myStudents[i] != null 
+					&& manager.getLatestResultsForUser(myStudents[i].getUsername()) != null 
+					&& manager.getLatestResultsForUser(myStudents[i].getUsername()).get(assessmentName) != null);
+			if (hasSubmission[i]) {
+				completedMarking[i] = manager
+						.getLatestResultsForUser(myStudents[i].getUsername())
+						.get(assessmentName).isFinishedHandMarking();
+			}
+		}
+		
 		// get the current student's submission
 		try{
 			int i_studentIndex = Integer.parseInt(studentIndex);
