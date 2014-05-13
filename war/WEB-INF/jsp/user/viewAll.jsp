@@ -18,7 +18,15 @@
 		onclick="window.location = '../downloadAutoMarks/'">Download Auto Marks ONLY</button>
 </div>
 
-<table id="gradeCentreTable" class="tablesorter">
+<style>
+	th, td { white-space: nowrap; }
+	div.dataTables_wrapper {
+		width: 800px;
+		margin: 0 auto;
+	}
+</style>
+
+<table id="gradeCentreTable"  class="display" cellspacing="0" width="100%">
 	<thead>
 		<tr>
 			<th>Username</th>
@@ -53,18 +61,10 @@
 <script>
 	$(document).ready(function() 
 	    { 			
-			var oTable = $('#gradeCentreTable').dataTable( {
-		 		"sScrollX": "100%",
-		 		"sScrollXInner": "150%",
-		 		"bScrollCollapse": true,
-		 		"iDisplayLength": 25
-		 	} );
-		 	new FixedColumns( oTable, {
-		 		"iLeftColumns": 3,
-				"iLeftWidth": 250
-		 	} );
-
-			
+			var oTable = $('#gradeCentreTable').dataTable({
+				"scrollX": true,
+				"iDisplayLength": 25
+			} );
 	    } 
 	); 
 

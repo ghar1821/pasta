@@ -14,7 +14,7 @@
 		<meta name="Author" content="Alex Radu" />
 		<title><spring:message code="UOS" /> </title>
 		
-		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery.dataTables.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery.dataTables.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/screen-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
@@ -32,8 +32,7 @@
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.snippet.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dragtable.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tristate.min.js" htmlEscape="true" />"></script>
 		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/jquery.jqplot.min.js" htmlEscape="true" />"></script>
