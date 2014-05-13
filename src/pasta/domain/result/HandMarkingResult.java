@@ -58,7 +58,7 @@ public class HandMarkingResult implements Comparable{
 	}
 	
 	public boolean isFinishedMarking(){
-		logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
+		//logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
 		return (result.size() >= markingTemplate.getRowHeader().size());  
 	}
 

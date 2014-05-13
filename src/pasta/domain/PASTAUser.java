@@ -15,7 +15,7 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name = "Users")
-public class PASTAUser implements Serializable{
+public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	private String username;
 	private String tutorial;
 	private String stream;
@@ -94,6 +94,10 @@ public class PASTAUser implements Serializable{
 	@Transient
 	public boolean equals(PASTAUser user){
 		return (username.equals(user.getUsername()));
+	}
+	@Override
+	public int compareTo(PASTAUser o) {
+		return getUsername().trim().compareTo(o.getUsername().trim());
 	}
 	
 }

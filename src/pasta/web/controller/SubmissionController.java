@@ -602,9 +602,7 @@ public class SubmissionController {
 		
 		// if submitted 
 		if(form != null && student != null 
-				&& getUser(student) != null 
-				&& manager.getLatestResultsForUser(student) != null
-				&& manager.getLatestResultsForUser(student).get(assessmentName) != null){
+				&& getUser(student) != null){
 
 			// save changes
 			List<HandMarkingResult> results = form.getHandMarkingResults();
@@ -612,15 +610,15 @@ public class SubmissionController {
 				currResult.setMarkingTemplate(handMarkingManager.getHandMarking(currResult
 						.getHandMarkingTemplateShortName()));
 			}
-
-			AssessmentResult result = manager.getLatestResultsForUser(student).get(assessmentName);
-
-			handMarkingManager.saveHandMarkingResults(student, assessmentName
-					, result.getFormattedSubmissionDate(), form.getHandMarkingResults());
-			handMarkingManager.saveComment(student, assessmentName,
-					result.getFormattedSubmissionDate(), form.getComments());
+			handMarkingManager.saveHandMarkingResults(student, assessmentName,
+					manager.getLatestResultsForUser(student)
+							.get(assessmentName).getFormattedSubmissionDate(),
+					form.getHandMarkingResults());
+			handMarkingManager.saveComment(student, assessmentName, manager
+					.getLatestResultsForUser(student).get(assessmentName)
+					.getFormattedSubmissionDate(), form.getComments());
 		}
-		
+
 		// get the current student's submission
 		try{
 			int i_studentIndex = Integer.parseInt(studentIndex);

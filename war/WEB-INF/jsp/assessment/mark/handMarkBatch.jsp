@@ -36,6 +36,7 @@ th, td{
 <c:choose>
 	<c:when test="${not empty student}">
 		<form:form commandName="assessmentResult" action="../${nextStudent}/" enctype="multipart/form-data" method="POST">
+		<input type="hidden" name="student" value="${student}"/>
 		<c:choose>
 				<c:when test="${assessmentResult.compileError}">
 					<div style="width:100%; text-align:right;">
@@ -96,7 +97,6 @@ th, td{
 			<c:set var="totalHandMarkingCategories" value="0" />
 			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
 				<h4>${handMarking.handMarking.name}</h4>
-				<input type="hidden" name="student" value="${student}"/>
 				<c:choose>
 					<c:when test="${empty last}">
 						<input type="submit" onclick="changed = false;" value="Save and continue" id="submit" style="margin-top:1em;"/>
