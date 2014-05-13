@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -812,6 +813,72 @@ public class SubmissionController {
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	@RequestMapping(value = "gradeCentre2/DATA/")
+	public @ResponseBody String viewGradeCentreData() {
+		String data="{\r\n  \"data\": [\r\n";
+		// latestResults[user.username][assessment.shortName].marks
+		PASTAUser[] allUsers = userManager.getUserList().toArray(new PASTAUser[0]);
+		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
+		for(int i=0; i<allUsers.length; ++i){
+			PASTAUser user = allUsers[i];
+
+			String userData = "    [\r\n";
+			
+			// name
+			userData+="      \"" + user.getUsername() + "\",\r\n";
+			// stream
+			userData+="      \"" + user.getStream() + "\",\r\n";
+			// class
+			userData+="      \"" + user.getTutorial() + "\",\r\n";
+			
+			// marks
+			for (int j = 0; j < allAssessments.length; j++) {
+				// assessment mark
+				Assessment currAssessment = allAssessments[i];
+				String mark = "";
+				
+				if(assessmentManager.getLatestResultsForUser(user.getUsername()) != null 
+						&& assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName())!= null){
+					mark = ""+assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getMarks();
+				}
+				userData+="      \"" + mark + "\"";
+				if(j < allAssessments.length - 1){
+					userData += ",";
+				}
+				userData+="\r\n";
+			}
+			
+			userData += "    ]";
+			if(i < allUsers.length - 1){
+				userData += ",";
+			}
+			userData += "\r\n";
+			
+			data+=userData;
+		}
+		data+="  ]\r\n}";
+		return data;
+	}
+	
+	@RequestMapping(value = "gradeCentre2/")
+	public String viewGradeCentre2(Model model) {
+
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
+		model.addAttribute("userList", userManager.getUserList());
+		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
+		model.addAttribute("unikey", user);
+
+		return "user/viewAll2";
+	}
+	
 	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre(Model model) {
 
@@ -822,57 +889,6 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-
-		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getUserList());
-		Map<String, Map<Integer, Integer>> submissionDistribution = new TreeMap<String, Map<Integer, Integer>>();
-		Collection<Assessment> assessments = assessmentManager.getAssessmentList();
-
-		int numBreaks = 10;
-
-		Map<String, Integer[]> markDistribution = new TreeMap<String, Integer[]>();
-
-		for (Assessment assessment : assessments) {
-			int[] currMarkDist = new int[numBreaks + 1];
-			Map<Integer, Integer> currSubmissionDistribution = new TreeMap<Integer, Integer>();
-			for (Entry<String, Map<String, AssessmentResult>> entry : allResults
-					.entrySet()) {
-				int spot = 0;
-				int numSubmissionsMade = 0;
-				if (entry.getValue() != null
-						&& entry.getValue().get(assessment.getShortName()) != null) {
-					spot = ((int) (entry.getValue()
-							.get(assessment.getShortName()).getPercentage() * 100 / (100 / numBreaks)));
-					numSubmissionsMade = entry.getValue()
-							.get(assessment.getShortName())
-							.getSubmissionsMade();
-				}
-				// mark histogram
-				currMarkDist[spot]++;
-
-				// # submission distribution
-				if (!currSubmissionDistribution.containsKey(numSubmissionsMade)) {
-					currSubmissionDistribution.put(numSubmissionsMade, 0);
-				}
-				currSubmissionDistribution.put(numSubmissionsMade,
-						currSubmissionDistribution.get(numSubmissionsMade) + 1);
-			}
-
-			// add to everything list
-			submissionDistribution.put(assessment.getShortName(),
-					currSubmissionDistribution);
-
-			Integer[] tempCurrMarkDist = new Integer[currMarkDist.length];
-			for (int i = 0; i < currMarkDist.length; ++i) {
-				tempCurrMarkDist[i] = currMarkDist[i];
-			}
-
-			markDistribution.put(assessment.getShortName(), tempCurrMarkDist);
-		}
-
-		model.addAttribute("assessments", assessments);
-		model.addAttribute("maxBreaks", numBreaks);
-		model.addAttribute("markDistribution", markDistribution);
-		model.addAttribute("submissionDistribution", submissionDistribution);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("userList", userManager.getUserList());
