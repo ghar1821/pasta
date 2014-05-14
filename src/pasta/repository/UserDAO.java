@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -206,6 +207,16 @@ public class UserDAO extends HibernateDaoSupport{
 	
 	public Collection<PASTAUser> getUserList(){
 		return allUsers.values();
+	}
+	
+	public Collection<PASTAUser> getStudentList(){
+		Collection<PASTAUser> users = new LinkedList<PASTAUser>();
+		for(PASTAUser user: allUsers.values()){
+			if(!user.isTutor()){
+				users.add(user);
+			}
+		}
+		return users;
 	}
 	
 	public Collection<PASTAUser> getUserListByTutorial(String tutorialName){

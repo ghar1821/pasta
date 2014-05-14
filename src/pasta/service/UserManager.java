@@ -57,6 +57,10 @@ public class UserManager {
 		return userDao.getUserList();
 	}
 	
+	public Collection<PASTAUser> getStudentList() {
+		return userDao.getStudentList();
+	}
+	
 	public Map<String, Collection<String>> getTutorialByStream(){
 		return userDao.getTutorialByStream();
 	}

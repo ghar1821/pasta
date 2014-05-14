@@ -4,6 +4,7 @@ package pasta.web.controller;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -815,40 +816,57 @@ public class SubmissionController {
 
 	@RequestMapping(value = "gradeCentre2/DATA/")
 	public @ResponseBody String viewGradeCentreData() {
+		PASTAUser currentUser = getUser();
+		if (currentUser == null) {
+			return "";
+		}
+		if (!currentUser.isTutor()) {
+			return "";
+		}
+		
+		DecimalFormat df = new DecimalFormat("#.###");
+		
 		String data="{\r\n  \"data\": [\r\n";
 		// latestResults[user.username][assessment.shortName].marks
-		PASTAUser[] allUsers = userManager.getUserList().toArray(new PASTAUser[0]);
+		PASTAUser[] allUsers = userManager.getStudentList().toArray(new PASTAUser[0]);
 		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
 		for(int i=0; i<allUsers.length; ++i){
 			PASTAUser user = allUsers[i];
 
-			String userData = "    [\r\n";
+			String userData = "    {\r\n";
 			
 			// name
-			userData+="      \"" + user.getUsername() + "\",\r\n";
+			userData+="      \"name\": \"" + user.getUsername() + "\",\r\n";
 			// stream
-			userData+="      \"" + user.getStream() + "\",\r\n";
+			userData+="      \"stream\": \"" + user.getStream() + "\",\r\n";
 			// class
-			userData+="      \"" + user.getTutorial() + "\",\r\n";
+			userData+="      \"class\": \"" + user.getTutorial() + "\",\r\n";
 			
 			// marks
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
-				Assessment currAssessment = allAssessments[i];
+				Assessment currAssessment = allAssessments[j];
+				userData += "      \"" + currAssessment.getShortName() + "\": {\r\n";
 				String mark = "";
+				String percentage="";
 				
 				if(assessmentManager.getLatestResultsForUser(user.getUsername()) != null 
 						&& assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName())!= null){
-					mark = ""+assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getMarks();
+					mark = df.format(assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getMarks());					
+					percentage = df.format(assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getPercentage());
 				}
-				userData+="      \"" + mark + "\"";
+				userData+="        \"mark\": \"" + mark + "\",\r\n";
+				userData+="        \"percentage\": \"" + percentage + "\",\r\n";
+				userData+="        \"assessmentname\": \"" + currAssessment.getShortName() + "\"\r\n";
+				userData+="      }";
+				
 				if(j < allAssessments.length - 1){
 					userData += ",";
 				}
 				userData+="\r\n";
 			}
 			
-			userData += "    ]";
+			userData += "    }";
 			if(i < allUsers.length - 1){
 				userData += ",";
 			}
