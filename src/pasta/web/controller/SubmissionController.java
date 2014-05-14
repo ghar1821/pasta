@@ -814,7 +814,8 @@ public class SubmissionController {
 	// GRADE CENTRE //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	@RequestMapping(value = "gradeCentre2/DATA/")
+	// AJAX DATA
+	@RequestMapping(value = "gradeCentre/DATA/")
 	public @ResponseBody String viewGradeCentreData() {
 		PASTAUser currentUser = getUser();
 		if (currentUser == null) {
@@ -853,7 +854,7 @@ public class SubmissionController {
 				if(assessmentManager.getLatestResultsForUser(user.getUsername()) != null 
 						&& assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName())!= null){
 					mark = df.format(assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getMarks());					
-					percentage = df.format(assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getPercentage());
+					percentage = ""+assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getPercentage();
 				}
 				userData+="        \"mark\": \"" + mark + "\",\r\n";
 				userData+="        \"percentage\": \"" + percentage + "\",\r\n";
@@ -878,10 +879,117 @@ public class SubmissionController {
 		return data;
 	}
 	
-	@RequestMapping(value = "gradeCentre2/")
+	@RequestMapping(value = "stream/{streamName}/DATA/")
+	public @ResponseBody String viewStreamData(@PathVariable("streamName") String streamName) {
+		PASTAUser currentUser = getUser();
+		if (currentUser == null) {
+			return "";
+		}
+		if (!currentUser.isTutor()) {
+			return "";
+		}
+		
+		// latestResults[user.username][assessment.shortName].marks
+		if(userManager.getUserListByStream(streamName) == null){
+			return "";
+		}
+		return generateJSON(userManager.getUserListByStream(streamName).toArray(new PASTAUser[0]));
+	}
+	
+	@RequestMapping(value = "tutorial/{className}/DATA/")
+	public @ResponseBody String viewTutorialData(@PathVariable("className") String className) {
+		PASTAUser currentUser = getUser();
+		if (currentUser == null) {
+			return "";
+		}
+		if (!currentUser.isTutor()) {
+			return "";
+		}
+		
+		// latestResults[user.username][assessment.shortName].marks
+		if(userManager.getUserListByTutorial(className) == null){
+			return "";
+		}
+		
+		return generateJSON(userManager.getUserListByTutorial(className).toArray(new PASTAUser[0]));
+	}
+	
+	@RequestMapping(value = "myTutorials/DATA/")
+	public @ResponseBody String viewMyTutorialData() {
+		PASTAUser currentUser = getUser();
+		if (currentUser == null) {
+			return "";
+		}
+		if (!currentUser.isTutor()) {
+			return "";
+		}
+		
+		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
+		for (String tutorial : currentUser.getTutorClasses()) {
+			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
+		}
+		
+		return generateJSON(myUsers.toArray(new PASTAUser[0]));
+	}
+	
+	private String generateJSON(PASTAUser[] allUsers){
+		DecimalFormat df = new DecimalFormat("#.###");
+		
+		String data="{\r\n  \"data\": [\r\n";
+				
+		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
+		for(int i=0; i<allUsers.length; ++i){
+			PASTAUser user = allUsers[i];
+
+			String userData = "    {\r\n";
+			
+			// name
+			userData+="      \"name\": \"" + user.getUsername() + "\",\r\n";
+			// stream
+			userData+="      \"stream\": \"" + user.getStream() + "\",\r\n";
+			// class
+			userData+="      \"class\": \"" + user.getTutorial() + "\",\r\n";
+			
+			// marks
+			for (int j = 0; j < allAssessments.length; j++) {
+				// assessment mark
+				Assessment currAssessment = allAssessments[j];
+				userData += "      \"" + currAssessment.getShortName() + "\": {\r\n";
+				String mark = "";
+				String percentage="";
+				
+				if(assessmentManager.getLatestResultsForUser(user.getUsername()) != null 
+						&& assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName())!= null){
+					mark = df.format(assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getMarks());					
+					percentage = ""+assessmentManager.getLatestResultsForUser(user.getUsername()).get(currAssessment.getShortName()).getPercentage();
+				}
+				userData+="        \"mark\": \"" + mark + "\",\r\n";
+				userData+="        \"percentage\": \"" + percentage + "\",\r\n";
+				userData+="        \"assessmentname\": \"" + currAssessment.getShortName() + "\"\r\n";
+				userData+="      }";
+				
+				if(j < allAssessments.length - 1){
+					userData += ",";
+				}
+				userData+="\r\n";
+			}
+			
+			userData += "    }";
+			if(i < allUsers.length - 1){
+				userData += ",";
+			}
+			userData += "\r\n";
+			
+			data+=userData;
+		}
+		data+="  ]\r\n}";
+		return data;
+	}
+	
+	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre2(Model model) {
 
-		PASTAUser user = getUser();
+		 PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
@@ -890,16 +998,15 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("userList", userManager.getUserList());
-		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		model.addAttribute("unikey", user);
 
 		return "user/viewAll2";
 	}
 	
-	@RequestMapping(value = "gradeCentre/")
-	public String viewGradeCentre(Model model) {
-
+	// home page
+	@RequestMapping(value = "tutorial/{className}/")
+	public String viewClass(@PathVariable("className") String className,
+			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -909,41 +1016,15 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("userList", userManager.getUserList());
-		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 		model.addAttribute("unikey", user);
 
-		return "user/viewAll";
-	}
-
-	// home page
-	@RequestMapping(value = "tutorial/{className}/")
-	public String viewClass(@PathVariable("className") String className,
-			Model model) {
-		// check if tutor or student
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
-		model.addAttribute("userList",
-				userManager.getUserListByTutorial(className));
-		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
-		model.addAttribute("unikey", user);
-		model.addAttribute("classname", "Class - " + className);
-
-		return "compound/classHome";
+		return "user/viewSome";
 	}
 
 	// home page
 	@RequestMapping(value = "stream/{streamName}/")
 	public String viewStream(@PathVariable("streamName") String streamName,
 			Model model) {
-		// check if tutor or student
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -951,15 +1032,27 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
-		model.addAttribute("userList",
-				userManager.getUserListByStream(streamName));
-		model.addAttribute("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
+
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
-		model.addAttribute("classname", "Stream - " + streamName);
+
+		return "user/viewSome";
+	}
 	
-		return "compound/classHome";
+	@RequestMapping(value = "myTutorials/")
+	public String viewMyTutorials(Model model) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
+		model.addAttribute("unikey", user);
+
+		return "user/viewAll2";
 	}
 	
 	@RequestMapping(value = "student/{username}/extension/{assessmentName}/{extension}/")

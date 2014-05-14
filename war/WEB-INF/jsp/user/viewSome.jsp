@@ -21,15 +21,6 @@
 	var xb = parseFloat(clrBad.split(",")[2]);
 </script>
 
-<div style="float: left; width:100%">
-	<button style="float: left; text-align: center;"
-		onclick="window.location = '../downloadMarks/'">Download Marks</button>
-</div>
-<div style="float: left; width:100%">
-	<button style="float: left; text-align: center;"
-		onclick="window.location = '../downloadAutoMarks/'">Download Auto Marks ONLY</button>
-</div>
-
 <style>
 	th, td { white-space: nowrap; }
 	div.dataTables_wrapper {
@@ -72,19 +63,19 @@
 					  "mRender": function ( data, type, full ) {
 						// assessment
 						if (data.mark >= 0) {
-							return '<span style="display:none">'+data.percentage+'</span><a href="../student/'+full.name+'/info/'+data.assessmentname+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
+							return '<span style="display:none">'+data.percentage+'</span><a href="../../student/'+full.name+'/info/'+data.assessmentname+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
 						}
 						// name
 						if(data == full.name){
-							return '<a href="../student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="../../student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
 						}
 						// stream
 						if(data == full.stream){
-							return '<a href="../stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="../../stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
 						}
 						// class
 						if(data == full.class){
-							return '<a href="../tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="../../tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
 						}
 						return data;
 					  },
@@ -112,3 +103,4 @@
 	); 
 
 </script>
+

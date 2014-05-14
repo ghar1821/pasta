@@ -106,6 +106,13 @@
 										<a href="<spring:url value="/gradeCentre/" htmlEscape="true" />"><span>Grade Centre</span></a>
 									</span>
 								</li>
+								<c:if test="${ not empty unikey.tutorial }">
+									<li>
+										<span>
+											<a href="<spring:url value="/myTutorials/" htmlEscape="true" />"><span>My Tutorials</span></a>
+										</span>
+									</li>
+								</c:if>
 								<li>
 									<span>
 										<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>

@@ -231,7 +231,7 @@ public class UserDAO extends HibernateDaoSupport{
 	
 	public Collection<PASTAUser> getUserListByStream(String streamName){
 		Set<PASTAUser> users = new TreeSet<PASTAUser>();
-		if(usersByTutorial.get(streamName) != null){
+		if(usersByStream.get(streamName) != null){
 			for(String user: usersByStream.get(streamName)){
 				users.add(allUsers.get(user));
 			}
