@@ -96,6 +96,8 @@ public class AuthenitcationController {
 	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
 			BindingResult result) {
 
+		userMsg.setUnikey(userMsg.getUnikey().trim());
+		
 		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
 		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && 
 				userManager.getUser(userMsg.getUnikey()) == null){
