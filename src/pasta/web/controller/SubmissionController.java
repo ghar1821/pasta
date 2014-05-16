@@ -334,9 +334,6 @@ public class SubmissionController {
 		return "redirect:../";
 	}
 
-	
-
-
 	@RequestMapping(value = "viewFile/loadFile", method = RequestMethod.GET)
 	public void getFile(@RequestParam("file_name") String fileName,
 			HttpServletResponse response) {
@@ -379,7 +376,6 @@ public class SubmissionController {
 			}
 		}
 	}
-	
 	
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
 	public String viewFile(@RequestParam("location") String location,
@@ -505,9 +501,8 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		if(user.isInstructor()){
-			manager.runAssessment(username, assessmentName, assessmentDate);
-		}
+		
+		manager.runAssessment(username, assessmentName, assessmentDate);
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
 	}

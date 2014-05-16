@@ -220,9 +220,8 @@ public class SubmissionManager {
 	}
 	
 	public void runAssessment(String username, String assessmentName, String assessmentDate){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		try {
-			scheduler.save(new Job(username, assessmentName, sdf.parse(assessmentDate)));
+			scheduler.save(new Job(username, assessmentName, PASTAUtil.parseDate(assessmentDate)));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
 					+ assessmentName + " for " + username

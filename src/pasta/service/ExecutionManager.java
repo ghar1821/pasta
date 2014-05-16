@@ -52,7 +52,6 @@ public class ExecutionManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
-	private PlayerDAO playerDAO = ProjectProperties.getInstance().getPlayerDAO();
 	
 	private ExecutionScheduler scheduler;
 	
@@ -367,6 +366,11 @@ public class ExecutionManager {
 			String unitTestsLocation = ProjectProperties.getInstance().getProjectLocation()
 					+ "/submissions/" + job.getUsername() + "/assessments/"
 					+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/unitTests";
+			
+			if(new File(unitTestsLocation).exists()){
+				FileUtils.deleteDirectory(new File(unitTestsLocation));
+			}
+			
 			// run unit tests
 			for(WeightedUnitTest test: currAssessment.getAllUnitTests()){
 				try {
