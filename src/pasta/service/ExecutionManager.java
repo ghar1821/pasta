@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -371,6 +372,7 @@ public class ExecutionManager {
 				FileUtils.deleteDirectory(new File(unitTestsLocation));
 			}
 			
+			PrintStream runErrors = null;
 			// run unit tests
 			for(WeightedUnitTest test: currAssessment.getAllUnitTests()){
 				try {
@@ -394,6 +396,12 @@ public class ExecutionManager {
 
 					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 					project.setBasedir(unitTestsLocation + "/" + test.getTest().getShortName());
+					DefaultLogger consoleLogger = new DefaultLogger();
+					 runErrors = new PrintStream(unitTestsLocation + "/" + test.getTest().getShortName()
+							  + "/run.errors");
+					consoleLogger.setOutputPrintStream(runErrors);
+					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
+					project.addBuildListener(consoleLogger);
 					project.init();
 
 					project.addReference("ant.projectHelper", projectHelper);
@@ -414,6 +422,8 @@ public class ExecutionManager {
 								unitTestsLocation + "/" + test.getTest().getShortName() + "/" , "folder "));
 						compileErrors.close();
 					}
+					
+					runErrors.close();
 
 					// delete everything else
 					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getShortName()))
