@@ -14,29 +14,29 @@
 		<meta name="Author" content="Alex Radu" />
 		<title><spring:message code="UOS" /> </title>
 		
-		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery.dataTables.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/styles/screen-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/images/favicon.ico" htmlEscape="true" />" rel="shortcut icon" />
-		<link href="<spring:url value="/static/scripts/jqplot/jquery.jqplot.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/styles/jquery.snippet.min.css" htmlEscape="true" />" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<spring:url value="/static/jqueryFileTree.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
-		<link href="<spring:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css" htmlEscape="true" />" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/jquery/smoothness/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/screen-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/images/favicon.ico"/>" rel="shortcut icon" />
+		<link href="<c:url value="/static/scripts/jqplot/jquery.jqplot.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-1.8.2.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/roundTableCorners.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.snippet.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tablesorter.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.bpopup-0.7.0.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.dataTables.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/FixedColumns.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jquery.tristate.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jqplot/jquery.jqplot.min.js" htmlEscape="true" />"></script>
-		<script type="text/javascript" src="<spring:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js" htmlEscape="true" />"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/roundTableCorners.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.snippet.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tablesorter.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.7.0.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/FixedColumns.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tristate.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jqplot/jquery.jqplot.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js"/>"></script>
 		<decorator:head />
 		
 		
@@ -73,7 +73,7 @@
 						<div id="utilities">
 							<ul id="nav-global">
 								<li class="active">
-									<a href="<spring:url value="/" htmlEscape="true" />">PASTA Home</a>
+									<a href="<c:url value="/"/>">PASTA Home</a>
 								</li>
 								<li>
 									<a href="http://www.sydney.edu.au">University Home</a>
@@ -83,11 +83,11 @@
 							<div id="login">
 								<c:choose>
 									<c:when test="${not empty unikey}">
-										<a href="<spring:url value="/home/" htmlEscape="true" />"><span>${unikey.username}</span></a> |
-										<a href="<spring:url value="/login/exit" htmlEscape="true" />"><span>Logout</span></a>
+										<a href="<c:url value="/home/"/>"><span>${unikey.username}</span></a> |
+										<a href="<c:url value="/login/exit"/>"><span>Logout</span></a>
 									</c:when>
 									<c:otherwise>
-										<a href="<spring:url value="/login/" htmlEscape="true" />"><span>Login</span></a>
+										<a href="<c:url value="/login/"/>"><span>Login</span></a>
 									</c:otherwise>
 								</c:choose>
 							</div>
@@ -97,47 +97,47 @@
 						<ul class="horizontal" id="tabs">
 							<li>
 								<span>
-									<a href="<spring:url value="/home/" htmlEscape="true" />"><span>Home</span></a>
+									<a href="<c:url value="/home/"/>"><span>Home</span></a>
 								</span>
 							</li>
 							<c:if test="${not empty unikey and unikey.tutor}">
 								<li>
 									<span>
-										<a href="<spring:url value="/gradeCentre/" htmlEscape="true" />"><span>Grade Centre</span></a>
+										<a href="<c:url value="/gradeCentre/"/>"><span>Grade Centre</span></a>
 									</span>
 								</li>
 								<c:if test="${ not empty unikey.tutorial }">
 									<li>
 										<span>
-											<a href="<spring:url value="/myTutorials/" htmlEscape="true" />"><span>My Tutorials</span></a>
+											<a href="<c:url value="/myTutorials/"/>"><span>My Tutorials</span></a>
 										</span>
 									</li>
 								</c:if>
 								<li>
 									<span>
-										<a href="<spring:url value="/assessments/" htmlEscape="true" />"><span>Assessments</span></a>
+										<a href="<c:url value="/assessments/"/>"><span>Assessments</span></a>
 									</span>
 								</li>
 								<li>
 									<span>
-										<a href="<spring:url value="/unitTest/" htmlEscape="true" />"><span>Unit Tests</span></a>
+										<a href="<c:url value="/unitTest/"/>"><span>Unit Tests</span></a>
 									</span>
 								</li>
 								<li>
 									<span>
-										<a href="<spring:url value="/handMarking/" htmlEscape="true" />"><span>Hand Marking</span></a>
+										<a href="<c:url value="/handMarking/"/>"><span>Hand Marking</span></a>
 									</span>
 								</li>
 							</c:if>
 							<c:if test="${not empty unikey}">
 								<li>
 									<span>
-										<a href="<spring:url value="/competition/" htmlEscape="true" />"><span>Competitions</span></a>
+										<a href="<c:url value="/competition/"/>"><span>Competitions</span></a>
 									</span>
 								</li>
 								<li>
 									<span>
-										<a href="<spring:url value="/admin/" htmlEscape="true" />"><span>Admin</span></a>
+										<a href="<c:url value="/admin/"/>"><span>Admin</span></a>
 									</span>
 								</li>
 							</c:if>

@@ -95,7 +95,7 @@
         </fileset>
     </path>
 
-    <taskdef name="install" classname="org.apache.catalina.ant.InstallTask">
+    <taskdef name="install" classname="org.apache.catalina.ant.DeployTask">
         <classpath refid="catalina-ant-classpath"/>
     </taskdef>
     <taskdef name="reload" classname="org.apache.catalina.ant.ReloadTask">
@@ -135,6 +135,7 @@
 
     <target name="stop" description="Stop Tomcat application">
         <stop url="${tomcat.manager.url}"
+        		 failOnError="false"
                  username="${tomcat.manager.username}"
                  password="${tomcat.manager.password}"
                  path="/${name}"/>

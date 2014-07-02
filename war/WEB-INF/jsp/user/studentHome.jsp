@@ -63,16 +63,16 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<td>
 						<c:choose>
 							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage == 1 and results[assessment.shortName].submissionsMade == 1}">
-								<div style="float:right;"><img src="<spring:url value="/static/images/Diamond_Star.png" htmlEscape="true" />" alt="Good Job" height="42px" width="42px"></div>
+								<div style="float:right;"><img src="<c:url value="/static/images/Diamond_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
 							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage == 1}">
-								<div style="float:right;"><img src="<spring:url value="/static/images/Gold_Star.png" htmlEscape="true" />" alt="Good Job" height="42px" width="42px"></div>
+								<div style="float:right;"><img src="<c:url value="/static/images/Gold_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
 							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage >= 0.85}">
-								<div style="float:right;"><img src="<spring:url value="/static/images/Silver_Star.png" htmlEscape="true" />" alt="Good Job" height="42px" width="42px"></div>
+								<div style="float:right;"><img src="<c:url value="/static/images/Silver_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
 							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage >= 0.75}">
-								<div style="float:right;"><img src="<spring:url value="/static/images/Bronze_Star.png" htmlEscape="true" />" alt="Good Job" height="42px" width="42px"></div>
+								<div style="float:right;"><img src="<c:url value="/static/images/Bronze_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
 						</c:choose>
 						<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
