@@ -364,6 +364,9 @@ public class ExecutionManager {
 
 		try {
 			
+			logger.error("Running unit test "
+					+ currAssessment.getName() + " for " + job.getUsername());
+			
 			String unitTestsLocation = ProjectProperties.getInstance().getProjectLocation()
 					+ "/submissions/" + job.getUsername() + "/assessments/"
 					+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate()) + "/unitTests";

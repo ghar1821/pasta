@@ -22,6 +22,7 @@
 		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
 		<tr><td>Assessment DueDate:</td><td><form:input type="text" path="simpleDueDate" id="simpleDueDate" name="simpleDueDate"/></td></tr>
 		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/></td></tr>
+		<tr><td>Count submissions that have failed to compile:</td><td><form:checkbox path="countUncompilable"/></td></tr>
 	</table>
 	
 	The assessment has <c:if test="${not assessment.released}"> not </c:if> been released

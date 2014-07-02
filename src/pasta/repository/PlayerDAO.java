@@ -206,7 +206,7 @@ public class PlayerDAO {
 				player.setOfficialWin(win);
 				player.setOfficialDraw(draw);
 				player.setOfficialLoss(loss);
-			} catch (FileNotFoundException e) {
+			} catch (Exception e) {
 				logger.error("Execution error reading " + directory
 						+ "official.stats :" + e);
 			}
@@ -239,7 +239,7 @@ public class PlayerDAO {
 				player.setUnofficialWin(win);
 				player.setUnofficialDraw(draw);
 				player.setUnofficialLoss(loss);
-			} catch (FileNotFoundException e) {
+			} catch (Exception e) {
 				logger.error("Execution error reading " + directory
 						+ "unofficial.stats :" + e);
 			}

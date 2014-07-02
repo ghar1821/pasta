@@ -11,6 +11,8 @@ import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
 
 import pasta.domain.template.Assessment;
+import pasta.domain.template.WeightedCompetition;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 
 public class AssessmentResult {
@@ -110,13 +112,14 @@ public class AssessmentResult {
 	
 	public double getPercentage(){
 		double marks = 0;
-		double maxWeight = 0;
+		double maxWeight = getAssessmentHandMarkingWeight() 
+				+ getAssessmentUnitTestsWeight()
+				+ getAssessmentCompetitionWeight();
 		// unit tests
 		// regular
 		for(UnitTestResult result : unitTests){
 			try{
 				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
-				maxWeight += assessment.getWeighting(result.getTest());
 			}
 			catch(Exception e){
 				// ignore anything that throws exceptions
@@ -127,10 +130,31 @@ public class AssessmentResult {
 		for(HandMarkingResult result : handMarkingResults){
 			try{
 				marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
-				maxWeight += assessment.getWeighting(result.getMarkingTemplate());
 			}
 			catch(Exception e){
 				// ignore anything that throws exceptions (probably a partially marked submission)
+			}
+		}
+				
+		if(maxWeight == 0){
+			return 0;
+		}
+		return (marks / maxWeight);
+	}
+	
+	public double getAutoPercentage(){
+		double marks = 0;
+		double maxWeight = getAssessmentHandMarkingWeight() 
+				+ getAssessmentUnitTestsWeight()
+				+ getAssessmentCompetitionWeight();
+		// unit tests
+		// regular
+		for(UnitTestResult result : unitTests){
+			try{
+				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions
 			}
 		}
 		
@@ -140,35 +164,34 @@ public class AssessmentResult {
 		return (marks / maxWeight);
 	}
 	
-	public double getAutoPercentage(){
-		double marks = 0;
-		double maxWeight = 0;
-		// unit tests
-		// regular
-		for(UnitTestResult result : unitTests){
-			try{
-				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
-				maxWeight += assessment.getWeighting(result.getTest());
-			}
-			catch(Exception e){
-				// ignore anything that throws exceptions
+	private double getAssessmentHandMarkingWeight(){
+		double weight = 0;
+		if(assessment.getHandMarking() != null){
+			for(WeightedHandMarking marking: assessment.getHandMarking()){
+				weight += marking.getWeight();
 			}
 		}
-		
-		// hand marking
-		for(HandMarkingResult result : handMarkingResults){
-			try{
-				maxWeight += assessment.getWeighting(result.getMarkingTemplate());
-			}
-			catch(Exception e){
-				// ignore anything that throws exceptions (probably a partially marked submission)
+		return weight;
+	}
+	
+	private double getAssessmentUnitTestsWeight(){
+		double weight = 0;
+		if(assessment.getAllUnitTests() != null){
+			for(WeightedUnitTest marking: assessment.getAllUnitTests()){
+				weight += marking.getWeight();
 			}
 		}
-		
-		if(maxWeight == 0){
-			return 0;
+		return weight;
+	}
+	
+	private double getAssessmentCompetitionWeight(){
+		double weight = 0;
+		if(assessment.getCompetitions() != null){
+			for(WeightedCompetition marking: assessment.getCompetitions()){
+				weight += marking.getWeight();
+			}
 		}
-		return (marks / maxWeight);
+		return weight;
 	}
 
 	public String getComments() {
@@ -185,7 +208,7 @@ public class AssessmentResult {
 		}
 		if(handMarkingResults != null){
 			for(HandMarkingResult res : handMarkingResults){
-				if(!res.isFinishedMarking()){
+				if(res == null || !res.isFinishedMarking()){
 					return false;
 				}
 			}

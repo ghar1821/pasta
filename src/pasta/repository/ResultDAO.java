@@ -531,9 +531,18 @@ public class ResultDAO {
 						+ username + " - " + assessment.getShortName());
 			}
 			
-			assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/" + username + "/assessments/"
-				+ assessment.getShortName() + "/").list().length);
+			if(assessment.isCountUncompilable()){
+				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getProjectLocation()
+					+ "/submissions/" + username + "/assessments/"
+					+ assessment.getShortName() + "/").list().length);
+			}else{
+				String[] numSubmissions = new File(ProjectProperties.getInstance().getProjectLocation()
+						+ "/submissions/" + username + "/assessments/"
+						+ assessment.getShortName() + "/unitTests/*/result.xml").list();
+				if(numSubmissions != null){
+					assessResult.setSubmissionsMade(numSubmissions.length / assessment.getUnitTests().size());
+				}
+			}
 			
 			// comments
 			try {

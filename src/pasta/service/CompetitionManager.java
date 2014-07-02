@@ -284,10 +284,11 @@ public class CompetitionManager {
 				playerForm.getFile().transferTo(
 						new File( compLocation + "/temp/code/"
 								+ playerForm.getFile().getOriginalFilename()));
-				if(playerForm.getFile().getOriginalFilename().endsWith("zip")){
-					PASTAUtil.extractFolder(compLocation + "/temp/code/"
-							+ playerForm.getFile().getOriginalFilename());
-				}
+				// TODO fix allowing people to submit zips
+//				if(playerForm.getFile().getOriginalFilename().endsWith("zip")){
+//					PASTAUtil.extractFolder(compLocation + "/temp/code/"
+//							+ playerForm.getFile().getOriginalFilename());
+//				}
 				playerForm.getFile().getInputStream().close();
 			} catch (IllegalStateException e) {
 				e.printStackTrace();

@@ -127,6 +127,7 @@ public class AssessmentDAO {
 			curAss.setNumSubmissionsAllowed(newAssessment
 					.getNumSubmissionsAllowed());
 			curAss.setReleasedClasses(newAssessment.getReleasedClasses());
+			curAss.setCountUncompilable(newAssessment.isCountUncompilable());
 			curAss.setSpecialRelease(newAssessment.getSpecialRelease());
 			String oldCategory = "";
 			String newCategory = "";
@@ -610,6 +611,14 @@ public class AssessmentDAO {
 						.getChildNodes().item(0).getNodeValue());
 			} catch (Exception e) {
 				// no category
+			}
+			
+			try {
+				currentAssessment.setCountUncompilable(Boolean.parseBoolean(doc
+						.getElementsByTagName("countUncompilable").item(0)
+						.getChildNodes().item(0).getNodeValue()));
+			} catch (Exception e) {
+				// no countUncompilable tag - defaults to true
 			}
 
 			try {

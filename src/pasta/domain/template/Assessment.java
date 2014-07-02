@@ -36,6 +36,7 @@ public class Assessment implements Comparable<Assessment>{
 	private String category;
 	private String specialRelease;
 	private String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
+	private boolean countUncompilable = true;
 
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -260,6 +261,7 @@ public class Assessment implements Comparable<Assessment>{
 		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
 		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
 				+ System.getProperty("line.separator");
+		output += "\t<countUncompilable>" + isCountUncompilable() + "</countUncompilable>" + System.getProperty("line.separator");
 		if (unitTests.size() + secretUnitTests.size() > 0) {
 			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
 			for (WeightedUnitTest unitTest : unitTests) {
@@ -325,5 +327,13 @@ public class Assessment implements Comparable<Assessment>{
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
+	}
+
+	public boolean isCountUncompilable() {
+		return countUncompilable;
+	}
+
+	public void setCountUncompilable(boolean countUncompilable) {
+		this.countUncompilable = countUncompilable;
 	}
 }
