@@ -43,10 +43,10 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	}
 
 	public List<Job> getOutstandingAssessmentJobs(){
-		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND NOT username = \"PASTACompetitionRunner\" GROUP BY runDate");
+		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND NOT username = 'PASTACompetitionRunner' GROUP BY runDate");
 	}
 	
 	public List<Job> getOutstandingCompetitionJobs(){
-		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND username = \"PASTACompetitionRunner\" GROUP BY runDate");
+		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND username = 'PASTACompetitionRunner' GROUP BY runDate");
 	}
 }

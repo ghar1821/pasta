@@ -112,8 +112,13 @@ public class UnitTestManager {
 				PASTAUtil.extractFolder(thisTest.getFileLocation()
 						+ "/code/" + newTest.getFile().getOriginalFilename());
 				newTest.getFile().getInputStream().close();
-				FileUtils.forceDelete(new File(thisTest.getFileLocation()
-						+ "/code/" + newTest.getFile().getOriginalFilename()));
+				try{
+					FileUtils.forceDelete(new File(thisTest.getFileLocation()
+							+ "/code/" + newTest.getFile().getOriginalFilename()));
+				} catch (Exception e) {
+					logger.error("Could not delete the zip for "
+							+ thisTest.getName());
+				}
 			}
 
 			FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
@@ -288,12 +293,14 @@ public class UnitTestManager {
 					PASTAUtil.extractFolder(thisTest.getFileLocation()
 							+ "/code/" + newTest.getFile().getOriginalFilename());
 					newTest.getFile().getInputStream().close();
-					FileUtils.forceDelete(new File(thisTest.getFileLocation()
-							+ "/code/" + newTest.getFile().getOriginalFilename()));
+					try{
+						FileUtils.forceDelete(new File(thisTest.getFileLocation()
+								+ "/code/" + newTest.getFile().getOriginalFilename()));
+					} catch (Exception e) {
+						logger.error("Could not delete the zip for "
+								+ thisTest.getName());
+					}
 				}
-	
-				FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
-						+ "/test/")));
 	
 				// set it as not tested
 				thisTest.setTested(false);

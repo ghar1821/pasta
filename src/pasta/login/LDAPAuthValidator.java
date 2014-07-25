@@ -49,6 +49,7 @@ public class LDAPAuthValidator implements Validator {
 	@Override
 	public void validate(Object target, Errors errors) {
 		LoginForm login = (LoginForm) target;
+		
 		// reject if the username is empty
 		if (login.getUnikey() == null || login.getUnikey().length() == 0) {
 			errors.rejectValue("unikey", "NotEmpty.loginForm.unikey");
@@ -60,6 +61,9 @@ public class LDAPAuthValidator implements Validator {
 
 		// if nothing has gone wrong yet, check using the mail servers.
 		if (!errors.hasErrors()) {
+			System.setProperty("https.protocols", "TLSv1");
+			logger.info("setting protocol to tlsv1");
+			
 			String unikey = login.getUnikey();
 			String password = login.getPassword();
 
@@ -79,45 +83,45 @@ public class LDAPAuthValidator implements Validator {
 						PORT);
 
 			} catch (LDAPException ldapException) {
-
-				System.err.println(ldapException);
-				System.exit(ldapException.getResultCode().intValue());
+				logger.error(ldapException);
+				errors.rejectValue("password", "Failed.loginForm.connection");
 
 			} catch (GeneralSecurityException exception) {
-
-				System.err.println(exception);
-				System.exit(1);
-
+				logger.error(exception);
+				errors.rejectValue("password", "Failed.loginForm.connection");
 			}
+			
 
-			try {
-
-				String dn = "CN=" + unikey
-						+ ",OU=People,DC=shared,DC=sydney,DC=edu,DC=au";
-				long maxResponseTimeMillis = 1000;
-
-				BindRequest bindRequest = new SimpleBindRequest(dn, password);
-				bindRequest.setResponseTimeoutMillis(maxResponseTimeMillis);
-				BindResult bindResult = ldapConnection.bind(bindRequest);
-
-				// Check for the password expiring or password expired
-				// response controls
-				PasswordExpiredControl pwdExpired = PasswordExpiredControl
-						.get(bindResult);
-				// expired password
-				if (pwdExpired != null) {
-					logger.error(unikey+" has an expired password");
+			if(!errors.hasErrors()){
+				try {
+	
+					String dn = "CN=" + unikey
+							+ ",OU=People,DC=shared,DC=sydney,DC=edu,DC=au";
+					long maxResponseTimeMillis = 1000;
+	
+					BindRequest bindRequest = new SimpleBindRequest(dn, password);
+					bindRequest.setResponseTimeoutMillis(maxResponseTimeMillis);
+					BindResult bindResult = ldapConnection.bind(bindRequest);
+	
+					// Check for the password expiring or password expired
+					// response controls
+					PasswordExpiredControl pwdExpired = PasswordExpiredControl
+							.get(bindResult);
+					// expired password
+					if (pwdExpired != null) {
+						logger.error(unikey+" has an expired password");
+						errors.rejectValue("password", "Failed.loginForm.password");
+					}
+	
+					ldapConnection.close();
+					if(bindResult.getResultCode() != ResultCode.SUCCESS){
+						errors.rejectValue("password", "Failed.loginForm.password");
+					}
+	
+				} catch (LDAPException ldapException) {
+					ldapConnection.close();
 					errors.rejectValue("password", "Failed.loginForm.password");
 				}
-
-				ldapConnection.close();
-				if(bindResult.getResultCode() != ResultCode.SUCCESS){
-					errors.rejectValue("password", "Failed.loginForm.password");
-				}
-
-			} catch (LDAPException ldapException) {
-				ldapConnection.close();
-				errors.rejectValue("password", "Failed.loginForm.password");
 			}
 		}
 	}
