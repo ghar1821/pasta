@@ -28,7 +28,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return username;
 	}
 	public void setUsername(String username) {
-		this.username = username;
+		this.username = username.trim();
 	}
 	
 	@Column(name = "TUTORIAL", nullable = false)
@@ -36,7 +36,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return tutorial;
 	}
 	public void setTutorial(String tutorial) {
-		this.tutorial = tutorial;
+		this.tutorial = tutorial.trim();
 	}
 	
 	@Column(name = "STREAM", nullable = false)
@@ -44,7 +44,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return stream;
 	}
 	public void setStream(String stream) {
-		this.stream = stream;
+		this.stream = stream.trim();
 	}
 	
 	@Column(name = "PERMISSION_LEVEL", nullable = false)
