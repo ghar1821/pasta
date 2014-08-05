@@ -103,12 +103,12 @@ public class CompetitionManager {
 			// unzip the uploaded code into the code folder. (if exists)
 			if (form.getFile() != null && !form.getFile().isEmpty()) {
 				// unpack
+				form.getFile().getInputStream().close();
 				form.getFile().transferTo(
 						new File(thisComp.getFileLocation() + "/code/"
 								+ form.getFile().getOriginalFilename()));
 				PASTAUtil.extractFolder(thisComp.getFileLocation()
 						+ "/code/" + form.getFile().getOriginalFilename());
-				form.getFile().getInputStream().close();
 				FileUtils.forceDelete(new File(thisComp.getFileLocation()
 						+ "/code/" + form.getFile().getOriginalFilename()));
 			}
@@ -178,12 +178,12 @@ public class CompetitionManager {
 			// unzip the uploaded code into the code folder. (if exists)
 			if (form.getFile() != null && !form.getFile().isEmpty()) {
 				// unpack
+				form.getFile().getInputStream().close();
 				form.getFile().transferTo(
 						new File(thisComp.getFileLocation() + "/code/"
 								+ form.getFile().getOriginalFilename()));
 				PASTAUtil.extractFolder(thisComp.getFileLocation()
 						+ "/code/" + form.getFile().getOriginalFilename());
-				form.getFile().getInputStream().close();
 				FileUtils.forceDelete(new File(thisComp.getFileLocation()
 						+ "/code/" + form.getFile().getOriginalFilename()));
 			}
@@ -281,6 +281,7 @@ public class CompetitionManager {
 
 			// unpack if necessary
 			try {
+				playerForm.getFile().getInputStream().close();
 				playerForm.getFile().transferTo(
 						new File( compLocation + "/temp/code/"
 								+ playerForm.getFile().getOriginalFilename()));
@@ -289,7 +290,6 @@ public class CompetitionManager {
 //					PASTAUtil.extractFolder(compLocation + "/temp/code/"
 //							+ playerForm.getFile().getOriginalFilename());
 //				}
-				playerForm.getFile().getInputStream().close();
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {

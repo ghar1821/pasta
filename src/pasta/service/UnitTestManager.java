@@ -106,12 +106,12 @@ public class UnitTestManager {
 			// unzip the uploaded code into the code folder. (if exists)
 			if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
 				// unpack
+				newTest.getFile().getInputStream().close();
 				newTest.getFile().transferTo(
 						new File(thisTest.getFileLocation() + "/code/"
 								+ newTest.getFile().getOriginalFilename()));
 				PASTAUtil.extractFolder(thisTest.getFileLocation()
 						+ "/code/" + newTest.getFile().getOriginalFilename());
-				newTest.getFile().getInputStream().close();
 				try{
 					FileUtils.forceDelete(new File(thisTest.getFileLocation()
 							+ "/code/" + newTest.getFile().getOriginalFilename()));
@@ -283,16 +283,16 @@ public class UnitTestManager {
 						+ "/unitTestProperties.xml");
 				out.print(thisTest);
 				out.close();
-	
+				
 				// unzip the uploaded code into the code folder. (if exists)
 				if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
 					// unpack
+					newTest.getFile().getInputStream().close();
 					newTest.getFile().transferTo(
 							new File(thisTest.getFileLocation() + "/code/"
 									+ newTest.getFile().getOriginalFilename()));
 					PASTAUtil.extractFolder(thisTest.getFileLocation()
 							+ "/code/" + newTest.getFile().getOriginalFilename());
-					newTest.getFile().getInputStream().close();
 					try{
 						FileUtils.forceDelete(new File(thisTest.getFileLocation()
 								+ "/code/" + newTest.getFile().getOriginalFilename()));
