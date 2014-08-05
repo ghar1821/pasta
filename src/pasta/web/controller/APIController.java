@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,6 +56,20 @@ public class APIController {
 	public void setMyService(UserManager myService) {
 		this.userManager = myService;
 	}
+	
+//	@RequestMapping(value = "zip", method = RequestMethod.GET)
+//	public void viewZip(HttpServletResponse response) {
+//		
+//		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+//		ZipOutputStream zip = new ZipOutputStream(outStream);
+//		
+//		
+//		
+//		IOUtils.copy(new ByteArrayInputStream(outStream.toByteArray()),
+//				response.getOutputStream());
+//		response.flushBuffer();
+//		zip.close();
+//	}
 
 	@RequestMapping(value = "latestMarks", method = RequestMethod.GET)
 	public void viewGradeCentreAPI(HttpServletResponse response,

@@ -16,9 +16,9 @@ import javax.persistence.Transient;
 @Entity
 @Table(name = "Users")
 public class PASTAUser implements Serializable, Comparable<PASTAUser>{
-	private String username;
-	private String tutorial;
-	private String stream;
+	private String username = "";
+	private String tutorial = "";
+	private String stream = "";
 	private UserPermissionLevel permissionLevel;
 	private Map<String, Date> extensions = new TreeMap<String, Date>();
 	
@@ -28,6 +28,9 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return username;
 	}
 	public void setUsername(String username) {
+		if(username == null){
+			username = "";
+		}
 		this.username = username.trim();
 	}
 	
@@ -36,6 +39,9 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return tutorial;
 	}
 	public void setTutorial(String tutorial) {
+		if(tutorial == null){
+			tutorial = "";
+		}
 		this.tutorial = tutorial.trim();
 	}
 	
@@ -44,6 +50,9 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return stream;
 	}
 	public void setStream(String stream) {
+		if(stream == null){
+			stream = "";
+		}
 		this.stream = stream.trim();
 	}
 	

@@ -82,7 +82,9 @@ public class UserDAO extends HibernateDaoSupport{
 					// check if tutorial has changed
 					if(!user.getTutorial().equals(oldUser.getTutorial())){
 						// update caching
-						usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
+						if(usersByTutorial.containsKey(oldUser.getTutorial())){
+							usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
+						}
 						if(usersByTutorial.get(oldUser.getTutorial()).isEmpty()){
 							usersByTutorial.remove(oldUser.getTutorial());
 						}
@@ -95,7 +97,9 @@ public class UserDAO extends HibernateDaoSupport{
 					// check if stream has changed
 					if(!user.getStream().equals(oldUser.getStream())){
 						// remove from caching
-						usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
+						if(usersByStream.containsKey(oldUser.getStream())){
+							usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
+						}
 						if(usersByStream.get(oldUser.getStream()).isEmpty()){
 							usersByStream.remove(oldUser.getStream());
 						}
@@ -303,8 +307,12 @@ public class UserDAO extends HibernateDaoSupport{
 		delete(toDelete);
 		PASTAUser fullUser = allUsers.get(toDelete.getUsername());
 		if(fullUser != null){
-			usersByTutorial.get(fullUser.getTutorial()).remove(fullUser.getUsername());
-			usersByStream.get(fullUser.getStream()).remove(fullUser.getUsername());
+			if(usersByTutorial.containsKey(fullUser.getTutorial())){
+				usersByTutorial.get(fullUser.getTutorial()).remove(fullUser.getUsername());
+			}
+			if(usersByStream.containsKey(fullUser.getStream())){
+				usersByStream.get(fullUser.getStream()).remove(fullUser.getUsername());
+			}
 			allUsers.remove(toDelete.getUsername());
 		}
 	}
