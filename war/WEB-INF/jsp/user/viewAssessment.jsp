@@ -36,6 +36,7 @@ ${assessment.description}
 					<!-- if assessment has hand marking -->
 					<c:if test="${not empty result.assessment.handMarking}">
 						<!-- edit marking if already marked -->
+						<button onClick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 						<c:choose>
 							<c:when test="${not empty viewedUser}">
 								<c:choose>
