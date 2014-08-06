@@ -531,17 +531,36 @@ public class ResultDAO {
 						+ username + " - " + assessment.getShortName());
 			}
 			
-			if(assessment.isCountUncompilable()){
+			if(assessment.isCountUncompilable() || assessment.getUnitTests().isEmpty()){
 				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getProjectLocation()
 					+ "/submissions/" + username + "/assessments/"
 					+ assessment.getShortName() + "/").list().length);
 			}else{
-				String[] numSubmissions = new File(ProjectProperties.getInstance().getProjectLocation()
+				File[] allSubmissions = new File(ProjectProperties.getInstance().getProjectLocation()
 						+ "/submissions/" + username + "/assessments/"
-						+ assessment.getShortName() + "/unitTests/*/result.xml").list();
-				if(numSubmissions != null){
-					assessResult.setSubmissionsMade(numSubmissions.length / assessment.getUnitTests().size());
+						+ assessment.getShortName()).listFiles();
+				
+				int numSubmissionsMade = 0;
+				for(File submission: allSubmissions){
+					File[] tests = new File(submission.getAbsolutePath()+"/unitTests/").listFiles();
+					if(tests != null){
+						for(File test: tests){
+							File[] files = test.listFiles();
+							boolean found = false;
+							for(File file: files){
+								if(file.getAbsolutePath().endsWith("result.xml")){
+									++numSubmissionsMade;
+									found = true;
+									break;
+								}
+							}
+							if(found){
+								break;
+							}
+						}
+					}
 				}
+				assessResult.setSubmissionsMade(numSubmissionsMade);
 			}
 			
 			// comments
