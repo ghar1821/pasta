@@ -46,7 +46,6 @@ ${assessment.description}
 										<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
-								<button onClick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 							</c:when>
 							<c:otherwise>
 								<c:choose>
@@ -57,7 +56,6 @@ ${assessment.description}
 										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
-								<button onClick="window.location.href='../../download/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 							</c:otherwise>
 						</c:choose>
 					</c:if>
@@ -72,6 +70,14 @@ ${assessment.description}
 							</c:otherwise>
 						</c:choose>
 					</c:if>
+					<c:choose>
+						<c:when test="${not empty viewedUser}">	
+							<button onClick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+						</c:when>
+						<c:otherwise>
+							<button onClick="window.location.href='../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+						</c:otherwise>
+					</c:choose>
 				</c:if>
 			</div>
 			<c:choose>
