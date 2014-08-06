@@ -1,6 +1,7 @@
 package pasta.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.ParseException;
@@ -191,8 +192,11 @@ public class SubmissionManager {
 					}
 					
 					if(compiled){
-						FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getShortName()
-								+ "/compile.errors"));
+						try{
+							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getShortName()
+									+ "/compile.errors"));
+						}
+						catch(FileNotFoundException e){}
 					}
 					
 				} catch (IOException e) {
@@ -206,7 +210,7 @@ public class SubmissionManager {
 			
 			// add to scheduler
 			if(compiled){
-				scheduler.save(new Job(username, form.getAssessment(), now));
+				runAssessment(username, currAssessment.getShortName(), currDate);
 			}
 		} catch (Exception e) {
 			logger.error("Submission error for " + username + " - " + form + "   " + e);

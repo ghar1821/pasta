@@ -15,13 +15,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -189,14 +189,14 @@ public class SubmissionController {
 
 	// redirect back
 	@RequestMapping(value = "mirror/")
-	public String goBack(HttpServletRequest request) {
+	public String goBack(HttpServletRequest request, HttpSession session) {
 		String referer = request.getHeader("Referer");
 		return "redirect:" + referer;
 	}
 
 	// home page
 	@RequestMapping(value = "home/")
-	public String home(Model model) {
+	public String home(Model model, HttpSession session) {
 		// check if tutor or student
 		PASTAUser user = getOrCreateUser();
 		if (user != null) {
@@ -205,6 +205,11 @@ public class SubmissionController {
 					assessmentManager.getAllAssessmentsByCategory());
 			model.addAttribute("results",
 					manager.getLatestResultsForUser(user.getUsername()));
+
+			if(session.getAttribute("binding")!= null){
+				model.addAttribute("org.springframework.validation.BindingResult.submission", session.getAttribute("binding"));
+				session.removeAttribute("binding");
+			}
 			if (user.isTutor()) {
 				return "user/tutorHome";
 			} else {
@@ -218,7 +223,8 @@ public class SubmissionController {
 	@RequestMapping(value = "home/", method = RequestMethod.POST)
 	public String submitAssessment(
 			@ModelAttribute(value = "submission") Submission form,
-			BindingResult result, Model model) {
+			BindingResult result, Model model,
+			HttpSession session) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -242,12 +248,9 @@ public class SubmissionController {
 		}
 		if ((!user.isTutor())
 				&& manager.getLatestResultsForUser(user.getUsername()) != null
-				&& manager.getLatestResultsForUser(user.getUsername()).get(
-						form.getAssessment()) != null
-				&& manager.getLatestResultsForUser(user.getUsername())
-						.get(form.getAssessment()).getSubmissionsMade() >= assessmentManager
-						.getAssessment(form.getAssessment())
-						.getNumSubmissionsAllowed()) {
+				&& manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()) != null
+				&& assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed() != 0
+				&& manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()) {
 			result.rejectValue("file", "Submission.NoAttempts");
 		}
 		if (!result.hasErrors()) {
@@ -256,6 +259,7 @@ public class SubmissionController {
 					+ user.getUsername() + " by " + user.getUsername());
 			manager.submit(user.getUsername(), form);
 		}
+		session.setAttribute("binding", result);
 		return "redirect:/mirror/";
 	}
 
