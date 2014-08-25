@@ -484,6 +484,10 @@ public class AssessmentDAO {
 				comp.setCompletedArenas(completedArenas);
 				comp.setOutstandingArenas(outstandingArenas);
 			}
+			else{
+				Map<String, Arena> nothing = null;
+				comp.setOutstandingArenas(nothing);
+			}
 			
 			return comp;
 		} catch (Exception e) {

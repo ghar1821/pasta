@@ -73,30 +73,30 @@ public class ProjectProperties {
 	
 	private void initialize(String projectLocation, String authType,
 			List proxy, Boolean createAccountOnSuccessfulLogin) {
-		this.projectLocation = projectLocation;
-		this.authType=authType; // default to dummy
+		ProjectProperties.projectLocation = projectLocation;
+		ProjectProperties.authType=authType; // default to dummy
 		serverAddresses = new LinkedList<String>();
-		this.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
+		ProjectProperties.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
 		
 		if(new File(getProjectLocation()+"/authentication.settings").exists()){
 			logger.info("exists");
 			decryptAuthContent();
 		}
 		
-		if(this.authType.toLowerCase().trim().equals("imap")){
+		if(ProjectProperties.authType.toLowerCase().trim().equals("imap")){
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
 		}
-		else if(this.authType.toLowerCase().trim().equals("database")){
+		else if(ProjectProperties.authType.toLowerCase().trim().equals("database")){
 			authenticationValidator = new DBAuthValidator();
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
 		}
-		else if(this.authType.toLowerCase().trim().equals("ftp")){
+		else if(ProjectProperties.authType.toLowerCase().trim().equals("ftp")){
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
 		}
-		else if(this.authType.toLowerCase().trim().equals("ldap")){
+		else if(ProjectProperties.authType.toLowerCase().trim().equals("ldap")){
 			authenticationValidator = new LDAPAuthValidator();
 			logger.info("Using ldap authentication");
 		}
@@ -108,7 +108,7 @@ public class ProjectProperties {
 		if(proxy != null && proxy.size()>=2){
 			SocketAddress addr = new InetSocketAddress((String)proxy.get(0),
 					Integer.parseInt((String) proxy.get(1)));
-			this.proxy = new Proxy(Proxy.Type.HTTP, addr);
+			ProjectProperties.proxy = new Proxy(Proxy.Type.HTTP, addr);
 			logger.info("Using proxy " + proxy.get(0) + " on port " + proxy.get(1));
 		}
 		
@@ -150,7 +150,7 @@ public class ProjectProperties {
 	}
 
 	public void setDBDao(LoginDAO dao) {
-		this.loginDAO = dao;
+		ProjectProperties.loginDAO = dao;
 		if(authType.toLowerCase().trim().equals("database")){
 			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
 		}

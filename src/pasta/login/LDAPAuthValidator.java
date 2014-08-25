@@ -62,7 +62,6 @@ public class LDAPAuthValidator implements Validator {
 		// if nothing has gone wrong yet, check using the mail servers.
 		if (!errors.hasErrors()) {
 			System.setProperty("https.protocols", "TLSv1");
-			logger.info("setting protocol to tlsv1");
 			
 			String unikey = login.getUnikey();
 			String password = login.getPassword();
@@ -125,5 +124,4 @@ public class LDAPAuthValidator implements Validator {
 			}
 		}
 	}
-
 }

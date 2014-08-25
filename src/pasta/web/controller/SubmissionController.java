@@ -156,17 +156,27 @@ public class SubmissionController {
 	 * @return
 	 */
 	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return getOrCreateUser(username);
+		if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()){
+			String username = (String) RequestContextHolder
+					.currentRequestAttributes().getAttribute("user",
+							RequestAttributes.SCOPE_SESSION);
+			return getOrCreateUser(username);
+		}
+		else{
+			return getUser();
+		}
 	}
 
 	public PASTAUser getOrCreateUser(String username) {
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
+		if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()){
+			if (username != null) {
+				return userManager.getOrCreateUser(username);
+			}
+			return null;
 		}
-		return null;
+		else{
+			return getUser(username);
+		}
 	}
 
 	public PASTAUser getUser() {
