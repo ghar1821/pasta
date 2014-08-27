@@ -322,7 +322,7 @@ public class ResultDAO {
 							+ "/assessments/"
 							+ assessment.getShortName())).list();
 					
-					if (allFiles != null) {
+					if (allFiles != null && allFiles.length > 0) {
 						Arrays.sort(allFiles);
 						
 						String temporalLatest = allFiles[allFiles.length-1];
@@ -541,22 +541,20 @@ public class ResultDAO {
 						+ assessment.getShortName()).listFiles();
 				
 				int numSubmissionsMade = 0;
-				for(File submission: allSubmissions){
+				if(allSubmissions!=null)for(File submission: allSubmissions){
 					File[] tests = new File(submission.getAbsolutePath()+"/unitTests/").listFiles();
-					if(tests != null){
-						for(File test: tests){
-							File[] files = test.listFiles();
-							boolean found = false;
-							for(File file: files){
-								if(file.getAbsolutePath().endsWith("result.xml")){
-									++numSubmissionsMade;
-									found = true;
-									break;
-								}
-							}
-							if(found){
+					if(tests != null)for(File test: tests){
+						File[] files = test.listFiles();
+						boolean found = false;
+						if(files!=null)for(File file: files){
+							if(file.getAbsolutePath().endsWith("result.xml")){
+								++numSubmissionsMade;
+								found = true;
 								break;
 							}
+						}
+						if(found){
+							break;
 						}
 					}
 				}
