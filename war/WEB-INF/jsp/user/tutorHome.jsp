@@ -123,7 +123,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		</div>
 		<form:input accept="application/zip" type="file" path="file"/>
 		<form:input type="hidden" path="assessment" value=""/>
-	   	<input type="submit" value="I accept" id="submit"/>
+	   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
    	</form:form>
 </div>
 
