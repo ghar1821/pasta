@@ -32,7 +32,6 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
@@ -437,8 +436,8 @@ public class ExecutionManager {
 
 		try {
 
-			logger.error("Running unit test " + currAssessment.getName()
-					+ " for " + job.getUsername());
+			logger.info("Running unit test " + currAssessment.getName()
+					+ " for " + job.getUsername() + " with ExecutionScheduler - " + this);
 
 			String unitTestsLocation = ProjectProperties.getInstance()
 					.getProjectLocation()
@@ -493,6 +492,8 @@ public class ExecutionManager {
 
 					project.addReference("ant.projectHelper", projectHelper);
 					projectHelper.parse(project, buildFile);
+					
+					boolean failedToCompile = false;
 
 					try {
 						project.executeTarget("build");
@@ -502,18 +503,40 @@ public class ExecutionManager {
 						logger.error("Could not compile " + job.getUsername()
 								+ " - " + currAssessment.getName() + " - "
 								+ test.getTest().getName() + e);
+						failedToCompile = true;
+					}
+					
+					runErrors.close();
+					
+					if(failedToCompile){
 						PrintStream compileErrors = new PrintStream(
 								unitTestsLocation + "/"
 										+ test.getTest().getShortName()
 										+ "/compile.errors");
-						compileErrors.print(e.toString().replaceAll(
-								".*" + unitTestsLocation + "/"
-										+ test.getTest().getShortName() + "/",
-								"folder "));
+						
+						Scanner in = new Scanner (new File(unitTestsLocation + "/"
+								+ test.getTest().getShortName() + "/run.errors"));
+						
+						boolean print = false;
+						
+						while(in.hasNextLine()){
+							String line = in.nextLine();
+							
+							if(line.contains("[javac] Files to be compiled:")){
+								print = true;
+							}
+							
+							if(print && line.contains("[javac]")){
+								compileErrors.println(line.replace("[javac]", "").replaceAll(
+										".*" + unitTestsLocation + "/"
+												+ test.getTest().getShortName() + "/",
+										"folder "));
+							}
+						}
+						
 						compileErrors.close();
+						in.close();
 					}
-
-					runErrors.close();
 
 					// delete everything else
 					String[] allFiles = (new File(unitTestsLocation + "/"

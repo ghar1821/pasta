@@ -55,7 +55,7 @@ public class HandMarkingResult implements Comparable{
 			}
 		}
 		
-		return Math.min(percentage, 1.0);
+		return Math.max(0, Math.min(percentage, 1.0));
 	}
 	
 	public boolean isFinishedMarking(){

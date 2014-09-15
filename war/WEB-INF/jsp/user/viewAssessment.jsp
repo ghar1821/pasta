@@ -97,19 +97,19 @@ ${assessment.description}
 									<c:choose>
 										<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.shortName] or viewedUser.extensions[assessment.shortName] lt now))}">
 											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+												<div class="pastaUnitTestBoxResult secret ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 											</c:forEach>
 										</c:when>
 										<c:otherwise>
 											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret" title="???">&nbsp</div>
+												<div class="pastaUnitTestBoxResult secret" title="???">&nbsp</div>
 											</c:forEach>
 										</c:otherwise>
 									</c:choose>
 								</c:when>
 								<c:otherwise>
 									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+										<div class="pastaUnitTestBoxResult ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
 									</c:forEach>
 								</c:otherwise>
 							</c:choose>
@@ -261,7 +261,7 @@ ${assessment.description}
 									<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
 										<th style="cursor:pointer">
 											${handMarking.handMarking.columnHeader[columnStatus.index].name}</br>
-											${handMarking.handMarking.columnHeader[columnStatus.index].weight}</br>
+											${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%</br>
 										</th>
 									</c:forEach>
 								</tr>
@@ -271,7 +271,7 @@ ${assessment.description}
 									<tr>
 										<th>
 											${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
-											${handMarking.handMarking.rowHeader[rowStatus.index].weight}
+											<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
 										</th>
 										<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
 											<td <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.name] == column.name}" > class="handMarkingHighlight" </c:if>>
