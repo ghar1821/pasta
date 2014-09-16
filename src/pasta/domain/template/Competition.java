@@ -145,11 +145,13 @@ public class Competition {
 					+ "\r\n" + sw.toString());
 		}
 	}
-	
-	public boolean isCalculated(){
-		return (outstandingArenas == null);
+
+	public boolean isCalculated() {
+		return (outstandingArenas == null || 
+				outstandingArenas.size() == 0 || 
+				(outstandingArenas.size() == 0 && completedArenas != null && completedArenas.size() == 0));
 	}
-	
+
 	public boolean isLive() {
 		return linkedAssessments != null && !linkedAssessments.isEmpty();
 	}
