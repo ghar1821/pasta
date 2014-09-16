@@ -27,7 +27,7 @@
 					<c:set var="liveAssessment" value="true"/>
 				</c:if>
 		</c:forEach>
-		<c:if test="${liveAssessment or unikey.tutor}" >
+		<c:if test="${(liveAssessment and not competition.hidden) or unikey.tutor}" >
 			<tr>		
 			<!-- 
 				<td class="pastaTF pastaTF${competition.tested}">
@@ -124,6 +124,7 @@
 						<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
 					</td>
 				</tr>
+				<tr><td>Hidden competition:</td><td><form:checkbox path="hidden"/></td></tr>
 				<tr><td>Competition Code:</td><td><form:input type="file" path="file"/></td></tr>
 			</table>
 	    	<input type="submit" value="Create" id="submit"/>

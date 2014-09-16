@@ -18,6 +18,7 @@ public class NewCompetition {
 	private PASTATime frequency = new PASTATime();
 	private Date firstStartDate = new Date();
 	private CommonsMultipartFile file;
+	private boolean hidden;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -68,5 +69,11 @@ public class NewCompetition {
 	public String getFirstStartDateStr(){
 		firstStartDate.setTime(firstStartDate.getTime()+31536000000l);
 		return Competition.dateParser.format(firstStartDate);
+	}
+	public boolean isHidden() {
+		return hidden;
+	}
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 }

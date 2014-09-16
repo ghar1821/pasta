@@ -135,6 +135,8 @@ public class CompetitionManager {
 		thisComp.setFrequency(compForm.getFrequency());
 		thisComp.setFirstStartDate(compForm.getFirstStartDate());
 		
+		thisComp.setHidden(compForm.isHidden());
+		
 		if(!thisComp.isCalculated()){
 			thisComp.getOfficialArena().setFirstStartDate(compForm.getFirstStartDate());
 			thisComp.getOfficialArena().setFrequency(compForm.getFrequency());
@@ -159,7 +161,7 @@ public class CompetitionManager {
 			thisComp.setFrequency(form.getFrequency());
 		}
 		try {
-
+			thisComp.setHidden(form.isHidden());
 			if((new File(thisComp.getFileLocation() + "/code/")).exists()){
 				FileUtils.deleteDirectory((new File(thisComp.getFileLocation() + "/code/")));
 			}

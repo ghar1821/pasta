@@ -438,6 +438,15 @@ public class AssessmentDAO {
 			comp.setTutorCreatableRepeatableArena(Boolean.parseBoolean(doc
 					.getElementsByTagName("tutorCreatableRepeatableArena")
 					.item(0).getChildNodes().item(0).getNodeValue()));
+			
+			
+			// is the competition hidden or not
+			if (doc.getElementsByTagName("hidden") != null
+					&& doc.getElementsByTagName("hidden").getLength() != 0) {
+				comp.setHidden(Boolean.parseBoolean(doc
+						.getElementsByTagName("hidden")
+						.item(0).getChildNodes().item(0).getNodeValue()));
+			}
 
 			// first start date - only for calculated comps
 			if (doc.getElementsByTagName("firstStartDate") != null

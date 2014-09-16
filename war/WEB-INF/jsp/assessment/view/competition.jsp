@@ -30,6 +30,7 @@
 				<tr><td>Students can create repeatable arenas:</td><td><form:checkbox path="studentCreatableRepeatableArena"/></td></tr>
 			</c:otherwise>
 		</c:choose>
+		<tr><td>Hidden competition:</td><td><form:checkbox path="hidden"/></td></tr>
 		<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
 		<tr>
 			<td>Frequency:</td>

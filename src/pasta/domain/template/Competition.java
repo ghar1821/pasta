@@ -34,6 +34,7 @@ public class Competition {
 	private boolean studentCreatableRepeatableArena;
 	private boolean tutorCreatableRepeatableArena;
 	private boolean tested;
+	private boolean hidden;
 	
 	private Collection<Assessment> linkedAssessments = new TreeSet<Assessment>();
 	
@@ -213,6 +214,7 @@ public class Competition {
 		output += "\t<studentCreatableRepeatableArena>"+studentCreatableRepeatableArena+"</studentCreatableRepeatableArena>" + System.getProperty("line.separator");
 		output += "\t<tutorCreatableRepeatableArena>"+tutorCreatableRepeatableArena+"</tutorCreatableRepeatableArena>" + System.getProperty("line.separator");
 		output += "\t<tested>"+tested+"</tested>" + System.getProperty("line.separator");
+		output += "\t<hidden>"+hidden+"</hidden>" + System.getProperty("line.separator");
 		if(firstStartDate == null){
 			firstStartDate = new Date();
 			// make it next year (realistically afte the semester ended)
@@ -233,5 +235,11 @@ public class Competition {
 	
 	public String getFileLocation() {
 		return ProjectProperties.getInstance().getProjectLocation()+"/template/competition/"+getShortName();
+	}
+	public boolean isHidden() {
+		return hidden;
+	}
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 }
