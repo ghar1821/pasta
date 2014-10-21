@@ -31,12 +31,13 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.form;
 
 /**
- * Container for for the login informationS
+ * Container for for the login information
  * 
  * Only has getters and setters.
  * 
- * @author Alex
- *
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  */
 public class LoginForm {
 	private String unikey;

@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,16 +27,16 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.form;
 
 /**
- * Container for for the login informationS
+ * Container for for the special release form
  * 
  * Only has getters and setters.
  * 
- * @author Alex
- *
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  */
 public class ReleaseForm {
 	private String assessmentName;
