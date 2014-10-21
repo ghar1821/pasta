@@ -1,10 +1,47 @@
+/**
+Copyright (c) 2014, Alex Radu
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies, 
+either expressed or implied, of the PASTA Project.
+ */
+
 package pasta.web.controller;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.zip.ZipOutputStream;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +63,7 @@ import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 @Controller
 @RequestMapping("unitTest/")
@@ -152,6 +190,46 @@ public class UnitTestController {
 						.getFileLocation() + "/code"));
 		model.addAttribute("unikey", user);
 		return "assessment/view/unitTest";
+	}
+	
+	// view a unit test
+	@RequestMapping(value = "{testName}/download/")
+	public void downloadUnitTest(@PathVariable("testName") String testName,
+			Model model,HttpServletResponse response) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return;
+		}
+		if (!user.isTutor()) {
+			return;
+		}
+		
+		response.setContentType("application/zip");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ testName + ".zip\"");
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+		ZipOutputStream zip = new ZipOutputStream(outStream);
+		try {
+			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
+					.getProjectLocation()
+					+ "/template/unitTest/"
+					+ testName
+					+ "/code/"), ProjectProperties.getInstance()
+					.getProjectLocation()
+					+ "/template/unitTest/"
+					+ testName
+					+ "/code/");
+			zip.closeEntry();
+			zip.close();
+			IOUtils.copy(new ByteArrayInputStream(outStream.toByteArray()),
+					response.getOutputStream());
+			response.flushBuffer();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	// test a unit test
