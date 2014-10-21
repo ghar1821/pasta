@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,11 +27,27 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.players;
 
 import java.util.Date;
 
+/**
+ * Contains the player statistics for competitions.
+ * <p>
+ * The statistics used are:
+ * <ul>
+ * 	<li>Player name.</li>
+ * 	<li>The date the player was first uploaded.</li>
+ * 	<li>The rating of the player in official arenas.</li>
+ * 	<li>The ranking of the player in the official arenas.</li>
+ * 	<li>The number of win/draw/loss in official/unofficial arenas.</li>
+ * </ul>
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-05-01
+ *
+ */
 public class PlayerResult {
 
 	String name;
@@ -108,6 +124,5 @@ public class PlayerResult {
 	public void setUnofficialLoss(int unofficialLoss) {
 		this.unofficialLoss = unofficialLoss;
 	}
-	
 	
 }

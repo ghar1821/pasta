@@ -37,7 +37,7 @@ package pasta.domain.form;
  * 
  * @author Alex Radu
  * @version 2.0
- * @since 2014-01-31
+ * @since 2012-11-13
  */
 public class LoginForm {
 	private String unikey;

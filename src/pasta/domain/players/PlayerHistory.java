@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,11 +27,20 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.players;
 
 import java.util.LinkedList;
-
+/**
+ * Class to contain the player history of a competition.
+ * <p>
+ * The data that is held is the player name, current active player, list of retired players.
+ * 
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-05-01
+ *
+ */
 public class PlayerHistory {
 	
 	String playerName;
