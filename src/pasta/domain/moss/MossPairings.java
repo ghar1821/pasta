@@ -27,9 +27,16 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.moss;
 
+/**
+ * Class to hold the plagiarism measure between two students.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
+ *
+ */
 public class MossPairings {
 	private String student1;
 	private String student2;

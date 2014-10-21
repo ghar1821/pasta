@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,11 +27,18 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.moss;
 
 import java.util.LinkedList;
 
+/**
+ * Class to contain all of the plagiarism pairings for a run of moss
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
+ *
+ */
 public class MossResults {
 	private LinkedList<MossPairings>  pairings = new LinkedList<MossPairings>();
 	private String link;
