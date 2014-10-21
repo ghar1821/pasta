@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain;
 
 import java.io.Serializable;
@@ -45,6 +44,11 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name = "Users")
+/**
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-10-12
+ */
 public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	private String username = "";
 	private String tutorial = "";
@@ -57,6 +61,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public String getUsername() {
 		return username;
 	}
+	
 	public void setUsername(String username) {
 		if(username == null){
 			username = "";
@@ -68,6 +73,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public String getTutorial() {
 		return tutorial;
 	}
+	
 	public void setTutorial(String tutorial) {
 		if(tutorial == null){
 			tutorial = "";
@@ -79,6 +85,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public String getStream() {
 		return stream;
 	}
+	
 	public void setStream(String stream) {
 		if(stream == null){
 			stream = "";
@@ -91,6 +98,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public UserPermissionLevel getPermissionLevel() {
 		return permissionLevel;
 	}
+	
 	public void setPermissionLevel(UserPermissionLevel permissionLevel) {
 		this.permissionLevel = permissionLevel;
 	}

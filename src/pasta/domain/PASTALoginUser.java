@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain;
 
 import javax.persistence.Column;
@@ -37,6 +36,11 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "LoginUser")
+/**
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-02-25
+ */
 public class PASTALoginUser {
 	private String username;
 	private String hashedPassword;

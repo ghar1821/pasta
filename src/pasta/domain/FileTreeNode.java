@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,17 +27,27 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain;
 
 import java.util.List;
 
+/**
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-15
+ */
 public class FileTreeNode {
 	private boolean leaf;
 	private String name;
 	private List<FileTreeNode> children;
 	private String location;
 
+	/**
+	 * Constructor to set up the node
+	 * 
+	 * @param location the location of the node in the file system
+	 * @param children the list of children for the node
+	 */
 	public FileTreeNode(String location, List<FileTreeNode> children) {
 		int lastIndex = location.lastIndexOf("/");
 		if(lastIndex == -1){

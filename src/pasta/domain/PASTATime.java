@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -32,9 +32,12 @@ package pasta.domain;
 
 import java.util.Date;
 /**
- * I could have called it something better, but this sounded amusing
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-21
  * 
+ * I could have called it something better, but this sounded amusing
+ *
  * Minimum frequency is 1 second (anything below could be abused to 
  * put too much load on the machine by mistake)
  *
@@ -46,6 +49,35 @@ public class PASTATime {
 	private int minutes = 0;
 	private int seconds = 0;
 	private int miliseconds = 0;
+	
+	public PASTATime(){}
+	
+	public PASTATime(String stringRepresentation){
+		try{
+			years = Integer.parseInt(stringRepresentation.split("y")[0]);
+			stringRepresentation = stringRepresentation.replace(years+"y", "");
+		}catch (Exception e){}
+		try{
+			days = Integer.parseInt(stringRepresentation.split("d")[0]);
+			stringRepresentation = stringRepresentation.replace(days+"d", "");
+		}catch (Exception e){}
+		try{
+			hours = Integer.parseInt(stringRepresentation.split("h")[0]);
+			stringRepresentation = stringRepresentation.replace(hours+"h", "");
+		}catch (Exception e){}
+		try{
+			minutes = Integer.parseInt(stringRepresentation.split("m")[0]);
+			stringRepresentation = stringRepresentation.replace(minutes+"m", "");
+		}catch (Exception e){}
+		try{
+			seconds = Integer.parseInt(stringRepresentation.split("s")[0]);
+			stringRepresentation = stringRepresentation.replace(seconds+"s", "");
+		}catch (Exception e){}
+		try{
+			miliseconds = Integer.parseInt(stringRepresentation.split("ms")[0]);
+			stringRepresentation = stringRepresentation.replace(miliseconds+"ms", "");
+		}catch (Exception e){}
+	}
 	
 	public int getYears() {
 		return years;
@@ -99,6 +131,12 @@ public class PASTATime {
 		return (((((years*365+days)*24+hours)*60+minutes)*60+seconds)*1000 + miliseconds);
 	}
 
+	/**
+	 * Calculate the next execution.
+	 * 
+	 * @param currentDate the current assessment run date
+	 * @return the next run date of execution
+	 */
 	public Date nextExecution(Date currentDate){
 		if(getTime() == 0){
 			return currentDate;
@@ -150,32 +188,4 @@ public class PASTATime {
 		return rep;
 	}
 	
-	public PASTATime(){}
-	
-	public PASTATime(String stringRepresentation){
-		try{
-			years = Integer.parseInt(stringRepresentation.split("y")[0]);
-			stringRepresentation = stringRepresentation.replace(years+"y", "");
-		}catch (Exception e){}
-		try{
-			days = Integer.parseInt(stringRepresentation.split("d")[0]);
-			stringRepresentation = stringRepresentation.replace(days+"d", "");
-		}catch (Exception e){}
-		try{
-			hours = Integer.parseInt(stringRepresentation.split("h")[0]);
-			stringRepresentation = stringRepresentation.replace(hours+"h", "");
-		}catch (Exception e){}
-		try{
-			minutes = Integer.parseInt(stringRepresentation.split("m")[0]);
-			stringRepresentation = stringRepresentation.replace(minutes+"m", "");
-		}catch (Exception e){}
-		try{
-			seconds = Integer.parseInt(stringRepresentation.split("s")[0]);
-			stringRepresentation = stringRepresentation.replace(seconds+"s", "");
-		}catch (Exception e){}
-		try{
-			miliseconds = Integer.parseInt(stringRepresentation.split("ms")[0]);
-			stringRepresentation = stringRepresentation.replace(miliseconds+"ms", "");
-		}catch (Exception e){}
-	}
 }
