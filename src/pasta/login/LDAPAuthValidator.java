@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.login;
 
 import java.security.GeneralSecurityException;
@@ -51,6 +50,17 @@ import com.unboundid.ldap.sdk.controls.PasswordExpiredControl;
 import com.unboundid.util.ssl.SSLUtil;
 import com.unboundid.util.ssl.TrustAllTrustManager;
 
+/**
+ * Uses LDAP to authenticate a user.
+ * <p>
+ * Currently hard coded to use "shared-dc-prd-2.shared.sydney.edu.au" 
+ * on port 636.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-02-19
+ *
+ */
 public class LDAPAuthValidator implements Validator {
 
 	// what to use to write the log to.
@@ -74,7 +84,15 @@ public class LDAPAuthValidator implements Validator {
 	}
 
 	/**
-	 * Method used for validation
+	 * Validate the form.
+	 * <p>
+	 * Check to see if the username and password are not empty.
+	 * If the fields are empty, reject the appropriate field with the appropriate error.
+	 * Then check if the username and password authenticate sucessfully
+	 * against the system.
+	 * 
+	 * If authentication is sucessfull, do nothing. If the authentication is 
+	 * unsuccessful, reject the password with the appropriate error.
 	 */
 	@Override
 	public void validate(Object target, Errors errors) {

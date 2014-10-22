@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.login;
 
 import java.util.List;
@@ -43,6 +42,18 @@ import org.springframework.validation.Validator;
 import pasta.domain.form.LoginForm;
 import pasta.util.ProjectProperties;
 
+/**
+ * Uses an IMAP mail server to authenticate a user.
+ * <p>
+ * It is possible to assign multiple mail servers to authenticate against.
+ * The validator will try to authenticate against all of them and will
+ * only fail if it cannot authenticate against any of them.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-02-25
+ *
+ */
 public class ImapAuthValidator implements Validator{
 
 	// what to use to write the log to.
@@ -55,7 +66,15 @@ public class ImapAuthValidator implements Validator{
 	}
 
 	/**
-	 * Method used for validation
+	 * Validate the form.
+	 * <p>
+	 * Check to see if the username and password are not empty.
+	 * If the fields are empty, reject the appropriate field with the appropriate error.
+	 * Then check if the username and password authenticate sucessfully
+	 * against the system.
+	 * 
+	 * If authentication is sucessfull, do nothing. If the authentication is 
+	 * unsuccessful, reject the password with the appropriate error.
 	 */
 	@Override
 	public void validate(Object target, Errors errors) {

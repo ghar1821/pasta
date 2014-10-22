@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.login;
 
 import java.util.List;
@@ -45,6 +44,20 @@ import org.springframework.validation.Validator;
 import pasta.domain.form.LoginForm;
 import pasta.util.ProjectProperties;
 
+/**
+ * Uses ftp to authenticate a user.
+ * <p>
+ * It is possible to set multiple ftp servers that are used
+ * for authentication. The validator will go over all of the
+ * ftp servers and attempt to authenticate. It will only
+ * reject the authentication if this process fails across
+ * all servers.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-03-12
+ *
+ */
 public class FTPAuthValidator implements Validator{
 
 	// what to use to write the log to.
@@ -57,7 +70,15 @@ public class FTPAuthValidator implements Validator{
 	}
 
 	/**
-	 * Method used for validation
+	 * Validate the form.
+	 * <p>
+	 * Check to see if the username and password are not empty.
+	 * If the fields are empty, reject the appropriate field with the appropriate error.
+	 * Then check if the username and password authenticate sucessfully
+	 * against the system.
+	 * 
+	 * If authentication is sucessfull, do nothing. If the authentication is 
+	 * unsuccessful, reject the password with the appropriate error.
 	 */
 	@Override
 	public void validate(Object target, Errors errors) {
@@ -71,7 +92,7 @@ public class FTPAuthValidator implements Validator{
 			errors.rejectValue("password", "NotEmpty.loginForm.password");
 		}
 		
-		// if nothing has gone wrong yet, check using the mail servers. 
+		// if nothing has gone wrong yet, check using the ftp servers. 
 		if (!errors.hasErrors()){
 			String unikey = login.getUnikey();
 			String password = login.getPassword();

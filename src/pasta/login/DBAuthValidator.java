@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.login;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -39,6 +38,16 @@ import org.springframework.validation.Validator;
 import pasta.domain.form.LoginForm;
 import pasta.repository.LoginDAO;
 
+/**
+ * Uses the database to authenticate a user.
+ * <p>
+ * The password is hashed using md5Hex
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-02-25
+ *
+ */
 public class DBAuthValidator implements Validator{
 	
 	LoginDAO database;
@@ -55,6 +64,13 @@ public class DBAuthValidator implements Validator{
 		return LoginForm.class.isAssignableFrom(clazz);
 	}
 	
+	/**
+	 * Authenticate the username with the password 
+	 * 
+	 * @param username the username in plaintext
+	 * @param password the password in plaintext (it gets hashed)
+	 * @return whether the user has authenticated against the system.
+	 */
 	public boolean authenticate(String username, String password){
 		if(database.hasPassword(username)){
 			String hashedPassword = DigestUtils.md5Hex(password);
@@ -65,6 +81,17 @@ public class DBAuthValidator implements Validator{
 		}
 	}
 
+	/**
+	 * Validate the form.
+	 * <p>
+	 * Check to see if the username and password are not empty.
+	 * If the fields are empty, reject the appropriate field with the appropriate error.
+	 * Then check if the username and password authenticate sucessfully
+	 * against the system.
+	 * 
+	 * If authentication is sucessfull, do nothing. If the authentication is 
+	 * unsuccessful, reject the password with the appropriate error.
+	 */
 	@Override
 	public void validate(Object target, Errors errors) {
 		LoginForm login = (LoginForm) target;
