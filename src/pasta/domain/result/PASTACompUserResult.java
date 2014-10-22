@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,16 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
+/**
+ * Container class to hold the result of a user for a competition. 
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-29
+ * 
+ */
 public class PASTACompUserResult implements Comparable{
 
 	private String username;

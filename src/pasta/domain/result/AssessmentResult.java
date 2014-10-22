@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
 import java.text.SimpleDateFormat;
@@ -44,7 +43,24 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-
+/**
+ * Container for the results of an assessment.
+ * <p>
+ * Contains the collection of:
+ * <ul>
+ * 	<li>Unit test results</li>
+ * 	<li>Hand marking results</li>
+ * 	<li>Link to the assessment</li>
+ * 	<li>Number of submissions made</li>
+ * 	<li>Time stamp of the submission</li>
+ * 	<li>Due date of the assessment</li>
+ * 	<li>Feedback comments</li>
+ * </ul>
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ *
+ */
 public class AssessmentResult {
 	private ArrayList<UnitTestResult> unitTests;
 	private List<HandMarkingResult> handMarkingResults = LazyList.decorate(new ArrayList<HandMarkingResult>(),
@@ -83,7 +99,12 @@ public class AssessmentResult {
 	public Date getSubmissionDate() {
 		return submissionDate;
 	}
-	
+	/**
+	 * Formatted submission date for easy lexographical comparison
+	 * <p>
+	 * Format: yyyy-MM-dd'T'HH-mm-ss e.g. 2014-03-21T09-00-00
+	 * @return formatted submission date
+	 */
 	public String getFormattedSubmissionDate(){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		return sdf.format(submissionDate);
@@ -110,6 +131,10 @@ public class AssessmentResult {
 		unitTests.remove(test);
 	}
 	
+	/**
+	 * Check if there is a compile error in any of the unit test results
+	 * @return if any of the unit test results have compilation errors
+	 */
 	public boolean isCompileError() {
 		for(UnitTestResult result : unitTests){
 			if(result.getCompileErrors()!= null && !result.getCompileErrors().isEmpty()){
@@ -119,6 +144,14 @@ public class AssessmentResult {
 		return false;
 	}
 	
+	/**
+	 * Get the aggregated compilation errors.
+	 * <p>
+	 * Iterates over all of the unit test results and compiles all of the 
+	 * compilation errors across all of the unit tests that have compilation
+	 * errors. 
+	 * @return the aggregated compilation errors for the submission.
+	 */
 	public String getCompilationError() {
 		String compilationError = "";
 		for(UnitTestResult result : unitTests){

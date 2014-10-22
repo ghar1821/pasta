@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,10 +27,25 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
-
+/**
+ * Container class to hold the result of a single unit test.
+ * <p>
+ * The class contains the result of a single unit test. 
+ * This includes:
+ * <ul>
+ * 	<li>Unit test name</li>
+ * 	<li>Unit test result (usually : pass, failure, error)</li>
+ * 	<li>Brief and extended unit test message</li>
+ * 	<li>Time taken to run the unit test</li>
+ * </ul>
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ * 
+ */
 public class UnitTestCaseResult implements Comparable{
 	private String testName;
 	private String testResult;

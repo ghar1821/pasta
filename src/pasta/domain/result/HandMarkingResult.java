@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
 import java.util.Map;
@@ -42,13 +41,20 @@ import org.apache.commons.logging.LogFactory;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.Tuple;
 
+/**
+ * Container class for the results of hand marking.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ * 
+ */
 public class HandMarkingResult implements Comparable{
 	private Map<String, String> result = LazyMap.decorate(new TreeMap<String, String>(), 
 			FactoryUtils.instantiateFactory(TreeMap.class));
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	
 	private HandMarking markingTemplate;
 	private String handMarkingTemplateShortName;
 

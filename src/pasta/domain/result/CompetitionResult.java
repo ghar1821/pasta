@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
 import java.util.Collections;
@@ -36,7 +35,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
+/**
+ * Container class for the results of a competition.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ * 
+ */
 public class CompetitionResult {
 	Map<Integer, List<PASTACompUserResult>> positions;
 

@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
 import java.util.ArrayList;
@@ -35,6 +34,14 @@ import java.util.Collections;
 
 import pasta.domain.template.UnitTest;
 
+/**
+ * Contains the result of a unit test assessment module.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ * 
+ */
 public class UnitTestResult implements Comparable{
 	private UnitTest test;
 	private boolean secret;
@@ -84,10 +91,6 @@ public class UnitTestResult implements Comparable{
 	}
 
 	public double getPercentage(){
-		/* TODO #41
-		 * improve - make it be able to take a list of possible outputs that are
-		 * 			going to mean a correct answer
-		 */
 		if(testCases == null || testCases.isEmpty()){
 			return 0;
 		}

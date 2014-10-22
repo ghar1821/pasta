@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,13 +27,19 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.result;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
-
+/**
+ * Container for the results of an arena execution.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-23
+ *
+ */
 public class ArenaResult {
 	Map<String, Map<String, String>> data;
 	Collection<String> categories = new LinkedList<String>();
