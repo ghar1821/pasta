@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,11 +27,19 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
-
-
+/**
+ * Container class for a pairing of String and double, commonly used in
+ * the hand marking assessment module template.
+ * <p>
+ * Somewhat poorly named, should be called a PASTAPair or similar.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-20
+ *
+ */
 public class Tuple {
 	private String name;
 	private double weight;

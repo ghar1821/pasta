@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,15 +27,40 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
 import pasta.util.ProjectProperties;
-
+/**
+ * Container class for a unit test.
+ * 
+ * Contains the name of the unit test and whether it has been tested.
+ * 
+ * String representation:
+ * <pre>{@code <unitTestProperties>
+	<name>name</name>
+	<tested>true|false</tested>
+</unitTestProperties>}</pre>
+ * 
+ * <p>
+ * File location on disk: $projectLocation$/template/unitTest/$unitTestName$
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ *
+ */
 public class UnitTest {
 	private String name;
 	private boolean tested;
 	
+	/**
+	 * Default constructor
+	 * <p>
+	 * name="nullgarbagetemptestihopenobodynamestheirtestthis"
+	 * 
+	 * tested=false
+	 * 
+	 */
 	public UnitTest(){
 		this.name = "nullgarbagetemptestihopenobodynamestheirtestthis";
 		this.tested = false;

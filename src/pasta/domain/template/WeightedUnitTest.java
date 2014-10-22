@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,22 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
+/**
+ * Container class for a weighted unit test.
+ * <p>
+ * This class contains a link to a unit test assessment module to an assessment
+ * and the weight of the unit test assessment module in the assessment.
+ * 
+ * Using this, you can have the same unit test assessment module as part of multiple
+ * assessments with different weights.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-14
+ *
+ */
 public class WeightedUnitTest {
 	private UnitTest test = new UnitTest();
 	private double weight;

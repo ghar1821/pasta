@@ -32,14 +32,15 @@ package pasta.domain;
 
 import java.util.Date;
 /**
- * @author Alex Radu
- * @version 2.0
- * @since 2013-01-21
  * 
  * I could have called it something better, but this sounded amusing
  *
  * Minimum frequency is 1 second (anything below could be abused to 
  * put too much load on the machine by mistake)
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-21
  *
  */
 public class PASTATime {

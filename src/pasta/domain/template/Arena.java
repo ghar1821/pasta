@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
 import java.io.PrintWriter;
@@ -45,7 +44,27 @@ import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.PASTATime;
 import pasta.util.PASTAUtil;
-
+/**
+ * Container class for the Arena information.
+ * <p>
+ * String representation:
+ * <pre>{@code <arena>
+	<name>name</name>
+	<firstStartDate>yyyy-MM-dd'T'HH-mm-ss</firstStartDate>
+	<password>plaintext</password>
+	<repeats>PASTATime</repeats>
+</arena>}</pre>
+ * 
+ * Password protected arenas are not fully implemented
+ * 
+ * <p>
+ * File location on disk: $projectLocation$/template/competition/$competitionName$/arenas/$arenaName$
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-21
+ * 
+ */
 public class Arena {
 	private String name;
 	private String password = null;
@@ -113,14 +132,6 @@ public class Arena {
 	}
 	
 	public String toString(){
-		/**
-		 * <arena>
-		 * 	<name>$NAME</name>
-		 * 	<password>$PASSWORD</password>
-		 * 	<repeats>$FREQUENCY</repeats>
-		 * </arena>
-		 */
-		
 		String output = "<arena>" + System.getProperty("line.separator");
 		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
 		output += "\t<firstStartDate>" + PASTAUtil.formatDate(firstStartDate)
@@ -159,6 +170,12 @@ public class Arena {
 		}
 	}
 	
+	/**
+	 * Check if the arena has a valid name.
+	 * <p>
+	 * A valid arena name does not contain: / \ ? % * : | " < > .
+	 * @return whether the name of the arena is valid.
+	 */
 	public boolean isInvalidName(){
 		return getName().contains("/") 
 				|| getName().contains("\\")
@@ -184,6 +201,17 @@ public class Arena {
 		return frequency.nextExecution(firstStartDate);
 	}
 	
+	/**
+	 * Add a player to the arena.
+	 * <p>
+	 * If the arena is an official arena, only 1 player from a
+	 * username is allowed. The old player is overridden with the current one.
+	 * If the arena is not official (used for marking),
+	 * the student is allowed to add as many players as they wish.
+	 * 
+	 * @param user the username of the user adding the player
+	 * @param playerName the name of the player the user is adding to the arena
+	 */
 	public void addPlayer(String user, String playerName){
 		logger.info("adding " + user + "-" + playerName);
 		if(!players.containsKey(user)){

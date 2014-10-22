@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
 import java.io.PrintWriter;
@@ -48,6 +47,34 @@ import pasta.domain.PASTAUser;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
+/**
+ * Container class for a competition.
+ * <p>
+ * Contains all relevant competition information.
+ * <b>There is currently no way to set the competition as tested or to
+ * test the competition within PASTA similarly to how unit test modules
+ * can be tested.</b>
+ * 
+ * String representation:
+ * <pre>{@code <competitionProperties>
+	<name>name</name>
+	<studentCreatableArena>true|false</studentCreatableArena>
+	<studentCreatableRepeatableArena>true|false</studentCreatableRepeatableArena>
+	<tutorCreatableRepeatableArena>true|false</tutorCreatableRepeatableArena>
+	<tested>true|false</tested>
+	<hidden>true|false</hidden>
+	<firstStartDate>yyyy-MM-ddThh-mm-dd</firstStartDate>
+	<frequency>?y?d?h?m?s?ms</frequency>
+</competitionProperties>}</pre>
+ * 
+ * <p>
+ * File location on disk: $projectLocation$/template/competition/$competitionName$
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ * 
+ */
 public class Competition {
 	
 	public final static SimpleDateFormat dateParser 
@@ -56,7 +83,7 @@ public class Competition {
 	protected final Log logger = LogFactory.getLog(getClass());
 	
 	private String name;
-	// if null - calculated competition
+	/** if null - calculated competition **/
 	private Arena officialArena = null;
 	private Map<String, Arena> outstandingArenas =  new TreeMap<String, Arena>();
 	private Map<String, Arena> completedArenas = new TreeMap<String, Arena>();
@@ -66,6 +93,7 @@ public class Competition {
 	private boolean tested;
 	private boolean hidden;
 	
+	/** list of all linked assessments **/
 	private Collection<Assessment> linkedAssessments = new TreeSet<Assessment>();
 	
 	private PASTATime frequency = null;

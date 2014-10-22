@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,20 +27,42 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.collections.map.LazyMap;
 
+/**
+ * Container class for the hand marking assessment module.
+ * <p>
+ * Contains all of the information required for the hand marking.
+ * Very similar to a 2 dimensional array where some elements are
+ * missing. Has a row and column header which are used as keys and
+ * data for the element.
+ * 
+ * The column and row headers are pairings of a String name and a
+ * double weight.
+ * 
+ * The weighting for hand marking is not relative. It should all add up
+ * to 1 (100%), but it is possible to have a marking template that adds
+ * up to 125%, giving students multiple avenues to getting full marks.
+ * The final mark is capped at 100%.
+ * 
+ * <p>
+ * File location on disk: $projectLocation$/template/handMarking/$handMarkingName$
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ *
+ */
 public class HandMarking {
 
 	private String name;

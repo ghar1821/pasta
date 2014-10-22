@@ -436,7 +436,7 @@ public class ResultDAO {
 	/**
 	 * Save the hand marking to a file
 	 * @param username - the username of the user
-	 * @param assessment - the assessment short name (no whitespace)
+	 * @param assessmentName - the assessment short name (no whitespace)
 	 * @param assessmentDate - the date of the submission
 	 * @param handMarkingResults - the results of the hand marking
 	 */
@@ -621,7 +621,7 @@ public class ResultDAO {
 	/**
 	 * Method to save the hand marking comments
 	 * @param username - the username of the user
-	 * @param assessment - the assessment short name (no whitespace)
+	 * @param assessmentName - the assessment short name (no whitespace)
 	 * @param assessmentDate - the date of the submission
 	 * @param comments - the comments about the submission
 	 */

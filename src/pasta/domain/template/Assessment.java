@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.template;
 
 import java.io.PrintWriter;
@@ -38,18 +37,81 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
-
-import pasta.domain.PASTAUser;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
-
+/**
+ * Container class for the assessment.
+ * <p>
+ * Contains zero to many:
+ * <ul>
+ * 	<li>unit test assessment modules</li>
+ * 	<li>secret unit test assessment modules</li>
+ * 	<li>hand marking assessment modules</li>
+ * 	<li>competition assessment modules</li>
+ * </ul>
+ * 
+ * Also contains assessment specific information such as:
+ * <ul>
+ * 	<li>name</li>
+ * 	<li>number of marks the assessment is worth</li>
+ * 	<li>due date of the assessment</li>
+ * 	<li>description (raw html) of the assessment</li>
+ * 	<li>number of submissions allowed (0 for infinite submissions allowed)</li>
+ * 	<li>category</li>
+ * 	<li>list of usernames to whom the assessment has been specially released</li>
+ * 	<li>list of classes to whom the assessment has been released (csv of STREAM.CLASS)</li>
+ * 	<li>a flag to count submissions that compile towards the limit or not</li>
+ * </ul>
+ * 
+ * String representation: 
+ * 
+ * <pre>{@code <assessment>
+	<name>name</name>
+	<category>category</category>
+	<releasedClasses>STREAM1.CLASS1,...,STREAMn.CLASSn</releasedClasses>
+	<specialRelease>usernames</specialRelease>
+	<dueDate>hh:mm dd/MM/yyyy</dueDate>
+	<marks>double</marks>
+	<submissionsAllowed>int >= 0</submissionsAllowed>
+	<countUncompilable>true|false</countUncompilable>
+	<unitTestSuite>
+		<unitTest name="name" weight="double"/>
+		...
+		<unitTest name="name" weight="double" [secret="true|false"]/>
+	</unitTestSuite>
+	<handMarkingSuite>
+		<handMarks name="name" weight="double"/>
+		...
+		<handMarks name="name" weight="double"/>
+	</handMarkingSuite>
+	<competitionSuite>
+		<competition name="name" weight="double"/>
+		...
+		<competition name="name" weight="double" [secret="true|false"]/>
+	</competitionSuite>
+</assessment>}</pre>
+ * 
+ * All weighting is relative. If two assessment modules are weighted as 
+ * 1, then they are worth 50% of the marks each.
+ * 
+ * <p>
+ * File location on disk: $projectLocation$/template/assessment/$assessmentName$
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ *
+ */
 public class Assessment implements Comparable<Assessment>{
+	/*
+	 * The assessment modules have to be in a lazy list for the drag and drop
+	 * Functionality on the web front end. Without this, there would be errors
+	 * when adding assessment modules.
+	 */
 	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
@@ -65,7 +127,7 @@ public class Assessment implements Comparable<Assessment>{
 	private int numSubmissionsAllowed;
 	private String category;
 	private String specialRelease;
-	private String releasedClasses = null;// (stream{tutorial,tutorial,tutorial}stream{tutorial,tutorial,tutorial})
+	private String releasedClasses = null;
 	private boolean countUncompilable = true;
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -254,27 +316,70 @@ public class Assessment implements Comparable<Assessment>{
 	public void setGarbage(List<WeightedUnitTest> unitTests) {
 	}
 
+	/**
+	 * Method to allow you to remove unit tests in the
+	 * web front end.
+	 * 
+	 * Doesn't actually do any logic.
+	 * 
+	 * @return returns empty list
+	 */
 	public List<WeightedUnitTest> getGarbage() {
 		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	}
 	
+	/**
+	 * Method to allow you to remove unit tests in the
+	 * web front end.
+	 * 
+	 * Doesn't actually do any logic.
+	 * 
+	 * @return returns empty list
+	 */
 	public void setCompGarbage(List<WeightedCompetition> comps) {
 	}
 
+	/**
+	 * Method to allow you to remove unit tests in the
+	 * web front end.
+	 * 
+	 * Doesn't actually do any logic.
+	 * 
+	 * @return returns empty list
+	 */
 	public List<WeightedCompetition> getCompGarbage() {
 		return LazyList.decorate(new ArrayList<WeightedCompetition>(),
 				FactoryUtils.instantiateFactory(WeightedCompetition.class));
 	}
 	
+	/**
+	 * Method to allow you to remove unit tests in the
+	 * web front end.
+	 * 
+	 * Doesn't actually do any logic.
+	 * 
+	 * @return returns empty list
+	 */
 	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
 	}
 
+	/**
+	 * Method to allow you to remove unit tests in the
+	 * web front end.
+	 * 
+	 * Doesn't actually do any logic.
+	 * 
+	 * @return returns empty list
+	 */
 	public List<WeightedHandMarking> getHandGarbage() {
 		return LazyList.decorate(new ArrayList<WeightedHandMarking>(),
 				FactoryUtils.instantiateFactory(WeightedHandMarking.class));
 	}
 
+	/**
+	 * See string representation in class description.
+	 */
 	public String toString() {
 		String output = "";
 		output += "<assessment>" + System.getProperty("line.separator");

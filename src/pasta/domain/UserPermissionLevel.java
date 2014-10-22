@@ -29,10 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain;
 /**
- * @author Alex Radu
- * @version 2.0
- * @since 2012-12-10
- * 
  * Different permission levels:
  * <p>
  * STUDENT
@@ -61,6 +57,10 @@ package pasta.domain;
  * 	<li>Can change the tutorial allocation for students.</li>
  * 	<li>Can add/delete students from the system (adding/removing is loss-less in terms of assessment submissions)</li>
  * </ul>
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-12-10
  */
 public enum UserPermissionLevel {
 	STUDENT, TUTOR, INSTRUCTOR;

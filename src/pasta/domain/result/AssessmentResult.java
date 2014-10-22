@@ -56,6 +56,7 @@ import pasta.domain.template.WeightedUnitTest;
  * 	<li>Due date of the assessment</li>
  * 	<li>Feedback comments</li>
  * </ul>
+ * 
  * @author Alex Radu
  * @version 2.0
  * @since 2012-11-13

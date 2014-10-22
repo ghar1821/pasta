@@ -1,0 +1,14 @@
+pasta.domain
+pasta.domain.form
+pasta.domain.moss
+pasta.domain.players
+pasta.domain.result
+pasta.domain.template
+pasta.domain.upload
+pasta.login
+pasta.repository
+pasta.scheduler
+pasta.service
+pasta.util
+pasta.view
+pasta.web.controller
