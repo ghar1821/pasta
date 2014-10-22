@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.upload;
 
 import java.io.PrintWriter;
@@ -42,6 +41,14 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import pasta.domain.PASTATime;
 import pasta.domain.template.Competition;
 
+/**
+ * Form object for a new competition.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-01-21
+ *
+ */
 public class NewCompetition {
 	private String name;
 	private String type;

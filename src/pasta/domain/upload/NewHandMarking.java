@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,16 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.upload;
 
+/**
+ * Form object for a new hand marking assessment module.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-12-13
+ *
+ */
 public class NewHandMarking {
 	private String name;
 

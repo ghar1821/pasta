@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,11 +27,18 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.domain.upload;
 
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+/**
+ * Form object for a new unit test assessment module.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-15
+ *
+ */
 public class NewUnitTest {
 	private String testName;
 	private CommonsMultipartFile file;

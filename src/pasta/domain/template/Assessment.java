@@ -335,7 +335,6 @@ public class Assessment implements Comparable<Assessment>{
 	 * 
 	 * Doesn't actually do any logic.
 	 * 
-	 * @return returns empty list
 	 */
 	public void setCompGarbage(List<WeightedCompetition> comps) {
 	}
@@ -359,7 +358,6 @@ public class Assessment implements Comparable<Assessment>{
 	 * 
 	 * Doesn't actually do any logic.
 	 * 
-	 * @return returns empty list
 	 */
 	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
 	}
@@ -370,7 +368,6 @@ public class Assessment implements Comparable<Assessment>{
 	 * 
 	 * Doesn't actually do any logic.
 	 * 
-	 * @return returns empty list
 	 */
 	public List<WeightedHandMarking> getHandGarbage() {
 		return LazyList.decorate(new ArrayList<WeightedHandMarking>(),
