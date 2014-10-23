@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.util;
-
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,15 +57,19 @@ import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UserDAO;
 
-@Component
 /**
  * The project properties.
- * 
+ * <p>
  * Uses singleton pattern.
+ * Pretty self explanatory. It just holds all of the configuration
+ * that is used by the system.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
  *
  */
+@Component
 public class ProjectProperties {
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -220,6 +222,13 @@ public class ProjectProperties {
 		encryptAuthContent();
 	}
 	
+	/**
+	 * Doesn't actually do any ecryption.
+	 * <p>
+	 * This should be fixed, but I didn't have the time to do it.
+	 * Doesn't actually hold anything sensitive, but it should
+	 * still not be held as plain text.
+	 */
 	private void encryptAuthContent(){
 
 		try {
@@ -237,6 +246,13 @@ public class ProjectProperties {
 		
 	}
 	
+	/**
+	 * Doesn't actually do any decryption.
+	 * <p>
+	 * This should be fixed, but I didn't have the time to do it.
+	 * Doesn't actually hold anything sensitive, but it should
+	 * still not be held as plain text.
+	 */
 	private void decryptAuthContent(){
 
 		try {

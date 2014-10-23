@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.util;
-
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -60,15 +58,17 @@ import org.springframework.stereotype.Component;
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
 
-@Component
 /**
- * The project properties.
+ * Groups together commonly used methods.
+ * <p>
+ * All methods are static.
  * 
- * Uses singleton pattern.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Component
 public class PASTAUtil {
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -76,7 +76,8 @@ public class PASTAUtil {
 
 	/**
 	 * Code used to extract a zip file.
-	 * @param zipFile - the file
+	 * 
+	 * @param zipFile the file to extract
 	 * @throws ZipException
 	 * @throws IOException
 	 */
@@ -134,14 +135,35 @@ public class PASTAUtil {
 	    zip.close();
 	}
 	
+	/**
+	 * Format date using the format yyyy-MM-dd'T'HH-mm-ss
+	 * 
+	 * @param toFormat the date to format
+	 * @return the string representation of the date e.g. 2014-02-31T12-00-01
+	 */
 	public static String formatDate(Date toFormat){
 		return sdf.format(toFormat);
 	}
 	
+	/**
+	 * Parse date from the format yyyy-MM-dd'T'HH-mm-ss into java.util.Date
+	 * 
+	 * @param date the string representation of the date e.g. 2014-02-31T12-00-01
+	 * @return the java.util.date object
+	 * @throws ParseException if there is an error
+	 */
 	public static Date parseDate(String date) throws ParseException{
 		return sdf.parse(date);
 	}
 	
+	/**
+	 * Helper method for {@link #generateFileTree(String)}
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the name of the assessment
+	 * @param assessmentDate the date of the assessment
+	 * @return the file tree node that is root for the file tree.
+	 */
 	public static FileTreeNode generateFileTree(String username,
 			String assessmentName, String assessmentDate) {
 		return generateFileTree(ProjectProperties.getInstance().getProjectLocation()
@@ -154,6 +176,12 @@ public class PASTAUtil {
 				+ "/submission");
 	}
 	
+	/**
+	 * Recursively generate the FileTreeNode based on a location.
+	 * 
+	 * @param location the location of the root
+	 * @return the root node for the file system
+	 */
 	public static FileTreeNode generateFileTree(String location){
 		File[] subDirectories = new File(location).listFiles();
 		if(subDirectories == null || subDirectories.length == 0){
@@ -170,6 +198,12 @@ public class PASTAUtil {
 		return new FileTreeNode(location, children);
 	}
 
+	/**
+	 * Read a file and store it as a string
+	 * 
+	 * @param location the location of the file
+	 * @return the string content of the file
+	 */
 	public static String scrapeFile(String location) {
 		String file = "";
 		try {
@@ -184,6 +218,16 @@ public class PASTAUtil {
 		return file;
 	}
 	
+	/**
+	 * Generate the file tree nodes for all submission attempts for a user and assessment.
+	 * <p>
+	 * Calls {@link #generateFileTree(String)} for all submission attempts.
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the short (no whitespace) name of the assessment
+	 * @return the map of file tree nodes for each submission with the submission
+	 * date as a key.
+	 */
 	public static Map<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
 		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
@@ -203,6 +247,14 @@ public class PASTAUtil {
 		return allsubmissions;
 	}
 
+	/**
+	 * Generate the file tree for the players used by arena based competitions.
+	 * 
+	 * @param username the name of the user
+	 * @param competitionName the short (no whitespace) name of the competition
+	 * @param players a collection of players you are interested in.
+	 * @return the map of file tree nodes, with the name of the player as the key.
+	 */
 	public static Map<String, FileTreeNode> generateFileTree(String username,
 			String competitionName, Collection<PlayerHistory> players) {
 		Map<String, FileTreeNode> allPlayers = new TreeMap<String, FileTreeNode>();
@@ -226,6 +278,13 @@ public class PASTAUtil {
 		return allPlayers;
 	}
 	
+	/**
+	 * Zip up a file or folder.
+	 * 
+	 * @param zip the stream which holds the zip (so you can serve it straight to the user).
+	 * @param file the root file/folder
+	 * @param remove the string part of the path that should be removed (e.g. /user/PASTA/submissions/username/assessment....)
+	 */
 	public static void zip(ZipOutputStream zip, File file, String remove) {
 		byte[] buffer = new byte[1024];
 		if (file.isFile()) {
