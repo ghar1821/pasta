@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.scheduler;
 
 import java.io.Serializable;
@@ -40,6 +39,32 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+/**
+ * Class that holds the details of jobs.
+ * <p>
+ * This is a the holding object that deals with the 'job' system
+ * used in PASTA to ensure only one assessment is executed at a time.
+ * 
+ * Database schema is automatically created based on this class.
+ * 
+ * Database schema:
+ * <pre>
+ * 	Integer ID, 
+ *  Text username (not null),
+ *  Text assessmentName (not null),
+ *  Data runDate (not null)
+ * </pre>
+ * 
+ * For competitions, the username will be PASTACompetitionRunner.
+ * For calculated competition, the assessmentName will be the name of the competition.
+ * For arena based competition, the assessmentName will be competitionName#PASTAArena#arenaName(
+ * e.g. BattleShipLeague#PASTAArena#OfficialArena).
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-12-04
+ * 
+ */
 @Entity
 @Table(name = "Jobs",
 		uniqueConstraints = { @UniqueConstraint(columnNames={

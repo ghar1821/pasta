@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.scheduler;
 
 import java.util.List;
@@ -37,6 +36,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Class that handles the execution of jobs.
+ * <p>
+ * This class interacts with the database and is used to query
+ * the database for any outstanding jobs.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-12-07
+ * 
+ */
 @Repository("executionScheduler")
 public class ExecutionScheduler extends HibernateDaoSupport {
 
@@ -72,10 +82,25 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 		}
 	}
 
+	/**
+	 * Get the outstanding {@link pasta.scheduler.Job} for assessments.
+	 * <p>
+	 * For a job to be outstanding, it has to have a run date later than now.
+	 * Pretty much all jobs in the list will fall into this category currently
+	 * as there is not currently possible to set the execution of an assessment
+	 * job in the future.
+	 *  
+	 * @return the list of assessment jobs that are outstanding
+	 */
 	public List<Job> getOutstandingAssessmentJobs(){
 		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND NOT username = 'PASTACompetitionRunner' GROUP BY runDate");
 	}
 	
+	/**
+	 * Get the outstanding {@link pasta.scheduler.Job} for competitions.
+	 *  
+	 * @return the list of competition jobs that are outstanding
+	 */
 	public List<Job> getOutstandingCompetitionJobs(){
 		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND username = 'PASTACompetitionRunner' GROUP BY runDate");
 	}
