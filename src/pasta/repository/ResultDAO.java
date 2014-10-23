@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.repository;
 
@@ -70,6 +69,19 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.ProjectProperties;
 
+/**
+ * Data Access Object for Results.
+ * <p>
+ * 
+ * This class is responsible for all of the interaction
+ * between the data layer (disk in this case) and the system
+ * for assessment results.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-16
+  *
+ */
 public class ResultDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -79,13 +91,22 @@ public class ResultDAO {
 	
 	/**
 	 * loads up all of the latest results
-	 * @param assDao - for linking the assessments with the results
+	 * @param assDao for linking the results with their respective
+	 * assessments. This is done to allow modifications to the assessment
+	 * to dynamically change the marks.
 	 */
 	public ResultDAO(AssessmentDAO assDao){
 		loadAssessmentHistoryFromFile(assDao);
 		loadCompetitionsFromFile(assDao);
 	}
 
+	/**
+	 * Load a the results of a competition from disk.
+	 * 
+	 * @param  assDao for linking the results with their respective
+	 * assessments. This is done to allow modifications to the assessment
+	 * to dynamically change the marks.
+	 */
 	private void loadCompetitionsFromFile(AssessmentDAO assDao) {
 		Collection<Competition> comps = assDao.getCompetitionList();
 		competitionResults = new TreeMap<String, CompetitionResult>();
@@ -136,8 +157,9 @@ public class ResultDAO {
 
 	/**
 	 * Load a unit test result from a location
-	 * @param location - location of the test
-	 * @return the result
+	 * 
+	 * @param location the location of the test
+	 * @return the result of the unit test
 	 */
 	public UnitTestResult getUnitTestResult(String location){
 		UnitTestResult result = new UnitTestResult();
@@ -257,7 +279,8 @@ public class ResultDAO {
 	
 	/**
 	 * Get the latest result for a user.
-	 * @param username - the username of the user
+	 * 
+	 * @param username the name of the user
 	 * @return
 	 */
 	public Map<String, AssessmentResult> getLatestResults(String username){
@@ -265,9 +288,10 @@ public class ResultDAO {
 	}
 	
 	/**
-	 * Get the assessment history for a particular user's history
-	 * @param username - the username of the user
-	 * @param assessment - the assessment (for linking purposes)
+	 * Get the assessment history for a particular user and assessment
+	 * 
+	 * @param username the name of the user
+	 * @param assessment the assessment (for linking purposes)
 	 * @return All of the assessments submitted for this user for this assessment
 	 */
 	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
@@ -300,7 +324,7 @@ public class ResultDAO {
 	 * Load the assessment history from file.
 	 * 
 	 * Done at startup.
-	 * @param assDao - the Assessment Data Access Object
+	 * @param assDao the Assessment Data Access Object
 	 */
 	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
 		results = new TreeMap<String, Map<String, AssessmentResult>>();
@@ -385,7 +409,8 @@ public class ResultDAO {
 
 	/**
 	 * Get the hand marking result from a location
-	 * @param location - location of the hand marking result
+	 * 
+	 * @param location the location of the hand marking result
 	 * @return null if there is no hand marking result
 	 * @return the result otherwise
 	 */
@@ -414,9 +439,10 @@ public class ResultDAO {
 
 	/**
 	 * Get the assessment result for a particular user, for a particular assessment, for a particular date
-	 * @param username - the username of the user
-	 * @param assessment - the assessment (needed for lookup and linking)
-	 * @param assessmentDate - the date of the submission
+	 * 
+	 * @param username the name of the user
+	 * @param assessment the assessment (needed for lookup and linking)
+	 * @param assessmentDate the date of the submission
 	 * @return the assessment or null if it does not exist
 	 */
 	public AssessmentResult getAsssessmentResult(String username,
@@ -435,10 +461,11 @@ public class ResultDAO {
 
 	/**
 	 * Save the hand marking to a file
-	 * @param username - the username of the user
-	 * @param assessmentName - the assessment short name (no whitespace)
-	 * @param assessmentDate - the date of the submission
-	 * @param handMarkingResults - the results of the hand marking
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the assessment short name (no whitespace)
+	 * @param assessmentDate the date of the submission
+	 * @param handMarkingResults the results of the hand marking
 	 */
 	public void saveHandMarkingToFile(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
@@ -474,9 +501,10 @@ public class ResultDAO {
 	
 	/**
 	 * Load a particular assessment form disk
-	 * @param username - the username of the user
-	 * @param assessment - the assessment (needed for lookup and linking)
-	 * @param assessmentDate - the date of the submission
+	 * 
+	 * @param username the name of the user
+	 * @param assessment the assessment (needed for lookup and linking)
+	 * @param assessmentDate the date of the submission
 	 * @return the assessment results
 	 * @return null if there is no assessment result for that user, assessment, date combination
 	 */
@@ -620,10 +648,11 @@ public class ResultDAO {
 
 	/**
 	 * Method to save the hand marking comments
-	 * @param username - the username of the user
-	 * @param assessmentName - the assessment short name (no whitespace)
-	 * @param assessmentDate - the date of the submission
-	 * @param comments - the comments about the submission
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the assessment short name (no whitespace)
+	 * @param assessmentDate the date of the submission
+	 * @param comments the comments about the submission
 	 */
 	public void saveHandMarkingComments(String username, String assessmentName,
 			String assessmentDate, String comments) {
@@ -660,9 +689,9 @@ public class ResultDAO {
 	 * 
 	 * If the result is the latest, reload it from file. Otherwise ignore it (it will get loaded later)
 	 * 
-	 * @param username - the username of the user
-	 * @param assessment - the assessment (needed for lookup and linking)
-	 * @param runDate - the date of the submission
+	 * @param username the name of the user
+	 * @param assessment the assessment (needed for lookup and linking)
+	 * @param runDate the date of the submission
 	 */
 	public void updateUnitTestResults(String username,
 			Assessment assessment, Date runDate) {
@@ -678,10 +707,24 @@ public class ResultDAO {
 		}
 	}
 
+	/**
+	 * Get the results of a competition from cache.
+	 * 
+	 * @param competitionName the short name (no whitespace) of a competition
+	 * @return the results of a competition
+	 */
 	public CompetitionResult getCompetitionResult(String competitionName) {
 		return competitionResults.get(competitionName);
 	}
 	
+	/**
+	 * Update the results of a competition
+	 * <p>
+	 * Read from file into cache.
+	 * 
+	 * @param compName the name of the competition
+	 * @param filename the name of the file being written
+	 */
 	private void updateCompetitionResults(String compName, String filename){
 		List<PASTACompUserResult> compUserResult = new LinkedList<PASTACompUserResult>();
 
@@ -712,6 +755,14 @@ public class ResultDAO {
 		}
 	}
 
+	/**
+	 * Updated the results of a calculated competition
+	 * <p>
+	 * Read from file into cache.
+	 * Calls {@link #updateCompetitionResults(String, String)}
+	 * 
+	 * @param compName the name of the competition
+	 */
 	public void updateCalculatedCompetitionResults(String compName) {
 		
 		// get latest
@@ -734,6 +785,14 @@ public class ResultDAO {
 		}
 	}
 	
+	/**
+	 * Updated the results of an arena based competition
+	 * <p>
+	 * Read from file into cache.
+	 * Calls {@link #updateCompetitionResults(String, String)}
+	 * 
+	 * @param compName the name of the competition
+	 */
 	public void updateArenaCompetitionResults(String compName) {
 		
 		// get latest
@@ -756,6 +815,16 @@ public class ResultDAO {
 		}
 	}
 	
+	/**
+	 * Get the results of a calculated competition.
+	 * <p>
+	 * Not sure if this method returns the proper thing since 
+	 * calculated competitions should't reutnr arena results
+	 * 
+	 * @param competitionName the name of the competition
+	 * @return the results of the competition, null if no results
+	 * are available
+	 */
 	public ArenaResult getCalculatedCompetitionResult(String competitionName){
 		// get latest
 		String[] allFiles = (new File(ProjectProperties
@@ -782,6 +851,12 @@ public class ResultDAO {
 		return null;
 	}
 	
+	/**
+	 * Load arena results from disk.
+	 * 
+	 * @param location the location of the arena results.csv
+	 * @return the arena result
+	 */
 	public ArenaResult loadArenaResult(String location){
 		Map<String, Map<String, String>> data = new TreeMap<String, Map<String, String>>();
 		Collection<String> categories = new LinkedList<String>();
