@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.repository;
 
 import java.io.File;
@@ -48,6 +47,19 @@ import pasta.domain.players.PlayerResult;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
+/**
+ * Data Access Object for Players.
+ * <p>
+ * 
+ * This class is responsible for all of the interaction
+ * between the data layer (disk in this case) and the system
+ * for players.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-05-01
+ * 
+ */
 public class PlayerDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -55,6 +67,9 @@ public class PlayerDAO {
 	// username, competition, player
 	Map<String, Map<String, Map<String, PlayerHistory>>> players;
 	
+	/**
+	 * Loads all player histories (statistics) into cache 
+	 */
 	public PlayerDAO(){
 		// load all players.
 		players = new TreeMap<String, Map<String, Map<String, PlayerHistory>>>();
@@ -79,6 +94,14 @@ public class PlayerDAO {
 		}
 	}
 	
+	/**
+	 * Get the history (statistics) of all players a user has submitted to a 
+	 * specific competition from cache
+	 * 
+	 * @param username name of the user 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return collection of the player histories (statistics)
+	 */
 	public Collection<PlayerHistory> getPlayerHistory(String username,
 			String competitionName){
 		
@@ -91,7 +114,16 @@ public class PlayerDAO {
 		
 		return players.get(username).get(competitionName).values();
 	}
-
+	
+	/**
+	 * Get the history (statistics) of a specific player a user has submitted to a 
+	 * specific competition from cache
+	 * 
+	 * @param username name of the user 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param playerName the name of the player being queried
+	 * @return the player history (statistics)
+	 */
 	public PlayerHistory getPlayerHistory(String username,
 			String competitionName, String playerName) {
 		
@@ -107,6 +139,16 @@ public class PlayerDAO {
 		return players.get(username).get(competitionName).get(playerName);
 	}
 	
+	/**
+	 * Get the history (statistics) of all players a user has submitted to a 
+	 * specific competition from disk.
+	 * <p>
+	 * Performs multiple calls to {@link #loadPlayerHistory(String, String, String)}.
+	 * 
+	 * @param username name of the user 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return map of the player histories (statistics) with the key being the player name
+	 */
 	public Map<String, PlayerHistory> loadPlayerHistory(String username,
 			String competitionName) {
 		Map<String, PlayerHistory> playerHistory = new TreeMap<String, PlayerHistory>();
@@ -131,6 +173,18 @@ public class PlayerDAO {
 		return playerHistory;
 	}
 
+	/**
+	 * Get the history (statistics) of a specific player a user has submitted to a 
+	 * specific competition from disk.
+	 * <p>
+	 * Calls {@link #loadPlayerFromDirectory(String)} to aggregate the history of 
+	 * all players with the same name
+	 * 
+	 * @param username name of the user 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param playerName the name of the player being queried
+	 * @return the player histories (statistics)
+	 */
 	private PlayerHistory loadPlayerHistory(String username,
 			String competitionName, String playerName) {
 
@@ -178,6 +232,12 @@ public class PlayerDAO {
 		return player;
 	}
 
+	/**
+	 * Load the results of a single player from a directory.
+	 * 
+	 * @param directory location of the player
+	 * @return the player result (statistic).
+	 */
 	private PlayerResult loadPlayerFromDirectory(String directory) {
 		PlayerResult player = new PlayerResult();
 

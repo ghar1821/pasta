@@ -74,7 +74,6 @@ import pasta.domain.upload.NewHandMarking;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Repository("assessmentDAO")
 /**
  * Data Access Object for Assessments.
  * <p>
@@ -97,6 +96,7 @@ import pasta.util.ProjectProperties;
  * @version 2.0
  * @since 2012-11-13
  */
+@Repository("assessmentDAO")
 public class AssessmentDAO {
 
 	// assessmentTemplates are cached

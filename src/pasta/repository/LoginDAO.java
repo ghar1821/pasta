@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.repository;
 
 import org.apache.commons.logging.Log;
@@ -39,6 +38,13 @@ import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTALoginUser;
 
+/**
+ * Data Access Object for Authentication if using {@link pasta.login.DBAuthValidator}.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-02-25
+ */
 @Repository("loginDAO")
 public class LoginDAO extends HibernateDaoSupport{
 	

@@ -66,6 +66,9 @@ public class DBAuthValidator implements Validator{
 	
 	/**
 	 * Authenticate the username with the password 
+	 * <p>
+	 * If the user does not have a password registered on the system
+	 * the defualt password is their username.
 	 * 
 	 * @param username the username in plaintext
 	 * @param password the password in plaintext (it gets hashed)
