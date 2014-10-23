@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.view;
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +47,10 @@ import pasta.domain.template.Assessment;
 
 /**
  * Class to generate an excel document of everyone's marks that can be downloaded by a tutor.
- * @author Alex
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
  *
  */
 public class ExcelMarkView extends AbstractExcelView{

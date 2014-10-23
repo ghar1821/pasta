@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.view;
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,8 +47,18 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 
 /**
- * Class to generate an excel document of everyone's marks that can be downloaded by a tutor.
- * @author Alex
+ * Class to generate an excel document of everyone's automatic marks that can be downloaded by a tutor.
+ * <p>
+ * The marks that come from only automatic marking (e.g. unit tests, competitions).
+ * This does not use any of the hand marking templates.
+ * 
+ * This class is almost a carbon copy of {@link pasta.view.ExcelMarkView}.
+ * 
+ * I was kinda lazy when Michael wanted this class, so copy-paste to the rescue.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-03-21
  *
  */
 public class ExcelAutoMarkView extends AbstractExcelView{

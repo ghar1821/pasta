@@ -281,7 +281,7 @@ public class ResultDAO {
 	 * Get the latest result for a user.
 	 * 
 	 * @param username the name of the user
-	 * @return
+	 * @return the map which holds the assessment results with a key which is the assessment name
 	 */
 	public Map<String, AssessmentResult> getLatestResults(String username){
 		return results.get(username);
