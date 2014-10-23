@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.repository;
-
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,9 +51,18 @@ import org.springframework.stereotype.Repository;
 import pasta.domain.PASTAUser;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
+
 /**
  * The Data access object for the User class.
- * @author Alex
+ * <p>
+ * 
+ * This class is responsible for all of the interaction
+ * between the data layer (disk in this case) and the system
+ * for managing users.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
  *
  */
 @Repository("userDAO")
