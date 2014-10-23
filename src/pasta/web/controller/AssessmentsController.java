@@ -266,7 +266,7 @@ public class AssessmentsController {
 			boolean contains = false;
 			for (WeightedCompetition weightedComp : currAssessment
 					.getCompetitions()) {
-				if (weightedComp.getTest() == test) {
+				if (weightedComp.getCompetition() == test) {
 					contains = true;
 					break;
 				}

@@ -420,7 +420,7 @@ public class Assessment implements Comparable<Assessment>{
 		if (competitions.size() > 0) {
 			output += "\t<competitionSuite>" + System.getProperty("line.separator");
 			for (WeightedCompetition comp : competitions) {
-				output += "\t\t<competition name=\"" + comp.getTest().getShortName() + "\" weight=\""
+				output += "\t\t<competition name=\"" + comp.getCompetition().getShortName() + "\" weight=\""
 						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
 			}
 			output += "\t</competitionSuite>" + System.getProperty("line.separator");
@@ -454,6 +454,10 @@ public class Assessment implements Comparable<Assessment>{
 
 	public void addCompetition(WeightedCompetition weightedComp) {
 		competitions.add(weightedComp);
+	}
+	
+	public void removeCompetition(WeightedCompetition weightedComp) {
+		competitions.remove(weightedComp);
 	}
 
 	@Override

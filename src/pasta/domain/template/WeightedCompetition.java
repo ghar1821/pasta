@@ -48,7 +48,7 @@ public class WeightedCompetition {
 	private double weight;
 	private String compName;
 	
-	public Competition getTest() {
+	public Competition getCompetition() {
 		return comp;
 	}
 	public void setTest(Competition comp) {

@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.repository;
 
@@ -76,6 +75,28 @@ import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 @Repository("assessmentDAO")
+/**
+ * Data Access Object for Assessments.
+ * <p>
+ * 
+ * This class is responsible for all of the interaction
+ * between the data layer (disk in this case) and the system
+ * for assessments.
+ * 
+ * This includes writing the assessment properties to disk and
+ * loading the assessment properties from disk when the system 
+ * starts.
+ * 
+ * It also handles all of the changes to the objects and holds them
+ * cached.
+ * 
+ * There should only be one instance of this object running in
+ * the system at any time.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-11-13
+ */
 public class AssessmentDAO {
 
 	// assessmentTemplates are cached
@@ -87,6 +108,17 @@ public class AssessmentDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * Load all assessment modules from disk.
+	 * <p>
+	 * Load order:
+	 * <ol>
+	 * 	<li>Unit test</li>
+	 * 	<li>Hand marking</li>
+	 * 	<li>Competitions</li>
+	 * 	<li>Assessments</li>
+	 * </ol>
+	 */
 	public AssessmentDAO() {
 		// load up all cached objects
 
@@ -145,6 +177,14 @@ public class AssessmentDAO {
 		allUnitTests.put(newUnitTest.getShortName(), newUnitTest);
 	}
 
+	/**
+	 * Add a new assessment.
+	 * <p>
+	 * If the assessment already exists, update it, otherwise
+	 * add a new assessment.
+	 * 
+	 * @param newAssessment assessment to add
+	 */
 	public void addAssessment(Assessment newAssessment) {
 		// if already exists, update
 		if (allAssessments.containsKey(newAssessment.getShortName())) {
@@ -186,14 +226,14 @@ public class AssessmentDAO {
 				// if not in newAssessment.getCompetitions()
 				boolean found = false;
 				for(WeightedCompetition newComp: newAssessment.getCompetitions()){
-					if(comp.getTest() == newComp.getTest()){
+					if(comp.getCompetition() == newComp.getCompetition()){
 						found = true;
 						break;
 					}
 				}
 				if(!found){
 					// remove
-					comp.getTest().removeAssessment(curAss);
+					comp.getCompetition().removeAssessment(curAss);
 				}
 			}
 			curAss.setCompetitions(newAssessment.getCompetitions());
@@ -212,7 +252,89 @@ public class AssessmentDAO {
 			allAssessmentsByCategory.get(category).add(newAssessment);
 		}
 	}
+	
+	/**
+	 * Add/Update a competition
+	 * <p>
+	 * Updates the competition on both cache and disk.
+	 * 
+	 * @param comp the new state of the competition.
+	 */
+	public void addCompetition(Competition comp) {
+		if (allCompetitions.containsKey(comp.getShortName())) {
+			
+			// update - flags
+			allCompetitions.get(comp.getShortName()).setStudentCreatableArena(
+					comp.isStudentCreatableArena());
+			allCompetitions.get(comp.getShortName())
+					.setStudentCreatableRepeatableArena(
+							comp.isStudentCreatableRepeatableArena());
+			allCompetitions.get(comp.getShortName()).setTested(comp.isTested());
+			allCompetitions.get(comp.getShortName())
+					.setTutorCreatableRepeatableArena(
+							comp.isTutorCreatableRepeatableArena());
+			
+			// update - dates
+			allCompetitions.get(comp.getShortName()).setFirstStartDateStr(
+					comp.getFirstStartDateStr());
+			allCompetitions.get(comp.getShortName()).setFrequency(
+					comp.getFrequency());
+			
+			// arena based competition
+			if(!allCompetitions.get(comp.getShortName()).isCalculated()){
+				allCompetitions.get(comp.getShortName()).getOfficialArena().setFirstStartDate(comp.getFirstStartDate());
+				allCompetitions.get(comp.getShortName()).getOfficialArena().setFrequency(comp.getFrequency());
+			}
+		} else {
+			// add
+			allCompetitions.put(comp.getShortName(), comp);
+		}
+		// write to disk
+		try {
 
+			// create space on the file system.
+			(new File(comp.getFileLocation() + "/code/")).mkdirs();
+			
+			// generate competitionProperties
+			PrintStream out = new PrintStream(comp.getFileLocation()
+					+ "/competitionProperties.xml");
+			out.print(comp);
+			out.close();
+			
+			// arenas
+			if(!comp.isCalculated()){
+				// official arenas
+				writeArenaToDisk(comp.getOfficialArena(), comp);
+				
+				// other arenas
+				for(Arena arena: comp.getOutstandingArenas()){
+					writeArenaToDisk(arena, comp);
+				}
+				
+				for(Arena arena: comp.getCompletedArenas()){
+					writeArenaToDisk(arena, comp);
+				}
+				
+				
+			}
+
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			(new File(comp.getFileLocation())).delete();
+			logger.error("Competition " + comp.getName()
+					+ " could not be created successfully!"
+					+ System.getProperty("line.separator") + sw.toString());
+		}
+	}
+
+	/**
+	 * Release assessment 
+	 * 
+	 * @param assessmentName the name of the assessment
+	 * @param released the form detailing the users / streams / classes to release to
+	 */
 	public void releaseAssessment(String assessmentName, ReleaseForm released) {
 		allAssessments.get(assessmentName).setReleasedClasses(
 				released.getList());
@@ -237,7 +359,24 @@ public class AssessmentDAO {
 
 	}
 
+	/**
+	 * Delete a unit test from the system.
+	 * <p>
+	 * Go through all assessments and remove test from them.
+	 * 
+	 * @param unitTestName unit test short name (no spaces) to remove.
+	 */
 	public void removeUnitTest(String unitTestName) {
+		// go through all assessments and remove the unit test from them
+		for(Assessment assessment: allAssessments.values()){
+			for(WeightedUnitTest test: assessment.getAllUnitTests()){
+				if(test.getTest().getShortName().equals(unitTestName)){
+					// got a little lazy, should fix
+					assessment.removeSecretUnitTest(test);
+					assessment.removeUnitTest(test);
+				}
+			}
+		}
 		allUnitTests.remove(unitTestName);
 		try {
 			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance()
@@ -253,7 +392,28 @@ public class AssessmentDAO {
 		}
 	}
 
+	/**
+	 * Delete an assessment from the system.
+	 * <p>
+	 * 
+	 * Iterates over all competitions and removes itself from them.
+	 * Competitions are the only assessment modules that contain
+	 * a link to the assessments they are used in.
+	 * 
+	 * @param assessmentName the short name (no spaces) of the assessment 
+	 */
 	public void removeAssessment(String assessmentName) {
+		
+		Assessment assessmentToRemove = allAssessments.get(assessmentName);
+		if(assessmentToRemove == null){
+			return;
+		}
+		
+		// remove links from competitions
+		for(WeightedCompetition comp : assessmentToRemove.getCompetitions()){
+			comp.getCompetition().removeAssessment(assessmentToRemove);
+		}
+		
 		allAssessmentsByCategory.get(
 				allAssessments.get(assessmentName).getCategory()).remove(
 				allAssessments.get(assessmentName));
@@ -272,7 +432,25 @@ public class AssessmentDAO {
 		}
 	}
 
+	/**
+	 * Delete an competition from the system.
+	 * <p>
+	 * Iterates over all assessments and removes itself from them.
+	 * 
+	 * @param competitionName the short name (no spaces) of the competition 
+	 */
 	public void removeCompetition(String competitionName) {
+		// go through all assessments and remove the competition from them
+		for(Assessment assessment: allAssessments.values()){
+			List<WeightedCompetition> comps = new LinkedList<WeightedCompetition>();
+			comps.addAll(assessment.getCompetitions());
+			for(WeightedCompetition comp: comps){
+				if(comp.getCompetition().getShortName().equals(competitionName)){
+					// got a little lazy, should fix
+					assessment.removeCompetition(comp);
+				}
+			}
+		}
 		allCompetitions.remove(competitionName);
 		try {
 			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance()
@@ -287,9 +465,47 @@ public class AssessmentDAO {
 					+ competitionName + "\r\n" + sw.toString());
 		}
 	}
+	
+	/**
+	 * Delete a hand marking template from the system.
+	 * <p>
+	 * Iterates over all assessments and removes itself from them.
+	 * 
+	 * @param handMarkingName the short name (no spaces) of the hand marking template 
+	 */
+	public void removeHandMarking(String handMarkingName) {
+		// remove from assessments
+		for (Entry<String, Assessment> ass : allAssessments.entrySet()) {
+			List<WeightedHandMarking> marking = ass.getValue().getHandMarking();
+			for (WeightedHandMarking weighted : marking) {
+				if (weighted.getHandMarkingName().equals(handMarkingName)) {
+					ass.getValue().getHandMarking().remove(weighted);
+					break;
+				}
+			}
+		}
+		
+		// remove from set
+		allHandMarking.remove(handMarkingName);
+
+		try {
+			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance()
+					.getProjectLocation()
+					+ "/template/handMarking/"
+					+ handMarkingName));
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Could not delete the folder for hand marking "
+					+ handMarkingName + "\r\n" + sw.toString());
+		}
+	}
 
 	/**
 	 * Load all unit tests.
+	 * <p>
+	 * Calls {@link #getUnitTestFromDisk(String)} multiple times.
 	 */
 	private void loadUnitTests() {
 		// get unit test location
@@ -312,7 +528,9 @@ public class AssessmentDAO {
 	}
 
 	/**
-	 * Load all competitions
+	 * Load all competitions.
+	 * <p>
+	 * Calls {@link #getCompetitionFromDisk(String)} multiple times.
 	 */
 	private void loadCompetitions() {
 		// get unit test location
@@ -336,7 +554,9 @@ public class AssessmentDAO {
 	}
 
 	/**
-	 * Load all assessments.
+	 * Load all assessments
+	 * <p>
+	 * Calls {@link #getAssessmentFromDisk(String)} multiple times.
 	 */
 	private void loadAssessments() {
 		// get unit test location
@@ -368,7 +588,9 @@ public class AssessmentDAO {
 	}
 
 	/**
-	 * Load all handmarkings.
+	 * Load all handmarkings templates
+	 * <p>
+	 * Calls {@link #getHandMarkingFromDisk(String)} multiple times.
 	 */
 	private void loadHandMarking() {
 		// get hand marking location
@@ -390,7 +612,9 @@ public class AssessmentDAO {
 	}
 
 	/**
-	 * Method to get a unit test from a location
+	 * Method to get a unit test from a location.
+	 * <p>
+	 * Loads the unitTestProperties.xml from file into the cache.
 	 * 
 	 * @param location
 	 *            - the location of the unit test
@@ -426,6 +650,8 @@ public class AssessmentDAO {
 
 	/**
 	 * Method to get a competition from a location
+	 * <p>
+	 * Loads the competitionProperties.xml from file into the cache.
 	 * 
 	 * @param location
 	 *            - the location of the competition
@@ -541,6 +767,8 @@ public class AssessmentDAO {
 
 	/**
 	 * Method to get an arena from a location
+	 * <p>
+	 * Loads the arenaProperties.xml from file into the cache.
 	 * 
 	 * @param location
 	 *            - the location of the arena
@@ -616,6 +844,8 @@ public class AssessmentDAO {
 
 	/**
 	 * Method to get an assessment from a location
+	 * <p>
+	 * Loads the assessmentProperties.xml from file into the cache. 
 	 * 
 	 * @param location
 	 *            - the location of the assessment
@@ -754,7 +984,7 @@ public class AssessmentDAO {
 						weightedComp.setWeight(Double
 								.parseDouble(competitionElement
 										.getAttribute("weight")));
-						weightedComp.getTest().addAssessment(currentAssessment);
+						weightedComp.getCompetition().addAssessment(currentAssessment);
 						currentAssessment.addCompetition(weightedComp);
 					}
 				}
@@ -773,6 +1003,10 @@ public class AssessmentDAO {
 
 	/**
 	 * Method to get a handmarking from a location
+	 * <p>
+	 * Loads the handMarkingProperties.xml from file into the cache. 
+	 * Also loads the multiple .html files which are the descriptions
+	 * in each box of the hand marking template.
 	 * 
 	 * @param location
 	 *            - the location of the handmarking
@@ -872,6 +1106,16 @@ public class AssessmentDAO {
 		}
 	}
 
+	/**
+	 * Update a hand marking template
+	 * <p>
+	 * Updates cache and writes everything to file.
+	 * 
+	 * Pretty much used all the time, because when you make a new
+	 * hand marking template, you generate one based on defaults.
+	 * 
+	 * @param newHandMarking the new hand marking template
+	 */
 	public void updateHandMarking(HandMarking newHandMarking) {
 		if (allHandMarking.containsKey(newHandMarking.getShortName())) {
 			HandMarking currMarking = allHandMarking.get(newHandMarking
@@ -949,6 +1193,27 @@ public class AssessmentDAO {
 		}
 	}
 
+	/**
+	 * Creates a default hand marking template.
+	 * 
+	 * Default columns are:
+	 * <ul>
+	 * 	<li>Poor : 0%</li>
+	 * 	<li>Acceptable : 50%</li>
+	 * 	<li>Excellent : 100%</li>
+	 * </ul>
+	 * 
+	 * Default rows are:
+	 * <ul>
+	 * 	<li>Formatting : 20%</li>
+	 * 	<li>Code Reuse : 40%</li>
+	 * 	<li>Variable naming : 40%</li>
+	 * </ul>
+	 * 
+	 * Default descriptions are empty.
+	 * 
+	 * @param newHandMarking the new hand marking 
+	 */
 	public void newHandMarking(NewHandMarking newHandMarking) {
 
 		HandMarking newMarking = new HandMarking();
@@ -979,98 +1244,12 @@ public class AssessmentDAO {
 		updateHandMarking(newMarking);
 	}
 
-	public void removeHandMarking(String handMarkingName) {
-		// remove from set
-		allHandMarking.remove(handMarkingName);
-
-		// remove from assessments
-		for (Entry<String, Assessment> ass : allAssessments.entrySet()) {
-			List<WeightedHandMarking> marking = ass.getValue().getHandMarking();
-			for (WeightedHandMarking weighted : marking) {
-				if (weighted.getHandMarkingName().equals(handMarkingName)) {
-					ass.getValue().getHandMarking().remove(weighted);
-					break;
-				}
-			}
-		}
-	}
-
-	public void addCompetition(Competition comp) {
-		if (allCompetitions.containsKey(comp.getShortName())) {
-			// update - arenas
-//			allCompetitions.get(comp.getShortName()).setOutstandingArenas(
-//					comp.getOutstandingArenas());
-//			allCompetitions.get(comp.getShortName()).setCompletedArenas(
-//					comp.getCompletedArenas());
-//			allCompetitions.get(comp.getShortName()).setOfficialArena(
-//					comp.getOfficialArena());
-			
-			// update - flags
-			allCompetitions.get(comp.getShortName()).setStudentCreatableArena(
-					comp.isStudentCreatableArena());
-			allCompetitions.get(comp.getShortName())
-					.setStudentCreatableRepeatableArena(
-							comp.isStudentCreatableRepeatableArena());
-			allCompetitions.get(comp.getShortName()).setTested(comp.isTested());
-			allCompetitions.get(comp.getShortName())
-					.setTutorCreatableRepeatableArena(
-							comp.isTutorCreatableRepeatableArena());
-			
-			// update - dates
-			allCompetitions.get(comp.getShortName()).setFirstStartDateStr(
-					comp.getFirstStartDateStr());
-			allCompetitions.get(comp.getShortName()).setFrequency(
-					comp.getFrequency());
-			
-			// arena based competition
-			if(!allCompetitions.get(comp.getShortName()).isCalculated()){
-				allCompetitions.get(comp.getShortName()).getOfficialArena().setFirstStartDate(comp.getFirstStartDate());
-				allCompetitions.get(comp.getShortName()).getOfficialArena().setFrequency(comp.getFrequency());
-			}
-		} else {
-			// add
-			allCompetitions.put(comp.getShortName(), comp);
-		}
-		// write to disk
-		try {
-
-			// create space on the file system.
-			(new File(comp.getFileLocation() + "/code/")).mkdirs();
-			
-			// generate competitionProperties
-			PrintStream out = new PrintStream(comp.getFileLocation()
-					+ "/competitionProperties.xml");
-			out.print(comp);
-			out.close();
-			
-			// arenas
-			if(!comp.isCalculated()){
-				// official arenas
-				writeArenaToDisk(comp.getOfficialArena(), comp);
-				
-				// other arenas
-				for(Arena arena: comp.getOutstandingArenas()){
-					writeArenaToDisk(arena, comp);
-				}
-				
-				for(Arena arena: comp.getCompletedArenas()){
-					writeArenaToDisk(arena, comp);
-				}
-				
-				
-			}
-
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			(new File(comp.getFileLocation())).delete();
-			logger.error("Competition " + comp.getName()
-					+ " could not be created successfully!"
-					+ System.getProperty("line.separator") + sw.toString());
-		}
-	}
-	
+	/**
+	 * Write an arena to disk
+	 * 
+	 * @param arena the arena getting written to disk
+	 * @param comp the comp the arena belongs to
+	 */
 	public void writeArenaToDisk(Arena arena, Competition comp){
 		if(arena != null && comp!= null){
 			// ensure folder exists for plaers
@@ -1099,8 +1278,33 @@ public class AssessmentDAO {
 		}
 	}
 	
+	/**
+	 * Update the players taking part in an arena
+	 * <p>
+	 * Updates in both cache and disk.
+	 * If the set players is empty, all players for this user are removed.
+	 * 
+	 * The players are stored as $username$.players files where the name of
+	 * each player is on a separate line within $compLocation$/arenas/$arenaName/players/
+	 * 
+	 * This was done to ensure there were limited concurrency problems. This could
+	 * obviously be moved onto the database but I didn't want to at the time because 
+	 * I wanted to limit the reliance on a database.
+	 * 
+	 * @param comp the competition 
+	 * @param arena the arena
+	 * @param username the name of the user updating which of their players are participating in the arena.
+	 * @param players the set of players, if empty, all players will be removed.
+	 */
 	public void updatePlayerInArena(Competition comp, Arena arena, String username, Set<String> players){
 		if(comp != null && arena != null && username != null 
+				&& !username.isEmpty() && players!= null && players.isEmpty()){
+			// if the players set is empty, delete them from the arena.
+			new File(comp.getFileLocation() 
+						+ "/arenas/" + arena.getName()
+						+ "/players/"+ username + ".players").delete();
+		}
+		else if(comp != null && arena != null && username != null 
 				&& !username.isEmpty() && players!= null && !players.isEmpty()){
 			try {
 				(new File(comp.getFileLocation() 
