@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.service;
 
@@ -58,16 +57,21 @@ import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
 import pasta.util.ProjectProperties;
 
-@Service("assessmentManager")
-@Repository
 /**
  * Assessment manager.
- * 
+ * <p>
  * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and theri interactions.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("assessmentManager")
+@Repository
 public class AssessmentManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
@@ -80,7 +84,6 @@ public class AssessmentManager {
 		this.scheduler = myScheduler;
 	}
 	
-	
 	@Autowired
 	private ApplicationContext context;
 
@@ -89,32 +92,74 @@ public class AssessmentManager {
 	public static final Logger logger = Logger
 			.getLogger(AssessmentManager.class);
 	
-	// new
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getAssessmentList()
+	 * @return collection of all assessments
+	 */
 	public Collection<Assessment> getAssessmentList() {
 		return assDao.getAssessmentList();
 	}
 	
-	// new
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getAssessment(String)
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @return the assessment (null if it does not exist)
+	 */
 	public Assessment getAssessment(String assessmentName) {
 		return assDao.getAssessment(assessmentName);
 	}
 	
-	// new
+
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.ResultDAO#getAssessmentHistory(String, Assessment)
+	 * @param username the name of the user
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @return the collection of submission history for a user for a given assessment
+	 */
 	public Collection<AssessmentResult> getAssessmentHistory(String username, String assessmentName){
 		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentName));
 	}
 
-	public void releaseAssessment(String AssessmentName, ReleaseForm released)
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#releaseAssessment(String, ReleaseForm)
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param releaseForm {@link pasta.domain.form.ReleaseForm} 
+	 */
+	public void releaseAssessment(String assessmentName, ReleaseForm releaseForm)
 	{
-		assDao.releaseAssessment(AssessmentName,released);
+		assDao.releaseAssessment(assessmentName,releaseForm);
 		
 	}
 
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#removeAssessment(String)
+	 * @param assessment the short name (no whitespace) of the assessment
+	 */
 	public void removeAssessment(String assessment) {
 		assDao.removeAssessment(assessment);
 	}
 	
-	// new add assessment
+	/**
+	 * Add a new assessment
+	 * <p>
+	 * Performs the re-linking with unit tests, secret unit tests, hand marking
+	 * templates, competitions.
+	 * 
+	 * Toggles competition to live if they did not previously have a competition
+	 * connected with them. Adds the arenas to the execution queue.
+	 * 
+	 * @param assessmentToAdd the assessment to add.
+	 */
 	public void addAssessment(Assessment assessmentToAdd) {
 		try {
 
@@ -215,10 +260,26 @@ public class AssessmentManager {
 		}
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.ResultDAO#getLatestResults(String)
+	 * @param username the name of the user
+	 * @return all of the cached assessment results.
+	 */
 	public Map<String, AssessmentResult> getLatestResultsForUser(String username){
 		return resultDAO.getLatestResults(username);
 	}
 	
+	/**
+	 * Get the latest result for the collection of users.
+	 * <p>
+	 * Gets all of the cached assessment results for every assessment on the system, for the
+	 * collection of users given.
+	 * 
+	 * @param allUsers the collection of {@link pasta.domain.PASTAUser} that are being queried
+	 * @return the map (String username , String assessmentName, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
+	 */
 	public Map<String, Map<String, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
 		Map<String, Map<String, AssessmentResult>> results = new TreeMap<String, Map<String, AssessmentResult>>();
 		
@@ -230,14 +291,27 @@ public class AssessmentManager {
 		return results;
 	}
 	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.ResultDAO#getAsssessmentResult(String, Assessment, String)
+	 * @param username the name of the user
+	 * @param assessmentName the short name (no whitespace) of the assessment 
+	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss"
+	 * @return the queried assessment result or null if not available.
+	 */
 	public AssessmentResult getAssessmentResult(String username, String assessmentName,
 			String assessmentDate) {
 		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
 	}
 	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getAllAssessmentsByCategory()
+	 * @return a map of the categories and the list of all assessments belonging to that category.
+	 */
 	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
 		return assDao.getAllAssessmentsByCategory();
 	}
-
-	
 }
