@@ -100,7 +100,11 @@ public class CompetitionManager {
 			.getLogger(CompetitionManager.class);
 	
 
-	
+	/**
+	 * Add a new competition from {@link pasta.domain.upload.NewCompetition}
+	 * 
+	 * @param form the new competition form
+	 */
 	public void addCompetition(NewCompetition form) {
 		Competition thisComp = new Competition();
 		thisComp.setName(form.getName());
@@ -153,26 +157,36 @@ public class CompetitionManager {
 		}
 	}
 	
-	public void updateCompetition(Competition compForm) {
-		Competition thisComp = getCompetition(compForm.getName().replace(" ", ""));
+	/**
+	 * Update a competition from a {@link pasta.domain.template.Competition}
+	 * 
+	 * @param comp the competition that will be updated
+	 */
+	public void updateCompetition(Competition comp) {
+		Competition thisComp = getCompetition(comp.getName().replace(" ", ""));
 		
-		thisComp.setTutorCreatableRepeatableArena(compForm.isTutorCreatableRepeatableArena());
-		thisComp.setStudentCreatableArena(compForm.isStudentCreatableArena());
-		thisComp.setStudentCreatableRepeatableArena(compForm.isStudentCreatableRepeatableArena());
+		thisComp.setTutorCreatableRepeatableArena(comp.isTutorCreatableRepeatableArena());
+		thisComp.setStudentCreatableArena(comp.isStudentCreatableArena());
+		thisComp.setStudentCreatableRepeatableArena(comp.isStudentCreatableRepeatableArena());
 		
-		thisComp.setFrequency(compForm.getFrequency());
-		thisComp.setFirstStartDate(compForm.getFirstStartDate());
+		thisComp.setFrequency(comp.getFrequency());
+		thisComp.setFirstStartDate(comp.getFirstStartDate());
 		
-		thisComp.setHidden(compForm.isHidden());
+		thisComp.setHidden(comp.isHidden());
 		
 		if(!thisComp.isCalculated()){
-			thisComp.getOfficialArena().setFirstStartDate(compForm.getFirstStartDate());
-			thisComp.getOfficialArena().setFrequency(compForm.getFrequency());
+			thisComp.getOfficialArena().setFirstStartDate(comp.getFirstStartDate());
+			thisComp.getOfficialArena().setFrequency(comp.getFrequency());
 		}
 		
 		assDao.addCompetition(thisComp);
 	}
 	
+	/**
+	 * Update a competition from a {@link pasta.domain.upload.NewCompetition}
+	 * 
+	 * @param form new competition form
+	 */
 	public void updateCompetition(NewCompetition form) {
 		Competition thisComp = getCompetition(form.getName().replace(" ", ""));
 		boolean newComp = false;
@@ -233,51 +247,96 @@ public class CompetitionManager {
 		}
 	}
 	
-	public void addCompetition(Competition form) {
+	/**
+	 * Add a competition
+	 * 
+	 * @param comp the competition to add
+	 */
+	public void addCompetition(Competition comp) {
 		try {
 
 			// create space on the file system.
-			(new File(form.getFileLocation() + "/code/")).mkdirs();
+			(new File(comp.getFileLocation() + "/code/")).mkdirs();
 
-			assDao.addCompetition(form);
+			assDao.addCompetition(comp);
 
 			// generate unitTestProperties
-			PrintStream out = new PrintStream(form.getFileLocation()
+			PrintStream out = new PrintStream(comp.getFileLocation()
 					+ "/competitionProperties.xml");
-			out.print(getCompetition(form.getShortName()));
+			out.print(getCompetition(comp.getShortName()));
 			out.close();
 			
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
-			(new File(form.getFileLocation())).delete();
-			logger.error("Competition " + form.getName()
+			(new File(comp.getFileLocation())).delete();
+			logger.error("Competition " + comp.getName()
 					+ " could not be updated successfully!"
 					+ System.getProperty("line.separator") + pw);
 		}
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @see pasta.repository.AssessmentDAO#removeCompetition(String)
+	 */
 	public void removeCompetition(String competitionName) {
 		assDao.removeCompetition(competitionName);
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @return a collection of {@link pasta.domain.template.Competition}
+	 * @see pasta.repository.AssessmentDAO#getCompetitionList()
+	 */
 	public Collection<Competition> getCompetitionList() {
 		return assDao.getCompetitionList();
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return the {@link pasta.domain.template.Competition} or null
+	 * @see pasta.repository.AssessmentDAO#getCompetition(String)
+	 */
 	public Competition getCompetition(String competitionName) {
 		return assDao.getCompetition(competitionName);
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return the {@link pasta.domain.result.CompetitionResult} or null
+	 * @see pasta.repository.ResultDAO#getCompetitionResult(String)
+	 */
 	public CompetitionResult getCompetitionResult(String competitionName) {
 		return resultDAO.getCompetitionResult(competitionName);
 	}
 	
+	/**
+	 * Helper method
+	 * 
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return the {@link pasta.domain.result.ArenaResult} or null
+	 * @see pasta.repository.ResultDAO#getCalculatedCompetitionResult(String)
+	 */
 	public ArenaResult getCalculatedCompetitionResult(String competitionName){
 		return resultDAO.getCalculatedCompetitionResult(competitionName);
 	}
 
+	/**
+	 * Add a new arena
+	 * <p>
+	 * Also schedules the competition and arena for execution if correct
+	 * @param arena the arena
+	 * @param currComp the competition
+	 */
 	public void addArena(Arena arena, Competition currComp) {
 		if(currComp.getArena(arena.getName()) == null){
 			currComp.addNewArena(arena);
@@ -288,6 +347,14 @@ public class CompetitionManager {
 		}
 	}
 
+	/**
+	 * Add a player
+	 * 
+	 * @param playerForm the new player form. See {@link pasta.domain.upload.NewPlayer}
+	 * @param username the name of the user
+	 * @param competitionShortName the short name (no whitespace) of the competition
+	 * @param result the BindingResult which can be user to give the user feedback and reject the {@link pasta.domain.upload.NewPlayer}
+	 */
 	public void addPlayer(NewPlayer playerForm, String username, 
 			String competitionShortName, BindingResult result) {
 		// copy player to temp location
@@ -471,6 +538,13 @@ public class CompetitionManager {
 		}
 	}
 
+	/**
+	 * Retire a player
+	 * 
+	 * @param username the name of the user
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param playerName the name of the player
+	 */
 	public void retirePlayer(String username, 
 			String competitionName, String playerName){
 		if(playerDAO.getPlayerHistory(username, competitionName, playerName) != null){
@@ -503,10 +577,26 @@ public class CompetitionManager {
 		}
 	}
 
+	/**
+	 * Get the player history for a user in a competition
+	 * 
+	 * @see pasta.repository.PlayerDAO#getPlayerHistory(String, String)
+	 * @param username the name of the user
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
+	 */
 	public Collection<PlayerHistory> getPlayers(String username, String competitionName) {
 		return playerDAO.getPlayerHistory(username, competitionName);
 	}
 	
+	/**
+	 * Get the latest history of the player for a user in a competition
+	 * 
+	 * @see pasta.repository.PlayerDAO#loadPlayerHistory(String, String)
+	 * @param username the name of the user
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
+	 */
 	public Collection<PlayerHistory> getLatestPlayers(String username, String competitionName) {
 		return playerDAO.loadPlayerHistory(username, competitionName).values();
 	}
