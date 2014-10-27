@@ -63,7 +63,7 @@ import pasta.util.ProjectProperties;
  * Manages interaction between controller and data.
  * This class works as an abstraction layer between the controller 
  * and the underlying data models. This class contains the majority
- * of the logic code dealing with objects and theri interactions.
+ * of the logic code dealing with objects and their interactions.
  * 
  * @author Alex Radu
  * @version 2.0

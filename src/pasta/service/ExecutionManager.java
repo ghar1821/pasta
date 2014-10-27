@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.service;
 
@@ -68,16 +67,21 @@ import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("executionManager")
-@Repository
 /**
- * Submission amnager.
- * 
+ * Execution Manager
+ * <p>
  * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("executionManager")
+@Repository
 public class ExecutionManager {
 
 	private AssessmentDAO assDao = ProjectProperties.getInstance()
@@ -95,11 +99,31 @@ public class ExecutionManager {
 	@Autowired
 	private ApplicationContext context;
 
-	// Validator for the submission
-
 	public static final Logger logger = Logger
 			.getLogger(ExecutionManager.class);
 
+	/**
+	 * Execute a calculated competition
+	 * <p>
+	 * <ol>
+	 * 	<li>Create a folder where this will run $location$/competitions/$compShortName$/competition/$date$</li>
+	 * 	<li>Copy competition code</li>
+	 * 	<li>Run ant: 
+	 * 		<ol>
+	 * 			<li>build</li>
+	 * 			<li>compete</li>
+	 * 			<li>mark</li>
+	 * 			<li>clean</li>
+	 * 		</ol>
+	 * 	</li>
+	 * 	<li>Deletes all except marks.csv and results.csv</li>
+	 * 	<li>Delete the job from the queue</li>
+	 * 	<li>Update the cached results</li>
+	 * 	<li>If the competition is still live, add a new job to the queue to run the competition</li>
+	 * </ol>
+	 * 
+	 * @param job the calculated competition job
+	 */
 	private void executeCalculatedCompetitionJob(Job job) {
 
 		Competition comp = assDao.getCompetition(job.getAssessmentName());
@@ -179,6 +203,29 @@ public class ExecutionManager {
 		}
 	}
 
+	/**
+	 * Execute a calculated competition
+	 * <p>
+	 * <ol>
+	 * 	<li>Create a folder where this will run $compLocation$/arenas/$arenaName$/$date$</li>
+	 * 	<li>Copy player code to $compLocation$/arenas/$arenaName$/$date$/player/$playerName$, look for active player, if no active players found, go for the latest retired player</li>
+	 * 	<li>Copy competition code</li>
+	 * 	<li>Run ant: 
+	 * 		<ol>
+	 * 			<li>build</li>
+	 * 			<li>compete</li>
+	 * 			<li>mark</li>
+	 * 			<li>clean</li>
+	 * 		</ol>
+	 * 	</li>
+	 * 	<li>Deletes all except marks.csv and results.csv</li>
+	 * 	<li>Delete the job from the queue</li>
+	 * 	<li>Update the cached results</li>
+	 * 	<li>If the competition is still live and the arena is a repeating arena, add a new job to the queue to run the competition</li>
+	 * </ol>
+	 * 
+	 * @param job the arena competition job
+	 */
 	private void executeArenaCompetitionJob(Job job) {
 		Competition comp = assDao.getCompetition(job.getAssessmentName().split(
 				"#PASTAArena#")[0]);
@@ -453,6 +500,26 @@ public class ExecutionManager {
 		}
 	}
 
+	/**
+	 * Execute a normal job (not competition)
+	 * <p>
+	 * <ol>
+	 * 	<li>Create a folder where this will run $location$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestName$</li>
+	 * 	<li>Copy unit test code (if there are multiple unit tests, run them all sequentially)</li>
+	 * 	<li>Run ant: 
+	 * 		<ol>
+	 * 			<li>build</li>
+	 * 			<li>test</li>
+	 * 			<li>clean</li>
+	 * 		</ol>
+	 * 	</li>
+	 * 	<li>Deletes all except result.xml, compile.errors, run.errors</li>
+	 * 	<li>Delete the job from the queue</li>
+	 * 	<li>Update the cached results</li>
+	 * </ol>
+	 * 
+	 * @param job the job to run
+	 */
 	private void executeNormalJob(Job job) {
 		// do it
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -605,6 +672,16 @@ public class ExecutionManager {
 		}
 	}
 
+	/**
+	 * Get outstanding non competition jobs
+	 * <p>
+	 * This method runs on a fixed delay (currently 10 sec). The system waits
+	 * x ms between the end of the method and calling it again.
+	 * 
+	 * This queries the database for outstanding jobs, get the list, process them
+	 * all, then check the database again. When a check to the database is empty,
+	 * the system goes back to waiting.
+	 */
 	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingAssessmentJobs() {
 		List<Job> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
@@ -616,6 +693,16 @@ public class ExecutionManager {
 		}
 	}
 
+	/**
+	 * Get outstanding competition jobs
+	 * <p>
+	 * This method runs on a fixed delay (currently 10 sec). The system waits
+	 * x ms between the end of the method and calling it again.
+	 * 
+	 * This queries the database for outstanding jobs, get the list, process them
+	 * all, then check the database again. When a check to the database is empty,
+	 * the system goes back to waiting.
+	 */
 	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingCompetitionJobs() {
 		List<Job> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
