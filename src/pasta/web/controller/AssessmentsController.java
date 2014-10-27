@@ -35,6 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -440,7 +442,9 @@ public class AssessmentsController {
 		try {
 			for(Entry<String, Map<String, AssessmentResult> > entry : allResults.entrySet()){
 				if(entry.getValue() != null && 
-						entry.getValue().containsKey(assessmentName)){
+						entry.getValue().containsKey(assessmentName) &&
+						entry.getValue().get(assessmentName) != null &&
+						entry.getValue().get(assessmentName).getSubmissionDate() != null){
 					// add
 
 					PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
@@ -466,6 +470,12 @@ public class AssessmentsController {
 			// TODO Auto-generated catch block
 			logger.error(e.getMessage());
 //			e.printStackTrace();
+		}
+		catch (Exception e){
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.error("Something really wrong happened!!!" + System.getProperty("line.separator")+sw.toString());
 		}
 	}
 			
