@@ -69,7 +69,6 @@ public class AssessmentResult {
 	private Assessment assessment;
 	private int submissionsMade;
 	private Date submissionDate;
-	private Date dueDate;
 	private String comments;
 	
 	public Collection<UnitTestResult> getUnitTests() {

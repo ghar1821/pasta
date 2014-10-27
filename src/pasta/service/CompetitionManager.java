@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.service;
 
 import java.io.File;
@@ -47,7 +46,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.hibernate.persister.entity.Loadable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
@@ -70,16 +68,18 @@ import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("competitionManager")
-@Repository
 /**
  * Competition manager.
  * 
  * Manages interaction between controller and data.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("competitionManager")
+@Repository
 public class CompetitionManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
@@ -96,13 +96,11 @@ public class CompetitionManager {
 		this.scheduler = myScheduler;
 	}
 
-	// Validator for the submission
-
 	public static final Logger logger = Logger
 			.getLogger(CompetitionManager.class);
 	
 
-	// new 
+	
 	public void addCompetition(NewCompetition form) {
 		Competition thisComp = new Competition();
 		thisComp.setName(form.getName());
@@ -513,6 +511,14 @@ public class CompetitionManager {
 		return playerDAO.loadPlayerHistory(username, competitionName).values();
 	}
 
+	/**
+	 * Add a player to an arena
+	 * 
+	 * @param username the name of the user
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param arenaName the short name (no whitespace) of the arena
+	 * @param playerName the name of the player.
+	 */
 	public void addPlayerToArena(String username, String competitionName,
 			String arenaName, String playerName) {
 		// make sure player is legitimate
@@ -530,13 +536,21 @@ public class CompetitionManager {
 		}
 	}
 	
+	/**
+	 * Remove a player form an arena
+	 * 
+	 * @param username the name of the user
+	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param arenaName the short name (no whitespace) of the arena
+	 * @param playerName the name of the player.
+	 */
 	public void removePlayerFromArena(String username, String competitionName,
 			String arenaName, String playerName) {
 		// make sure player is legitimate
 		if(playerDAO.getPlayerHistory(username, competitionName, playerName) != null &&
 				assDao.getCompetition(competitionName)!= null &&
 				assDao.getCompetition(competitionName).getArena(arenaName) != null){
-			// add player to arena if arena exists
+			// remove player to arena if arena exists
 			assDao.getCompetition(competitionName).getArena(arenaName).removePlayer(username, playerName);
 			
 			// if no player
@@ -551,6 +565,14 @@ public class CompetitionManager {
 		}
 	}
 
+	/**
+	 * Get the latest results of an arena execution
+	 * 
+	 * @param currComp the competition
+	 * @param arena the arena
+	 * @see pasta.repository.ResultDAO#loadArenaResult(String)
+	 * @return the {@link pasta.domain.result.ArenaResult} or null.
+	 */
 	public ArenaResult getArenaResults(Competition currComp, Arena arena) {
 		if(currComp != null && arena != null){
 			return resultDAO.loadArenaResult(currComp.getFileLocation()+"/arenas/"+arena.getName());

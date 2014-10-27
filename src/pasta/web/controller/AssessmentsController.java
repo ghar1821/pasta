@@ -31,14 +31,21 @@ either expressed or implied, of the PASTA Project.
 package pasta.web.controller;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.ZipOutputStream;
 import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +75,8 @@ import pasta.service.HandMarkingManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
+import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 @Controller
 @RequestMapping("assessments/")
@@ -409,6 +418,57 @@ public class AssessmentsController {
 		}
 		return "redirect:../../";
 	}
+	
+	@RequestMapping(value = "downloadLatest/{assessmentName}/")
+	public void downloadLatest(
+			@PathVariable("assessmentName") String assessmentName, Model model,
+			HttpServletResponse response) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return;
+		}
+		if (!user.isTutor()) {
+			return;
+		}
+		
+		response.setContentType("application/zip");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ assessmentName + "-latest.zip\"");
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+		ZipOutputStream zip = new ZipOutputStream(outStream);
+		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
+		try {
+			for(Entry<String, Map<String, AssessmentResult> > entry : allResults.entrySet()){
+				if(entry.getValue() != null && 
+						entry.getValue().containsKey(assessmentName)){
+					// add
+
+					PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
+							.getProjectLocation()
+							+ "/submissions/"
+							+ entry.getKey()
+							+ "/assessments/"
+							+ assessmentName
+							+ "/"
+							+ PASTAUtil.formatDate(entry.getValue().get(assessmentName).getSubmissionDate())
+							+ "/submission/"), "(" + ProjectProperties.getInstance()
+							.getProjectLocation()
+							+ "/submissions/)|(assessments.*submission/)" );
+					zip.closeEntry();
+				}
+			}
+			zip.close();
+			IOUtils.copy(new ByteArrayInputStream(outStream.toByteArray()),
+					response.getOutputStream());
+			response.flushBuffer();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage());
+//			e.printStackTrace();
+		}
+	}
+			
 
 	// stats of an assessment
 	@RequestMapping(value = "stats/{assessmentName}/")

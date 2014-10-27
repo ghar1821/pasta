@@ -36,6 +36,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -70,7 +71,7 @@ import pasta.domain.players.PlayerHistory;
  */
 @Component
 public class PASTAUtil {
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected static final Log logger = LogFactory.getLog(PASTAUtil.class);
 	
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -290,7 +291,10 @@ public class PASTAUtil {
 		if (file.isFile()) {
 			// file - zip it
 			try {
-				ZipEntry ze = new ZipEntry(file.getAbsolutePath().substring(remove.length()));//file.getAbsolutePath().replace(remove, ""));
+				// changing file separator to work with both windows and linux
+				remove = remove.replace("/", "[\\\\/]");
+				// clean up file name
+				ZipEntry ze = new ZipEntry(file.getAbsolutePath().replaceAll(remove, ""));
 				zip.putNextEntry(ze);
 				FileInputStream in = new FileInputStream(file);
 				int len;
