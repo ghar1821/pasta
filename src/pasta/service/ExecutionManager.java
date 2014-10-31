@@ -557,13 +557,14 @@ public class ExecutionManager {
 					(new File(unitTestsLocation + "/"
 							+ test.getTest().getShortName())).mkdirs();
 
+					// copy over submission
+					FileUtils.copyDirectory(new File(location), new File(
+							unitTestsLocation + "/"
+									+ test.getTest().getShortName()));
+					
 					// copy over unit test
 					FileUtils.copyDirectory(new File(test.getTest()
 							.getFileLocation() + "/code/"), new File(
-							unitTestsLocation + "/"
-									+ test.getTest().getShortName()));
-					// copy over submission
-					FileUtils.copyDirectory(new File(location), new File(
 							unitTestsLocation + "/"
 									+ test.getTest().getShortName()));
 

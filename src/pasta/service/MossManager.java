@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.service;
 
@@ -60,24 +59,37 @@ import pasta.domain.moss.MossResults;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("mossManager")
-@Repository
 /**
  * Moss manager.
+ * <p>
+ * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
  * 
- * Manages interaction between controller and moss data.
+ * Requires the moss scripts to be copied into the pasta folder
+ * (where all of the assessment and submission data is kept), in a 
+ * folder labeled "moss". Within that folder, there should be another 
+ * folder entitled "template" and within that there should be an ant
+ * script called "build.xml" which has a target called "run" and 
+ * also accepts two parameters. The first is "assessment" which is
+ * the assessment name, the second is "defaultLocation" which points
+ * to the folder which holds all of the student submissions.
  * 
- * @author Alex
+ * The manager assumes that once the script has executed, the URL
+ * of the moss results is written into "location.txt". This URL
+ * is then scraped for the required data.
+ * 
+ * This manager does no caching.
+ * 
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-24
  *
  */
+@Service("mossManager")
+@Repository
 public class MossManager {
-	
-//	private ExecutionScheduler scheduler;
-//	
-//	@Autowired
-//	public void setMyScheduler(ExecutionScheduler myScheduler) {
-//		this.scheduler = myScheduler;
-//	}
 	
 	@Autowired
 	private ApplicationContext context;
@@ -87,6 +99,29 @@ public class MossManager {
 	public static final Logger logger = Logger
 			.getLogger(MossManager.class);
 	
+	/**
+	 * Method to initiate the execution of a moss script
+	 * <p>
+	 * <ol>
+	 * 	<li>Copy the template moss into assessmentName/date</li>
+	 * 	<li>Load up build.xml</li>
+	 * 	<li>Set "assessment" and "defaultLocation" properties with the correct values.</li>
+	 * 	<li>Execute target "run"</li>
+	 * 	<li>Wait for script to upload files to the moss server and get back a response</li>
+	 * 	<li>Read "location.txt" to get the URL that holds the moss results.</li>
+	 * 	<li>Go to the URL specified and parse the page</li>
+	 * 	<li>Store the similarity list to the file assessmentName/date.csv</li>
+	 * 	<li>Delete the directory created in step 1.</li>
+	 * </ol>
+	 * 
+	 * <b>NOTE: Step 9 - the deletion of the folder - will not occur if there is an error in
+	 * the process. If the folder remains, there was an error and it should contain
+	 * sufficient information to debug any issues that have arisen.</b>
+	 * 
+	 * If the system is set to use a proxy, this is where it's done.
+	 * 
+	 * @param assessment
+	 */
 	public void runMoss(String assessment){
 		String location = ProjectProperties.getInstance().getProjectLocation()
 				+ "/moss/" + assessment + "/"
@@ -183,6 +218,16 @@ public class MossManager {
 
 	}
 
+	/**
+	 * Get the results of a moss execution
+	 * <p>
+	 * Read $ProjectLocation$/moss/$assessmentName$/$date$.csv and store
+	 * it as a {@link pasta.domain.moss.MossResults}.
+	 * 
+	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param date the date (format yyyy-MM-dd'T'HH-mm-ss) 
+	 * @return the correct moss results (will never return null)
+	 */
 	public MossResults getMossRun(String assessment, String date) {
 		MossResults results = new MossResults();
 
@@ -218,6 +263,12 @@ public class MossManager {
 		return results;
 	}
 	
+	/**
+	 * Get the list of moss results.
+	 * 
+	 * @param assessment the short name (no whitespace) of the assessment
+	 * @return a map key: date (format yyyy-MM-dd'T'HH-mm-ss), value: date (format Date.toString()) 
+	 */
 	public Map<String,String> getMossList(String assessment) {
 		Map<String,String> mossList = new TreeMap<String,String>();
 		

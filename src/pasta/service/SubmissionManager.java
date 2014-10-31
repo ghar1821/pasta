@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.service;
 
@@ -64,16 +63,22 @@ import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("submissionManager")
-@Repository
 /**
- * Submission amnager.
+ * Submission manager.
  * 
+ * <p>
  * Manages interaction between controller and data.
- * 
- * @author Alex
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
+ *  
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-11-13
  *
  */
+@Service("submissionManager")
+@Repository
 public class SubmissionManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
@@ -94,6 +99,29 @@ public class SubmissionManager {
 	public static final Logger logger = Logger
 			.getLogger(SubmissionManager.class);
 	
+	/**
+	 * Process the submission of an assessment
+	 * <p>
+	 * <ol>
+	 * 	<li>Create new folder to hold the submission
+	 *  ($ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/submission)</li>
+	 *  <li>Copy submission file from memory to the newly created folder</li>
+	 *  <li>Extract the submitted file if it ends with .zip using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
+	 *  <li>If there are any unit tests associated with the assessment, check to see if there are any compilation errors.
+	 *  This process is done by copying the submission and then the unit tests to 
+	 *  $ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestName.
+	 *  This order of copy was chosen such that the unit test code will override any identically named file that
+	 *  the student has submitted (e.g. makefiles), which could compromise the security of the machine or 
+	 *  validity of the assessment. The ant tasks compile and clean are executed and any errors during
+	 *  this process are written to compile.errors and run.errors.</li>
+	 *  <li>Clean up the testing code by deleting everything other that "compile.errors", "run.errors" and "results.xml"</li>
+	 *  <li>The cache is updated with the new submission information (testing queued/compile errors)</li>
+	 *  <li>If the submission compiled, run the assessment using {@link #runAssessment(String, String, String)}</li>
+	 * </ol>
+	 * 
+	 * @param username the name of the user
+	 * @param form the submission form
+	 */
 	public void submit(String username, Submission form) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		Date now = new Date();
@@ -122,12 +150,14 @@ public class SubmissionManager {
 					// create folder
 					(new File(unitTestsLocation + "/" + test.getTest().getShortName())).mkdirs();
 
+
+					// copy over submission
+					FileUtils.copyDirectory(new File(location),
+							new File(unitTestsLocation + "/" + test.getTest().getShortName()));
+					
 					// copy over unit test
 					FileUtils.copyDirectory(new File(test.getTest().getFileLocation()
 							+ "/code/"),
-							new File(unitTestsLocation + "/" + test.getTest().getShortName()));
-					// copy over submission
-					FileUtils.copyDirectory(new File(location),
 							new File(unitTestsLocation + "/" + test.getTest().getShortName()));
 					
 					// compile
@@ -247,12 +277,24 @@ public class SubmissionManager {
 		}
 	}
 	
-
-
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.ResultDAO#getLatestResults(String)
+	 * @param username the name of the user
+	 * @return a map containing the latest results for a given user.
+	 */
 	public Map<String, AssessmentResult> getLatestResultsForUser(String username){
 		return resultDAO.getLatestResults(username);
 	}
 	
+	/**
+	 * Schedule an assessment attempt for a given user for execution
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
+	 */
 	public void runAssessment(String username, String assessmentName, String assessmentDate){
 		try {
 			scheduler.save(new Job(username, assessmentName, PASTAUtil.parseDate(assessmentDate)));
@@ -263,6 +305,13 @@ public class SubmissionManager {
 		}
 	}
 	
+	/**
+	 * Schedule the latest attempt of an assessment for a collection of users that have
+	 * submitted for execution.
+	 * 
+	 * @param assessment the assessment for which the latest attempts must be re-run
+	 * @param allUsers the collection of users for which the latest attempt will be executed
+	 */
 	public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
 		// scan to see all who made a submission
 		for(PASTAUser user: allUsers){
