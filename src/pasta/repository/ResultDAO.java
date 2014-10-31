@@ -464,7 +464,7 @@ public class ResultDAO {
 	 * 
 	 * @param username the name of the user
 	 * @param assessmentName the assessment short name (no whitespace)
-	 * @param assessmentDate the date of the submission
+	 * @param assessmentDate the date of the submission (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param handMarkingResults the results of the hand marking
 	 */
 	public void saveHandMarkingToFile(String username, String assessmentName,

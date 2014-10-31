@@ -188,7 +188,7 @@ public class HandMarkingController {
 			return "redirect:/home/.";
 		}
 
-		model.addAttribute("allHandMarking", handMarkingManager.getAllHandMarking());
+		model.addAttribute("allHandMarking", handMarkingManager.getHandMarkingList());
 		model.addAttribute("unikey", user);
 		return "assessment/viewAll/handMarks";
 	}

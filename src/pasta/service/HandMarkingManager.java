@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.service;
 
 import java.io.File;
@@ -50,16 +49,22 @@ import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.util.ProjectProperties;
 
-@Service("handMarkingManager")
-@Repository
+
 /**
- * Submission amnager.
- * 
+ * Hand marking manager.
+ * <p>
  * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("handMarkingManager")
+@Repository
 public class HandMarkingManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
@@ -73,29 +78,55 @@ public class HandMarkingManager {
 	public static final Logger logger = Logger
 			.getLogger(HandMarkingManager.class);
 	
-	// new
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getHandMarkingList()
+	 * @return collection of all of the hand marking templates
+	 */
 	public Collection<HandMarking> getHandMarkingList() {
 		return assDao.getHandMarkingList();
 	}
 
-	// new
+	/**
+	 * Helper method
+	 * 
+	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 * @see pasta.repository.AssessmentDAO#getHandMarking(String)
+	 * @return the hand marking template with that name, null if it does not exist
+	 */
 	public HandMarking getHandMarking(String handMarkingName) {
 		return assDao.getHandMarking(handMarkingName);
 	}
 	
-	// new
-	public Collection<HandMarking> getAllHandMarking() {
-		return assDao.getHandMarkingList();
-	}
-
+	/**
+	 * Helper method
+	 * 
+	 * @param marking the hand marking template that will be updated
+	 * @see pasta.repository.AssessmentDAO#updateHandMarking(HandMarking)
+	 */
 	public void updateHandMarking(HandMarking marking){
 		assDao.updateHandMarking(marking);
 	}
 
+	/**
+	 * New hand marking template
+	 * 
+	 * @param newMarking the new hand marking form
+	 * @see pasta.repository.AssessmentDAO#newHandMarking(NewHandMarking)
+	 */
 	public void newHandMarking(NewHandMarking newMarking){
 		assDao.newHandMarking(newMarking);
 	}
 	
+	/**
+	 * Save hand marking results.
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
+	 * @param handMarkingResults the list of hand marking results to save
+	 */
 	public void saveHandMarkingResults(String username, String assessmentName,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
 		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
@@ -107,6 +138,11 @@ public class HandMarkingManager {
 		}
 	}
 
+	/**
+	 * Remove a hand marking template
+	 * 
+	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 */
 	public void removeHandMarking(String handMarkingName) {
 		assDao.removeHandMarking(handMarkingName);
 		// delete file
@@ -117,15 +153,17 @@ public class HandMarkingManager {
 		} catch (IOException e) {}
 	}
 
+	/**
+	 * Save the comment
+	 * 
+	 * @param username the name of the user
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentDate the date of assessment submission (format yyyy-MM-dd'T'HH-mm-ss)
+	 * @param comments the comments that will be saved
+	 */
 	public void saveComment(String username, String assessmentName,
 			String assessmentDate, String comments) {
 		// make that better
 		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
-	}
-
-	public void updateComment(String username, String assessmentName,
-			String newComment) {
-		// TODO Auto-generated method stub
-		
 	}
 }
