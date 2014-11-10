@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.web.controller;
-
 
 import java.util.LinkedList;
 import java.util.List;
@@ -59,11 +57,17 @@ import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
 /**
- * Controller class. 
+ * Controller class for admin functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/admin/...
+ * <p>
+ * Both students and teaching staff can access this url.
+ * Students have highly limited functionality. If the authentication
+ * system is not using the database, then it's an empty page.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-23
  *
  */
 @Controller
@@ -82,6 +86,11 @@ public class AdminController {
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Return the empty form for changing your password (DB authentication only)
+	 * 
+	 * @return the correct form.
+	 */
 	@ModelAttribute("changePasswordForm")
 	public ChangePasswordForm returnNewUnitTestModel() {
 		return new ChangePasswordForm();
@@ -91,6 +100,15 @@ public class AdminController {
 	// Helper Methods //
 	// ///////////////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Get the current logged in user.
+	 * <p>
+	 * Gets the "user" attribute from the current session and gets the user with
+	 * that username from the {@link pasta.service.UserManager}.
+	 *  
+	 * @see pasta.service.UserManager#getUser(String)
+	 * @return the user or null if there is no user with that name.
+	 */
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
@@ -105,6 +123,27 @@ public class AdminController {
 	// ADMIN //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * $PASTAUrl$/admin/
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the login screen.
+	 * <p>
+	 * Attributes:
+	 * <table>
+	 * 	<tr><td>authType</td><td>ProjectProperties.getInstance().getAuthenticationValidator().getClass().getName()</td></tr>
+	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} currently logged in user</td></tr>
+	 * 	<tr><td>people</td><td><b>Only if tutor or instructor!</b> - the list of users (both students and teaching staff)</td></tr>
+	 * 	<tr><td>addresses</td><td><b>Only if tutor or instructor!</b> - the list of sever addresses for which to authenticate against</td></tr>
+	 * </table>
+	 * JSP:
+	 * <ul>
+	 * 	<li>user/admin</li>
+	 * </ul>
+	 * 
+	 * @param model the model
+	 * @return the string identifier to the location of the view.
+	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String get(ModelMap model) {
 				
@@ -124,45 +163,70 @@ public class AdminController {
 		return "user/admin";
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/changePassword/
+	 * <p>
+	 * Change the password of a user.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param form the change password form
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/changePassword/", method = RequestMethod.POST)
 	public String changePassword(ModelMap model, HttpServletRequest request,
 			@ModelAttribute(value = "changePasswordForm") ChangePasswordForm form) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
-	
-		Validator val = ProjectProperties.getInstance().getAuthenticationValidator();
-		if(val instanceof DBAuthValidator){
-			DBAuthValidator authenticator = (DBAuthValidator)val;
-			if(authenticator.authenticate(user.getUsername(), form.getOldPassword())
-					&& form.getNewPassword().equals(form.getConfirmPassword())){
-				logger.info("swapping password");
-				userManager.updatePassword(user.getUsername(), form.getNewPassword());
-			}
-			else{
-				logger.info("an error occured");
-			}
-			
-		}
+		
+		if (user != null) {
+			Validator val = ProjectProperties.getInstance().getAuthenticationValidator();
+			if(val instanceof DBAuthValidator){
+				DBAuthValidator authenticator = (DBAuthValidator)val;
+				if(authenticator.authenticate(user.getUsername(), form.getOldPassword())
+						&& form.getNewPassword().equals(form.getConfirmPassword())){
+					logger.info("swapping password");
+					userManager.updatePassword(user.getUsername(), form.getNewPassword());
+				}
+				else{
+					logger.info("an error occured");
+				}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+			}
+		}
+		
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/replaceStudents/ - POST
+	 * <p>
+	 * Replace the list of students with a new one. 
+	 * Parse the csv format that is passed in (e.g. username,stream,class), turn into
+	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#replaceStudents(List)}.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param list the list of students which will be used to replace (csv format).
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/replaceStudents/", method = RequestMethod.POST)
 	public String replaceStudents(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String type) {
+			@RequestParam(value="list") String list) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
 	
-		if(user.isTutor()){
+		if(user != null && user.isTutor()){
 			// replace classlist
-			Scanner in = new Scanner(type);
+			Scanner in = new Scanner(list);
 			List<PASTAUser> users = new LinkedList<PASTAUser>();
 			
 			while(in.hasNextLine()){
@@ -178,25 +242,39 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
+			in.close();
 			userManager.replaceStudents(users);
 		}
-				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/updateStudents/ - POST
+	 * <p>
+	 * Update the list of students with a new one. 
+	 * Parse the csv format that is passed in (e.g. username,stream,class), turn into
+	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#updateStudents(List)}.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param list the list of students which will be used to replace (csv format).
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/updateStudents/", method = RequestMethod.POST)
 	public String updateStudents(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String type) {
+			@RequestParam(value="list") String list) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
 	
-		if(user.isTutor()){
+		if(user != null && user.isTutor()){
 			// update classlist
-			Scanner in = new Scanner(type);
+			Scanner in = new Scanner(list);
 			List<PASTAUser> users = new LinkedList<PASTAUser>();
 			
 			while(in.hasNextLine()){
@@ -212,25 +290,39 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
+			in.close();
 			userManager.updateStudents(users);
 		}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 
+	/**
+	 * $PASTAUrl$/admin/replaceTutors/ - POST
+	 * <p>
+	 * Replace the list of teaching staff with a new one. 
+	 * Parse the csv format that is passed in (e.g. username,permissionlevel,class1,class2,...,classN), turn into
+	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#replaceTutors(List)}.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param list the list of teaching staff which will be used to replace (csv format).
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/replaceTutors/", method = RequestMethod.POST)
 	public String replaceTutors(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String type) {
+			@RequestParam(value="list") String list) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
-	
-		if(user.isTutor()){
+
+		if(user != null && user.isTutor()){
 			// replace classlist
-			Scanner in = new Scanner(type);
+			Scanner in = new Scanner(list);
 			List<PASTAUser> users = new LinkedList<PASTAUser>();
 			
 			while(in.hasNextLine()){
@@ -258,25 +350,39 @@ public class AdminController {
 					users.add(currUser);
 				}
 			}
+			in.close();
 			userManager.replaceStudents(users);
 		}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/updateTutors/ - POST
+	 * <p>
+	 * Update the list of teaching staff with a new one. 
+	 * Parse the csv format that is passed in (e.g. username,permissionlevel,class1,class2,...,classN), turn into
+	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#updateTutors(List)}.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param list the list of teaching staff which will be used to replace (csv format).
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/updateTutors/", method = RequestMethod.POST)
 	public String updateTutors(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String type) {
+			@RequestParam(value="list") String list) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
-	
-		if(user.isTutor()){
+		
+		if(user != null && user.isTutor()){
 			// update classlist
-			Scanner in = new Scanner(type);
+			Scanner in = new Scanner(list);
 			List<PASTAUser> users = new LinkedList<PASTAUser>();
 			
 			while(in.hasNextLine()){
@@ -307,45 +413,67 @@ public class AdminController {
 			userManager.updateTutors(users);
 		}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/delete/{username}/
+	 * <p>
+	 * Delete a user from the system.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param username the name of the user
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/delete/{username}/")
 	public String deleteUser(ModelMap model, HttpServletRequest request,
 			@PathVariable("username") String username) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
 	
-		if(user.isTutor()){
+		if(user != null && user.isTutor()){
 			// update classlist
 			PASTAUser toDelete = new PASTAUser();
 			toDelete.setUsername(username);
 			userManager.deleteUser(toDelete);
 		}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/admin/auth/
+	 * <p>
+	 * Change the authentication system and/or addresses.
+	 * <p>
+	 * Ensure user exists and has authenticated against the system.
+	 * If they have not, redirect them to the referring url.
+	 * <p>
+	 * <b>REQUIRES: Tutor or higher permission</b>
+	 * 
+	 * @param model the model
+	 * @param request the http request object, used to send the user back to the page that referred them
+	 * @param type the authentication type
+	 * @param address the addresses which will be used by the authentication
+	 * @return redirect to the referrer url
+	 */
 	@RequestMapping(value = "/auth/", method = RequestMethod.GET)
 	public String changeAuthType(ModelMap model, HttpServletRequest request,
 			@RequestParam(value="type") String type,
 			@RequestParam(value="address") String[] address) {
 				
 		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/../";
-		}
 	
-		if(user.isTutor()){
+		if(user != null && user.isTutor()){
 			ProjectProperties.getInstance().changeAuthMethod(type, address);
 		}
 				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 }
