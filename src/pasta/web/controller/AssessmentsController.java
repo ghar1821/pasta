@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.web.controller;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -80,18 +78,26 @@ import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Controller
-@RequestMapping("assessments/")
 /**
- * Controller class. 
+ * Controller class for Assessment functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/assessments/...
+ * <p>
+ * Only teaching staff can access this url.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-08-15
  *
  */
+@Controller
+@RequestMapping("assessments/")
 public class AssessmentsController {
 
+	/**
+	 * Initializes the codeStyle tag mapping of file endings to 
+	 * javascript tag requirements for syntax highlighting.
+	 */
 	public AssessmentsController() {
 		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
@@ -178,9 +184,9 @@ public class AssessmentsController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get the currently logged in user.
+	 * Get or create the currently logged in user.
 	 * 
-	 * @return
+	 * @return the currently used user, null if nobody is logged in.
 	 */
 	public PASTAUser getOrCreateUser() {
 		String username = (String) RequestContextHolder
@@ -192,6 +198,11 @@ public class AssessmentsController {
 		return null;
 	}
 
+	/**
+	 * Get the currently logged in user. If it doesn't exist, don't create it.
+	 * 
+	 * @return the currently logged in user, null if not logged in or doesn't already exist.
+	 */
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
@@ -206,7 +217,39 @@ public class AssessmentsController {
 	// ASSESSMENTS //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	// view an assessment
+
+	/**
+	 * $PASTAUrl$/assessments/{assessmentName}/ - GET
+	 * <p>
+	 * View the assessment details.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * Otherwise:
+	 * 
+	 * Wrap the weighted containers around all assessment modules (Unit tets, hand
+	 * marking, competitions ...)
+	 * Add them to the model for use.
+	 * 
+	 * Attributes:
+	 * <table>
+	 * 	<tr><td>assessment</td><td>the corresponding {@link pasta.domain.template.Assessment}</td></tr>
+	 * 	<tr><td>tutorialByStream</td><td>A map of the streams and which tutorials belong to them. Used for releases.</td></tr>
+	 * 	<tr><td>otherUnitTests</td><td>The weighted unit tests not already associated with this assessment</td></tr>
+	 * 	<tr><td>otherHandMarking</td><td>The weighted hand marking templates not already associated with this assessment</td></tr>
+	 * 	<tr><td>otherCompetitions</td><td>The weighted competitions not already associated with this assessment</td></tr>
+	 * 	<tr><td>unikey</td><td>the username of the current logged in user</td></tr>
+	 * </table>
+	 * 
+	 * JSP:
+	 * <ul><li>assessment/view/assessment</li></ul>
+	 * 
+	 * @param assessmentName the short name (no whitespace) of the assessment.
+	 * @param model the model used to add attributes
+	 * @return the string representation of what to do. redirect, or load jsp file
+	 */
 	@RequestMapping(value = "{assessmentName}/")
 	public String viewAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
@@ -299,7 +342,27 @@ public class AssessmentsController {
 		return "assessment/view/assessment";
 	}
 	
-	// update an assessment
+	/**
+	 * $PASTAUrl$/assessments/{assessmentName}/ - POST
+	 * <p>
+	 * Update an assessment. Only instructors can change an assessment.
+	 * Tutors can only view.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor, update the assessment by calling 
+	 * {@link pasta.service.AssessmentManager#addAssessment(Assessment)}
+	 * 
+	 * Redirect back to the post version of this page.
+	 * 
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param form the form for updating the assessment
+	 * @param result the binding result, used for feedback
+	 * @param model the model used
+	 * @return the string representation of what to do. redirect only in this case.
+	 */
 	@RequestMapping(value = "{assessmentName}/", method = RequestMethod.POST)
 	public String updateAssessment(
 			@PathVariable("assessmentName") String assessmentName,
@@ -319,7 +382,24 @@ public class AssessmentsController {
 		return "redirect:.";
 	}
 
-	// run an assessment
+	/**
+	 * $PASTAUrl$/assessments/{assessmentName}/run/
+	 * <p>
+	 * Schedule the execution of an assessment for all students who have submitted.
+	 * Only works for instructors.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor, schedule for execution using 
+	 * {@link pasta.service.SubmissionManager#runAssessment(Assessment, java.util.Collection)}
+	 * redirect to the referrer.
+	 * 
+	 * @param assessmentName the name of the assessment
+	 * @param request the http request, used for redirection
+	 * @return the string representation of what to do. redirect only in this case.
+	 */
 	@RequestMapping(value = "{assessmentName}/run/")
 	public String runAssessment(
 			@PathVariable("assessmentName") String assessmentName,
@@ -335,13 +415,30 @@ public class AssessmentsController {
 		if (user.isInstructor()) {
 			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
 		}
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		return "redirect:" + request.getHeader("Referer");
 	}
 
-	
-
-	// view all assessment
+	/**
+	 * $PASTAUrl$/assessments/
+	 * <p>
+	 * View the list of all assessments.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * <p>
+	 * Attributes:
+	 * <table>
+	 * 	<tr><td>tutorialByStream</td><td>All tutorials by stream, used for releases from this page</td></tr>
+	 * 	<tr><td>allAssessments</td><td>All assessments</td></tr>
+	 * 	<tr><td>unikey</td><td>the user viewing this page.</td></tr>
+	 * </table>
+	 * 
+	 * JSP:
+	 * <ul><li>assessment/viewAll/assessment</li></ul>
+	 * @param model the model used
+	 * @return the string representation of what to do. either a redirect to somewhere or what jsp to load 
+	 */
 	@RequestMapping(value = "")
 	public String viewAllAssessment(Model model) {
 		PASTAUser user = getUser();
@@ -357,7 +454,28 @@ public class AssessmentsController {
 		return "assessment/viewAll/assessment";
 	}
 
-	// add a new assessment
+	/**
+	 * $PASTAUrl$/assessments/ - POST
+	 * <p>
+	 * Add a new assessment
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor: 
+	 * <ol>
+	 * 	<li>Check if the assessment has a name given, if it does reject the form with the reason "Assessment.new.noname".</li>
+	 * 	<li>If the assessment has a name, add one using {@link pasta.service.AssessmentManager#addAssessment(Assessment)}</li>
+	 * </ol>
+	 * redirect to the non post version of this page.
+	 *
+	 * 
+	 * @param form the new assessment form
+	 * @param result the result used for giving feedback
+	 * @param model the model used
+	 * @return the string representation of what to do. redirect only in this case
+	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newAssessmentAssessment(
 			@ModelAttribute(value = "assessment") Assessment form,
@@ -380,7 +498,24 @@ public class AssessmentsController {
 		return "redirect:.";
 	}
 
-	// release an assessment
+	/**
+	 * $PASTAUrl$/assessments/release/{assessmentName}/ - POST
+	 * <p>
+	 * Release the assessment to some students.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor: release assessment using 
+	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, ReleaseForm)}.
+	 * redirect to $PASTAUrl$/assessments/
+	 * 
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param form the release form
+	 * @param model the model used
+	 * @return the string representation of what to do. redirect only in this case
+	 */
 	@RequestMapping(value = "release/{assessmentName}/", method = RequestMethod.POST)
 	public String releaseAssessment(
 			@PathVariable("assessmentName") String assessmentName,
@@ -404,7 +539,23 @@ public class AssessmentsController {
 		return "redirect:../../";
 	}
 
-	// delete an assessment
+	/**
+	 * $PASTAUrl$/assessments/delete/{assessmentName}/
+	 * <p>
+	 * Delete the assessment
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor: delete assessment using 
+	 * {@link pasta.service.AssessmentManager#removeAssessment(String)}.
+	 * redirect to $PASTAUrl$/assessments/
+	 * 
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param model the model used
+	 * @return the string representation of what to do. redirect only in this case
+	 */
 	@RequestMapping(value = "delete/{assessmentName}/")
 	public String deleteAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
@@ -421,15 +572,30 @@ public class AssessmentsController {
 		return "redirect:../../";
 	}
 	
+	/**
+	 * $PASTAUrl$/assessments/downloadLatest/{assessmentName}/
+	 * <p>
+	 * Download the latest submissions for a given assessment.
+	 * <p>
+	 * If the user has not authenticated or is not a tutor: do nothing.
+	 * <p>
+	 * The http response will contain a zip file with the name $assessmentName$-latest.zip.
+	 * Within that there will be a set of folders, one for each student that has made a
+	 * submission with their username as the name of the folder. Within that folder is the
+	 * code they submitted.
+	 * 
+	 * When the zip has been downloaded, it will be removed from memory.
+	 * 
+	 * @param assessmentName the short name (no whitespace) for the assessment
+	 * @param model the model used (or not used in this case)
+	 * @param response the http response that will be used to give the user the correct zip.
+	 */
 	@RequestMapping(value = "downloadLatest/{assessmentName}/")
 	public void downloadLatest(
 			@PathVariable("assessmentName") String assessmentName, Model model,
 			HttpServletResponse response) {
 		PASTAUser user = getUser();
-		if (user == null) {
-			return;
-		}
-		if (!user.isTutor()) {
+		if (user == null || !user.isTutor()) {
 			return;
 		}
 		
@@ -479,8 +645,34 @@ public class AssessmentsController {
 		}
 	}
 			
-
-	// stats of an assessment
+	/**
+	 * $PASTAUrl$/assessments/stats/{assessmentName}/
+	 * <p>
+	 * Get the statistics for an assessment. Currently only shows a histogram of the
+	 * number of submissions and a histogram of the marks.
+	 * <p>
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * <p>
+	 * Build the histogram for marks and number of submissions.
+	 * The number of submissions is broken up in 10 buckets.
+	 * 
+	 * Attributes:
+	 * <table>
+	 * 	<tr><td>assessment</td><td>the assessment object</td></tr>
+	 * 	<tr><td>maxBreaks</td><td>the number of buckets the mark histogram is broken up in</td></tr>
+	 * 	<tr><td>markDistribution</td><td>the array holding the mark distribution</td></tr>
+	 * 	<tr><td>submissionDistribution</td><td>the array holding the number of submissions distribution</td></tr>
+	 * 	<tr><td>unikey</td><td>the user that is currently logged in</td></tr>
+	 * </table>
+	 * 
+	 * JSP:<ol><li>assessment/view/assessmentStats</li></ol>
+	 * 
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param model the model being used.
+	 * @return the string representation of what to do. either a redirect to somewhere or what jsp to load
+	 */
 	@RequestMapping(value = "stats/{assessmentName}/")
 	public String statisticsForAssessment(
 			@PathVariable("assessmentName") String assessmentName, Model model) {
