@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.web.controller;
 
@@ -64,16 +63,18 @@ import pasta.service.AssessmentManager;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
-@Controller
-@RequestMapping("api/")
 /**
- * Controller class. 
+ * Controller class for API functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/api/...
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-08-22
  *
  */
+@Controller
+@RequestMapping("api/")
 public class APIController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -91,6 +92,16 @@ public class APIController {
 		this.userManager = myService;
 	}
 	
+	/**
+	 * Get the latest marks
+	 * <p>
+	 * Authenticate against the system, if successful, get the latest marks as a csv.
+	 * In cases where there are no attempts, put "-".
+	 * 
+	 * @param response the http response which will be used
+	 * @param username the username in plaintext
+	 * @param password the password in plaintext
+	 */
 	@RequestMapping(value = "latestMarks", method = RequestMethod.GET)
 	public void viewGradeCentreAPI(HttpServletResponse response,
 			@RequestParam("username") String username,
