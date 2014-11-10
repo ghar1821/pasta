@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -26,7 +26,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the PASTA Project.
  */
-
 
 package pasta.service;
 
@@ -58,23 +57,26 @@ import pasta.repository.ResultDAO;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("unitTestManager")
-@Repository
 /**
- * unitTest manager.
- * 
+ * Unit Test manager.
+ * <p>
  * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("unitTestManager")
+@Repository
 public class UnitTestManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
-	
-//	private ExecutionScheduler scheduler;
-	
+		
 	@Autowired
 	private ApplicationContext context;
 
@@ -84,20 +86,42 @@ public class UnitTestManager {
 			.getLogger(UnitTestManager.class);
 	
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.ResultDAO#getUnitTestResult(String)
+	 * @param location get the non cached unit test results from a location
+	 * @return the unit test result
+	 */
 	public UnitTestResult getUnitTestResult(String location) {
 		return resultDAO.getUnitTestResult(location);
 	}
 
-	// new
+	/**
+	 * Get the collection of all unit test templates
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getAllUnitTests()
+	 * @return the collection of all unit test templates
+	 */
 	public Collection<UnitTest> getUnitTestList() {
 		return assDao.getAllUnitTests().values();
 	}
 
-	// new
+	/**
+	 * Get a unit test template
+	 * 
+	 * @param name the short name (no whitespace) of a unit test.
+	 * @return the unit test template or null if not available
+	 */
 	public UnitTest getUnitTest(String name) {
 		return assDao.getAllUnitTests().get(name);
 	}
 
+	/**
+	 * Save the unit test template to disk
+	 * 
+	 * @param thisTest the unit test to save
+	 */
 	public void saveUnitTest(UnitTest thisTest) {
 		try {
 
@@ -118,7 +142,17 @@ public class UnitTestManager {
 		}
 	}
 
-	// new - unit test is guaranteed to have a unique name
+	/**
+	 * Add a new unit test
+	 * <p>
+	 * Assume the unit test name is unique. This must be enforced in another
+	 * class for now (thought this should probably be moved here at a later date).
+	 * 
+	 * The unit test properties xml will be created in the correct folder and any
+	 * zip file that was uploaded will be unpacked using {@link pasta.util.PASTAUtil#extractFolder(String)}.
+	 *  
+	 * @param newTest the new unit test form used to create a new unit test template
+	 */
 	public void addUnitTest(NewUnitTest newTest) {
 		UnitTest thisTest = new UnitTest(newTest.getTestName(), false);
 
@@ -163,12 +197,39 @@ public class UnitTestManager {
 		}
 	}
 	
-	// new - unit test is guaranteed to have a unique name
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.AssessmentDAO#removeUnitTest(String)
+	 * @param testName the short name (no whitespace) of the unit test template to be removed
+	 */
 	public void removeUnitTest(String testName) {
 		assDao.removeUnitTest(testName);
 	}
 
-	// new - test submission
+	/**
+	 * Method to test the unit tests uploaded
+	 * <p>
+	 * This method is used to test whether the unit tests are working
+	 * as anticipated on the system before assigning it as a part of an assessment
+	 * and releasing it to students.
+	 * 
+	 * There is no queue system implemented for this now. As soon as the method
+	 * is called, the testing proceeds. Use at your own risk.
+	 * 
+	 * <ol>
+	 * 	<li>Create a new folder $ProjectLocation$/template/unitTest/$unitTestName$/test, 
+	 * if folder already exists, delete it and make a new one</li>
+	 * 	<li>Copy and extract submission code to that folder using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
+	 * 	<li>Copy the unit test code from $ProjectLocation$/template/unitTest/$unitTestName$/code</li>
+	 * 	<li>run the ant targets "build", "test", "clean"</li>
+	 * 	<li>any errors will be written to "compile.errors" and "run.errors" and the results are written to
+	 * results.xml</li>
+	 * </ol>
+	 * 
+	 * @param submission the submission form (containing the zip)
+	 * @param testName the short name (no whitespace) of the test
+	 */
 	public void testUnitTest(Submission submission, String testName) {
 		PrintStream compileErrors = null;
 		PrintStream runErrors = null;
@@ -260,23 +321,6 @@ public class UnitTestManager {
 				logger.error("Something went wrong: " + sw.toString());
 			}
 
-//			// delete everything else
-//			String[] allFiles = (new File(thisTest.getFileLocation() + "/test/"))
-//					.list();
-//			for (String file : allFiles) {
-//				File actualFile = new File(thisTest.getFileLocation()
-//						+ "/test/" + file);
-//				if (actualFile.isDirectory()) {
-//					FileUtils.deleteDirectory(actualFile);
-//				} else {
-//					if (!file.equals("result.xml")
-//							&& !file.equals("compile.errors")
-//							&& !file.equals("run.errors")) {
-//						FileUtils.forceDelete(actualFile);
-//					}
-//				}
-//			}
-
 		} catch (IOException e) {
 			logger.error("Unable to test unit test "
 					+ getUnitTest(testName).getName()
@@ -284,7 +328,6 @@ public class UnitTestManager {
 		} catch (Exception e){
 			// catch the rest of the exceptions
 		}
-		
 		
 		// ensure everything is closed
 		if(runErrors != null){
@@ -295,7 +338,12 @@ public class UnitTestManager {
 		}
 	}
 
-	public void updateUpdateUnitTest(NewUnitTest newTest) {
+	/**
+	 * Update the unit test with new code.
+	 * <p>
+	 * @param newTest the form containing the new unit test form.
+	 */
+	public void updateUnitTestCode(NewUnitTest newTest) {
 		UnitTest thisTest = getUnitTest(newTest.getTestName());
 
 		if(thisTest != null){

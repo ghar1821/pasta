@@ -250,7 +250,7 @@ public class UnitTestController {
 		if (form != null && form.getTestName() != null && form.getFile() != null && 
 				!form.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
-			unitTestManager.updateUpdateUnitTest(form);
+			unitTestManager.updateUnitTestCode(form);
 		}
 		
 		// if submission exists

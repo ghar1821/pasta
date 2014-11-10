@@ -65,7 +65,6 @@ import pasta.util.ProjectProperties;
 
 /**
  * Submission manager.
- * 
  * <p>
  * Manages interaction between controller and data.
  * This class works as an abstraction layer between the controller 
@@ -74,7 +73,7 @@ import pasta.util.ProjectProperties;
  *  
  * @author Alex Radu
  * @version 2.0
- * @since 2014-11-13
+ * @since 2012-11-13
  *
  */
 @Service("submissionManager")

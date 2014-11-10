@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,7 +27,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.service;
 
 import java.io.File;
@@ -53,16 +52,21 @@ import pasta.repository.UserDAO;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Service("userManager")
-@Repository
 /**
  * User manager.
- * 
+ * <p>
  * Manages interaction between controller and data.
+ * This class works as an abstraction layer between the controller 
+ * and the underlying data models. This class contains the majority
+ * of the logic code dealing with objects and their interactions.
  * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-31
  *
  */
+@Service("userManager")
+@Repository
 public class UserManager {
 	
 	@Autowired
@@ -79,30 +83,80 @@ public class UserManager {
 			.getLogger(UserManager.class);
 	
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getUser(String)
+	 * @param username the name of the user
+	 * @return the user object or null if there is no user with the given name
+	 */
 	public PASTAUser getUser(String username) {
 		return userDao.getUser(username);
 	}
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getUserList()
+	 * @return the collection of all users (students, tutors and instructors)
+	 */
 	public Collection<PASTAUser> getUserList() {
 		return userDao.getUserList();
 	}
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getStudentList()
+	 * @return the collection of only students
+	 */
 	public Collection<PASTAUser> getStudentList() {
 		return userDao.getStudentList();
 	}
-	
+
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getTutorialByStream()
+	 * @return a map with the key as the tutorial and value as the collection of students
+	 * in that tutorial
+	 */
 	public Map<String, Collection<String>> getTutorialByStream(){
 		return userDao.getTutorialByStream();
 	}
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getUserListByTutorial(String)
+	 * @param className the name of the tutorial class
+	 * @return the collection of users that belong to a tutorial
+	 */
 	public Collection<PASTAUser> getUserListByTutorial(String className) {
 		return userDao.getUserListByTutorial(className);
 	}
 	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getUserListByStream(String)
+	 * @param stream the name of the stream
+	 * @return the collection of users that belong to a stream
+	 */
 	public Collection<PASTAUser> getUserListByStream(String stream) {
 		return userDao.getUserListByStream(stream);
 	}
 	
+	/**
+	 * Get or create the user with a given name.
+	 * <p>
+	 * Attempt to retrieve the user from {@link pasta.repository.UserDAO}
+	 * if it fails, then create a new user. The new user is placed in the
+	 * tutorial "" and the stream "" with permission level of {@link pasta.domain.UserPermissionLevel#STUDENT}
+	 * 
+	 * @param username the name of the user
+	 * @return the user object
+	 */
 	public PASTAUser getOrCreateUser(String username) {
 		PASTAUser user = userDao.getUser(username);
 		if(user == null){
@@ -117,51 +171,32 @@ public class UserManager {
 		return user;
 	}
 
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.service.UserManager#giveExtension(PASTAUser, String, Date)
+	 * @param username the username of the student getting an extension
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param extension the new due date for the assessment
+	 */
 	public void giveExtension(String username, String assessmentName, Date extension) {
 		PASTAUser user = getUser(username);
-		user.getExtensions().put(assessmentName, extension);
-		
-		// update the files
-		try {
-			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation() + "/submissions/" +
-					username + "/user.extensions"));
-			for (Entry<String, Date> ex : user.getExtensions().entrySet()) {
-				out.println(ex.getKey() + ">" + PASTAUtil.formatDate(ex.getValue()));
-			}
-			out.close();
-		} catch (FileNotFoundException e) {
-			logger.error("Could not save extension information for " + username);
+		if(user != null){
+			giveExtension(user, assessmentName, extension);
 		}
 	}
-
-	public LoginDAO getLoginDao() {
-		return loginDao;
-	}
 	
-	public void replaceStudents(List<PASTAUser> users){
-		userDao.replaceStudents(users);
-	}
-	
-	public void updateStudents(List<PASTAUser> users){
-		userDao.updateStudents(users);
-	}
-	
-	public void replaceTutors(List<PASTAUser> users){
-		userDao.replaceTutors(users);
-	}
-	
-	public void updateTutors(List<PASTAUser> users){
-		userDao.updateTutors(users);
-	}
-
-	public void deleteUser(PASTAUser toDelete) {
-		userDao.deleteSingleUser(toDelete);
-	}
-
-	public void updatePassword(String username, String newPassword) {
-		loginDao.updatePassword(username, DigestUtils.md5Hex(newPassword));
-	}
-	
+	/**
+	 * Give a student an extension to a given date.
+	 * <p>
+	 * Updates the extensions in the cahced user and writes them to disk
+	 * in the folder $ProjectLocation$/submissions/$username$/user.extensions
+	 *  using the following format: "$assessmentName$>yyyy-MM-dd'T'HH-mm-ss"
+	 * 
+	 * @param user the user of the student getting an extension
+	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param extension the new due date for the assessment
+	 */
 	public void giveExtension(PASTAUser user, String assessmentName, Date extension) {
 		user.getExtensions().put(assessmentName, extension);
 		
@@ -178,4 +213,76 @@ public class UserManager {
 		}
 	}
 
+
+	/**
+	 * Return the Data Access Object used if using {@link pasta.login.DBAuthValidator}
+	 * @return the loginDAO object
+	 */
+	public LoginDAO getLoginDao() {
+		return loginDao;
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#replaceStudents(List)
+	 * @param users the list of students to replace the current list with
+	 */
+	public void replaceStudents(List<PASTAUser> users){
+		userDao.replaceStudents(users);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#updateStudents(List)
+	 * @param users the list of students to update the current list with
+	 */
+	public void updateStudents(List<PASTAUser> users){
+		userDao.updateStudents(users);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#replaceTutors(List)
+	 * @param users the list of tutors and instructors to replace the current list with
+	 */
+	public void replaceTutors(List<PASTAUser> users){
+		userDao.replaceTutors(users);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#replaceTutors(List)
+	 * @param users the list of tutors and instructors to update the current list with
+	 */
+	public void updateTutors(List<PASTAUser> users){
+		userDao.updateTutors(users);
+	}
+
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#deleteSingleUser(PASTAUser)
+	 * @param toDelete
+	 */
+	public void deleteUser(PASTAUser toDelete) {
+		userDao.deleteSingleUser(toDelete);
+	}
+
+	/**
+	 * Update the password for a given user with a new one.
+	 * <p>
+	 * Currently uses md5Hex
+	 * 
+	 * @param username the name of the user
+	 * @param newPassword the password in plaintext
+	 */
+	public void updatePassword(String username, String newPassword) {
+		loginDao.updatePassword(username, DigestUtils.md5Hex(newPassword));
+	}
+	
+	
 }
