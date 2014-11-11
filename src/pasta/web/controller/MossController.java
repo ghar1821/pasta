@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.web.controller;
-
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,11 +46,15 @@ import pasta.service.MossManager;
 import pasta.service.UserManager;
 
 /**
- * Controller class. 
+ * Controller class for the MOSS plagarism detection functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/moss/...
+ * <p>
+ * Only teaching staff can access this url.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2014-01-24
  *
  */
 @Controller
@@ -73,19 +75,16 @@ public class MossController {
 	public void setMyService(MossManager myService) {
 		this.mossManager = myService;
 	}
-	// ///////////////////////////////////////////////////////////////////////////
-	// Models //
-	// ///////////////////////////////////////////////////////////////////////////
-
-//	@ModelAttribute("changePasswordForm")
-//	public ChangePasswordForm returnNewUnitTestModel() {
-//		return new ChangePasswordForm();
-//	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
 	// ///////////////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Get the currently logged in user.
+	 * 
+	 * @return the currently used user, null if nobody is logged in or user isn't registered.
+	 */
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
@@ -100,50 +99,114 @@ public class MossController {
 	// MOSS //
 	// ///////////////////////////////////////////////////////////////////////////
 	
+	/**
+	 * $PASTAUrl$/moss/run/{assessmentName}/
+	 * <p>
+	 * Run moss.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home	
+	 * 
+	 * Run moss using {@link pasta.service.MossManager#runMoss(String)}
+	 * 
+	 * @param model the mode being used
+	 * @param request the http request used for redirecting back to the referrer url
+	 * @param assessment the short name (no whitespace) of the assessment.
+	 * @return "redirect:/login/" or redirect back to the referrer
+	 */
 	@RequestMapping(value = "/run/{assessmentName}/")
 	public String runMoss(ModelMap model, HttpServletRequest request,
 			@PathVariable("assessmentName") String assessment) {
-				
+		
 		PASTAUser user = getUser();
 		if (user == null) {
-			return "redirect:/../";
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/";
 		}
 	
-		if(user.isTutor()){
-			// run Moss
-			mossManager.runMoss(assessment);
-		}
-				
-		String referer = request.getHeader("Referer");
-		return "redirect:" + referer;
+		mossManager.runMoss(assessment);
+		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	/**
+	 * $PASTAUrl$/moss/view/{assessmentName}/
+	 * <p>
+	 * View the list of moss executions for an assessment.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * ATTRIBUTES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
+	 * 	<tr><td>assessmentName</td><td>the name of the assessment</td></tr>
+	 * 	<tr><td>mossList</td><td>the list of moss execution given by {@link pasta.service.MossManager#getMossList(String)}</td></tr>
+	 * </table>
+	 * 
+	 * JSP: <ul><li>moss/list</li></ul>
+	 * 
+	 * @param model the model being used
+	 * @param assessment the short name (no whitespace) of the assessment
+	 * @return "redirect:/login/" or "redirect:/home/" or "moss/list"
+	 */
 	@RequestMapping(value = "/view/{assessmentName}/")
-	public String viewMoss(ModelMap model, HttpServletRequest request,
+	public String viewMoss(ModelMap model,
 			@PathVariable("assessmentName") String assessment) {
 				
 		PASTAUser user = getUser();
 		if (user == null) {
-			return "redirect:/../";
+			return "redirect:/login/";
 		}
+		if (!user.isTutor()) {
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentName", assessment);
-	
 		model.addAttribute("mossList", mossManager.getMossList(assessment));
 		return "moss/list";
 	}
 	
+	/**
+	 * $PASTAUrl$/moss/view/{assessmentName}/{date}/
+	 * <p>
+	 * View the results of the moss execution.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * ATTRIBUTES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
+	 * 	<tr><td>mossResults</td><td>the {@link pasta.domain.moss.MossResults} for the execution at this time.</td></tr>
+	 * </table>
+	 * 
+	 * JSP:<ul><li>moss/view</li></ul>
+	 * 
+	 * @param model the model being used
+	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param date the date as a string in the following format: yyyy-MM-dd'T'HH-mm-ss
+	 * @return "redirect:/login/" or "redirect:/home/" or "moss/view"
+	 */
 	@RequestMapping(value = "/view/{assessmentName}/{date}/")
-	public String viewMoss(ModelMap model, HttpServletRequest request,
+	public String viewMoss(ModelMap model,
 			@PathVariable("assessmentName") String assessment,
 			@PathVariable("date") String date) {
 				
 		PASTAUser user = getUser();
 		if (user == null) {
-			return "redirect:/../";
+			return "redirect:/login/";
 		}
+		if (!user.isTutor()) {
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("unikey", user);
-	
 		model.addAttribute("mossResults", mossManager.getMossRun(assessment, date));
 		return "moss/view";
 	}
