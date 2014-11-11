@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -248,7 +248,7 @@ public class AssessmentsController {
 	 * 
 	 * @param assessmentName the short name (no whitespace) of the assessment.
 	 * @param model the model used to add attributes
-	 * @return the string representation of what to do. redirect, or load jsp file
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessment"
 	 */
 	@RequestMapping(value = "{assessmentName}/")
 	public String viewAssessment(
@@ -361,7 +361,7 @@ public class AssessmentsController {
 	 * @param form the form for updating the assessment
 	 * @param result the binding result, used for feedback
 	 * @param model the model used
-	 * @return the string representation of what to do. redirect only in this case.
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "{assessmentName}/", method = RequestMethod.POST)
 	public String updateAssessment(
@@ -373,7 +373,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
 			form.setName(assessmentManager.getAssessment(assessmentName).getName());
@@ -398,7 +398,7 @@ public class AssessmentsController {
 	 * 
 	 * @param assessmentName the name of the assessment
 	 * @param request the http request, used for redirection
-	 * @return the string representation of what to do. redirect only in this case.
+	 * @return "redirect:/login/" or "redirect:/home/" or redirect to referrer
 	 */
 	@RequestMapping(value = "{assessmentName}/run/")
 	public String runAssessment(
@@ -410,7 +410,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
 			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
@@ -437,7 +437,7 @@ public class AssessmentsController {
 	 * JSP:
 	 * <ul><li>assessment/viewAll/assessment</li></ul>
 	 * @param model the model used
-	 * @return the string representation of what to do. either a redirect to somewhere or what jsp to load 
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/assessment" 
 	 */
 	@RequestMapping(value = "")
 	public String viewAllAssessment(Model model) {
@@ -446,7 +446,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allAssessments", assessmentManager.getAssessmentList());
@@ -474,7 +474,7 @@ public class AssessmentsController {
 	 * @param form the new assessment form
 	 * @param result the result used for giving feedback
 	 * @param model the model used
-	 * @return the string representation of what to do. redirect only in this case
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newAssessmentAssessment(
@@ -514,7 +514,7 @@ public class AssessmentsController {
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @param form the release form
 	 * @param model the model used
-	 * @return the string representation of what to do. redirect only in this case
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
 	@RequestMapping(value = "release/{assessmentName}/", method = RequestMethod.POST)
 	public String releaseAssessment(
@@ -527,7 +527,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
 
@@ -554,7 +554,7 @@ public class AssessmentsController {
 	 * 
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @param model the model used
-	 * @return the string representation of what to do. redirect only in this case
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
 	@RequestMapping(value = "delete/{assessmentName}/")
 	public String deleteAssessment(
@@ -564,7 +564,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
 			assessmentManager.removeAssessment(assessmentName);
@@ -671,7 +671,7 @@ public class AssessmentsController {
 	 * 
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @param model the model being used.
-	 * @return the string representation of what to do. either a redirect to somewhere or what jsp to load
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessmentStats"
 	 */
 	@RequestMapping(value = "stats/{assessmentName}/")
 	public String statisticsForAssessment(
@@ -681,7 +681,7 @@ public class AssessmentsController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager
 				.getLatestResults(userManager.getUserList());

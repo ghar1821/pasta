@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.web.controller;
-
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,11 +47,15 @@ import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
 /**
- * Controller class. 
+ * Controller class for Authentication functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/login/...
+ * <p>
+ * All users can access this url equally.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-08-15
  *
  */
 @Controller
@@ -74,9 +76,9 @@ public class AuthenitcationController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get the currently logged in user.
+	 * Get or create the currently logged in user.
 	 * 
-	 * @return
+	 * @return the currently used user, null if nobody is logged in.
 	 */
 	public PASTAUser getOrCreateUser() {
 		String username = (String) RequestContextHolder
@@ -85,6 +87,12 @@ public class AuthenitcationController {
 		return getOrCreateUser(username);
 	}
 	
+	/**
+	 * Get or create the user given a username
+	 * 
+	 * @param username the username of the user
+	 * @return the user, null if the username is null.
+	 */
 	public PASTAUser getOrCreateUser(String username) {
 		if (username != null) {
 			return userManager.getOrCreateUser(username);
@@ -92,6 +100,11 @@ public class AuthenitcationController {
 		return null;
 	}
 
+	/**
+	 * Get the currently logged in user.
+	 * 
+	 * @return the currently used user, null if nobody is logged in or user isn't registered.
+	 */
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
@@ -99,6 +112,12 @@ public class AuthenitcationController {
 		return getUser(username);
 	}
 	
+	/**
+	 * Get the user given a username
+	 * 
+	 * @param username the username of the user
+	 * @return the user, null if the username is null or user isn't registered.
+	 */
 	public PASTAUser getUser(String username) {
 		if (username != null) {
 			return userManager.getUser(username);
@@ -110,6 +129,23 @@ public class AuthenitcationController {
 	// LOGIN //
 	// ///////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * $PASTAUrl$/login/ - GET
+	 * <p>
+	 * Serves up the login page.
+	 * 
+	 * If the user is logged in, redirect to home.
+	 * 
+	 * Attributes:
+	 * <table>
+	 * 	<tr><td>LOGINFORM</td><td> the login form </td></tr>
+	 * </table>
+	 * 
+	 * JSP:<ul><li>login</li></ul>
+	 * 
+	 * @param model the model used
+	 * @return "redirect:/home/" or "login"
+	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String get(ModelMap model) {
 		if(getUser() != null){
@@ -117,20 +153,37 @@ public class AuthenitcationController {
 		}
 		
 		model.addAttribute("LOGINFORM", new LoginForm());
-		// Because we're not specifying a logical view name, the
-		// DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
 		return "login";
 	}
 
+	/**
+	 * $PASTAUrl$/login/ - POST
+	 * <p>
+	 * Processes the submitted login form and returns errors if necessary.
+	 * 
+	 * <ol>
+	 * 	<li>Performs a trim on the username.</li>
+	 * 	<li>Validate using the correct authenticator</li>
+	 * 	<li>If the system is set to only allow logging in if the user is registered already, 
+	 * give correct error code (NotAvailable.loginForm.password)</li>
+	 * 	<li>If the authentication has errors or the system is restricting logging 
+	 * in to those who are registered and the user is not registerd, return them to the login form</li>
+	 * 	<li>If everything went fine, set the session attribute with name "user" to the username and redirect to home</li>
+	 * </ol>
+	 * 
+	 * @param loginForm the login form
+	 * @param result the binding result used for feedback
+	 * @return "redirect:/home/" or "login"
+	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm userMsg,
+	public String index(@ModelAttribute(value = "LOGINFORM") LoginForm loginForm,
 			BindingResult result) {
 
-		userMsg.setUnikey(userMsg.getUnikey().trim());
+		loginForm.setUnikey(loginForm.getUnikey().trim());
 		
-		ProjectProperties.getInstance().getAuthenticationValidator().validate(userMsg, result);
+		ProjectProperties.getInstance().getAuthenticationValidator().validate(loginForm, result);
 		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && 
-				userManager.getUser(userMsg.getUnikey()) == null){
+				userManager.getUser(loginForm.getUnikey()) == null){
 			result.rejectValue("password", "NotAvailable.loginForm.password");
 		}
 		if (result.hasErrors()) {
@@ -138,12 +191,19 @@ public class AuthenitcationController {
 		}
 
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
-				userMsg.getUnikey(), RequestAttributes.SCOPE_SESSION);
+				loginForm.getUnikey(), RequestAttributes.SCOPE_SESSION);
 
 		// Use the redirect-after-post pattern to reduce double-submits.
 		return "redirect:/home/";
 	}
 
+	/**
+	 * $PASTAUrl$/login/exit/
+	 * <p>
+	 * Log out. Remove the session attribute with the name "user"
+	 * 
+	 * @return "redirect:../"
+	 */
 	@RequestMapping("exit")
 	public String logout() {
 		RequestContextHolder.currentRequestAttributes().removeAttribute("user",

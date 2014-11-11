@@ -142,7 +142,7 @@ public class AdminController {
 	 * </ul>
 	 * 
 	 * @param model the model
-	 * @return the string identifier to the location of the view.
+	 * @return "redirect:/login" or "user/admin".
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String get(ModelMap model) {
