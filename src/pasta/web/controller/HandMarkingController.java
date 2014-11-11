@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -27,9 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-
 package pasta.web.controller;
-
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,18 +51,26 @@ import pasta.domain.upload.NewHandMarking;
 import pasta.service.HandMarkingManager;
 import pasta.service.UserManager;
 
-@Controller
-@RequestMapping("handMarking/")
 /**
- * Controller class. 
+ * Controller class for Hand marking functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/handMarking/...
+ * <p>
+ * Only teaching staff can access this url.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-08-15
  *
  */
+@Controller
+@RequestMapping("handMarking/")
 public class HandMarkingController {
 
+	/**
+	 * Initializes the codeStyle tag mapping of file endings to 
+	 * javascript tag requirements for syntax highlighting.
+	 */
 	public HandMarkingController() {
 		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
@@ -122,9 +128,8 @@ public class HandMarkingController {
 	/**
 	 * Get the currently logged in user.
 	 * 
-	 * @return
+	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
-
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
@@ -139,7 +144,27 @@ public class HandMarkingController {
 	// HAND MARKING //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	// view a handmarking
+	/**
+	 * $PASTAUrl$/handMarking/{handMarkingName}/
+	 * <p>
+	 * View the hand marking template.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * ATTRIBUTES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
+	 * 	<tr><td>handMarking</td><td>the hand marking object</td></tr>
+	 * </table>
+	 * 
+	 * JSP:<ul><li>assessment/view/handMarks</li></ul>
+	 * 
+	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/handMarks"
+	 */
 	@RequestMapping(value = "{handMarkingName}/")
 	public String viewHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
@@ -148,16 +173,33 @@ public class HandMarkingController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
+		model.addAttribute("unikey", user);
 		model.addAttribute("handMarking",
 				handMarkingManager.getHandMarking(handMarkingName));
-		model.addAttribute("unikey", user);
 		return "assessment/view/handMarks";
 	}
 
-	// update a handmarking
+	/**
+	 * $PASTAUrl/handMarking/{handMarkingName}/ - POST
+	 * <p>
+	 * Update the hand marking template
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor, update the hand marking object using
+	 * {@link pasta.service.HandMarkingManager#updateHandMarking(HandMarking)}
+	 * 
+	 * @param form the updated hand marking object
+	 * @param result the binding result used for feedback
+	 * @param handMarkingName the short name (no whitespace) if the hand marking template
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
+	 */
 	@RequestMapping(value = "{handMarkingName}/", method = RequestMethod.POST)
 	public String updateHandMarking(
 			@ModelAttribute(value = "handMarking") HandMarking form,
@@ -177,7 +219,26 @@ public class HandMarkingController {
 		return "redirect:.";
 	}
 
-	// view a handmarking
+	/**
+	 * $PASTAUrl$/handMarking/
+	 * <p>
+	 * View the list of all hand marking templates in the system.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * ATTRIBTUES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>the user object of the current used object</td></tr>
+	 * 	<tr><td>allHandMarking</td><td>a collection of all of the hand marking templates</td></tr>
+	 * </table>
+	 * 
+	 * JSP:<ul><li>assessment/viewAll/handMarks</li></ul>
+	 * 
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/handMarks"
+	 */
 	@RequestMapping(value = "")
 	public String viewAllHandMarking(Model model) {
 		PASTAUser user = getUser();
@@ -185,15 +246,31 @@ public class HandMarkingController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
-		model.addAttribute("allHandMarking", handMarkingManager.getHandMarkingList());
 		model.addAttribute("unikey", user);
+		model.addAttribute("allHandMarking", handMarkingManager.getHandMarkingList());
 		return "assessment/viewAll/handMarks";
 	}
 
-	// new handmarking
+	/**
+	 * $PASTAUrl$/handMarking/ - POST
+	 * <p>
+	 * Add a new hand marking template
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor, add the hand marking template
+	 * using {@link pasta.service.HandMarkingManager#newHandMarking(NewHandMarking)}
+	 * 
+	 * @param form the new hand marking form
+	 * @param result the binding result used for feedback
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:." or "redirect:/mirror/"
+	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newHandMarking(
 			@ModelAttribute(value = "newHandMarkingModel") NewHandMarking form,
@@ -203,18 +280,34 @@ public class HandMarkingController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
 		// add it to the system
 		if (getUser().isInstructor()) {
 			handMarkingManager.newHandMarking(form);
-			return "redirect:./" + form.getShortName() + "/";
+			return "redirect:/mirror/";
 		}
 		return "redirect:.";
 	}
 
-	// delete a unit test
+	/**
+	 * $PASTAUrl$/handMarking/delete/{handMarkingName}/
+	 * <p>
+	 * Delete a hand marking template.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home
+	 * 
+	 * If the user is an instructor: remove the hand marking template
+	 * using {@link pasta.service.HandMarkingManager#removeHandMarking(String)}
+	 * then redirect to $PASTAUrl$/handMarking/
+	 * 
+	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
+	 */
 	@RequestMapping(value = "delete/{handMarkingName}/")
 	public String deleteHandMarking(
 			@PathVariable("handMarkingName") String handMarkingName, Model model) {
@@ -223,7 +316,7 @@ public class HandMarkingController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
 			handMarkingManager.removeHandMarking(handMarkingName);

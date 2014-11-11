@@ -189,7 +189,7 @@ public class CompetitionController {
 	 * If the user is not a tutor: redirect to home
 	 * 
 	 * If the user is an Instructor: add the competition using 
-	 * {@link pasta.service.CompetitionManager#addCompetition(NewCompetition)
+	 * {@link pasta.service.CompetitionManager#addCompetition(NewCompetition)}
 	 * 
 	 * redirect to mirror
 	 * 
