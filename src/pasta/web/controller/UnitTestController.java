@@ -1,4 +1,4 @@
-/**
+/*
 Copyright (c) 2014, Alex Radu
 All rights reserved.
 
@@ -28,7 +28,6 @@ either expressed or implied, of the PASTA Project.
  */
 
 package pasta.web.controller;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,18 +64,26 @@ import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
-@Controller
-@RequestMapping("unitTest/")
 /**
- * Controller class. 
+ * Controller class for Unit Test functions. 
+ * <p>
+ * Handles mappings of $PASTAUrl$/unitTest/...
+ * <p>
+ * Only teaching staff can access this url.
  * 
- * Handles mappings of a url to a method.
- * 
- * @author Alex
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2013-08-15
  *
  */
+@Controller
+@RequestMapping("unitTest/")
 public class UnitTestController {
 
+	/**
+	 * Initializes the codeStyle tag mapping of file endings to 
+	 * javascript tag requirements for syntax highlighting.
+	 */
 	public UnitTestController() {
 		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
@@ -138,24 +145,49 @@ public class UnitTestController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get the currently logged in user.
+	 * Get or create the currently logged in user.
 	 * 
-	 * @return
+	 * @return the currently used user, null if nobody is logged in.
 	 */
 	public PASTAUser getOrCreateUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
+		return getOrCreateUser(username);
+	}
+	
+	/**
+	 * Get or create the user given a username
+	 * 
+	 * @param username the username of the user
+	 * @return the user, null if the username is null.
+	 */
+	public PASTAUser getOrCreateUser(String username) {
 		if (username != null) {
 			return userManager.getOrCreateUser(username);
 		}
 		return null;
 	}
 
+	/**
+	 * Get the currently logged in user.
+	 * 
+	 * @return the currently used user, null if nobody is logged in or user isn't registered.
+	 */
 	public PASTAUser getUser() {
 		String username = (String) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
+		return getUser(username);
+	}
+	
+	/**
+	 * Get the user given a username
+	 * 
+	 * @param username the username of the user
+	 * @return the user, null if the username is null or user isn't registered.
+	 */
+	public PASTAUser getUser(String username) {
 		if (username != null) {
 			return userManager.getUser(username);
 		}
@@ -167,7 +199,29 @@ public class UnitTestController {
 	// UNIT TEST //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	// view a unit test
+	/**
+	 * $PASTAUrl$/unitTest/{testName}/
+	 * <p>
+	 * View the details of a unit test.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * ATTRIBUTES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} for the logged in user</td></tr>
+	 * 	<tr><td>unitTest</td><td>The {@link pasta.domain.template.UnitTest} for this test</td></tr>
+	 * 	<tr><td>latestResult</td><td>The {@link pasta.domain.result.UnitTestResult} for the execution of the test run of the unit testing code.</td></tr>
+	 * 	<tr><td>node</td><td>The root {@link pasta.domain.FileTreeNode} for the root of the unit test code.</td></tr>
+	 * </table>
+	 * 
+	 * JSP: <ul><li>assessment/view/unitTest</li></ul>
+	 * 
+	 * @param testName the short name (no whitespace) of the test.
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/unitTest"
+	 */
 	@RequestMapping(value = "{testName}/")
 	public String viewUnitTest(@PathVariable("testName") String testName,
 			Model model) {
@@ -176,9 +230,10 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
+		model.addAttribute("unikey", user);
 		model.addAttribute("unitTest", unitTestManager.getUnitTest(testName));
 		model.addAttribute(
 				"latestResult",
@@ -188,11 +243,22 @@ public class UnitTestController {
 				"node",
 				PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testName)
 						.getFileLocation() + "/code"));
-		model.addAttribute("unikey", user);
 		return "assessment/view/unitTest";
 	}
 	
-	// view a unit test
+	/**
+	 * $PASTAUrl$/unitTest/{testName}/download/
+	 * <p>
+	 * Download the unit test code on the machine.
+	 * 
+	 * If the user has not authenticated or is not a tutor: do nothing
+	 * 
+	 * Otherwise create a zip file with the name: $testName$.zip
+	 * 
+	 * @param testName the short name (no whitespace) of the unit test
+	 * @param model the model being used
+	 * @param response the response being used to serve the zip
+	 */
 	@RequestMapping(value = "{testName}/download/")
 	public void downloadUnitTest(@PathVariable("testName") String testName,
 			Model model,HttpServletResponse response) {
@@ -232,7 +298,29 @@ public class UnitTestController {
 
 	}
 	
-	// test a unit test
+	/**
+	 * $PASTAUrl$/unitTest/{testName}/ - POST
+	 * <p>
+	 * Upload some code to test the unit test on the production machine or
+	 * to update the unit tests on the system.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * If the user is an instructor:
+	 * <ul>
+	 * 	<li><b>updating code</b> - done using {@link pasta.service.UnitTestManager#updateUnitTestCode(NewUnitTest)}</li>
+	 * 	<li><b>testing test code</b> - done using {@link pasta.service.UnitTestManager#testUnitTest(Submission, String)}</li> 
+	 * </ul>
+	 * 
+	 * @param testName the short name (no whitespace) of the test
+	 * @param form used for updating the unit test code
+	 * @param subForm used for testing the unit test code
+	 * @param result binding results used for feedback.
+	 * @param model the model being used.
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
+	 */
 	@RequestMapping(value = "{testName}/", method = RequestMethod.POST)
 	public String updateTestCode(@PathVariable("testName") String testName,
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
@@ -243,7 +331,7 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
 		// if submission exists
@@ -261,10 +349,29 @@ public class UnitTestController {
 			unitTestManager.testUnitTest(subForm, testName);
 		}
 
-		return "redirect:.";
+		return "redirect:/mirror/";
 	}
 
-	// view all unit tests
+	/**
+	 * $PASTAUrl$/unitTest/
+	 * <p>
+	 * List all unit tests on the system.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * ATTRIBUTES:
+	 * <table>
+	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} for the currently logged in user.</td></tr>
+	 * 	<tr><td>allUnitTests</td><td>A collection of all {@link pasta.domain.template.UnitTest} of all unit tests on the system.</td></tr>
+	 * </table>
+	 * 
+	 * JSP: <ul><li>assessment/viewAll/unitTest</li></ul>
+	 * 
+	 * @param model the model being used.
+	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/unitTest"
+	 */
 	@RequestMapping(value = "")
 	public String viewUnitTest(Model model) {
 		PASTAUser user = getUser();
@@ -272,7 +379,7 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
 		model.addAttribute("allUnitTests", unitTestManager.getUnitTestList());
@@ -280,8 +387,28 @@ public class UnitTestController {
 		return "assessment/viewAll/unitTest";
 	}
 	
+	/**
+	 * $PASTAUrl$/unitTest/ - POST
+	 * <p>
+	 * Add a new unit test to the system.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * If the user is an instructor:
+	 * <ul>
+	 * 	<li>Check if the name is unique, if it's not reject with UnitTest.New.NameNotUnique</li>
+	 * 	<li>Otherwise, add using {@link pasta.service.UnitTestManager#addUnitTest(NewUnitTest)}</li>
+	 * 	<li>Redirect back using $PASTAUrl$/mirror/</li>
+	 * </ul>
+	 * 
+	 * @param form the new unit test form
+	 * @param result the binding result used for feedback
+	 * @param model the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
+	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	// after submission of a unit test
 	public String home(
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			BindingResult result, Model model) {
@@ -290,7 +417,7 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
 		if (getUser().isInstructor()) {
@@ -317,7 +444,23 @@ public class UnitTestController {
 		return "redirect:/mirror/";
 	}
 
-	// delete a unit test
+	/**
+	 * $PASTAUrl$/unitTest/delete/{testName}/
+	 * <p>
+	 * Delete a unit test from the system.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * If the user is an instructor: delete the unit test using
+	 * {@link pasta.service.UnitTestManager#removeUnitTest(String)}
+	 * then redirect to $PASTAUrl$/unitTest/
+	 * 
+	 * @param testName the short name (no whitespace) of the unit test.
+	 * @param model the model being used.
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
+	 */
 	@RequestMapping(value = "delete/{testName}/")
 	public String deleteUnitTest(@PathVariable("testName") String testName,
 			Model model) {
@@ -326,7 +469,7 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
 			unitTestManager.removeUnitTest(testName);
@@ -334,7 +477,21 @@ public class UnitTestController {
 		return "redirect:../../";
 	}
 
-	// a unit test is marked as tested
+	/**
+	 * $PASTAUrl$/unitTest/tested/{testName}/
+	 * <p>
+	 * Mark a unit test as tested.
+	 * 
+	 * If the user has not authenticated: redirect to login.
+	 * 
+	 * If the user is not a tutor: redirect to home.
+	 * 
+	 * If the user is an instructor: mark the unit test as tested.
+	 * 
+	 * @param testName the short name (no whitespace) of the test
+	 * @param model the model being used.
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../$testName$/"
+	 */
 	@RequestMapping(value = "tested/{testName}/")
 	public String testedUnitTest(@PathVariable("testName") String testName,
 			Model model) {
@@ -343,7 +500,7 @@ public class UnitTestController {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
 			unitTestManager.getUnitTest(testName).setTested(true);
