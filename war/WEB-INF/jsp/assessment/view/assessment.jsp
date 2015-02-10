@@ -82,7 +82,7 @@ either expressed or implied, of the PASTA Project.
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				
@@ -100,7 +100,7 @@ either expressed or implied, of the PASTA Project.
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>

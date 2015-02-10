@@ -1,3 +1,7 @@
+.dragBuffer {
+	height:40px;
+}
+
 .closedAssessment{
 	background-color:#DDD;
 }
