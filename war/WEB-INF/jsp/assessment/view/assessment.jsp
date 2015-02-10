@@ -41,7 +41,7 @@ either expressed or implied, of the PASTA Project.
 	</div>
 </c:if>
 
-<button style="margin-top:1em;float:left;" class="button" onClick="window.location.href=window.location.href+'run/'">Re-Run Assessment</button>
+<button style="margin-top:1em;float:left;" class="button" onclick="window.location.href=window.location.href+'run/'">Re-Run Assessment</button>
 
 <form:form commandName="assessment" enctype="multipart/form-data" method="POST">
 	

@@ -69,20 +69,20 @@ ${assessment.description}
 							<c:when test="${not empty viewedUser}">
 								<c:choose>
 									<c:when test="${ not result.finishedHandMarking }">
-										<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 									</c:when>
 									<c:otherwise>
-										<button onClick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
 							</c:when>
 							<c:otherwise>
 								<c:choose>
 									<c:when test="${ not result.finishedHandMarking }">
-										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 									</c:when>
 									<c:otherwise>
-										<button onClick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
 							</c:otherwise>
@@ -92,19 +92,19 @@ ${assessment.description}
 					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 						<c:choose>
 							<c:when test="${not empty viewedUser}">	
-								<button onClick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								<button onclick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 							</c:when>
 							<c:otherwise>
-								<button onClick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								<button onclick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 							</c:otherwise>
 						</c:choose>
 					</c:if>
 					<c:choose>
 						<c:when test="${not empty viewedUser}">	
-							<button onClick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+							<button onclick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 						</c:when>
 						<c:otherwise>
-							<button onClick="window.location.href='../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+							<button onclick="window.location.href='../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 						</c:otherwise>
 					</c:choose>
 				</c:if>
@@ -287,8 +287,8 @@ ${assessment.description}
 									<th></th> <!-- empty on purpose -->
 									<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
 										<th style="cursor:pointer">
-											${handMarking.handMarking.columnHeader[columnStatus.index].name}</br>
-											${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%</br>
+											${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+											${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%<br />
 										</th>
 									</c:forEach>
 								</tr>
@@ -297,15 +297,15 @@ ${assessment.description}
 								<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
 									<tr>
 										<th>
-											${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
+											${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
 											<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
 										</th>
 										<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
 											<td <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.name] == column.name}" > class="handMarkingHighlight" </c:if>>
 												<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
 													<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-													</br>
-													${handMarking.handMarking.data[column.name][row.name]}</br>
+													<br />
+													${handMarking.handMarking.data[column.name][row.name]}<br />
 												</c:if>
 											</td>
 										</c:forEach>

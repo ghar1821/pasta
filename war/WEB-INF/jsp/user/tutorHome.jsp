@@ -46,7 +46,7 @@ either expressed or implied, of the PASTA Project.
 
 <h6>Submission Instructions</h6>
 <p>
-To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
+To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.<br />
 Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br/>
 
 <c:forEach var="assessmentCategory" items="${assessments}">
@@ -64,7 +64,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<c:if test="${empty results[assessment.shortName]}">
 						0
 					</c:if>
-					/ ${assessment.marks}</br>
+					/ ${assessment.marks}<br />
 				<c:choose>
 					<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
 						${viewedUser.extensions[assessment.shortName]}
@@ -73,16 +73,16 @@ Your zip file should contain the src folder. If you are unsure, please email you
 						${assessment.dueDate}
 					</c:otherwise>
 				</c:choose>
-				</br>
+				<br />
 				<c:choose>
 					<c:when test="${assessment.numSubmissionsAllowed == 0}">
-						&infin; sumbissions allowed </br>
+						&infin; sumbissions allowed <br />
 					</c:when>
 					<c:otherwise>
 						<c:if test="${empty results[assessment.shortName]}">
 							0
 						</c:if>
-						${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made</br>
+						${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
@@ -118,9 +118,10 @@ Your zip file should contain the src folder. If you are unsure, please email you
 							</c:forEach>
 					</c:otherwise>
 				</c:choose>
+				</td>
 				<td style="width:40px;">
 					<button type="button" style="float: left; text-align: center;"
-							onClick="submitAssessment('${assessment.shortName}');">Submit</button>
+							onclick="submitAssessment('${assessment.shortName}');">Submit</button>
 				</td>
 				<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
 					<td style="width:15em;">
@@ -135,7 +136,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<td style="width:40px;">
 						<div style="float: left; width:100%">
 						<button type="button" style="float: left; text-align: center;"
-							onClick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+							onclick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
 						</div>
 					</td>
 				</c:if>
@@ -148,7 +149,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<div style="font-size:150%">
-			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br></br>
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
 		</div>
 		<form:input accept="application/zip" type="file" path="file"/>
 		<form:input type="hidden" path="assessment" value=""/>

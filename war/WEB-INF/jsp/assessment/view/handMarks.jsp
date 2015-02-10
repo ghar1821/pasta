@@ -51,7 +51,7 @@ th, td{
 				<th class="notdraggable"></th> <!-- empty on purpose -->
 				<c:forEach items="${handMarking.columnHeader}" varStatus="columnStatus">
 					<th>
-						<form:input type="text" path="columnHeader[${columnStatus.index}].name"/></br>
+						<form:input type="text" path="columnHeader[${columnStatus.index}].name"/><br />
 						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Column</div>
 						<div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
@@ -63,7 +63,7 @@ th, td{
 			<c:forEach var="row" items="${handMarking.rowHeader}" varStatus="rowStatus">
 				<tr>
 					<th>
-						<form:input type="text" path="rowHeader[${rowStatus.index}].name"/></br>
+						<form:input type="text" path="rowHeader[${rowStatus.index}].name"/><br />
 						<form:input type="text" path="rowHeader[${rowStatus.index}].weight"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Row</div>
 						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
@@ -73,8 +73,8 @@ th, td{
 							<c:choose>
 								<c:when test="${not empty handMarking.data[column.name][row.name] or handMarking.data[column.name][row.name] == \"\"}">
 									<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-									</br>
-									<form:textarea style="height:90%; width:95%" path="data['${column.name}']['${row.name}']"/></br>
+									<br />
+									<form:textarea style="height:90%; width:95%" path="data['${column.name}']['${row.name}']"/><br />
 									<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Cell</div>
 									<div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Comfirm</div>
 								</c:when>
@@ -92,8 +92,8 @@ th, td{
 	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
 </form:form>
 
-<button onClick="addColumn()">More columns</button>
-<button onClick="addRow()">More rows</button>
+<button onclick="addColumn()">More columns</button>
+<button onclick="addRow()">More rows</button>
 
 <script>
 	function addColumn(){
@@ -102,13 +102,13 @@ th, td{
 		for (var i=0; i<tblHeadObj.rows.length; i++) {
 			var newTH = document.createElement('th');
 			tblHeadObj.rows[i].appendChild(newTH);
-			newTH.innerHTML = '<input id="columnHeader'+(table.rows[0].cells.length-2)+'.name" name="columnHeader['+(table.rows[0].cells.length-2)+'].name" type="text" type="text" value=""/></br><input id="columnHeader'+(table.rows[0].cells.length-2)+'.weight" name="columnHeader['+(table.rows[0].cells.length-2)+'].weight" type="text" type="text" value=""/><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Column</div><div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>'
+			newTH.innerHTML = '<input id="columnHeader'+(table.rows[0].cells.length-2)+'.name" name="columnHeader['+(table.rows[0].cells.length-2)+'].name" type="text" type="text" value=""/><br /><input id="columnHeader'+(table.rows[0].cells.length-2)+'.weight" name="columnHeader['+(table.rows[0].cells.length-2)+'].weight" type="text" type="text" value=""/><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Column</div><div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>'
 		}
 
 		var tblBodyObj = document.getElementById("handMarkingTable").tBodies[0];
 		for (var i=0; i<tblBodyObj.rows.length; i++) {
 			var newCell = tblBodyObj.rows[i].insertCell(-1);
-			newCell.innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
+			newCell.innerHTML = '<span>???</span><br /><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea><br /><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
 		}
 	}
 	
@@ -142,10 +142,10 @@ th, td{
 		var newTH = document.createElement('th');
 		table.rows[table.rows.length-1].appendChild(newTH);
 		// -2 since the top corner should not be counter and length is 1 greater than index
-		newTH.innerHTML = '<input id="rowHeader'+(table.rows.length-2)+'.name" name="rowHeader['+(table.rows.length-2)+'].name" type="text" type="text" value=""/></br><input id="rowHeader'+(table.rows.length-2)+'.weight" name="rowHeader['+(table.rows.length-2)+'].weight" type="text" type="text" value=""/><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Row</div><div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>'
+		newTH.innerHTML = '<input id="rowHeader'+(table.rows.length-2)+'.name" name="rowHeader['+(table.rows.length-2)+'].name" type="text" type="text" value=""/><br /><input id="rowHeader'+(table.rows.length-2)+'.weight" name="rowHeader['+(table.rows.length-2)+'].weight" type="text" type="text" value=""/><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Row</div><div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>'
 		for (var i=1; i<table.rows[0].cells.length; i++) {
 			var newCell = table.rows[table.rows.length-1].insertCell(i);
-			newCell.innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
+			newCell.innerHTML = '<span>???</span><br /><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea><br /><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
 		}
 	}
 	
@@ -197,7 +197,7 @@ th, td{
 	
 	function newCell(row, column){
 		var table=document.getElementById("handMarkingTable");
-		table.rows[row].cells[column].innerHTML = '<span>???</span></br><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea></br><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
+		table.rows[row].cells[column].innerHTML = '<span>???</span><br /><textarea id="data\'???\'\'???\'" name="data[\'???\'][\'???\']" style="height:90%; width:95%"></textarea><br /><div class="button" style="text-align: center; " onclick="$(this).slideToggle(\'fast\').next().slideToggle(\'fast\')">Delete Cell</div><div class="button" style="display:none; text-align: center; " onclick="deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex)" onmouseout="$(this).slideToggle(\'fast\').prev().slideToggle(\'fast\');">Comfirm</div>';
 		updateCells();
 	}
 	

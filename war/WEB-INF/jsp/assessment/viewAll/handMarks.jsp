@@ -58,7 +58,7 @@ either expressed or implied, of the PASTA Project.
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<button id="comfirmDeleteButton" onClick="">Confirm Deletion</button>
+	<button id="comfirmDeleteButton" onclick="">Confirm Deletion</button>
 </div>
 
 <div id="newHandMarking" >

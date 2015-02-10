@@ -56,8 +56,8 @@ either expressed or implied, of the PASTA Project.
 
 <h6>Submission Instructions</h6>
 <p>
-To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.</br>
-Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.</br>
+To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.<br />
+Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br />
 <div class="ui-state-error" style="font-size:1.5em">
 <i><b>NOTE: These marks are provisional, your final marks will appear on eLearning and may differ from these marks.</b></i>
 </div>
@@ -116,7 +116,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 								<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
 							</c:otherwise>
 						</c:choose>
-						/ ${assessment.marks}</br>
+						/ ${assessment.marks}<br />
 					<c:choose>
 						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
 							${viewedUser.extensions[assessment.shortName]}
@@ -125,16 +125,16 @@ Your zip file should contain the src folder. If you are unsure, please email you
 							${assessment.dueDate}
 						</c:otherwise>
 					</c:choose>
-					</br>
+					<br />
 					<c:choose>
 						<c:when test="${assessment.numSubmissionsAllowed == 0}">
-							&infin; sumbissions allowed </br>
+							&infin; sumbissions allowed <br />
 						</c:when>
 						<c:otherwise>
 							<c:if test="${empty results[assessment.shortName]}">
 								0
 							</c:if>
-							${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made</br>
+							${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
 						</c:otherwise>
 					</c:choose>
 					<c:choose>
@@ -181,14 +181,14 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					</c:choose>
 					<td style="width:40px;">
 						<button type="button" style="float: left; text-align: center;"
-								onClick="submitAssessment('${assessment.shortName}');">Submit</button>
+								onclick="submitAssessment('${assessment.shortName}');">Submit</button>
 					</td>
 					<c:if test="${ not empty viewedUser}">
 						<!-- tutor is viewing a user and they may give out an extension -->
 						<td>
 							<div style="float: left; width:100%">
 							<button type="button" style="float: left; text-align: center;"
-								onClick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+								onclick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
 							</div>
 						</td>
 					</c:if>
@@ -202,7 +202,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<div style="font-size:150%">
-			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> </br></br>
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
 		</div>
 		<form:input accept="application/zip" type="file" path="file"/>
 		<form:input type="hidden" path="assessment" value=""/>
@@ -225,7 +225,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		<input type="text" id="simpleDueDate" name="simpleDueDate" />
 		<div style="display:none" id="assessmentName"></div>
 		
-		<button id="confirm" onClick="confirmExtension()">Confirm</button>
+		<button id="confirm" onclick="confirmExtension()">Confirm</button>
 	</div>
 	<script>
 		function giveExtension(assessment, dueDate){

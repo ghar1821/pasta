@@ -123,16 +123,16 @@ No tests
 </c:when>
 					<c:otherwise>
 						<c:if test="${fn:length(assessment.unitTests) > 0}">
-${fn:length(assessment.unitTests)} Unit Tests </br>
+${fn:length(assessment.unitTests)} Unit Tests <br />
 						</c:if>
 						<c:if test="${fn:length(assessment.secretUnitTests) > 0}">
-${fn:length(assessment.secretUnitTests)} Secret Unit Tests </br>
+${fn:length(assessment.secretUnitTests)} Secret Unit Tests <br />
 						</c:if>
 						<c:if test="${fn:length(assessment.handMarking) > 0}">
-${fn:length(assessment.handMarking)} Hand marking templates </br>
+${fn:length(assessment.handMarking)} Hand marking templates <br />
 						</c:if>
 						<c:if test="${fn:length(assessment.competitions) > 0}">
-${fn:length(assessment.competitions)} Competitions </br>
+${fn:length(assessment.competitions)} Competitions <br />
 						</c:if>
 					</c:otherwise>
 				</c:choose></td>
@@ -242,7 +242,7 @@ ${fn:length(assessment.competitions)} Competitions </br>
 	<span class="button bClose"> <span><b>X</b></span>
 	</span>
 	<h1>Are you sure you want to do that?</h1>
-	<button id="comfirmButton" onClick="">Confirm</button>
+	<button id="comfirmButton" onclick="">Confirm</button>
 </div>
 
 <script>

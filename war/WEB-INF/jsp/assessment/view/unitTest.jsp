@@ -106,9 +106,9 @@ either expressed or implied, of the PASTA Project.
 		<c:forEach var="testCase" items="${latestResult.testCases}">
 				<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
 		</c:forEach>
-		</br>
-		</br>
-		<button id="acceptUnitTest" onClick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
+		<br />
+		<br />
+		<button id="acceptUnitTest" onclick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 			<c:forEach var="testCase" items="${latestResult.testCases}">
@@ -130,7 +130,7 @@ either expressed or implied, of the PASTA Project.
 		<span><b>X</b></span>
 	</span>
 	<h1>Are you sure you want to do that?</h1>
-	<button id="comfirmButton" onClick="">Confirm</button>
+	<button id="comfirmButton" onclick="">Confirm</button>
 </div>
 
 <script>

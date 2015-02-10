@@ -115,8 +115,8 @@ th, td{
 								<th></th> <!-- empty on purpose -->
 								<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
 									<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
-										${handMarking.handMarking.columnHeader[columnStatus.index].name}</br>
-										${handMarking.handMarking.columnHeader[columnStatus.index].weight}</br>
+										${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+										${handMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
 									</th>
 								</c:forEach>
 							</tr>
@@ -126,15 +126,15 @@ th, td{
 								<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
 								<tr>
 									<th>
-										${handMarking.handMarking.rowHeader[rowStatus.index].name}</br>
+										${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
 										${handMarking.handMarking.rowHeader[rowStatus.index].weight}
 									</th>
 									<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
 										<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
 											<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
 												<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-												</br>
-												${handMarking.handMarking.data[column.name][row.name]}</br>
+												<br />
+												${handMarking.handMarking.data[column.name][row.name]}<br />
 												<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.name}']" value="${column.name}"/>
 											</c:if>
 										</td>

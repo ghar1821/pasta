@@ -60,8 +60,8 @@ either expressed or implied, of the PASTA Project.
 		<td>${allAssessments[assessment].name}</td>
 		<td>${allAssessments[assessment].dueDate}</td>
 		<td>${allAssessments[assessment].result}</td>
-		<td style="width: 17px; height: 17px"><span onClick="document.getElementById('assessmentName').value = '${allAssessments[assessment].name}';popup();" title="Submit" class="ui-icon ui-icon-arrowreturnthick-1-e" style="cursor: pointer; display: block; width: 16px; height: 16px; float:right"></span></td>
-		<td style="width: 17px; height: 17px"><span onClick="window.location.href=window.location.href+'/submission/${allAssessments[assessment].name}'" class="ui-icon ui-icon-script" title="History" style="cursor: pointer; display: block; width: 16px; height: 16px; float:right"></span></td>
+		<td style="width: 17px; height: 17px"><span onclick="document.getElementById('assessmentName').value = '${allAssessments[assessment].name}';popup();" title="Submit" class="ui-icon ui-icon-arrowreturnthick-1-e" style="cursor: pointer; display: block; width: 16px; height: 16px; float:right"></span></td>
+		<td style="width: 17px; height: 17px"><span onclick="window.location.href=window.location.href+'/submission/${allAssessments[assessment].name}'" class="ui-icon ui-icon-script" title="History" style="cursor: pointer; display: block; width: 16px; height: 16px; float:right"></span></td>
 		</tr>
 	</c:forEach>
 	</table>
@@ -72,7 +72,7 @@ either expressed or implied, of the PASTA Project.
 </c:if>
 
 <div id="dialog-box" style="display:none; width:350px; height:70px; position:fixed; padding:10px"">
-	<div onClick="popdown()" style="width: 20px; height: 20px; float:left; position: absolute; right:0em; top:0em; background:#CA5555; -moz-border-top-right-radius: 5px;-webkit-border-top-right-radius: 5px;-moz-border-bottom-left-radius: 5px;-webkit-border-bottom-left-radius: 5px;">	
+	<div onclick="popdown()" style="width: 20px; height: 20px; float:left; position: absolute; right:0em; top:0em; background:#CA5555; -moz-border-top-right-radius: 5px;-webkit-border-top-right-radius: 5px;-moz-border-bottom-left-radius: 5px;-webkit-border-bottom-left-radius: 5px;">	
 		<span class="ui-icon ui-icon-closethick" title="Exit" style="cursor: pointer; display: block; width: 16px; height: 16px; float:left;background-image: url(../static/styles/jquery/smoothness/images/ui-icons_ffffff_256x240.png);"></span>
 	</div>
 	<div style="position: absolute">
@@ -81,7 +81,7 @@ either expressed or implied, of the PASTA Project.
     	<form:input type="file" path="file" />
     	<c:choose>
     		<c:when test="${user.tutor}">
-    			</br>STUDENT: 
+    			<br />STUDENT: 
     			<form:input type="text" path="unikey" value="${user.unikey}"/>
     		</c:when>
     		<c:otherwise>

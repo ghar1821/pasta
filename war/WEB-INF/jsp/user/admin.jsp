@@ -90,7 +90,7 @@ either expressed or implied, of the PASTA Project.
 					</c:otherwise>
 				</c:choose>
 			</table>
-			<button type="button" onClick="cloneRowAbove()">Add new Row</button><br/>
+			<button type="button" onclick="cloneRowAbove()">Add new Row</button><br/>
 		</div>
 		<button type="submit" >Change Authentication System</button>
 	</form>
@@ -119,8 +119,8 @@ either expressed or implied, of the PASTA Project.
 			</c:forEach>
 		</table>
 		
-		<button id="tutorUpdate" onClick="popup(true, false);">Update</button>
-		<button id="tutorReplace" onClick="popup(true, true);">Replace</button>
+		<button id="tutorUpdate" onclick="popup(true, false);">Update</button>
+		<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
 		
 	
 	<h1>Students</h1>
@@ -144,8 +144,8 @@ either expressed or implied, of the PASTA Project.
 			</c:forEach>
 		</table>
 		
-		<button id="studentUpdate" onClick="popup(false, false);">Update</button>
-		<button id="studentReplace" onClick="popup(false, true);">Replace</button>
+		<button id="studentUpdate" onclick="popup(false, false);">Update</button>
+		<button id="studentReplace" onclick="popup(false, true);">Replace</button>
 		
 		<div id="comfirmPopup">
 			<span class="button bClose"> <span><b>X</b></span>

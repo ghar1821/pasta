@@ -33,8 +33,8 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <h1>${latestSubmission.name}</h1>
-Due: ${latestSubmission.dueDate}</br>
-Instructions: ${latestSubmission.instructions}</br>
+Due: ${latestSubmission.dueDate}<br />
+Instructions: ${latestSubmission.instructions}<br />
 
 <c:if test="${not empty latestSubmission.result}">
 	<c:if test="${user.tutor}">
@@ -42,9 +42,9 @@ Instructions: ${latestSubmission.instructions}</br>
 	</c:if>
 	<h2> Latest submission: </h2>
 	Submitted At: ${latestSubmission.submissionDate}
-	</br>
+	<br />
 	${latestSubmission.result}
-	</br>
+	<br />
 	${latestSubmission.feedback}
 	${latestSubmission.junitTable}
 	
@@ -53,7 +53,7 @@ Instructions: ${latestSubmission.instructions}</br>
 		<c:forEach var="assessment" items="${submissionHistory}">
 			<h4>${assessment.submissionDate}</h4>
 			${assessment.result}
-			</br>
+			<br />
 			${assessment.feedback}
 			${assessment.junitTable}
 		</c:forEach>
