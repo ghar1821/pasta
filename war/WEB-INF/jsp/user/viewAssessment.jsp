@@ -165,10 +165,8 @@ ${assessment.description}
 														<c:otherwise>
 															<td><span class="pastaUnitTestResult pastaUnitTestResultSecret">hidden</span></td>
 															<td style="text-align:left;">???</td>
-															<td>${testCase.time}</td>
-															<td>
-																???
-															</td>
+															<td>???</td>
+															<td>???</td>
 														</c:otherwise>
 													</c:choose>
 												</c:when>
