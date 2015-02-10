@@ -160,19 +160,19 @@ Your zip file should contain the src folder. If you are unsure, please email you
 										<c:choose>
 											<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.shortName] or viewedUser.extensions[assessment.shortName] lt now))}">
 												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 												</c:forEach>
 											</c:when>
 											<c:otherwise>
 												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret" title="???">&nbsp</div>
+													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret" title="???">&nbsp;</div>
 												</c:forEach>
 											</c:otherwise>
 										</c:choose>
 									</c:when>
 									<c:otherwise>
 										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 										</c:forEach>
 									</c:otherwise>
 								</c:choose>

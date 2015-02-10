@@ -126,19 +126,19 @@ ${assessment.description}
 									<c:choose>
 										<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.shortName] or viewedUser.extensions[assessment.shortName] lt now))}">
 											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult secret ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+												<div class="pastaUnitTestBoxResult secret ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 											</c:forEach>
 										</c:when>
 										<c:otherwise>
 											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult secret" title="???">&nbsp</div>
+												<div class="pastaUnitTestBoxResult secret" title="???">&nbsp;</div>
 											</c:forEach>
 										</c:otherwise>
 									</c:choose>
 								</c:when>
 								<c:otherwise>
 									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp</div>
+										<div class="pastaUnitTestBoxResult ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 									</c:forEach>
 								</c:otherwise>
 							</c:choose>
