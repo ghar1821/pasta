@@ -114,7 +114,7 @@ ${assessment.description}
 					<h5>Compile Errors</h5>
 					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
 						<pre>
-							${result.compilationError}
+							<c:out value="${result.compilationError}" escapeXml="true"/>
 						</pre>
 					</div>
 				</c:when>
@@ -159,7 +159,7 @@ ${assessment.description}
 															<td style="text-align:left;">Secret - ${testCase.testName}</td>
 															<td>${testCase.time}</td>
 															<td>
-																<pre>${testCase.type} - ${fn:replace(fn:replace(testCase.testMessage, '>', '&gt;'), '<', '&lt;')}</pre>
+																<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
 															</td>
 														</c:when>
 														<c:otherwise>
@@ -175,7 +175,7 @@ ${assessment.description}
 													<td style="text-align:left;">${testCase.testName}</td>
 													<td>${testCase.time}</td>
 													<td>
-														<pre>${testCase.type} - ${fn:replace(fn:replace(testCase.testMessage, '>', '&gt;'), '<', '&lt;')}</pre>
+														<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
 
 													</td>
 												</c:otherwise>
