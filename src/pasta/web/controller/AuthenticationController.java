@@ -60,7 +60,7 @@ import pasta.util.ProjectProperties;
  */
 @Controller
 @RequestMapping("login/")
-public class AuthenitcationController {
+public class AuthenticationController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
