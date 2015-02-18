@@ -30,14 +30,20 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
@@ -129,10 +135,7 @@ public class UnitTestManager {
 			(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
 
 			// generate unitTestProperties
-			PrintStream out = new PrintStream(thisTest.getFileLocation()
-					+ "/unitTestProperties.xml");
-			out.print(thisTest);
-			out.close();
+      saveUnitTestXML(thisTest);
 
 		} catch (Exception e) {
 			(new File(thisTest.getFileLocation())).delete();
@@ -162,26 +165,33 @@ public class UnitTestManager {
 			(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
 
 			// generate unitTestProperties
-			PrintStream out = new PrintStream(thisTest.getFileLocation()
-					+ "/unitTestProperties.xml");
-			out.print(thisTest);
-			out.close();
+      saveUnitTestXML(thisTest);
 
 			// unzip the uploaded code into the code folder. (if exists)
 			if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
 				// unpack
 				newTest.getFile().getInputStream().close();
-				newTest.getFile().transferTo(
+        if (!newTest.getFile().getOriginalFilename().endsWith(".java")) {
+          newTest.getFile().transferTo(
 						new File(thisTest.getFileLocation() + "/code/"
 								+ newTest.getFile().getOriginalFilename()));
-				PASTAUtil.extractFolder(thisTest.getFileLocation()
-						+ "/code/" + newTest.getFile().getOriginalFilename());
-				try{
-					FileUtils.forceDelete(new File(thisTest.getFileLocation()
-							+ "/code/" + newTest.getFile().getOriginalFilename()));
-				} catch (Exception e) {
-					logger.error("Could not delete the zip for "
-							+ thisTest.getName());
+  				PASTAUtil.extractFolder(thisTest.getFileLocation()
+  						+ "/code/" + newTest.getFile().getOriginalFilename());
+  				try{
+  					FileUtils.forceDelete(new File(thisTest.getFileLocation()
+  							+ "/code/" + newTest.getFile().getOriginalFilename()));
+  				} catch (Exception e) {
+  					logger.error("Could not delete the zip for "
+  							+ thisTest.getName());
+  				}
+				} else {
+		      (new File(thisTest.getFileLocation() + "/code/test/")).mkdirs();
+		      String newTestPath = thisTest.getFileLocation() + "/code/test/"
+              + newTest.getFile().getOriginalFilename();
+          newTest.getFile().transferTo(
+              new File(newTestPath));
+          generateBuildXML(newTest.getFile().getOriginalFilename(),
+              thisTest.getFileLocation() + "/code/build.xml");
 				}
 			}
 
@@ -197,7 +207,21 @@ public class UnitTestManager {
 		}
 	}
 	
-	/**
+	private void generateBuildXML(String newTestFileName, String newTestFileXML) throws IOException {
+    String testName = newTestFileName.substring(newTestFileName.lastIndexOf('/'),
+        newTestFileName.lastIndexOf(".java"));
+    String newXML = getDefaultBuildXML().replaceAll("\\$\\$TESTNAME\\$\\$", testName);
+    Files.write(Paths.get(newTestFileXML), newXML.getBytes());
+  }
+	
+	private String getDefaultBuildXML() throws IOException {
+    File templateBuildXML = new File(ProjectProperties.getInstance()
+        .getProjectLocation()+"/template/unitTest/build.xml");
+    Charset charset = StandardCharsets.UTF_8;
+    return new String(Files.readAllBytes(templateBuildXML.toPath()), charset);
+	}
+
+  /**
 	 * Helper method
 	 * 
 	 * @see pasta.repository.AssessmentDAO#removeUnitTest(String)
@@ -357,10 +381,7 @@ public class UnitTestManager {
 				(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
 	
 				// generate unitTestProperties
-				PrintStream out = new PrintStream(thisTest.getFileLocation()
-						+ "/unitTestProperties.xml");
-				out.print(thisTest);
-				out.close();
+				saveUnitTestXML(thisTest);
 				
 				// unzip the uploaded code into the code folder. (if exists)
 				if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
@@ -393,6 +414,13 @@ public class UnitTestManager {
 		else{
 			addUnitTest(newTest);
 		}
+	}
+	
+	protected void saveUnitTestXML(UnitTest test) throws FileNotFoundException {
+    PrintStream out = new PrintStream(test.getFileLocation()
+        + "/unitTestProperties.xml");
+    out.print(test);
+    out.close();
 	}
 	
 }
