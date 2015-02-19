@@ -208,7 +208,9 @@ public class UnitTestManager {
 	}
 	
 	private void generateBuildXML(String newTestFileName, String newTestFileXML) throws IOException {
-    String testName = newTestFileName.substring(newTestFileName.lastIndexOf('/'),
+	  int startPos = newTestFileName.lastIndexOf('/');
+	  startPos = 0 > startPos ? 0 : startPos;
+    String testName = newTestFileName.substring(startPos,
         newTestFileName.lastIndexOf(".java"));
     String newXML = getDefaultBuildXML().replaceAll("\\$\\$TESTNAME\\$\\$", testName);
     Files.write(Paths.get(newTestFileXML), newXML.getBytes());
