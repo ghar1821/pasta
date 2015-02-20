@@ -43,20 +43,20 @@ either expressed or implied, of the PASTA Project.
 	<form:form method="post" commandName="LOGINFORM" autocomplete="off">
 		<div>
 			<form:label for="unikey" path="unikey" cssClass="required">UniKey <span class="star-required">*</span></form:label>
-			<form:input path="unikey" size="50"  type="text" name="unikey" id="unikey" />
+			<form:input path="unikey" size="50" />
 			<form:errors path="unikey" cssClass="susk-form-errors" element="div" />
 			<script>document.getElementById('unikey').focus()</script>
 		</div>
 		<div class="susk-form-clear"></div>
 		<div>
 			<form:label path="password" cssClass="required">Password <span class="star-required">*</span></form:label> 
-			<form:password path="password" size="50" name="password" id="password" />
+			<form:password path="password" size="50" />
 			<form:errors path="password" cssClass="susk-form-errors" element="div" />
 		</div>
 		<div class="susk-form-clear"></div>
 		
 		<div style="text-align:left">
-			<button type="submit" style= "margin-left: 17.5em; padding-left: 1em;padding-right: 1em;"id="Submit" name="Submit">Login</button>
+			<button type="submit" style= "margin-left: 17.5em; padding-left: 1em;padding-right: 1em;" id="Submit" name="Submit">Login</button>
 		</div>
 		<div class="susk-form-clear"></div>
 	</form:form>

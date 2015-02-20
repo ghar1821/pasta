@@ -5,12 +5,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
-<html>
+<html lang="en-AU">
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta http-equiv="Content-Script-Type" content="text/javascript" />
-		<meta http-equiv="Content-Style-Type" content="text/css" />
-		<meta http-equiv="Content-Language" content="en" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="Author" content="Alex Radu" />
 		<title><spring:message code="UOS" /> </title>
 		
@@ -145,7 +142,7 @@
 					</div>
 					<div id="tabunderscore"></div>
 					<!-- start mid -->
-					<div class="clearfix" id="mid" />
+					<div class="clearfix" id="mid"></div>
 					<!-- start content -->
 					<div class="nomenu nofeature" id="content">
 						<div id="w4">
