@@ -46,7 +46,7 @@ package pasta.domain.result;
  * @since 2012-11-13
  * 
  */
-public class UnitTestCaseResult implements Comparable{
+public class UnitTestCaseResult implements Comparable<UnitTestCaseResult> {
 	private String testName;
 	private String testResult;
 	private String testMessage;
@@ -92,8 +92,7 @@ public class UnitTestCaseResult implements Comparable{
 	}
 	
 	@Override
-	public int compareTo(Object o) {
-		UnitTestCaseResult target = (UnitTestCaseResult)(o);
+	public int compareTo(UnitTestCaseResult target) {
 		return testName.compareTo(target.getTestName());
 	}
 }

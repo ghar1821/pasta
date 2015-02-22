@@ -37,7 +37,7 @@ package pasta.domain.result;
  * @since 2014-01-29
  * 
  */
-public class PASTACompUserResult implements Comparable{
+public class PASTACompUserResult implements Comparable<PASTACompUserResult> {
 
 	private String username;
 	private Double percentage;
@@ -56,8 +56,8 @@ public class PASTACompUserResult implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		return ((PASTACompUserResult)o).getPercentage().compareTo(percentage); 
+	public int compareTo(PASTACompUserResult target) {
+		return target.getPercentage().compareTo(percentage); 
 	}
 
 }

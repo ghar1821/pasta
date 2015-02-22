@@ -42,7 +42,7 @@ import pasta.domain.template.UnitTest;
  * @since 2012-11-13
  * 
  */
-public class UnitTestResult implements Comparable{
+public class UnitTestResult implements Comparable<UnitTestResult> {
 	private UnitTest test;
 	private boolean secret;
 	private String compileErrors;
@@ -104,8 +104,7 @@ public class UnitTestResult implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		UnitTestResult target = (UnitTestResult)(o);
+	public int compareTo(UnitTestResult target) {
 		return test.getName().compareTo(target.getTest().getName());
 	}
 	
