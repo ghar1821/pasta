@@ -49,9 +49,9 @@ import pasta.domain.template.Tuple;
  * @since 2012-11-13
  * 
  */
-public class HandMarkingResult implements Comparable{
+public class HandMarkingResult implements Comparable <HandMarkingResult>{
 	private Map<String, String> result = LazyMap.decorate(new TreeMap<String, String>(), 
-			FactoryUtils.instantiateFactory(TreeMap.class));
+			FactoryUtils.instantiateFactory(String.class));
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -112,8 +112,7 @@ public class HandMarkingResult implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		HandMarkingResult target = (HandMarkingResult)(o);
+	public int compareTo(HandMarkingResult target) {
 		return markingTemplate.getName().compareTo(target.getMarkingTemplate().getName());
 	}
 	

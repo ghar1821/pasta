@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -71,7 +70,7 @@ public class HandMarking {
 	private List<Tuple> rowHeader = LazyList.decorate(new ArrayList<Tuple>(),
 			FactoryUtils.instantiateFactory(Tuple.class));
 	private Map<String, Map<String, String>> data = LazyMap.decorate(new TreeMap<String, TreeMap<String, String>>(), 
-			FactoryUtils.instantiateFactory(HashMap.class));
+			FactoryUtils.instantiateFactory(TreeMap.class));
 	
 	private Map<String, Double> columnHeaderMap = new TreeMap<String, Double>();
 
