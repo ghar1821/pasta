@@ -227,7 +227,7 @@ either expressed or implied, of the PASTA Project.
 				<c:forEach var="stream" items="${tutorialByStream}">
 					<c:if test="${!empty stream.key }">
 						<li class="list">
-							<form:input type="checkbox"	path="releasedClasses" value="" />${stream.key}
+							<form:checkbox path="releasedClasses" value="" />${stream.key}
 							<ul>
 								<c:forEach var="tutorial" items="${stream.value}">
 									<c:if test="${not empty tutorial}">
@@ -236,11 +236,11 @@ either expressed or implied, of the PASTA Project.
 										<c:set var="classes" value="${stream.key }.${tutorial}"/>
 										<c:choose>
 											<c:when test="${(not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))}">
-												<form:input path="releasedClasses" type="checkbox" checked="checked" value="${stream.key }.${tutorial}" />
+												<form:checkbox path="releasedClasses" checked="checked" value="${stream.key }.${tutorial}" />
 												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
 											</c:when>
 											<c:otherwise>
-												<form:input path="releasedClasses" type="checkbox" value="${stream.key }.${tutorial}" />
+												<form:checkbox path="releasedClasses" value="${stream.key }.${tutorial}" />
 												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
 											</c:otherwise>
 										</c:choose>
