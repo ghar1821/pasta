@@ -517,11 +517,13 @@ public class AssessmentDAO {
 
 			// load properties
 			for (String name : allUnitTestNames) {
-				UnitTest test = getUnitTestFromDisk(allTestLocation + "/"
-						+ name);
-				if (test != null) {
-					allUnitTests.put(name, test);
-				}
+			  if ((new File(name)).isDirectory()) {
+  				UnitTest test = getUnitTestFromDisk(allTestLocation + "/"
+  						+ name);
+  				if (test != null) {
+  					allUnitTests.put(name, test);
+  				}
+			  }
 			}
 		}
 
