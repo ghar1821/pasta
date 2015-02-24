@@ -517,7 +517,7 @@ public class AssessmentDAO {
 
 			// load properties
 			for (String name : allUnitTestNames) {
-			  if ((new File(name)).isDirectory()) {
+			  if ((new File(allTestLocation + "/" + name)).isDirectory()) {
   				UnitTest test = getUnitTestFromDisk(allTestLocation + "/"
   						+ name);
   				if (test != null) {
