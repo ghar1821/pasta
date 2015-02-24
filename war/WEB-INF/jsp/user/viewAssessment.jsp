@@ -138,7 +138,7 @@ ${assessment.description}
 								</c:when>
 								<c:otherwise>
 									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
+										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 									</c:forEach>
 								</c:otherwise>
 							</c:choose>
