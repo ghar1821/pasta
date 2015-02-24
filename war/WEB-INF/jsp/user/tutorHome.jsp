@@ -50,7 +50,9 @@ To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.<br />
 Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br/>
 
 <c:forEach var="assessmentCategory" items="${assessments}">
-	<h2>${assessmentCategory.key}</h2>
+	<c:if test="${not empty assessmentCategory.key}">
+		<h2>${assessmentCategory.key}</h2>
+	</c:if>
 	<table class="pastaQuickFeedback">
 		<c:forEach var="assessment" items="${assessmentCategory.value}">
 			<tr
@@ -76,7 +78,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 				<br />
 				<c:choose>
 					<c:when test="${assessment.numSubmissionsAllowed == 0}">
-						&infin; sumbissions allowed <br />
+						&infin; submissions allowed <br />
 					</c:when>
 					<c:otherwise>
 						<c:if test="${empty results[assessment.shortName]}">
@@ -151,7 +153,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		<div style="font-size:150%">
 			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
 		</div>
-		<form:input accept="application/zip" type="file" path="file"/>
+		<input accept="application/zip" type="file" />
 		<form:input type="hidden" path="assessment" value=""/>
 	   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
    	</form:form>
