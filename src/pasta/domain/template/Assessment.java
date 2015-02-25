@@ -123,7 +123,7 @@ public class Assessment implements Comparable<Assessment>{
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
-	private String description;
+	private String description = "";
 	private int numSubmissionsAllowed;
 	private String category;
 	private String specialRelease;
