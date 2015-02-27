@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="assessment">
+	<property environment="env" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+	<path id="JUnit 4.libraryclasspath">
+		<pathelement location="/home/tomcat/content/lib/junit.jar" />
+		<pathelement location="/home/tomcat/content/lib/org.hamcrest.core.jar" />
+	</path>
+	<path id="assessment.classpath">
+		<pathelement location="bin" />
+		<path refid="JUnit 4.libraryclasspath" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir=".">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+	<target depends="build-project" name="build">
+		<exec executable="make" dir="." failonerror="false">
+			<arg line="-f makefile" />
+		</exec>
+	</target>
+	<target depends="init" name="build-project">
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac fork="yes" includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+			<src path="." />
+			<classpath refid="assessment.classpath" />
+		</javac>
+		<antcall target="jar" />
+	</target>
+	<target name="jar">
+		<jar destfile="MyProgram.jar" basedir="bin">
+			<manifest>
+				<attribute name="Main-Class" value="MyProgram" />
+			</manifest>
+		</jar>
+	</target>
+	<target name="test">
+		<junit printsummary="withOutAndErr" fork="yes" timeout="60000" dir="${basedir}">
+			<formatter type="xml" />
+			<test name="MyProgramTest" outfile="result" />
+			<classpath refid="assessment.classpath" />
+		</junit>
+	</target>
+</project>
