@@ -1,7 +1,0 @@
-Hello World!
-
-this is robot # 123451 reporting for duty.
-
-Beginning scan of sector 10!
-
-current coordinates 10 , 10.4
