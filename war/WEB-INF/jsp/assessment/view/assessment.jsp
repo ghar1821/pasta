@@ -206,7 +206,7 @@ either expressed or implied, of the PASTA Project.
 								<tr>
 									<td>
 										<form:input type="hidden" path="compGarbage[${competitionIndex.index}].compName" value="${competition.compName}"/>
-										<a href="../../competition/${competition.test.shortName}/">${competition.test.name}</a>
+										<a href="../../competition/${competition.competition.shortName}/">${competition.competition.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="compGarbage[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>

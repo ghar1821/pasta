@@ -327,10 +327,10 @@ public class AssessmentsController {
 			}
 
 			if (!contains) {
-				WeightedCompetition weigthedComp = new WeightedCompetition();
-				weigthedComp.setTest(test);
-				weigthedComp.setWeight(0);
-				otherCompetitions.add(weigthedComp);
+				WeightedCompetition weightedComp = new WeightedCompetition();
+				weightedComp.setCompetition(test);
+				weightedComp.setWeight(0);
+				otherCompetitions.add(weightedComp);
 			}
 		}
 

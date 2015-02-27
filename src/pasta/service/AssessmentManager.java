@@ -188,33 +188,33 @@ public class AssessmentManager {
 			}
 			
 			// competitions
-			for (WeightedCompetition compeition : assessmentToAdd.getCompetitions()) {
-				if (assDao.getCompetition(compeition.getCompName().replace(" ", "")) != null) {
-					compeition.setTest(assDao.getCompetition(compeition.getCompName().replace(
+			for (WeightedCompetition competition : assessmentToAdd.getCompetitions()) {
+				if (assDao.getCompetition(competition.getCompName().replace(" ", "")) != null) {
+					competition.setCompetition(assDao.getCompetition(competition.getCompName().replace(
 							" ", "")));
 					
 					// if the competition is not already live, add comp/arenas to the scheduler
-					if(!assDao.getCompetition(compeition.getCompName().replace(" ", "")).isLive()){
-						if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).isCalculated()){
+					if(!assDao.getCompetition(competition.getCompName().replace(" ", "")).isLive()){
+						if(assDao.getCompetition(competition.getCompName().replace(" ", "")).isCalculated()){
 							// add competition 
 							scheduler.save(new Job("PASTACompetitionRunner", 
-									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName(), 
-									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getNextRunDate()));
+									assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName(), 
+									assDao.getCompetition(competition.getCompName().replace(" ", "")).getNextRunDate()));
 						}
 						else{
 							// add arenas
 							// official
-							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena() != null){
-								Arena arena = assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena();
+							if(assDao.getCompetition(competition.getCompName().replace(" ", "")).getOfficialArena() != null){
+								Arena arena = assDao.getCompetition(competition.getCompName().replace(" ", "")).getOfficialArena();
 								scheduler.save(new Job("PASTACompetitionRunner", 
-										assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+										assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
 										arena.getNextRunDate()));
 							}
 							// outstanding
-							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
-								for(Arena arena : assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas()){
+							if(assDao.getCompetition(competition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
+								for(Arena arena : assDao.getCompetition(competition.getCompName().replace(" ", "")).getOutstandingArenas()){
 									scheduler.save(new Job("PASTACompetitionRunner", 
-											assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+											assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
 											arena.getNextRunDate()));
 								}
 							}
@@ -222,11 +222,11 @@ public class AssessmentManager {
 					}
 					if (assDao.getAssessment(assessmentToAdd.getShortName()) == null) {
 						assDao.getCompetition(
-								compeition.getCompName().replace(" ", ""))
+								competition.getCompName().replace(" ", ""))
 								.addAssessment(assessmentToAdd);
 					} else {
 						assDao.getCompetition(
-								compeition.getCompName().replace(" ", ""))
+								competition.getCompName().replace(" ", ""))
 								.addAssessment(
 										assDao.getAssessment(assessmentToAdd
 												.getShortName()));

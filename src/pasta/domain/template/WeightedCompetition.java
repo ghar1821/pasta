@@ -51,7 +51,7 @@ public class WeightedCompetition {
 	public Competition getCompetition() {
 		return comp;
 	}
-	public void setTest(Competition comp) {
+	public void setCompetition(Competition comp) {
 		this.comp = comp;
 		if(!comp.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
 			compName = comp.getName();

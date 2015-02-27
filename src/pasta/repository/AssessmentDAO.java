@@ -981,7 +981,7 @@ public class AssessmentDAO {
 						Element competitionElement = (Element) competitionNode;
 
 						WeightedCompetition weightedComp = new WeightedCompetition();
-						weightedComp.setTest(allCompetitions
+						weightedComp.setCompetition(allCompetitions
 								.get(competitionElement.getAttribute("name")));
 						weightedComp.setWeight(Double
 								.parseDouble(competitionElement
