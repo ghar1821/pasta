@@ -31,13 +31,16 @@ package pasta.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.logging.Log;
@@ -60,25 +63,29 @@ import pasta.repository.UserDAO;
 /**
  * The project properties.
  * <p>
- * Uses singleton pattern.
- * Pretty self explanatory. It just holds all of the configuration
- * that is used by the system.
+ * Uses singleton pattern. Pretty self explanatory. It just holds all of the
+ * configuration that is used by the system.
  * 
  * @author Alex Radu
  * @version 2.0
  * @since 2012-11-13
- *
  */
 @Component
 public class ProjectProperties {
 	protected final Log logger = LogFactory.getLog(getClass());
-	
+
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
 	private static ProjectProperties properties;
-	
+
 	// location of the project
 	private static String projectLocation;
+	// location of the templates
+	private static String unitTestsLocation = "template/unitTest/";
+	// location of the submissions
+	private static String submissionsLocation = "submissions/";
+	// location of the submissions
+	private static String competitionsLocation = "competitions/";
 	// auth type (dummy, imap, database)
 	private static String authType;
 	// list of mail servers to auth with (imap auth only)
@@ -89,82 +96,124 @@ public class ProjectProperties {
 	private static Validator authenticationValidator;
 	// proxy
 	private static Proxy proxy;
-	
+
 	private static LoginDAO loginDAO;
 	private static AssessmentDAO assessmentDAO;
 	private static ResultDAO resultDAO;
 	private static PlayerDAO playerDAO;
-	
-	private ProjectProperties(String projectLocation, String authType, Boolean createAccountOnSuccessfulLogin){
-		initialize(projectLocation, authType, null, createAccountOnSuccessfulLogin);
-	}
-	
-	private ProjectProperties(String projectLocation, String authType, List proxy, Boolean createAccountOnSuccessfulLogin){
-		initialize(projectLocation, authType, proxy, createAccountOnSuccessfulLogin);
-	}
-	
-	private void initialize(String projectLocation, String authType,
-			List proxy, Boolean createAccountOnSuccessfulLogin) {
-		ProjectProperties.projectLocation = projectLocation;
-		ProjectProperties.authType=authType; // default to dummy
-		serverAddresses = new LinkedList<String>();
-		ProjectProperties.createAccountOnSuccessfulLogin = createAccountOnSuccessfulLogin;
-		
-		if(new File(getProjectLocation()+"/authentication.settings").exists()){
+
+	private ProjectProperties(Map<String, String> settings) {
+		projectLocation = settings.get("location");
+		if (projectLocation != null && !projectLocation.isEmpty() && !projectLocation.endsWith("/")) {
+			projectLocation += "/";
+		}
+
+		createAccountOnSuccessfulLogin = Boolean.parseBoolean(settings.get("createAccountOnSuccessfulLogin"));
+		if (settings.get("proxydomain") != null && !settings.get("proxydomain").isEmpty()
+				&& settings.get("proxyport") != null && !settings.get("proxyport").isEmpty()) {
+
+			SocketAddress addr = new InetSocketAddress(settings.get("proxydomain"), Integer.parseInt(settings
+					.get("proxyport")));
+			ProjectProperties.proxy = new Proxy(Proxy.Type.HTTP, addr);
+			logger.info("Using proxy " + settings.get("proxydomain") + " on port " + settings.get("proxyport"));
+		}
+
+		authType = settings.get("authentication").toLowerCase();
+
+		if (new File(getProjectLocation() + "/authentication.settings").exists()) {
 			logger.info("exists");
 			decryptAuthContent();
 		}
-		
-		if(ProjectProperties.authType.toLowerCase().trim().equals("imap")){
+
+		if (ProjectProperties.authType.equals("imap")) {
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
-		}
-		else if(ProjectProperties.authType.toLowerCase().trim().equals("database")){
+		} else if (ProjectProperties.authType.equals("database")) {
 			authenticationValidator = new DBAuthValidator();
-			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
-		}
-		else if(ProjectProperties.authType.toLowerCase().trim().equals("ftp")){
+		} else if (ProjectProperties.authType.equals("ftp")) {
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
-		}
-		else if(ProjectProperties.authType.toLowerCase().trim().equals("ldap")){
+		} else if (ProjectProperties.authType.equals("ldap")) {
 			authenticationValidator = new LDAPAuthValidator();
 			logger.info("Using ldap authentication");
-		}
-		else{
+		} else {
 			authenticationValidator = new DummyAuthValidator();
 			logger.info("Using dummy authentication");
 		}
-		
-		if(proxy != null && proxy.size()>=2){
-			SocketAddress addr = new InetSocketAddress((String)proxy.get(0),
-					Integer.parseInt((String) proxy.get(1)));
-			ProjectProperties.proxy = new Proxy(Proxy.Type.HTTP, addr);
-			logger.info("Using proxy " + proxy.get(0) + " on port " + proxy.get(1));
-		}
-		
+
+		unitTestsLocation = checkPath(settings.get("pathUnitTests"), projectLocation + unitTestsLocation);
+		submissionsLocation = checkPath(settings.get("pathSubmissions"), projectLocation + submissionsLocation);
+		competitionsLocation = checkPath(settings.get("pathCompetitions"), projectLocation + competitionsLocation);
+
+		logger.info("Project location set to: " + projectLocation);
+		logger.info("UnitTests location set to: " + unitTestsLocation);
+		logger.info("Submissions location set to: " + submissionsLocation);
+		logger.info("Competitions Location set to: " + competitionsLocation);
+
 		assessmentDAO = new AssessmentDAO();
 		resultDAO = new ResultDAO(assessmentDAO);
 		playerDAO = new PlayerDAO();
 	}
 
-	
-	private ProjectProperties(){
+	/**
+	 * Test a new path for validity. Create the path if it does not already exist.
+	 * 
+	 * Generated path will have a trailing '/'.
+	 * 
+	 * @param path The new location for this directory.
+	 * @param defaultPath The default location for this directory.
+	 * @return The validated path.
+	 */
+	private String checkPath(String path, String defaultPath) {
+		String newPath = null;
+		if (path == null || path.isEmpty()) {
+			newPath = defaultPath;
+		} else {
+			newPath = path;
+		}
+		File location = new File(newPath);
+		if (!location.exists()) {
+			try {
+				Files.createDirectories(location.toPath());
+			} catch (IOException e) {
+				logger.error("Directory \"" + newPath + "\"could not be created.");
+			}
+		}
+
+		if (newPath != null && !newPath.isEmpty() && !newPath.endsWith("/")) {
+			newPath += "/";
+		}
+		return newPath;
 	}
-	
-	public static ProjectProperties getInstance(){
-		if(properties == null){
-			 properties = new ProjectProperties();
+
+	private ProjectProperties() {
+	}
+
+	public static ProjectProperties getInstance() {
+		if (properties == null) {
+			properties = new ProjectProperties();
 		}
 		return properties;
 	}
-	
-	
-	public String getProjectLocation(){
+
+	public String getProjectLocation() {
 		return projectLocation;
 	}
-	
+
+	public String getCompetitionsLocation() {
+		return competitionsLocation;
+	}
+
+	public String getSubmissionsLocation() {
+		return submissionsLocation;
+	}
+
+	public String getUnitTestsLocation() {
+		return unitTestsLocation;
+	}
+
 	public String getAuthType() {
 		return authType;
 	}
@@ -183,59 +232,54 @@ public class ProjectProperties {
 
 	public void setDBDao(LoginDAO dao) {
 		ProjectProperties.loginDAO = dao;
-		if(authType.toLowerCase().trim().equals("database")){
-			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+		if (authType.toLowerCase().trim().equals("database")) {
+			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 		}
 	}
 
 	public void changeAuthMethod(String type, String[] addresses) {
-		
+
 		serverAddresses.clear();
 		authType = type;
-		for(String address: addresses){
-			if(!address.isEmpty()){
+		for (String address : addresses) {
+			if (!address.isEmpty()) {
 				serverAddresses.add(address);
 			}
 		}
-		if(authType.toLowerCase().trim().equals("imap")){
+		if (authType.toLowerCase().trim().equals("imap")) {
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
-		}
-		else if(authType.toLowerCase().trim().equals("database")){
+		} else if (authType.toLowerCase().trim().equals("database")) {
 			authenticationValidator = new DBAuthValidator();
-			((DBAuthValidator)authenticationValidator).setDAO(loginDAO);
+			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
-		}
-		else if(authType.toLowerCase().trim().equals("ftp")){
+		} else if (authType.toLowerCase().trim().equals("ftp")) {
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
-		}
-		else if(authType.toLowerCase().trim().equals("ldap")){
+		} else if (authType.toLowerCase().trim().equals("ldap")) {
 			authenticationValidator = new LDAPAuthValidator();
 			logger.info("Using ldap authentication");
-		}
-		else{
+		} else {
 			authenticationValidator = new DummyAuthValidator();
 			logger.info("Using dummy authentication");
 		}
-		
+
 		encryptAuthContent();
 	}
-	
+
 	/**
 	 * Doesn't actually do any ecryption.
 	 * <p>
-	 * This should be fixed, but I didn't have the time to do it.
-	 * Doesn't actually hold anything sensitive, but it should
-	 * still not be held as plain text.
+	 * This should be fixed, but I didn't have the time to do it. Doesn't actually
+	 * hold anything sensitive, but it should still not be held as plain text.
 	 */
-	private void encryptAuthContent(){
+	private void encryptAuthContent() {
 
 		try {
-			PrintWriter out = new PrintWriter(new File(getProjectLocation()+"/authentication.settings"));
-			
+			PrintWriter out = new PrintWriter(new File(getProjectLocation() + "/authentication.settings"));
+
 			out.println(authType);
-			for(String address: serverAddresses){
+			for (String address : serverAddresses) {
 				out.println(address);
 			}
 			out.close();
@@ -243,24 +287,23 @@ public class ProjectProperties {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Doesn't actually do any decryption.
 	 * <p>
-	 * This should be fixed, but I didn't have the time to do it.
-	 * Doesn't actually hold anything sensitive, but it should
-	 * still not be held as plain text.
+	 * This should be fixed, but I didn't have the time to do it. Doesn't actually
+	 * hold anything sensitive, but it should still not be held as plain text.
 	 */
-	private void decryptAuthContent(){
+	private void decryptAuthContent() {
 
 		try {
-			Scanner in = new Scanner(new File(getProjectLocation()+"/authentication.settings"));
-			
+			Scanner in = new Scanner(new File(getProjectLocation() + "/authentication.settings"));
+
 			authType = in.nextLine();
 			serverAddresses.clear();
-			while(in.hasNextLine()){
+			while (in.hasNextLine()) {
 				serverAddresses.add(in.nextLine());
 			}
 			in.close();
@@ -269,28 +312,28 @@ public class ProjectProperties {
 			e.printStackTrace();
 		}
 	}
-	
-	public boolean usingProxy(){
+
+	public boolean usingProxy() {
 		return proxy != null;
 	}
-	
-	public Proxy getProxy(){
+
+	public Proxy getProxy() {
 		return proxy;
 	}
-	
-	public AssessmentDAO getAssessmentDAO(){
+
+	public AssessmentDAO getAssessmentDAO() {
 		return assessmentDAO;
 	}
-	
-	public LoginDAO getLoginDAO(){
-			return loginDAO;
+
+	public LoginDAO getLoginDAO() {
+		return loginDAO;
 	}
-	
-	public ResultDAO getResultDAO(){
+
+	public ResultDAO getResultDAO() {
 		return resultDAO;
 	}
-	
-	public PlayerDAO getPlayerDAO(){
+
+	public PlayerDAO getPlayerDAO() {
 		return playerDAO;
 	}
 }

@@ -30,43 +30,39 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import pasta.util.ProjectProperties;
+
 /**
- * Container class for a unit test.
+ * Container class for a unit test. Contains the name of the unit test and
+ * whether it has been tested. String representation:
  * 
- * Contains the name of the unit test and whether it has been tested.
- * 
- * String representation:
- * <pre>{@code <unitTestProperties>
-	<name>name</name>
-	<tested>true|false</tested>
-</unitTestProperties>}</pre>
- * 
+ * <pre>
+ * {@code <unitTestProperties>
+ * 	<name>name</name>
+ * 	<tested>true|false</tested>
+ * </unitTestProperties>}
+ * </pre>
  * <p>
  * File location on disk: $projectLocation$/template/unitTest/$unitTestName$
  * 
  * @author Alex Radu
  * @version 2.0
  * @since 2012-11-13
- *
  */
 public class UnitTest {
 	private String name;
 	private boolean tested;
-	
+
 	/**
 	 * Default constructor
 	 * <p>
-	 * name="nullgarbagetemptestihopenobodynamestheirtestthis"
-	 * 
-	 * tested=false
-	 * 
+	 * name="nullgarbagetemptestihopenobodynamestheirtestthis" tested=false
 	 */
-	public UnitTest(){
+	public UnitTest() {
 		this.name = "nullgarbagetemptestihopenobodynamestheirtestthis";
 		this.tested = false;
 	}
-	
-	public UnitTest(String name, boolean tested){
+
+	public UnitTest(String name, boolean tested) {
 		this.name = name;
 		this.tested = tested;
 	}
@@ -74,27 +70,27 @@ public class UnitTest {
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getShortName() {
 		return name.replace(" ", "");
 	}
 
-	public String getFileLocation(){
-		return ProjectProperties.getInstance().getProjectLocation()+"/template/unitTest/"+getShortName();
+	public String getFileLocation() {
+		return ProjectProperties.getInstance().getUnitTestsLocation() + getShortName();
 	}
-	
+
 	public boolean isTested() {
 		return tested;
 	}
-	
+
 	public void setTested(boolean tested) {
 		this.tested = tested;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		String output = "<unitTestProperties>" + System.getProperty("line.separator");
-		output += "\t<name>"+name+"</name>" + System.getProperty("line.separator");
-		output += "\t<tested>"+tested+"</tested>" + System.getProperty("line.separator");
+		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
+		output += "\t<tested>" + tested + "</tested>" + System.getProperty("line.separator");
 		output += "</unitTestProperties>";
 		return output;
 	}

@@ -141,8 +141,7 @@ public class MossManager {
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
 			project.setUserProperty("assessment", assessment);
 			project.setUserProperty("defaultLocation", ProjectProperties
-					.getInstance().getProjectLocation() + "/submissions");
-			project.setBasedir(location + "/");
+					.getInstance().getSubmissionsLocation());
 
 			project.init();
 

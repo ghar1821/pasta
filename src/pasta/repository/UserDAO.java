@@ -419,7 +419,7 @@ public class UserDAO extends HibernateDaoSupport{
 				// load extension file
 				Scanner in;
 				try {
-					in = new Scanner(new File(ProjectProperties.getInstance().getProjectLocation() + "/submissions/" +
+					in = new Scanner(new File(ProjectProperties.getInstance().getSubmissionsLocation() +
 							user.getUsername() + "/user.extensions"));
 					while(in.hasNextLine()){
 						String[] line = in.nextLine().split(">");

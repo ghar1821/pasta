@@ -852,16 +852,14 @@ public class SubmissionController {
 		ZipOutputStream zip = new ZipOutputStream(outStream);
 		try {
 			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/submissions/"
+					.getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
 					+ assessmentName
 					+ "/"
 					+ assessmentDate
 					+ "/submission/"), ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/submissions/"
+					.getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
 					+ assessmentName

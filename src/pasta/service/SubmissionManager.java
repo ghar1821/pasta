@@ -125,8 +125,7 @@ public class SubmissionManager {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		Date now = new Date();
 		String currDate = sdf.format(now);
-		String location = ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/" + username + "/assessments/"
+		String location = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 				+ form.getAssessment() + "/" + currDate + "/submission";
 		
 		Assessment currAssessment = assDao.getAssessment(form.getAssessment());
@@ -140,8 +139,7 @@ public class SubmissionManager {
 				(new File(location+"/"+form.getFile().getOriginalFilename())).delete();
 			}
 			
-			String unitTestsLocation = ProjectProperties.getInstance().getProjectLocation()
-					+ "/submissions/" + username + "/assessments/"
+			String unitTestsLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 					+ form.getAssessment() + "/" + currDate + "/unitTests";
 			// ensure all unit tests compile
 			for(WeightedUnitTest test: currAssessment.getUnitTests()){

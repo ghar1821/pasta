@@ -20,25 +20,32 @@
            http://www.springframework.org/schema/task  
            http://www.springframework.org/schema/task/spring-task-3.0.xsd">
            
-    <bean id="projectProperties" class="pasta.util.ProjectProperties">
-		<constructor-arg type="java.lang.String" value="C:/Users/Alex/info1103"/> <!-- project location -->
-		<constructor-arg type="java.lang.String" value="dummy"/> <!-- auth type (dummy/imap/database) -->
-		<constructor-arg>
-			<list>
-				<value>web-cache.usyd.edu.au</value>
-				<value>8080</value>
-			</list>
-		</constructor-arg>
-		<constructor-arg type="java.lang.Boolean" value="true"/> <!-- auth type (dummy/email/database) -->
-	</bean>
-	
 	<bean 
 	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location">
-			<value>WEB-INF/classes/database.properties</value>
+		<property name="locations">
+		<list>
+				<value>WEB-INF/classes/database.properties</value>
+				<value>WEB-INF/classes/project.properties</value>
+			</list>
 		</property>
 	</bean>
 	           
+
+    <bean id="projectProperties" class="pasta.util.ProjectProperties">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.String">
+					<entry key="location" value="${project.location}" />
+					<entry key="authentication" value="${project.authentication:ldap}" />
+					<entry key="createAccountOnSuccessfulLogin" value="${project.createAccountOnSuccessfulLogin:true}" />
+					<entry key="pathUnitTests" value="${project.pathUnitTests:}" />
+					<entry key="pathSubmissions" value="${project.pathSubmissions:}" />
+					<entry key="pathCompetitions" value="${project.pathCompetitions:}" />
+					<entry key="proxydomain" value="${project.proxydomain:}" />
+					<entry key="proxyport" value="${project.proxyport:}" />
+			</map>
+		</constructor-arg>
+	</bean>
+	
 	<bean id="dataSource" 
 	         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="${jdbc.driverClassName}" />

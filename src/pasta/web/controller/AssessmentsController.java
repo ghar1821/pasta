@@ -614,16 +614,15 @@ public class AssessmentsController {
 					// add
 
 					PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
-							.getProjectLocation()
-							+ "/submissions/"
+							.getSubmissionsLocation()
 							+ entry.getKey()
 							+ "/assessments/"
 							+ assessmentName
 							+ "/"
 							+ PASTAUtil.formatDate(entry.getValue().get(assessmentName).getSubmissionDate())
 							+ "/submission/"), "(" + ProjectProperties.getInstance()
-							.getProjectLocation()
-							+ "/submissions/)|(assessments.*submission/)" );
+							.getSubmissionsLocation()
+							+ ")|(assessments.*submission/)" );
 					zip.closeEntry();
 				}
 			}

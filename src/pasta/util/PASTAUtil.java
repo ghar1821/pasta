@@ -167,8 +167,7 @@ public class PASTAUtil {
 	 */
 	public static FileTreeNode generateFileTree(String username,
 			String assessmentName, String assessmentDate) {
-		return generateFileTree(ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/"
+		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
 				+ assessmentName
@@ -232,8 +231,7 @@ public class PASTAUtil {
 	public static Map<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
 		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
-		String[] allSubs = (new File(ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/"
+		String[] allSubs = (new File(ProjectProperties.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
 				+ assessmentName).list());
@@ -262,8 +260,7 @@ public class PASTAUtil {
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){
-				FileTreeNode node = generateFileTree(ProjectProperties.getInstance().getProjectLocation()
-						+ "/submissions/"
+				FileTreeNode node = generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/competitions/"
 						+ competitionName

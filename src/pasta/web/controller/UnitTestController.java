@@ -277,12 +277,10 @@ public class UnitTestController {
 		ZipOutputStream zip = new ZipOutputStream(outStream);
 		try {
 			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/template/unitTest/"
+					.getUnitTestsLocation()
 					+ testName
 					+ "/code/"), ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/template/unitTest/"
+					.getUnitTestsLocation()
 					+ testName
 					+ "/code/");
 			zip.closeEntry();

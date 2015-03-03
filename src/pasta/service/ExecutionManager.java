@@ -137,8 +137,7 @@ public class ExecutionManager {
 
 			// create folder
 			String competitionLocation = ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/competitions/"
+					.getCompetitionsLocation()
 					+ comp.getShortName()
 					+ "/competition/"
 					+ PASTAUtil.formatDate(job.getRunDate());
@@ -250,8 +249,7 @@ public class ExecutionManager {
 
 					// check if player is active
 					if (new File(ProjectProperties.getInstance()
-							.getProjectLocation()
-							+ "/submissions/"
+							.getSubmissionsLocation()
 							+ username
 							+ "/competitions/"
 							+ comp.getShortName()
@@ -259,8 +257,7 @@ public class ExecutionManager {
 							+ playerName + "/active").exists()) {
 						// player is active
 						playerLocation = ProjectProperties.getInstance()
-								.getProjectLocation()
-								+ "/submissions/"
+								.getSubmissionsLocation()
 								+ username
 								+ "/competitions/"
 								+ comp.getShortName()
@@ -270,8 +267,7 @@ public class ExecutionManager {
 					} else {
 						// player is not
 						String[] retiredList = new File(ProjectProperties
-								.getInstance().getProjectLocation()
-								+ "/submissions/"
+								.getInstance().getSubmissionsLocation()
 								+ username
 								+ "/competitions/"
 								+ comp.getShortName()
@@ -286,8 +282,7 @@ public class ExecutionManager {
 						Arrays.sort(retiredList);
 
 						playerLocation = ProjectProperties.getInstance()
-								.getProjectLocation()
-								+ "/submissions/"
+								.getSubmissionsLocation()
 								+ username
 								+ "/competitions/"
 								+ comp.getShortName()
@@ -523,8 +518,7 @@ public class ExecutionManager {
 	private void executeNormalJob(Job job) {
 		// do it
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-		String location = ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/" + job.getUsername() + "/assessments/"
+		String location = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername() + "/assessments/"
 				+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate())
 				+ "/submission";
 
@@ -537,8 +531,7 @@ public class ExecutionManager {
 					+ " for " + job.getUsername() + " with ExecutionScheduler - " + this);
 
 			String unitTestsLocation = ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/submissions/"
+					.getSubmissionsLocation()
 					+ job.getUsername()
 					+ "/assessments/"
 					+ job.getAssessmentName()

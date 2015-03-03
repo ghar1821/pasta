@@ -202,7 +202,7 @@ public class UserManager {
 		
 		// update the files
 		try {
-			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation() + "/submissions/" +
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation() +
 					user.getUsername() + "/user.extensions"));
 			for (Entry<String, Date> ex : user.getExtensions().entrySet()) {
 				out.println(ex.getKey() + ">" + PASTAUtil.formatDate(ex.getValue()));

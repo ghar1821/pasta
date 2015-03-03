@@ -362,8 +362,7 @@ public class CompetitionManager {
 			String competitionShortName, BindingResult result) {
 		// copy player to temp location
 		
-		String compLocation = ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/" + username + "/competitions/"
+		String compLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/competitions/"
 				+ competitionShortName;
 		
 		
@@ -404,8 +403,7 @@ public class CompetitionManager {
 		// validate player
 		try {
 			// copy over competition
-			FileUtils.copyDirectory(new File(ProjectProperties.getInstance().getProjectLocation()
-					+ "/template/competition/" + competitionShortName + "/code/"),
+			FileUtils.copyDirectory(new File(ProjectProperties.getInstance().getCompetitionsLocation() + competitionShortName + "/code/"),
 					new File(compLocation + "/temp/test/"));
 			
 			// copy over player
@@ -555,8 +553,7 @@ public class CompetitionManager {
 			if(oldPlayer != null){
 				playerDAO.getPlayerHistory(username, competitionName, playerName).retireActivePlayer();
 				
-				String compLocation = ProjectProperties.getInstance().getProjectLocation()
-						+ "/submissions/" + username + "/competitions/"
+				String compLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/competitions/"
 						+ competitionName;
 				
 				try {

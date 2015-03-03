@@ -117,8 +117,7 @@ public class ResultDAO {
 			
 			// get latest
 			String[] allFiles = (new File(ProjectProperties
-					.getInstance().getProjectLocation()
-					+ "/competitions/"
+					.getInstance().getCompetitionsLocation()
 					+ comp.getShortName()
 					+ "/competition/")).list();
 			
@@ -126,8 +125,7 @@ public class ResultDAO {
 				Arrays.sort(allFiles);
 				try{
 					Scanner in = new Scanner(new File(ProjectProperties
-						.getInstance().getProjectLocation()
-						+ "/competitions/"
+						.getInstance().getCompetitionsLocation()
 						+ comp.getShortName()
 						+ "/competition/"
 						+ allFiles[allFiles.length -1]
@@ -297,8 +295,7 @@ public class ResultDAO {
 	public Collection<AssessmentResult> getAssessmentHistory(String username, Assessment assessment){
 		// scan folder
 		String[] allFiles = (new File(ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/submissions/"
+				.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
 				+ assessment.getShortName())).list();
@@ -331,7 +328,7 @@ public class ResultDAO {
 		
 		// scan all users
 		String[] allUsers = (new File(ProjectProperties.getInstance()
-				.getProjectLocation() + "/submissions/")).list();
+				.getSubmissionsLocation())).list();
 		if (allUsers != null && allUsers.length > 0) {
 			for (String currUser : allUsers) {
 				// scan all assessments
@@ -345,8 +342,7 @@ public class ResultDAO {
 					// find latest
 					String latest = null;
 					if(new File(ProjectProperties
-							.getInstance().getProjectLocation()
-							+ "/submissions/"
+							.getInstance().getSubmissionsLocation()
 							+ currUser
 							+ "/assessments/"
 							+ assessment.getShortName()
@@ -355,8 +351,7 @@ public class ResultDAO {
 						Scanner in;
 						try {
 							in = new Scanner (new File(ProjectProperties
-								.getInstance().getProjectLocation()
-								+ "/submissions/"
+								.getInstance().getSubmissionsLocation()
 								+ currUser
 								+ "/assessments/"
 								+ assessment.getShortName()
@@ -370,8 +365,7 @@ public class ResultDAO {
 					}
 					
 					String[] allFiles = (new File(ProjectProperties
-							.getInstance().getProjectLocation()
-							+ "/submissions/"
+							.getInstance().getSubmissionsLocation()
 							+ currUser
 							+ "/assessments/"
 							+ assessment.getShortName())).list();
@@ -472,8 +466,7 @@ public class ResultDAO {
 		 
 		for(HandMarkingResult result: handMarkingResults){
 			String location = ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/submissions/"
+					.getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
 					+ assessmentName
@@ -512,8 +505,7 @@ public class ResultDAO {
 			Assessment assessment, String assessmentDate) {
 
 		AssessmentResult assessResult = null;
-		if ((new File(ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/" + username + "/assessments/"
+		if ((new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 				+ assessment.getShortName() + "/" + assessmentDate)).exists()) {
 			assessResult = new AssessmentResult();
 			assessResult.setAssessment(assessment);
@@ -522,8 +514,7 @@ public class ResultDAO {
 			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
 			for (WeightedUnitTest uTest : assessment.getUnitTests()) {
 				UnitTestResult result = getUnitTestResult(ProjectProperties
-						.getInstance().getProjectLocation()
-						+ "/submissions/"
+						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
 						+ assessment.getShortName()
@@ -541,8 +532,7 @@ public class ResultDAO {
 			// secret unit tests;
 			for (WeightedUnitTest uTest : assessment.getSecretUnitTests()) {
 				UnitTestResult result = getUnitTestResult(ProjectProperties
-						.getInstance().getProjectLocation()
-						+ "/submissions/"
+						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
 						+ assessment.getShortName()
@@ -561,8 +551,7 @@ public class ResultDAO {
 			ArrayList<HandMarkingResult> handResults = new ArrayList<HandMarkingResult>();
 			for (WeightedHandMarking hMarking : assessment.getHandMarking()) {
 				HandMarkingResult result = getHandMarkingResult(ProjectProperties
-						.getInstance().getProjectLocation()
-						+ "/submissions/"
+						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
 						+ assessment.getShortName()
@@ -590,12 +579,10 @@ public class ResultDAO {
 			}
 			
 			if(assessment.isCountUncompilable() || assessment.getUnitTests().isEmpty()){
-				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getProjectLocation()
-					+ "/submissions/" + username + "/assessments/"
+				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 					+ assessment.getShortName() + "/").list().length);
 			}else{
-				File[] allSubmissions = new File(ProjectProperties.getInstance().getProjectLocation()
-						+ "/submissions/" + username + "/assessments/"
+				File[] allSubmissions = new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 						+ assessment.getShortName()).listFiles();
 				
 				int numSubmissionsMade = 0;
@@ -622,8 +609,7 @@ public class ResultDAO {
 			// comments
 			try {
 				Scanner in = new Scanner(new File(ProjectProperties
-						.getInstance().getProjectLocation()
-						+ "/submissions/"
+						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
 						+ assessment.getShortName()
@@ -658,8 +644,7 @@ public class ResultDAO {
 			String assessmentDate, String comments) {
 		// save to file
 		try {
-			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getProjectLocation()
-					+ "/submissions/"
+			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
 					+ assessmentName
@@ -767,8 +752,7 @@ public class ResultDAO {
 		
 		// get latest
 		String[] allFiles = (new File(ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/competitions/"
+				.getInstance().getCompetitionsLocation()
 				+ compName
 				+ "/competition/")).list();
 		
@@ -776,8 +760,7 @@ public class ResultDAO {
 			Arrays.sort(allFiles);
 				
 			updateCompetitionResults(compName, ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/competitions/"
+				.getInstance().getCompetitionsLocation()
 				+ compName
 				+ "/competition/"
 				+ allFiles[allFiles.length -1]
@@ -797,8 +780,7 @@ public class ResultDAO {
 		
 		// get latest
 		String[] allFiles = (new File(ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/template/competitions/"
+				.getInstance().getCompetitionsLocation()
 				+ compName
 				+ "/arenas/Official Arena/")).list();
 		
@@ -806,8 +788,7 @@ public class ResultDAO {
 			Arrays.sort(allFiles);
 				
 			updateCompetitionResults(compName, ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/template/competitions/"
+				.getInstance().getCompetitionsLocation()
 				+ compName
 				+ "/arenas/Official Arena/"
 				+ allFiles[allFiles.length -1]
@@ -828,8 +809,7 @@ public class ResultDAO {
 	public ArenaResult getCalculatedCompetitionResult(String competitionName){
 		// get latest
 		String[] allFiles = (new File(ProjectProperties
-				.getInstance().getProjectLocation()
-				+ "/competitions/"
+				.getInstance().getCompetitionsLocation()
 				+ competitionName
 				+ "/competition/")).list();
 		
@@ -837,8 +817,7 @@ public class ResultDAO {
 			Arrays.sort(allFiles);
 			try{
 				return loadArenaResult(ProjectProperties
-					.getInstance().getProjectLocation()
-					+ "/competitions/"
+					.getInstance().getCompetitionsLocation()
 					+ competitionName
 					+ "/competition/"
 					+ allFiles[allFiles.length -1]);

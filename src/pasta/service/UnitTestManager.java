@@ -218,7 +218,7 @@ public class UnitTestManager {
 	
 	private String getDefaultBuildXML() throws IOException {
     File templateBuildXML = new File(ProjectProperties.getInstance()
-        .getProjectLocation()+"/template/unitTest/build.xml");
+        .getUnitTestsLocation() + "build.xml");
     Charset charset = StandardCharsets.UTF_8;
     return new String(Files.readAllBytes(templateBuildXML.toPath()), charset);
 	}

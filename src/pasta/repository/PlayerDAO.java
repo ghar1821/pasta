@@ -50,15 +50,12 @@ import pasta.util.ProjectProperties;
 /**
  * Data Access Object for Players.
  * <p>
- * 
- * This class is responsible for all of the interaction
- * between the data layer (disk in this case) and the system
- * for players.
+ * This class is responsible for all of the interaction between the data layer
+ * (disk in this case) and the system for players.
  * 
  * @author Alex Radu
  * @version 2.0
  * @since 2014-05-01
- * 
  */
 public class PlayerDAO {
 
@@ -66,157 +63,144 @@ public class PlayerDAO {
 
 	// username, competition, player
 	Map<String, Map<String, Map<String, PlayerHistory>>> players;
-	
+
 	/**
-	 * Loads all player histories (statistics) into cache 
+	 * Loads all player histories (statistics) into cache
 	 */
-	public PlayerDAO(){
+	public PlayerDAO() {
 		// load all players.
 		players = new TreeMap<String, Map<String, Map<String, PlayerHistory>>>();
-		
+
 		// list of all students
-		String[] allStudents = (new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/")).list();
-		
+		String[] allStudents = (new File(ProjectProperties.getInstance().getSubmissionsLocation())).list();
+
 		// list of all compeittions
-		String[] allCompetitions = (new File(ProjectProperties.getInstance().getProjectLocation()+"/template/competition")).list();
-		
-		if(allStudents != null && allCompetitions != null){
-			for(String student : allStudents){
-				if(new File(ProjectProperties.getInstance().getProjectLocation()+"/submissions/"+student+"/competitions/").exists()){
-					if(!players.containsKey(student)){
+		String[] allCompetitions = (new File(ProjectProperties.getInstance().getCompetitionsLocation())).list();
+
+		if (allStudents != null && allCompetitions != null) {
+			for (String student : allStudents) {
+				if (new File(ProjectProperties.getInstance().getSubmissionsLocation() + student + "/competitions/")
+						.exists()) {
+					if (!players.containsKey(student)) {
 						players.put(student, new TreeMap<String, Map<String, PlayerHistory>>());
 					}
-					for(String competition: allCompetitions){
+					for (String competition : allCompetitions) {
 						players.get(student).put(competition, loadPlayerHistory(student, competition));
 					}
 				}
 			}
 		}
 	}
-	
+
 	/**
-	 * Get the history (statistics) of all players a user has submitted to a 
+	 * Get the history (statistics) of all players a user has submitted to a
 	 * specific competition from cache
 	 * 
-	 * @param username name of the user 
+	 * @param username name of the user
 	 * @param competitionName the short name (no whitespace) of the competition
 	 * @return collection of the player histories (statistics)
 	 */
-	public Collection<PlayerHistory> getPlayerHistory(String username,
-			String competitionName){
-		
-		if(!players.containsKey(username)){
+	public Collection<PlayerHistory> getPlayerHistory(String username, String competitionName) {
+
+		if (!players.containsKey(username)) {
 			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
 		}
-		if(!players.get(username).containsKey(competitionName)){
+		if (!players.get(username).containsKey(competitionName)) {
 			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
 		}
-		
+
 		return players.get(username).get(competitionName).values();
 	}
-	
+
 	/**
-	 * Get the history (statistics) of a specific player a user has submitted to a 
+	 * Get the history (statistics) of a specific player a user has submitted to a
 	 * specific competition from cache
 	 * 
-	 * @param username name of the user 
+	 * @param username name of the user
 	 * @param competitionName the short name (no whitespace) of the competition
 	 * @param playerName the name of the player being queried
 	 * @return the player history (statistics)
 	 */
-	public PlayerHistory getPlayerHistory(String username,
-			String competitionName, String playerName) {
-		
-		if(!players.containsKey(username)){
+	public PlayerHistory getPlayerHistory(String username, String competitionName, String playerName) {
+
+		if (!players.containsKey(username)) {
 			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
 		}
-		if(!players.get(username).containsKey(competitionName)){
+		if (!players.get(username).containsKey(competitionName)) {
 			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
 		}
-		if(!players.get(username).get(competitionName).containsKey(playerName)){
+		if (!players.get(username).get(competitionName).containsKey(playerName)) {
 			players.get(username).get(competitionName).put(playerName, new PlayerHistory(playerName));
 		}
 		return players.get(username).get(competitionName).get(playerName);
 	}
-	
+
 	/**
-	 * Get the history (statistics) of all players a user has submitted to a 
+	 * Get the history (statistics) of all players a user has submitted to a
 	 * specific competition from disk.
 	 * <p>
-	 * Performs multiple calls to {@link #loadPlayerHistory(String, String, String)}.
+	 * Performs multiple calls to
+	 * {@link #loadPlayerHistory(String, String, String)}.
 	 * 
-	 * @param username name of the user 
+	 * @param username name of the user
 	 * @param competitionName the short name (no whitespace) of the competition
-	 * @return map of the player histories (statistics) with the key being the player name
+	 * @return map of the player histories (statistics) with the key being the
+	 *         player name
 	 */
-	public Map<String, PlayerHistory> loadPlayerHistory(String username,
-			String competitionName) {
+	public Map<String, PlayerHistory> loadPlayerHistory(String username, String competitionName) {
 		Map<String, PlayerHistory> playerHistory = new TreeMap<String, PlayerHistory>();
-		
-		String[] allPlayers = (new File(ProjectProperties.getInstance().getProjectLocation()
-				+ "/submissions/"
-				+ username
-				+ "/competitions/"
-				+ competitionName
-				+"/")
-		).list();
-		
-		if(allPlayers != null){
-			for(String player: allPlayers){
+
+		String[] allPlayers = (new File(ProjectProperties.getInstance().getSubmissionsLocation() + username
+				+ "/competitions/" + competitionName + "/")).list();
+
+		if (allPlayers != null) {
+			for (String player : allPlayers) {
 				PlayerHistory currentPlayer = loadPlayerHistory(username, competitionName, player);
-				if(currentPlayer != null){
+				if (currentPlayer != null) {
 					playerHistory.put(player, currentPlayer);
 				}
 			}
 		}
-		
+
 		return playerHistory;
 	}
 
 	/**
-	 * Get the history (statistics) of a specific player a user has submitted to a 
+	 * Get the history (statistics) of a specific player a user has submitted to a
 	 * specific competition from disk.
 	 * <p>
-	 * Calls {@link #loadPlayerFromDirectory(String)} to aggregate the history of 
+	 * Calls {@link #loadPlayerFromDirectory(String)} to aggregate the history of
 	 * all players with the same name
 	 * 
-	 * @param username name of the user 
+	 * @param username name of the user
 	 * @param competitionName the short name (no whitespace) of the competition
 	 * @param playerName the name of the player being queried
 	 * @return the player histories (statistics)
 	 */
-	private PlayerHistory loadPlayerHistory(String username,
-			String competitionName, String playerName) {
+	private PlayerHistory loadPlayerHistory(String username, String competitionName, String playerName) {
 
 		PlayerHistory player = null;
 
-		String playerFolder = ProjectProperties.getInstance()
-				.getProjectLocation()
-				+ "/submissions/"
-				+ username
+		String playerFolder = ProjectProperties.getInstance().getSubmissionsLocation() + username
 				+ "/competitions/" + competitionName + "/" + playerName + "/";
 
 		if ((new File(playerFolder)).exists()) {
 			// there is at least 1 active player
 			player = new PlayerHistory(playerName);
 			// get active player
-			player.activatePlayer(loadPlayerFromDirectory(playerFolder
-					+ "active/"));
+			player.activatePlayer(loadPlayerFromDirectory(playerFolder + "active/"));
 			// get retired player
 			LinkedList<PlayerResult> retiredPlayerList = new LinkedList<PlayerResult>();
 			if (new File(playerFolder + "retired/").exists()) {
-				String[] retiredPlayers = (new File(playerFolder + "retired/"))
-						.list();
+				String[] retiredPlayers = (new File(playerFolder + "retired/")).list();
 
 				if (retiredPlayers != null) {
 					for (String retiredPlayer : retiredPlayers) {
-						if ((new File(playerFolder + "retired/" + retiredPlayer))
-								.isDirectory()) {
-							PlayerResult currentPlayer = loadPlayerFromDirectory(playerFolder
-									+ "retired/" + retiredPlayer + "/");
+						if ((new File(playerFolder + "retired/" + retiredPlayer)).isDirectory()) {
+							PlayerResult currentPlayer = loadPlayerFromDirectory(playerFolder + "retired/" + retiredPlayer
+									+ "/");
 							if (currentPlayer != null) {
-								if (currentPlayer.getName() == null
-										|| currentPlayer.getName().isEmpty()) {
+								if (currentPlayer.getName() == null || currentPlayer.getName().isEmpty()) {
 									currentPlayer.setName(playerName);
 								}
 
@@ -248,16 +232,14 @@ public class PlayerDAO {
 
 				player.setName(in.nextLine().replace("name=", ""));
 				try {
-					player.setFirstUploaded(PASTAUtil.parseDate(in.nextLine()
-							.replace("uploadDate=", "")));
+					player.setFirstUploaded(PASTAUtil.parseDate(in.nextLine().replace("uploadDate=", "")));
 				} catch (ParseException e) {
 					player.setFirstUploaded(new Date(0));
 				}
 
 				in.close();
 			} catch (FileNotFoundException e) {
-				logger.error("Execution error reading " + directory
-						+ "player.info :" + e);
+				logger.error("Execution error reading " + directory + "player.info :" + e);
 				return null;
 			}
 		}
@@ -297,16 +279,14 @@ public class PlayerDAO {
 				player.setOfficialDraw(draw);
 				player.setOfficialLoss(loss);
 			} catch (Exception e) {
-				logger.error("Execution error reading " + directory
-						+ "official.stats :" + e);
+				logger.error("Execution error reading " + directory + "official.stats :" + e);
 			}
 		}
 
 		// read unofficial.stats
 		if (new File(directory + "unofficial.stats").exists()) {
 			try {
-				Scanner in = new Scanner(new File(directory
-						+ "unofficial.stats"));
+				Scanner in = new Scanner(new File(directory + "unofficial.stats"));
 
 				int win = 0;
 				int draw = 0;
@@ -330,8 +310,7 @@ public class PlayerDAO {
 				player.setUnofficialDraw(draw);
 				player.setUnofficialLoss(loss);
 			} catch (Exception e) {
-				logger.error("Execution error reading " + directory
-						+ "unofficial.stats :" + e);
+				logger.error("Execution error reading " + directory + "unofficial.stats :" + e);
 			}
 		}
 		return player;
