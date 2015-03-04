@@ -164,13 +164,15 @@ public class ProjectProperties {
 		logger.info("UnitTests location set to: " + unitTestsLocation);
 		logger.info("Submissions location set to: " + submissionsLocation);
 		logger.info("Competitions Location set to: " + competitionsLocation);
+		
+		ProjectProperties.properties = this;
 	}
 	
 	@PostConstruct
 	public void initDAOs() {
-		this.playerDAO.init();
 		this.assessmentDAO.init();
 		this.resultDAO.init(assessmentDAO);
+		this.playerDAO.init();
 	}
 	
 	/**
