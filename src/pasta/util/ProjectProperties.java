@@ -124,7 +124,7 @@ public class ProjectProperties {
 
 			SocketAddress addr = new InetSocketAddress(settings.get("proxydomain"), Integer.parseInt(settings
 					.get("proxyport")));
-			ProjectProperties.proxy = new Proxy(Proxy.Type.HTTP, addr);
+			this.proxy = new Proxy(Proxy.Type.HTTP, addr);
 			logger.info("Using proxy " + settings.get("proxydomain") + " on port " + settings.get("proxyport"));
 		}
 
@@ -174,6 +174,7 @@ public class ProjectProperties {
 		this.assessmentDAO.init();
 		this.resultDAO.init(assessmentDAO);
 	}
+	
 	/**
 	 * Test a new path for validity. Create the path if it does not already exist.
 	 * 

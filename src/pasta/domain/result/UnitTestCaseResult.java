@@ -54,8 +54,6 @@ import javax.persistence.Table;
  * @since 2012-11-13
  * 
  */
-public class UnitTestCaseResult implements Comparable<UnitTestCaseResult> {
-
 @Entity
 @Table(name = "unit_test_case_results")
 public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCaseResult>{
