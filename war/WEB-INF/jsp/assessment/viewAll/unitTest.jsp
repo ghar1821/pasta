@@ -56,11 +56,11 @@ either expressed or implied, of the PASTA Project.
 			<td>
 				<!-- buttons -->
 				<div style="float:left">
-					<button style="float:left; text-align: center; " onclick="location.href='./${unitTest.shortName}/'">Details</button>
+					<button style="float:left; text-align: center; " onclick="location.href='./${unitTest.id}/'">Details</button>
 				</div>
 				<div style="float:left">
 					<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.shortName}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
 				</div>
 			</td>
 		</tr>

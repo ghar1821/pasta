@@ -134,7 +134,7 @@ th, td{
 						<input type="submit" onclick="changed = false;" value="Save and exit" id="submit" style="margin-top:1em;"/>
 					</c:otherwise>
 				</c:choose>
-				<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].handMarkingTemplateShortName" value="${handMarking.handMarking.shortName}"/>
+				<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].id" value="${handMarking.handMarking.id}"/>
 				<div style="width:100%; overflow:auto">
 					<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
 						<thead>
@@ -158,11 +158,11 @@ th, td{
 									</th>
 									<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
 										<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
-											<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
+											<c:if test="${not empty handMarking.handMarking.data[column.id][row.id] or handMarking.handMarking.data[column.id][row.id] == \"\"}">
 												<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
 												<br />
-												${handMarking.handMarking.data[column.name][row.name]}<br />
-												<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.name}']" value="${column.name}"/>
+												${handMarking.handMarking.data[column.id][row.id]}<br />
+												<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.id}']" value="${column.name}"/>
 											</c:if>
 										</td>
 									</c:forEach>

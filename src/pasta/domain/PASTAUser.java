@@ -50,6 +50,9 @@ import javax.persistence.Transient;
  * @since 2012-10-12
  */
 public class PASTAUser implements Serializable, Comparable<PASTAUser>{
+
+	private static final long serialVersionUID = -9070027568016757820L;
+	
 	private String username = "";
 	private String tutorial = "";
 	private String stream = "";

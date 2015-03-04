@@ -29,38 +29,73 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * Container class for a pairing of String and double, commonly used in
  * the hand marking assessment module template.
- * <p>
- * Somewhat poorly named, should be called a PASTAPair or similar.
  * 
  * @author Alex Radu
  * @version 2.0
  * @since 2012-11-20
  *
  */
-public class Tuple {
+@Entity
+@Table (name = "weighted_fields")
+public class WeightedField implements Serializable, Comparable<WeightedField> {
+	
+	private static final long serialVersionUID = -5647759434783526021L;
+
+	@Id 
+	@GeneratedValue
+	private long id;
+	
 	private String name;
 	private double weight;
 	
-	public Tuple(){}
+	public WeightedField(){}
 	
-	public Tuple(String name, double weight){
+	public WeightedField(String name, double weight){
 		this.name = name;
 		this.weight = weight;
 	}
 	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 	public double getWeight() {
 		return weight;
 	}
 	public void setWeight(double weight) {
 		this.weight = weight;
+	}
+
+	@Override
+	public int compareTo(WeightedField other) {
+		int diff = this.name.compareTo(other.name);
+		if(diff != 0) {
+			return diff;
+		}
+		return this.weight < other.weight ? -1 : this.weight > other.weight ? 1 : 0;
+	}
+	
+	public String toString() {
+		return "(" + id + ": " + name + ", " + weight + ")";
 	}
 }

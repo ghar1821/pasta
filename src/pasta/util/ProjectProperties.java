@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,10 +57,11 @@ import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.HandMarkingDAO;
 import pasta.repository.LoginDAO;
 import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
-import pasta.repository.UserDAO;
+import pasta.repository.UnitTestDAO;
 
 /**
  * The project properties.
@@ -79,7 +82,7 @@ public class ProjectProperties {
 	private static ProjectProperties properties;
 
 	// location of the project
-	private static String projectLocation;
+	private String projectLocation;
 	// location of the templates
 	private static String unitTestsLocation = "template/unitTest/";
 	// location of the submissions
@@ -87,20 +90,27 @@ public class ProjectProperties {
 	// location of the submissions
 	private static String competitionsLocation = "competitions/";
 	// auth type (dummy, imap, database)
-	private static String authType;
+	private String authType;
 	// list of mail servers to auth with (imap auth only)
-	private static List<String> serverAddresses;
+	private List<String> serverAddresses;
 	// create a new account if not already assigned a class
-	private static Boolean createAccountOnSuccessfulLogin;
+	private Boolean createAccountOnSuccessfulLogin;
 	// validator
-	private static Validator authenticationValidator;
+	private Validator authenticationValidator;
 	// proxy
-	private static Proxy proxy;
+	private Proxy proxy;
+	
+	private LoginDAO loginDAO;
+	private PlayerDAO playerDAO;
 
-	private static LoginDAO loginDAO;
-	private static AssessmentDAO assessmentDAO;
-	private static ResultDAO resultDAO;
-	private static PlayerDAO playerDAO;
+	@Autowired
+	private AssessmentDAO assessmentDAO;
+	@Autowired
+	private ResultDAO resultDAO;
+	@Autowired
+	private UnitTestDAO unitTestDAO;
+	@Autowired
+	private HandMarkingDAO handMarkingDAO;
 
 	private ProjectProperties(Map<String, String> settings) {
 		projectLocation = settings.get("location");
@@ -124,18 +134,21 @@ public class ProjectProperties {
 			logger.info("exists");
 			decryptAuthContent();
 		}
-
-		if (ProjectProperties.authType.equals("imap")) {
+		
+		if(this.authType.toLowerCase().trim().equals("imap")){
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
-		} else if (ProjectProperties.authType.equals("database")) {
+		}
+		else if(this.authType.toLowerCase().trim().equals("database")){
 			authenticationValidator = new DBAuthValidator();
 			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
-		} else if (ProjectProperties.authType.equals("ftp")) {
+		}
+		else if(this.authType.toLowerCase().trim().equals("ftp")){
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
-		} else if (ProjectProperties.authType.equals("ldap")) {
+		}
+		else if(this.authType.toLowerCase().trim().equals("ldap")){
 			authenticationValidator = new LDAPAuthValidator();
 			logger.info("Using ldap authentication");
 		} else {
@@ -152,11 +165,15 @@ public class ProjectProperties {
 		logger.info("Submissions location set to: " + submissionsLocation);
 		logger.info("Competitions Location set to: " + competitionsLocation);
 
-		assessmentDAO = new AssessmentDAO();
-		resultDAO = new ResultDAO(assessmentDAO);
 		playerDAO = new PlayerDAO();
+		
 	}
-
+	
+	@PostConstruct
+	public void initDAOs() {
+		this.assessmentDAO.init();
+		this.resultDAO.init(assessmentDAO);
+	}
 	/**
 	 * Test a new path for validity. Create the path if it does not already exist.
 	 * 
@@ -190,11 +207,8 @@ public class ProjectProperties {
 
 	private ProjectProperties() {
 	}
-
-	public static ProjectProperties getInstance() {
-		if (properties == null) {
-			properties = new ProjectProperties();
-		}
+	
+	public static ProjectProperties getInstance(){
 		return properties;
 	}
 
@@ -231,7 +245,7 @@ public class ProjectProperties {
 	}
 
 	public void setDBDao(LoginDAO dao) {
-		ProjectProperties.loginDAO = dao;
+		this.loginDAO = dao;
 		if (authType.toLowerCase().trim().equals("database")) {
 			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 		}
@@ -324,8 +338,8 @@ public class ProjectProperties {
 	public AssessmentDAO getAssessmentDAO() {
 		return assessmentDAO;
 	}
-
-	public LoginDAO getLoginDAO() {
+	
+	public LoginDAO getLoginDAO(){
 		return loginDAO;
 	}
 
@@ -335,5 +349,13 @@ public class ProjectProperties {
 
 	public PlayerDAO getPlayerDAO() {
 		return playerDAO;
+	}
+
+	public UnitTestDAO getUnitTestDAO() {
+		return unitTestDAO;
+	}
+
+	public HandMarkingDAO getHandMarkingDAO() {
+		return handMarkingDAO;
 	}
 }

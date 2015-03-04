@@ -31,12 +31,21 @@ package pasta.domain.template;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
-import org.apache.commons.collections.map.LazyMap;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 /**
  * Container class for the hand marking assessment module.
@@ -62,18 +71,43 @@ import org.apache.commons.collections.map.LazyMap;
  * @since 2012-11-13
  *
  */
+@Entity
+@Table (name = "hand_markings")
 public class HandMarking {
 
-	private String name;
-	private List<Tuple> columnHeader = LazyList.decorate(new ArrayList<Tuple>(),
-			FactoryUtils.instantiateFactory(Tuple.class));;
-	private List<Tuple> rowHeader = LazyList.decorate(new ArrayList<Tuple>(),
-			FactoryUtils.instantiateFactory(Tuple.class));
-	private Map<String, Map<String, String>> data = LazyMap.decorate(new TreeMap<String, TreeMap<String, String>>(), 
-			FactoryUtils.instantiateFactory(TreeMap.class));
+	@Id
+	@GeneratedValue 
+	private long id;
 	
-	private Map<String, Double> columnHeaderMap = new TreeMap<String, Double>();
-
+	private String name;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name="hand_marking_columns",
+			joinColumns=@JoinColumn(name = "hand_marking_id"),
+			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
+    @OrderColumn(name = "col_index")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<WeightedField> columnHeader = LazyList.decorate(new ArrayList<WeightedField>(),
+			FactoryUtils.instantiateFactory(WeightedField.class));
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="hand_marking_rows",
+			joinColumns=@JoinColumn(name = "hand_marking_id"),
+			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
+    @OrderColumn(name = "row_index")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<WeightedField> rowHeader = LazyList.decorate(new ArrayList<WeightedField>(),
+			FactoryUtils.instantiateFactory(WeightedField.class));
+	
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinTable (name="hand_marking_data_joins", 
+		joinColumns=@JoinColumn(name = "hand_marking_id"),
+		inverseJoinColumns=@JoinColumn(name = "hand_marking_data_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<HandMarkData> data = LazyList.decorate(new ArrayList<HandMarkData>(),
+			FactoryUtils.instantiateFactory(HandMarkData.class));
+	
+	
 	public String getName() {
 		return name;
 	}
@@ -86,38 +120,113 @@ public class HandMarking {
 		this.name = name;
 	}
 
-	public List<Tuple> getColumnHeader() {
+	public List<WeightedField> getColumnHeader() {
 		return columnHeader;
 	}
 	
-	public Map<String, Double> getColumnHeaderAsMap() {
-		return columnHeaderMap;
-	}
-
-	public void setColumnHeader(List<Tuple> columnHeader) {
+	public void setColumnHeader(List<WeightedField> columnHeader) {
 		this.columnHeader.clear();
-		this.columnHeaderMap.clear();
-		for(Tuple column: columnHeader){
+		for(WeightedField column: columnHeader){
 			this.columnHeader.add(column);
-			this.columnHeaderMap.put(column.getName(), column.getWeight());
 		}
 	}
 
-	public List<Tuple> getRowHeader() {
+	public List<WeightedField> getRowHeader() {
 		return rowHeader;
 	}
 
-	public void setRowHeader(List<Tuple> rowHeader) {
+	public void setRowHeader(List<WeightedField> rowHeader) {
 		this.rowHeader.clear();
 		this.rowHeader.addAll(rowHeader);
 	}
 
-	public Map<String, Map<String, String>> getData() {
+	public List<HandMarkData> getData() {
 		return data;
 	}
 
-	public void setData(Map<String, Map<String, String>> data) {
-		this.data.clear();
-		this.data.putAll(data);
+	public void setData(List<HandMarkData> data) {
+		removeAllData();
+		for(HandMarkData datum : data) {
+			addData(datum);
+		}
+	}
+
+	private WeightedField getRow(long id) {
+		for(WeightedField row : rowHeader) {
+			if(row.getId() == id) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
+	private WeightedField getColumn(long id) {
+		for(WeightedField col : columnHeader) {
+			if(col.getId() == id) {
+				return col;
+			}
+		}
+		return null;
+	}
+	
+	public boolean hasRow(long id) {
+		return getRow(id) != null;
+	}
+	
+	public double getRowWeight(long id) {
+		WeightedField row = getRow(id);
+		return row == null ? 0 : row.getWeight();
+	}
+	
+	public boolean hasColumn(long id) {
+		return getColumn(id) != null;
+	}
+	
+	public double getColumnWeight(long id) {
+		WeightedField col = getColumn(id);
+		return col == null ? 0 : col.getWeight();
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public void addData(HandMarkData handMarkData) {
+		//handMarkData.setHandMarking(this);
+		getData().add(handMarkData);
+	}
+	
+	public boolean removeData(HandMarkData handMarkData) {
+		//handMarkData.setHandMarking(null);
+		return getData().remove(handMarkData);
+	}
+	
+	public void removeAllData() {
+//		Iterator<HandMarkData> it = getData().iterator();
+//		while(it.hasNext()) {
+//			it.next().setHandMarking(null);
+//			it.remove();
+//		}
+		getData().clear();
+	}
+
+	public void addColumn(WeightedField column) {
+		getColumnHeader().add(column);
+	}
+	
+	public boolean removeColumn(WeightedField column) {
+		return getColumnHeader().remove(column);
+	}
+	
+	public void addRow(WeightedField row) {
+		getRowHeader().add(row);
+	}
+	
+	public boolean removeRow(WeightedField row) {
+		return getRowHeader().remove(row);
 	}
 }

@@ -32,7 +32,11 @@ package pasta.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -43,7 +47,9 @@ import org.springframework.stereotype.Service;
 
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
+import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
+import pasta.domain.template.WeightedField;
 import pasta.domain.upload.NewHandMarking;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
@@ -95,17 +101,84 @@ public class HandMarkingManager {
 	 * @see pasta.repository.AssessmentDAO#getHandMarking(String)
 	 * @return the hand marking template with that name, null if it does not exist
 	 */
+	@Deprecated
 	public HandMarking getHandMarking(String handMarkingName) {
 		return assDao.getHandMarking(handMarkingName);
 	}
 	
+
 	/**
 	 * Helper method
+	 * 
+	 * @param handMarkingId the id of the hand marking template
+	 * @see pasta.repository.AssessmentDAO#getHandMarking(long)
+	 * @return the hand marking template with that id, null if it does not exist
+	 */
+	public HandMarking getHandMarking(long handMarkingId) {
+		return ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId);
+	}
+	
+	/**
+	 * Update the hand marking. The incoming hand marking object may have rows
+	 * or columns with unique negative indices. If this is the case, this method
+	 * will create new database objects for the new rows and columns.
 	 * 
 	 * @param marking the hand marking template that will be updated
 	 * @see pasta.repository.AssessmentDAO#updateHandMarking(HandMarking)
 	 */
 	public void updateHandMarking(HandMarking marking){
+		Map<Long, WeightedField> replacements = new TreeMap<Long, WeightedField>();
+		
+		// Replace negative id rows and columns with new ones from database
+		for(ListIterator<WeightedField> iter : new ListIterator[] {
+				marking.getColumnHeader().listIterator(), marking.getRowHeader().listIterator()
+			}) {
+			while(iter.hasNext()) {
+				WeightedField oldField = iter.next();
+				if(oldField.getId() < 0) {
+					WeightedField newField = ProjectProperties.getInstance().getHandMarkingDAO().createNewWeightedField();
+					newField.setName(oldField.getName());
+					newField.setWeight(oldField.getWeight());
+					replacements.put(oldField.getId(), newField);
+					iter.set(newField);
+				}
+			}
+		}
+		
+		Iterator<HandMarkData> it = marking.getData().iterator();
+		while(it.hasNext()) {
+			HandMarkData datum = it.next();
+			if(datum == null || (datum.getColumn() == null && datum.getRow() == null)) {
+				it.remove();
+				continue;
+			} 
+			if(replacements.containsKey(datum.getColumn().getId())) {
+				datum.setColumn(replacements.get(datum.getColumn().getId()));
+			}
+			if(replacements.containsKey(datum.getRow().getId())) {
+				datum.setRow(replacements.get(datum.getRow().getId()));
+			}
+		}
+		
+//		Map<Long, Map<Long, String>> newData = new TreeMap<Long, Map<Long, String>>();
+//		for(Entry<Long, Map<Long, String>> columnEntry : marking.getData().entrySet()) {
+//			Long columnId = columnEntry.getKey();
+//			if(columnId < 0) {
+//				columnId = replacements.get(columnId);
+//			}
+//			Map<Long, String> newEntry = new TreeMap<Long, String>();
+//			newData.put(columnId, newEntry);
+//			for(Entry<Long, String> rowEntry : columnEntry.getValue().entrySet()) {
+//				Long rowId = rowEntry.getKey();
+//				if(rowId < 0) {
+//					rowId = replacements.get(rowId);
+//				}
+//				newEntry.put(rowId, rowEntry.getValue());
+//			}
+//		}
+//		
+//		marking.setData(newData);
+		
 		assDao.updateHandMarking(marking);
 	}
 
@@ -152,6 +225,16 @@ public class HandMarkingManager {
 					+ handMarkingName));
 		} catch (IOException e) {}
 	}
+	
+	/**
+	 * Remove a hand marking template
+	 * 
+	 * @param handMarkingId the id of the hand marking template
+	 */
+	public void removeHandMarking(long handMarkingId) {
+		ProjectProperties.getInstance().getHandMarkingDAO().delete(
+				ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId));
+	}
 
 	/**
 	 * Save the comment
@@ -166,4 +249,5 @@ public class HandMarkingManager {
 		// make that better
 		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
 	}
+
 }

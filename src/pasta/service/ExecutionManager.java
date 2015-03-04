@@ -56,6 +56,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -499,7 +500,7 @@ public class ExecutionManager {
 	 * Execute a normal job (not competition)
 	 * <p>
 	 * <ol>
-	 * 	<li>Create a folder where this will run $location$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestName$</li>
+	 * 	<li>Create a folder where this will run $location$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestId$</li>
 	 * 	<li>Copy unit test code (if there are multiple unit tests, run them all sequentially)</li>
 	 * 	<li>Run ant: 
 	 * 		<ol>
@@ -548,22 +549,22 @@ public class ExecutionManager {
 				try {
 					// create folder
 					(new File(unitTestsLocation + "/"
-							+ test.getTest().getShortName())).mkdirs();
+							+ test.getTest().getId())).mkdirs();
 
 					// copy over submission
 					FileUtils.copyDirectory(new File(location), new File(
 							unitTestsLocation + "/"
-									+ test.getTest().getShortName()));
+									+ test.getTest().getId()));
 					
 					// copy over unit test
 					FileUtils.copyDirectory(new File(test.getTest()
 							.getFileLocation() + "/code/"), new File(
 							unitTestsLocation + "/"
-									+ test.getTest().getShortName()));
+									+ test.getTest().getId()));
 
 					// compile
 					File buildFile = new File(unitTestsLocation + "/"
-							+ test.getTest().getShortName() + "/build.xml");
+							+ test.getTest().getId() + "/build.xml");
 
 					ProjectHelper projectHelper = ProjectHelper
 							.getProjectHelper();
@@ -572,10 +573,10 @@ public class ExecutionManager {
 					project.setUserProperty("ant.file",
 							buildFile.getAbsolutePath());
 					project.setBasedir(unitTestsLocation + "/"
-							+ test.getTest().getShortName());
+							+ test.getTest().getId());
 					DefaultLogger consoleLogger = new DefaultLogger();
 					runErrors = new PrintStream(unitTestsLocation + "/"
-							+ test.getTest().getShortName() + "/run.errors");
+							+ test.getTest().getId() + "/run.errors");
 					consoleLogger.setOutputPrintStream(runErrors);
 					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
 					project.addBuildListener(consoleLogger);
@@ -602,11 +603,11 @@ public class ExecutionManager {
 					if(failedToCompile){
 						PrintStream compileErrors = new PrintStream(
 								unitTestsLocation + "/"
-										+ test.getTest().getShortName()
+										+ test.getTest().getId()
 										+ "/compile.errors");
 						
 						Scanner in = new Scanner (new File(unitTestsLocation + "/"
-								+ test.getTest().getShortName() + "/run.errors"));
+								+ test.getTest().getId() + "/run.errors"));
 						
 						boolean print = false;
 						
@@ -620,7 +621,7 @@ public class ExecutionManager {
 							if(print && line.contains("[javac]")){
 								compileErrors.println(line.replace("[javac]", "").replaceAll(
 										".*" + unitTestsLocation + "/"
-												+ test.getTest().getShortName() + "/",
+												+ test.getTest().getId() + "/",
 										"folder "));
 							}
 						}
@@ -631,10 +632,10 @@ public class ExecutionManager {
 
 					// delete everything else
 					String[] allFiles = (new File(unitTestsLocation + "/"
-							+ test.getTest().getShortName())).list();
+							+ test.getTest().getId())).list();
 					for (String file : allFiles) {
 						File actualFile = new File(unitTestsLocation + "/"
-								+ test.getTest().getShortName() + "/" + file);
+								+ test.getTest().getId() + "/" + file);
 						if (actualFile.isDirectory()) {
 							FileUtils.deleteDirectory(actualFile);
 						} else {
@@ -660,6 +661,16 @@ public class ExecutionManager {
 			// update resultDAO
 			resultDAO.updateUnitTestResults(job.getUsername(), currAssessment,
 					job.getRunDate());
+			
+			// save results to database
+			try {
+				for(UnitTestResult result : resultDAO.getAsssessmentResult(job.getUsername(), currAssessment,
+						sdf.format(job.getRunDate())).getUnitTests()) {
+					resultDAO.save(result);
+				}
+			} catch( Exception e ) {
+				logger.error("Error saving unit test results to database.", e);
+			}
 		} catch (Exception e) {
 			logger.error("Execution error for " + job.getUsername() + " - "
 					+ job.getAssessmentName() + "   " + e);
@@ -676,7 +687,7 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	@Scheduled(fixedDelay = 10000)
+	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingAssessmentJobs() {
 		List<Job> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
@@ -697,7 +708,7 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	@Scheduled(fixedDelay = 10000)
+	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingCompetitionJobs() {
 		List<Job> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {

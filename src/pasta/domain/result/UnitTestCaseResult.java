@@ -29,6 +29,14 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.result;
 
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * Container class to hold the result of a single unit test.
  * <p>
@@ -47,12 +55,38 @@ package pasta.domain.result;
  * 
  */
 public class UnitTestCaseResult implements Comparable<UnitTestCaseResult> {
+
+@Entity
+@Table(name = "unit_test_case_results")
+public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCaseResult>{
+	
+	private static final long serialVersionUID = 6764260613777032069L;
+
+	@Id @GeneratedValue
+	private long id;
+	
+	@Column(name = "name")
 	private String testName;
+	
+	@Column(name = "result")
 	private String testResult;
+	
+	@Column(name = "message")
 	private String testMessage;
+	
+	@Column(name = "extended_message")
 	private String extendedMessage = "";
+	
 	private String type;
+	
 	private double time;
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 	
 	public String getTestName() {
 		return testName;

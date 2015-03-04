@@ -29,9 +29,23 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.result;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.map.LazyMap;
@@ -39,7 +53,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.Tuple;
+import pasta.domain.template.WeightedField;
 
 /**
  * Container class for the results of hand marking.
@@ -49,29 +63,43 @@ import pasta.domain.template.Tuple;
  * @since 2012-11-13
  * 
  */
-public class HandMarkingResult implements Comparable <HandMarkingResult>{
-	private Map<String, String> result = LazyMap.decorate(new TreeMap<String, String>(), 
+@Entity
+@Table (name = "hand_marking_results")
+public class HandMarkingResult implements Serializable, Comparable<HandMarkingResult> {
+
+	private static final long serialVersionUID = -2181570522930825901L;
+
+	@Id @GeneratedValue
+	private long id;
+	
+	@ElementCollection
+    @MapKeyColumn(name="row_id")
+    @Column(name="column_id")
+    @CollectionTable(name="hand_marking_map_results", joinColumns=@JoinColumn(name="hand_marking_result_id"))
+	private Map<Long, Long> result = LazyMap.decorate(new TreeMap<Long, Long>(), 
 			FactoryUtils.instantiateFactory(String.class));
 	
+    @Transient
 	protected final Log logger = LogFactory.getLog(getClass());
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn (name = "hand_marking_id")
 	private HandMarking markingTemplate;
-	private String handMarkingTemplateShortName;
+	
+	public long getId() {
+		return id;
+	}
 
-	public Map<String, String> getResult() {
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public Map<Long, Long> getResult() {
 		return result;
 	}
 
-	public void setResult(Map<String, String> result) {
+	public void setResult(Map<Long, Long> result) {
 		this.result = result;
-	}
-
-	public String getHandMarkingTemplateShortName() {
-		return handMarkingTemplateShortName;
-	}
-
-	public void setHandMarkingTemplateShortName(String handMarkingTemplateShortName) {
-		this.handMarkingTemplateShortName = handMarkingTemplateShortName;
 	}
 
 	public HandMarking getMarkingTemplate() {
@@ -84,10 +112,9 @@ public class HandMarkingResult implements Comparable <HandMarkingResult>{
 	
 	public double getPercentage(){
 		double percentage = 0;
-		for (Tuple t : markingTemplate.getRowHeader()) {
-			if(result.containsKey(t.getName()) && markingTemplate.getColumnHeaderAsMap().containsKey(result.get(t.getName()))){
-				percentage += (t.getWeight() * markingTemplate
-						.getColumnHeaderAsMap().get(result.get(t.getName())));
+		for (WeightedField t : markingTemplate.getRowHeader()) {
+			if(result.containsKey(t.getName()) && markingTemplate.hasColumn(result.get(t.getId()))){
+				percentage += (t.getWeight() * markingTemplate.getColumnWeight(result.get(t.getId())));
 			}
 		}
 		
@@ -95,13 +122,12 @@ public class HandMarkingResult implements Comparable <HandMarkingResult>{
 	}
 	
 	public boolean isFinishedMarking(){
-		//logger.info(result.size() + "-" + markingTemplate.getRowHeader().size());
 		if(result.size() >= markingTemplate.getRowHeader().size()){
-			for(Entry<String, String> entry: result.entrySet()){
+			for(Entry<Long, Long> entry: result.entrySet()){
 				logger.info(entry.getKey());
 				logger.info(entry.getValue());
 				if(entry.getKey() == null 
-						|| !(entry.getValue() instanceof String)
+						|| !(entry.getValue() instanceof Long)
 						|| entry.getValue() == null){
 					return false;
 				}
@@ -112,8 +138,8 @@ public class HandMarkingResult implements Comparable <HandMarkingResult>{
 	}
 
 	@Override
-	public int compareTo(HandMarkingResult target) {
-		return markingTemplate.getName().compareTo(target.getMarkingTemplate().getName());
+	public int compareTo(HandMarkingResult other) {
+		return markingTemplate.getName().compareTo(other.getMarkingTemplate().getName());
 	}
 	
 }

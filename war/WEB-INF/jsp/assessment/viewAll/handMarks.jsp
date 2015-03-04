@@ -41,11 +41,11 @@ either expressed or implied, of the PASTA Project.
 			<td><b>${handMarking.name}</b></td>
 			<td>
 				<div style="float:left">
-					<button style="float:left; text-align: center; " onclick="location.href='./${handMarking.shortName}/'">Details</button>
+					<button style="float:left; text-align: center; " onclick="location.href='./${handMarking.id}/'">Details</button>
 				</div>
 				<div style="float:left">
 					<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${handMarking.shortName}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${handMarking.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
 				</div>
 			</td>
 		</tr>

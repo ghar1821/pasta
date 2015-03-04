@@ -45,6 +45,7 @@ either expressed or implied, of the PASTA Project.
 
 <form:form commandName="assessment" enctype="multipart/form-data" method="POST">
 	
+	<form:input type="hidden" path="id" value="${assessment.id}"/>
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
 	
 	<table>
@@ -75,8 +76,8 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.unitTests}">
 								<tr>
 									<td>
-										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
+										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="unitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
@@ -93,8 +94,8 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.secretUnitTests}">
 								<tr>
 									<td>
-										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
+										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="secretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
@@ -114,8 +115,8 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
 								<tr>
 									<td>
-										<form:input type="hidden" path="garbage[${unitTestIndex.index}].unitTestName" value="${unitTest.unitTestName}"/>
-										<a href="../../unitTest/${unitTest.test.shortName}/">${unitTest.test.name}</a>
+										<form:input type="hidden" path="garbage[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
+										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="garbage[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
@@ -141,7 +142,7 @@ either expressed or implied, of the PASTA Project.
 								<tr>
 									<td>
 										<form:input type="hidden" path="handMarking[${handMarkingIndex.index}].handMarkingName" value="${handMarking.handMarkingName}"/>
-										<a href="../../handMarking/${handMarking.handMarking.shortName}/">${handMarking.handMarking.name}</a>
+										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="handMarking[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
@@ -161,7 +162,7 @@ either expressed or implied, of the PASTA Project.
 								<tr>
 									<td>
 										<form:input type="hidden" path="handGarbage[${handMarkingIndex.index}].handMarkingName" value="${handMarking.handMarkingName}"/>
-										<a href="../../handMarking/${handMarking.handMarking.shortName}/">${handMarking.handMarking.name}</a>
+										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="handGarbage[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
@@ -279,8 +280,8 @@ either expressed or implied, of the PASTA Project.
             			
 						if(childrenNodes[j].getAttribute("id") != "buffer"){
 							// td -> input - unitTestName
-							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".unitTestName");
-							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".unitTestName");
+							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".test.id");
+							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".test.id");
 							
 							// td -> input - weight
 							childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");

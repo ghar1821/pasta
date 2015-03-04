@@ -1057,8 +1057,7 @@ public class SubmissionController {
 		List<HandMarkingResult> results = form.getHandMarkingResults();
 		for (HandMarkingResult currResult : results) {
 			currResult.setMarkingTemplate(handMarkingManager
-					.getHandMarking(currResult
-							.getHandMarkingTemplateShortName()));
+					.getHandMarking(currResult.getId()));
 		}
 		handMarkingManager.saveHandMarkingResults(username, assessmentName,
 				assessmentDate, form.getHandMarkingResults());
@@ -1145,8 +1144,7 @@ public class SubmissionController {
 			List<HandMarkingResult> results = form.getHandMarkingResults();
 			for (HandMarkingResult currResult : results) {
 				currResult.setMarkingTemplate(handMarkingManager
-						.getHandMarking(currResult
-								.getHandMarkingTemplateShortName()));
+						.getHandMarking(currResult.getId()));
 			}
 			handMarkingManager.saveHandMarkingResults(student, assessmentName,
 					manager.getLatestResultsForUser(student)

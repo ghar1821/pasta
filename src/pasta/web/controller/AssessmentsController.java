@@ -219,7 +219,7 @@ public class AssessmentsController {
 
 
 	/**
-	 * $PASTAUrl$/assessments/{assessmentName}/ - GET
+	 * $PASTAUrl$/assessments/{assessmentId}/ - GET
 	 * <p>
 	 * View the assessment details.
 	 * <p>
@@ -246,13 +246,13 @@ public class AssessmentsController {
 	 * JSP:
 	 * <ul><li>assessment/view/assessment</li></ul>
 	 * 
-	 * @param assessmentName the short name (no whitespace) of the assessment.
+	 * @param assessmentId the id of the assessment.
 	 * @param model the model used to add attributes
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessment"
 	 */
-	@RequestMapping(value = "{assessmentName}/")
+	@RequestMapping(value = "{assessmentId}/")
 	public String viewAssessment(
-			@PathVariable("assessmentName") String assessmentName, Model model) {
+			@PathVariable("assessmentId") long assessmentId, Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -262,7 +262,7 @@ public class AssessmentsController {
 			return "redirect:/home/.";
 		}
 
-		Assessment currAssessment = assessmentManager.getAssessment(assessmentName);
+		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
 		model.addAttribute("assessment", currAssessment);
 
 		List<WeightedUnitTest> otherUnitTetsts = new LinkedList<WeightedUnitTest>();
@@ -270,7 +270,7 @@ public class AssessmentsController {
 		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
 			for (WeightedUnitTest weightedTest : currAssessment.getUnitTests()) {
-				if (weightedTest.getTest() == test) {
+				if (weightedTest.getTest().getId() == test.getId()) {
 					contains = true;
 					break;
 				}
@@ -279,7 +279,7 @@ public class AssessmentsController {
 			if (!contains) {
 				for (WeightedUnitTest weightedTest : currAssessment
 						.getSecretUnitTests()) {
-					if (weightedTest.getTest() == test) {
+					if (weightedTest.getTest().getId() == test.getId()) {
 						contains = true;
 						break;
 					}
@@ -343,7 +343,7 @@ public class AssessmentsController {
 	}
 	
 	/**
-	 * $PASTAUrl$/assessments/{assessmentName}/ - POST
+	 * $PASTAUrl$/assessments/{assessmentId}/ - POST
 	 * <p>
 	 * Update an assessment. Only instructors can change an assessment.
 	 * Tutors can only view.
@@ -357,15 +357,15 @@ public class AssessmentsController {
 	 * 
 	 * Redirect back to the post version of this page.
 	 * 
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param form the form for updating the assessment
 	 * @param result the binding result, used for feedback
 	 * @param model the model used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
-	@RequestMapping(value = "{assessmentName}/", method = RequestMethod.POST)
+	@RequestMapping(value = "{assessmentId}/", method = RequestMethod.POST)
 	public String updateAssessment(
-			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute(value = "assessment") Assessment form,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
@@ -376,14 +376,14 @@ public class AssessmentsController {
 			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
-			form.setName(assessmentManager.getAssessment(assessmentName).getName());
+			form.setName(assessmentManager.getAssessment(assessmentId).getName());
 			assessmentManager.addAssessment(form);
 		}
 		return "redirect:.";
 	}
 
 	/**
-	 * $PASTAUrl$/assessments/{assessmentName}/run/
+	 * $PASTAUrl$/assessments/{assessmentId}/run/
 	 * <p>
 	 * Schedule the execution of an assessment for all students who have submitted.
 	 * Only works for instructors.
@@ -396,13 +396,13 @@ public class AssessmentsController {
 	 * {@link pasta.service.SubmissionManager#runAssessment(Assessment, java.util.Collection)}
 	 * redirect to the referrer.
 	 * 
-	 * @param assessmentName the name of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param request the http request, used for redirection
 	 * @return "redirect:/login/" or "redirect:/home/" or redirect to referrer
 	 */
-	@RequestMapping(value = "{assessmentName}/run/")
+	@RequestMapping(value = "{assessmentId}/run/")
 	public String runAssessment(
-			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentId") long assessmentId,
 			HttpServletRequest request) {
 
 		PASTAUser user = getUser();
@@ -413,7 +413,7 @@ public class AssessmentsController {
 			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
-			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentName), userManager.getUserList());
+			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentId), userManager.getUserList());
 		}
 		return "redirect:" + request.getHeader("Referer");
 	}
@@ -499,7 +499,7 @@ public class AssessmentsController {
 	}
 
 	/**
-	 * $PASTAUrl$/assessments/release/{assessmentName}/ - POST
+	 * $PASTAUrl$/assessments/release/{assessmentId}/ - POST
 	 * <p>
 	 * Release the assessment to some students.
 	 * <p>
@@ -511,14 +511,14 @@ public class AssessmentsController {
 	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, ReleaseForm)}.
 	 * redirect to $PASTAUrl$/assessments/
 	 * 
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param form the release form
 	 * @param model the model used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
-	@RequestMapping(value = "release/{assessmentName}/", method = RequestMethod.POST)
+	@RequestMapping(value = "release/{assessmentId}/", method = RequestMethod.POST)
 	public String releaseAssessment(
-			@PathVariable("assessmentName") String assessmentName,
+			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute(value = "assessmentRelease") ReleaseForm form,
 			Model model) {
 
@@ -531,8 +531,8 @@ public class AssessmentsController {
 		}
 		if (getUser().isInstructor()) {
 
-			if (assessmentManager.getAssessment(assessmentName) != null) {
-				assessmentManager.releaseAssessment(form.getAssessmentName(),
+			if (assessmentManager.getAssessment(assessmentId) != null) {
+				assessmentManager.releaseAssessment(form.getAssessmentId(),
 						form);
 			}
 		}

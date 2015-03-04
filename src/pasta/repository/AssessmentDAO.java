@@ -54,6 +54,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.DependsOn;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -65,8 +68,9 @@ import pasta.domain.form.ReleaseForm;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
+import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.Tuple;
+import pasta.domain.template.WeightedField;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
@@ -92,17 +96,26 @@ import pasta.util.ProjectProperties;
 
 @Repository("assessmentDAO")
 @DependsOn("projectProperties")
-public class AssessmentDAO {
+public class AssessmentDAO extends HibernateDaoSupport {
 
 	// assessmentTemplates are cached
-	Map<String, Assessment> allAssessments;
-	Map<String, List<Assessment>> allAssessmentsByCategory;
-	Map<String, UnitTest> allUnitTests;
-	Map<String, HandMarking> allHandMarking;
+	@Deprecated Map<String, Assessment> allAssessments;
+	@Deprecated Map<String, List<Assessment>> allAssessmentsByCategory;
+	@Deprecated Map<String, UnitTest> allUnitTests;
+	@Deprecated Map<String, HandMarking> allHandMarking;
 	Map<String, Competition> allCompetitions;
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	// Default required by hibernate
+	@Autowired
+	public void setMySession(SessionFactory sessionFactory) {
+		setSessionFactory(sessionFactory);
+	}
+	
+	public AssessmentDAO() {
+	}
+	
 	/**
 	 * Load all assessment modules from disk.
 	 * <p>
@@ -114,26 +127,25 @@ public class AssessmentDAO {
 	 * <li>Assessments</li>
 	 * </ol>
 	 */
-	public AssessmentDAO() {
+	public void init() {
 		// load up all cached objects
-
+		
 		// load up unit tests
 		allUnitTests = new TreeMap<String, UnitTest>();
 		loadUnitTests();
-
+		
 		// load up hand marking
 		allHandMarking = new TreeMap<String, HandMarking>();
 		loadHandMarking();
-
+		
 		// load up competitions
 		allCompetitions = new TreeMap<String, Competition>();
 		loadCompetitions();
-
+		
 		// load up all assessments
 		allAssessmentsByCategory = new TreeMap<String, List<Assessment>>();
 		allAssessments = new TreeMap<String, Assessment>();
 		loadAssessments();
-
 	}
 
 	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
@@ -144,10 +156,12 @@ public class AssessmentDAO {
 		return allUnitTests;
 	}
 
+	@Deprecated
 	public Assessment getAssessment(String name) {
 		return allAssessments.get(name);
 	}
 
+	@Deprecated
 	public HandMarking getHandMarking(String name) {
 		return allHandMarking.get(name);
 	}
@@ -157,7 +171,8 @@ public class AssessmentDAO {
 	}
 
 	public Collection<HandMarking> getHandMarkingList() {
-		return allHandMarking.values();
+//		return allHandMarking.values();
+		return ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings();
 	}
 
 	public Collection<Assessment> getAssessmentList() {
@@ -168,6 +183,7 @@ public class AssessmentDAO {
 		return allCompetitions.values();
 	}
 
+	@Deprecated
 	public void addUnitTest(UnitTest newUnitTest) {
 		allUnitTests.put(newUnitTest.getShortName(), newUnitTest);
 	}
@@ -229,7 +245,7 @@ public class AssessmentDAO {
 				}
 			}
 			curAss.setCompetitions(newAssessment.getCompetitions());
-
+			update(curAss);
 		} else {
 			allAssessments.put(newAssessment.getShortName(), newAssessment);
 			String category = "";
@@ -241,6 +257,7 @@ public class AssessmentDAO {
 				allAssessmentsByCategory.put(category, new LinkedList<Assessment>());
 			}
 			allAssessmentsByCategory.get(category).add(newAssessment);
+			save(newAssessment);
 		}
 	}
 
@@ -320,10 +337,14 @@ public class AssessmentDAO {
 	 * @param released the form detailing the users / streams / classes to release
 	 *          to
 	 */
+	@Deprecated
 	public void releaseAssessment(String assessmentName, ReleaseForm released) {
-		allAssessments.get(assessmentName).setReleasedClasses(released.getList());
-		if (released.getSpecialRelease() != null && !released.getSpecialRelease().isEmpty()) {
-			allAssessments.get(assessmentName).setSpecialRelease(released.getSpecialRelease());
+		Assessment assessment = allAssessments.get(assessmentName);
+		
+		assessment.setReleasedClasses(released.getList());
+		if (released.getSpecialRelease() != null
+				&& !released.getSpecialRelease().isEmpty()) {
+			assessment.setSpecialRelease(released.getSpecialRelease());
 		}
 		try {
 			// save to file
@@ -335,7 +356,28 @@ public class AssessmentDAO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+		// Update in database
+		update(assessment);
+	}
+	
+	/**
+	 * Release assessment 
+	 * 
+	 * @param assessmentName the name of the assessment
+	 * @param released the form detailing the users / streams / classes to release to
+	 */
+	public void releaseAssessment(long assessmentId, ReleaseForm released) {
+		Assessment assessment = getAssessment(assessmentId);
+		
+		assessment.setReleasedClasses(released.getList());
+		if (released.getSpecialRelease() != null
+				&& !released.getSpecialRelease().isEmpty()) {
+			assessment.setSpecialRelease(released.getSpecialRelease());
+		}
+		
+		// Update in database
+		update(assessment);
 	}
 
 	/**
@@ -345,6 +387,7 @@ public class AssessmentDAO {
 	 * 
 	 * @param unitTestName unit test short name (no spaces) to remove.
 	 */
+	@Deprecated
 	public void removeUnitTest(String unitTestName) {
 		// go through all assessments and remove the unit test from them
 		for (Assessment assessment : allAssessments.values()) {
@@ -367,6 +410,26 @@ public class AssessmentDAO {
 			logger.error("Could not delete the folder for unit test " + unitTestName + "\r\n" + sw.toString());
 		}
 	}
+	
+	/**
+	 * Delete a unit test from the system.
+	 * <p>
+	 * Go through all assessments and remove test from them.
+	 * 
+	 * @param unitTestId unit test id to remove.
+	 */
+	public void removeUnitTest(long unitTestId) {
+		// go through all assessments and remove the unit test from them
+		for(Assessment assessment: getAllAssessments()){
+			for(WeightedUnitTest test: assessment.getAllUnitTests()){
+				if(test.getTest().getId() == unitTestId){
+					// got a little lazy, should fix
+					assessment.removeSecretUnitTest(test);
+					assessment.removeUnitTest(test);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Delete an assessment from the system.
@@ -377,6 +440,7 @@ public class AssessmentDAO {
 	 * 
 	 * @param assessmentName the short name (no spaces) of the assessment
 	 */
+	@Deprecated
 	public void removeAssessment(String assessmentName) {
 
 		Assessment assessmentToRemove = allAssessments.get(assessmentName);
@@ -401,6 +465,32 @@ public class AssessmentDAO {
 			e.printStackTrace(pw);
 			logger.error("Could not delete the folder for assessment " + assessmentName + "\r\n" + sw.toString());
 		}
+		
+		delete(assessmentToRemove);
+	}
+	
+	/**
+	 * Delete an assessment from the system.
+	 * <p>
+	 * 
+	 * Iterates over all competitions and removes itself from them.
+	 * Competitions are the only assessment modules that contain
+	 * a link to the assessments they are used in.
+	 * 
+	 * @param assessmentName the short name (no spaces) of the assessment 
+	 */
+	public void removeAssessment(long assessmentId) {
+		Assessment assessmentToRemove = getAssessment(assessmentId);
+		if(assessmentToRemove == null){
+			return;
+		}
+		
+		// remove links from competitions
+		for(WeightedCompetition comp : assessmentToRemove.getCompetitions()){
+			comp.getCompetition().removeAssessment(assessmentToRemove);
+		}
+		
+		delete(assessmentToRemove);
 	}
 
 	/**
@@ -442,6 +532,7 @@ public class AssessmentDAO {
 	 * @param handMarkingName the short name (no spaces) of the hand marking
 	 *          template
 	 */
+	@Deprecated
 	public void removeHandMarking(String handMarkingName) {
 		// remove from assessments
 		for (Entry<String, Assessment> ass : allAssessments.entrySet()) {
@@ -468,30 +559,53 @@ public class AssessmentDAO {
 					.error("Could not delete the folder for hand marking " + handMarkingName + "\r\n" + sw.toString());
 		}
 	}
+	
+	/**
+	 * Delete a hand marking template from the system.
+	 * <p>
+	 * Iterates over all assessments and removes itself from them.
+	 * 
+	 * @param handMarkingId the id of the hand marking template 
+	 */
+	public void removeHandMarking(long handMarkingId) {
+		// remove from assessments
+		for(Assessment ass : getAllAssessments()) {
+			List<WeightedHandMarking> marking = ass.getHandMarking();
+			for (WeightedHandMarking template : marking) {
+				if(template.getHandMarking().getId() == handMarkingId) {
+					ass.removeHandMarking(template);
+					break;
+				}
+			}
+		}
+	}
 
 	/**
 	 * Load all unit tests.
 	 * <p>
 	 * Calls {@link #getUnitTestFromDisk(String)} multiple times.
 	 */
+	@Deprecated
 	private void loadUnitTests() {
-		// get unit test location
-		String allTestLocation = ProjectProperties.getInstance().getUnitTestsLocation();
-		String[] allUnitTestNames = (new File(allTestLocation)).list();
-		if (allUnitTestNames != null && allUnitTestNames.length > 0) {
-			Arrays.sort(allUnitTestNames);
-
-			// load properties
-			for (String name : allUnitTestNames) {
-				if ((new File(allTestLocation + name)).isDirectory()) {
-					UnitTest test = getUnitTestFromDisk(allTestLocation + name);
-					if (test != null) {
-						allUnitTests.put(name, test);
-					}
-				}
-			}
+		for(UnitTest test : ProjectProperties.getInstance().getUnitTestDAO().getAllUnitTests()) {
+			allUnitTests.put(test.getName(), test);
 		}
-
+//		// get unit test location
+//		String allTestLocation = ProjectProperties.getInstance()
+//				.getProjectLocation() + "/template/unitTest";
+//		String[] allUnitTestNames = (new File(allTestLocation)).list();
+//		if (allUnitTestNames != null && allUnitTestNames.length > 0) {
+//			Arrays.sort(allUnitTestNames);
+//
+//			// load properties
+//			for (String name : allUnitTestNames) {
+//				UnitTest test = getUnitTestFromDisk(allTestLocation + "/"
+//						+ name);
+//				if (test != null) {
+//					allUnitTests.put(name, test);
+//				}
+//			}
+//		}
 	}
 
 	/**
@@ -522,30 +636,47 @@ public class AssessmentDAO {
 	 * <p>
 	 * Calls {@link #getAssessmentFromDisk(String)} multiple times.
 	 */
+	@Deprecated
 	private void loadAssessments() {
-		// get unit test location
-		String allTestLocation = ProjectProperties.getInstance().getProjectLocation() + "/template/assessment";
-		String[] allAssessmentNames = (new File(allTestLocation)).list();
-		if (allAssessmentNames != null && allAssessmentNames.length > 0) {
-			Arrays.sort(allAssessmentNames);
-
-			// load properties
-			for (String name : allAssessmentNames) {
-				Assessment assessment = getAssessmentFromDisk(allTestLocation + "/" + name);
-				if (assessment != null) {
-					allAssessments.put(name, assessment);
-					String category = assessment.getCategory();
-					if (category == null) {
-						category = "";
-					}
-					if (!allAssessmentsByCategory.containsKey(category)) {
-						allAssessmentsByCategory.put(category, new LinkedList<Assessment>());
-					}
-					allAssessmentsByCategory.get(category).add(assessment);
-				}
+		for(Assessment assessment : getAllAssessments()) {
+			allAssessments.put(assessment.getShortName(), assessment);
+			String category = assessment.getCategory();
+			if (category == null) {
+				category = "";
 			}
+			if (!allAssessmentsByCategory.containsKey(category)) {
+				allAssessmentsByCategory.put(category,
+						new LinkedList<Assessment>());
+			}
+			allAssessmentsByCategory.get(category).add(assessment);
 		}
-
+		
+//		
+//		// get unit test location
+//		String allTestLocation = ProjectProperties.getInstance()
+//				.getProjectLocation() + "/template/assessment";
+//		String[] allAssessmentNames = (new File(allTestLocation)).list();
+//		if (allAssessmentNames != null && allAssessmentNames.length > 0) {
+//			Arrays.sort(allAssessmentNames);
+//
+//			// load properties
+//			for (String name : allAssessmentNames) {
+//				Assessment assessment = getAssessmentFromDisk(allTestLocation
+//						+ "/" + name);
+//				if (assessment != null) {
+//					allAssessments.put(name, assessment);
+//					String category = assessment.getCategory();
+//					if (category == null) {
+//						category = "";
+//					}
+//					if (!allAssessmentsByCategory.containsKey(category)) {
+//						allAssessmentsByCategory.put(category,
+//								new LinkedList<Assessment>());
+//					}
+//					allAssessmentsByCategory.get(category).add(assessment);
+//				}
+//			}
+//		}
 	}
 
 	/**
@@ -553,21 +684,28 @@ public class AssessmentDAO {
 	 * <p>
 	 * Calls {@link #getHandMarkingFromDisk(String)} multiple times.
 	 */
+	@Deprecated
 	private void loadHandMarking() {
-		// get hand marking location
-		String allTestLocation = ProjectProperties.getInstance().getProjectLocation() + "/template/handMarking";
-		String[] allHandMarkingNames = (new File(allTestLocation)).list();
-		if (allHandMarkingNames != null && allHandMarkingNames.length > 0) {
-			Arrays.sort(allHandMarkingNames);
-
-			// load properties
-			for (String name : allHandMarkingNames) {
-				HandMarking test = getHandMarkingFromDisk(allTestLocation + "/" + name);
-				if (test != null) {
-					allHandMarking.put(test.getShortName(), test);
-				}
-			}
+		for(HandMarking template : ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings()) {
+			allHandMarking.put(template.getName(), template);
 		}
+//		
+//		// get hand marking location
+//		String allTestLocation = ProjectProperties.getInstance()
+//				.getProjectLocation() + "/template/handMarking";
+//		String[] allHandMarkingNames = (new File(allTestLocation)).list();
+//		if (allHandMarkingNames != null && allHandMarkingNames.length > 0) {
+//			Arrays.sort(allHandMarkingNames);
+//
+//			// load properties
+//			for (String name : allHandMarkingNames) {
+//				HandMarking test = getHandMarkingFromDisk(allTestLocation + "/"
+//						+ name);
+//				if (test != null) {
+//					allHandMarking.put(test.getShortName(), test);
+//				}
+//			}
+//		}
 	}
 
 	/**
@@ -913,105 +1051,111 @@ public class AssessmentDAO {
 			return null;
 		}
 	}
-
-	/**
-	 * Method to get a handmarking from a location
-	 * <p>
-	 * Loads the handMarkingProperties.xml from file into the cache. Also loads
-	 * the multiple .html files which are the descriptions in each box of the hand
-	 * marking template.
-	 * 
-	 * @param location - the location of the handmarking
-	 * @return null - there is no handmarking at that location to be retrieved
-	 * @return test - the handmarking at that location.
-	 */
-	private HandMarking getHandMarkingFromDisk(String location) {
-		try {
-
-			File fXmlFile = new File(location + "/handMarkingProperties.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder;
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(fXmlFile);
-			doc.getDocumentElement().normalize();
-
-			HandMarking markingTemplate = new HandMarking();
-
-			// load name
-			markingTemplate
-					.setName(doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue());
-
-			// load column list
-			NodeList columnList = doc.getElementsByTagName("column");
-			List<Tuple> columnHeaderList = new ArrayList<Tuple>();
-			if (columnList != null && columnList.getLength() > 0) {
-				for (int i = 0; i < columnList.getLength(); i++) {
-					Node columnNode = columnList.item(i);
-					if (columnNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element columnElement = (Element) columnNode;
-
-						Tuple tuple = new Tuple();
-						tuple.setName(columnElement.getAttribute("name"));
-						tuple.setWeight(Double.parseDouble(columnElement.getAttribute("weight")));
-
-						columnHeaderList.add(tuple);
-					}
-				}
-			}
-			markingTemplate.setColumnHeader(columnHeaderList);
-
-			// load row list
-			NodeList rowList = doc.getElementsByTagName("row");
-			List<Tuple> rowHeaderList = new ArrayList<Tuple>();
-			if (rowList != null && rowList.getLength() > 0) {
-				for (int i = 0; i < rowList.getLength(); i++) {
-					Node rowNode = rowList.item(i);
-					if (rowNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element rowElement = (Element) rowNode;
-
-						Tuple tuple = new Tuple();
-						tuple.setName(rowElement.getAttribute("name"));
-						tuple.setWeight(Double.parseDouble(rowElement.getAttribute("weight")));
-
-						rowHeaderList.add(tuple);
-					}
-				}
-			}
-			markingTemplate.setRowHeader(rowHeaderList);
-
-			// load data
-			Map<String, Map<String, String>> descriptionMap = new TreeMap<String, Map<String, String>>();
-			for (Tuple column : markingTemplate.getColumnHeader()) {
-				Map<String, String> currDescriptionMap = new TreeMap<String, String>();
-				for (Tuple row : markingTemplate.getRowHeader()) {
-					try {
-						Scanner in = new Scanner(new File(location + "/" + column.getName().replace(" ", "") + "-"
-								+ row.getName().replace(" ", "") + ".txt"));
-						String description = "";
-						while (in.hasNextLine()) {
-							description += in.nextLine() + System.getProperty("line.separator");
-						}
-						currDescriptionMap.put(row.getName(), description);
-						in.close();
-					} catch (Exception e) {
-						// do nothing
-					}
-				}
-				descriptionMap.put(column.getName(), currDescriptionMap);
-			}
-
-			markingTemplate.setData(descriptionMap);
-
-			return markingTemplate;
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			logger.error("Could not read hand marking " + location + System.getProperty("line.separator")
-					+ sw.toString());
-			return null;
-		}
-	}
+//
+//	/**
+//	 * Method to get a handmarking from a location
+//	 * <p>
+//	 * Loads the handMarkingProperties.xml from file into the cache. 
+//	 * Also loads the multiple .html files which are the descriptions
+//	 * in each box of the hand marking template.
+//	 * 
+//	 * @param location
+//	 *            - the location of the handmarking
+//	 * @return null - there is no handmarking at that location to be retrieved
+//	 * @return test - the handmarking at that location.
+//	 */
+//	private HandMarking getHandMarkingFromDisk(String location) {
+//		try {
+//
+//			File fXmlFile = new File(location + "/handMarkingProperties.xml");
+//			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+//					.newInstance();
+//			DocumentBuilder dBuilder;
+//			dBuilder = dbFactory.newDocumentBuilder();
+//			Document doc = dBuilder.parse(fXmlFile);
+//			doc.getDocumentElement().normalize();
+//
+//			HandMarking markingTemplate = new HandMarking();
+//
+//			// load name
+//			markingTemplate.setName(doc.getElementsByTagName("name").item(0)
+//					.getChildNodes().item(0).getNodeValue());
+//
+//			// load column list
+//			NodeList columnList = doc.getElementsByTagName("column");
+//			List<WeightedField> columnHeaderList = new ArrayList<WeightedField>();
+//			if (columnList != null && columnList.getLength() > 0) {
+//				for (int i = 0; i < columnList.getLength(); i++) {
+//					Node columnNode = columnList.item(i);
+//					if (columnNode.getNodeType() == Node.ELEMENT_NODE) {
+//						Element columnElement = (Element) columnNode;
+//
+//						WeightedField field = new WeightedField();
+//						field.setName(columnElement.getAttribute("name"));
+//						field.setWeight(Double.parseDouble(columnElement
+//								.getAttribute("weight")));
+//
+//						columnHeaderList.add(field);
+//					}
+//				}
+//			}
+//			markingTemplate.setColumnHeader(columnHeaderList);
+//
+//			// load row list
+//			NodeList rowList = doc.getElementsByTagName("row");
+//			List<WeightedField> rowHeaderList = new ArrayList<WeightedField>();
+//			if (rowList != null && rowList.getLength() > 0) {
+//				for (int i = 0; i < rowList.getLength(); i++) {
+//					Node rowNode = rowList.item(i);
+//					if (rowNode.getNodeType() == Node.ELEMENT_NODE) {
+//						Element rowElement = (Element) rowNode;
+//
+//						WeightedField field = new WeightedField();
+//						field.setName(rowElement.getAttribute("name"));
+//						field.setWeight(Double.parseDouble(rowElement
+//								.getAttribute("weight")));
+//
+//						rowHeaderList.add(field);
+//					}
+//				}
+//			}
+//			markingTemplate.setRowHeader(rowHeaderList);
+//
+//			// load data
+//			Map<Long, Map<Long, String>> descriptionMap = new TreeMap<Long, Map<Long, String>>();
+//			for (WeightedField column : markingTemplate.getColumnHeader()) {
+//				Map<Long, String> currDescriptionMap = new TreeMap<Long, String>();
+//				for (WeightedField row : markingTemplate.getRowHeader()) {
+//					try {
+//						Scanner in = new Scanner(new File(location + "/"
+//								+ column.getName().replace(" ", "") + "-"
+//								+ row.getName().replace(" ", "") + ".txt"));
+//						String description = "";
+//						while (in.hasNextLine()) {
+//							description += in.nextLine()
+//									+ System.getProperty("line.separator");
+//						}
+//						currDescriptionMap.put(row.getId(), description);
+//						in.close();
+//					} catch (Exception e) {
+//						// do nothing
+//					}
+//				}
+//				descriptionMap.put(column.getId(), currDescriptionMap);
+//			}
+//
+//			markingTemplate.setData(descriptionMap);
+//
+//			return markingTemplate;
+//		} catch (Exception e) {
+//			StringWriter sw = new StringWriter();
+//			PrintWriter pw = new PrintWriter(sw);
+//			e.printStackTrace(pw);
+//			logger.error("Could not read hand marking " + location
+//					+ System.getProperty("line.separator") + sw.toString());
+//			return null;
+//		}
+//	}
 
 	/**
 	 * Update a hand marking template
@@ -1023,72 +1167,83 @@ public class AssessmentDAO {
 	 * @param newHandMarking the new hand marking template
 	 */
 	public void updateHandMarking(HandMarking newHandMarking) {
-		if (allHandMarking.containsKey(newHandMarking.getShortName())) {
-			HandMarking currMarking = allHandMarking.get(newHandMarking.getShortName());
-
-			currMarking.setColumnHeader(newHandMarking.getColumnHeader());
-			currMarking.setData(newHandMarking.getData());
-			currMarking.setRowHeader(newHandMarking.getRowHeader());
-		} else {
-			allHandMarking.put(newHandMarking.getShortName(), newHandMarking);
-		}
-		// save to drive
-
-		String location = ProjectProperties.getInstance().getProjectLocation() + "/template/handMarking/"
-				+ newHandMarking.getShortName();
-
-		try {
-			FileUtils.deleteDirectory(new File(location));
-		} catch (IOException e) {
-			// Don't care if it doesn't exist
-		}
-
-		// make the folder
-		(new File(location)).mkdirs();
-
-		try {
-			PrintWriter handMarkingProperties = new PrintWriter(new File(location + "/handMarkingProperties.xml"));
-			handMarkingProperties.println("<handMarkingProperties>");
-			// name
-			handMarkingProperties.println("\t<name>" + newHandMarking.getName() + "</name>");
-			// columns
-			if (!newHandMarking.getColumnHeader().isEmpty()) {
-				handMarkingProperties.println("\t<columns>");
-				for (Tuple column : newHandMarking.getColumnHeader()) {
-					handMarkingProperties.println("\t\t<column name=\"" + column.getName() + "\" weight=\""
-							+ column.getWeight() + "\"/>");
-				}
-				handMarkingProperties.println("\t</columns>");
-			}
-
-			// rows
-			if (!newHandMarking.getRowHeader().isEmpty()) {
-				handMarkingProperties.println("\t<rows>");
-				for (Tuple row : newHandMarking.getRowHeader()) {
-					handMarkingProperties.println("\t\t<row name=\"" + row.getName() + "\" weight=\"" + row.getWeight()
-							+ "\"/>");
-				}
-				handMarkingProperties.println("\t</rows>");
-			}
-			handMarkingProperties.println("</handMarkingProperties>");
-			handMarkingProperties.close();
-
-			for (Entry<String, Map<String, String>> entry1 : newHandMarking.getData().entrySet()) {
-				for (Entry<String, String> entry2 : entry1.getValue().entrySet()) {
-					PrintWriter dataOut = new PrintWriter(new File(location + "/" + entry1.getKey().replace(" ", "")
-							+ "-" + entry2.getKey().replace(" ", "") + ".txt"));
-
-					dataOut.println(entry2.getValue());
-					dataOut.close();
-				}
-			}
-		} catch (FileNotFoundException e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			logger.error("Could not update hand marking " + location + System.getProperty("line.separator")
-					+ sw.toString());
-		}
+	
+		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(newHandMarking);
+		
+//		if (allHandMarking.containsKey(newHandMarking.getShortName())) {
+//			HandMarking currMarking = allHandMarking.get(newHandMarking
+//					.getShortName());
+//
+//			currMarking.setColumnHeader(newHandMarking.getColumnHeader());
+//			currMarking.setData(newHandMarking.getData());
+//			currMarking.setRowHeader(newHandMarking.getRowHeader());
+//		} else {
+//			allHandMarking.put(newHandMarking.getShortName(), newHandMarking);
+//		}
+//		// save to drive
+//
+//		String location = ProjectProperties.getInstance().getProjectLocation()
+//				+ "/template/handMarking/" + newHandMarking.getShortName();
+//
+//		try {
+//			FileUtils.deleteDirectory(new File(location));
+//		} catch (IOException e) {
+//			// Don't care if it doesn't exist
+//		}
+//
+//		// make the folder
+//		(new File(location)).mkdirs();
+//
+//		try {
+//			PrintWriter handMarkingProperties = new PrintWriter(new File(
+//					location + "/handMarkingProperties.xml"));
+//			handMarkingProperties.println("<handMarkingProperties>");
+//			// name
+//			handMarkingProperties.println("\t<name>" + newHandMarking.getName()
+//					+ "</name>");
+//			// columns
+//			if (!newHandMarking.getColumnHeader().isEmpty()) {
+//				handMarkingProperties.println("\t<columns>");
+//				for (WeightedField column : newHandMarking.getColumnHeader()) {
+//					handMarkingProperties.println("\t\t<column name=\""
+//							+ column.getName() + "\" weight=\""
+//							+ column.getWeight() + "\"/>");
+//				}
+//				handMarkingProperties.println("\t</columns>");
+//			}
+//
+//			// rows
+//			if (!newHandMarking.getRowHeader().isEmpty()) {
+//				handMarkingProperties.println("\t<rows>");
+//				for (WeightedField row : newHandMarking.getRowHeader()) {
+//					handMarkingProperties.println("\t\t<row name=\""
+//							+ row.getName() + "\" weight=\"" + row.getWeight()
+//							+ "\"/>");
+//				}
+//				handMarkingProperties.println("\t</rows>");
+//			}
+//			handMarkingProperties.println("</handMarkingProperties>");
+//			handMarkingProperties.close();
+//
+//			for (Entry<Long, Map<Long, String>> entry1 : newHandMarking
+//					.getData().entrySet()) {
+//				for (Entry<Long, String> entry2 : entry1.getValue()
+//						.entrySet()) {
+//					PrintWriter dataOut = new PrintWriter(new File(location
+//							+ "/" + entry1.getKey() + "-"
+//							+ entry2.getKey() + ".txt"));
+//
+//					dataOut.println(entry2.getValue());
+//					dataOut.close();
+//				}
+//			}
+//		} catch (FileNotFoundException e) {
+//			StringWriter sw = new StringWriter();
+//			PrintWriter pw = new PrintWriter(sw);
+//			e.printStackTrace(pw);
+//			logger.error("Could not update hand marking " + location
+//					+ System.getProperty("line.separator") + sw.toString());
+//		}
 	}
 
 	/**
@@ -1113,27 +1268,19 @@ public class AssessmentDAO {
 		HandMarking newMarking = new HandMarking();
 		newMarking.setName(newHandMarking.getName());
 
-		ArrayList<Tuple> columns = new ArrayList<Tuple>();
-		columns.add(new Tuple("Poor", 0));
-		columns.add(new Tuple("Acceptable", 0.5));
-		columns.add(new Tuple("Excellent", 1));
-		newMarking.setColumnHeader(columns);
+		newMarking.addColumn(new WeightedField("Poor", 0));
+		newMarking.addColumn(new WeightedField("Acceptable", 0.5));
+		newMarking.addColumn(new WeightedField("Excellent", 1));
 
-		ArrayList<Tuple> rows = new ArrayList<Tuple>();
-		rows.add(new Tuple("Formatting", 0.2));
-		rows.add(new Tuple("Code Reuse", 0.4));
-		rows.add(new Tuple("Variable naming", 0.4));
-		newMarking.setRowHeader(rows);
+		newMarking.addRow(new WeightedField("Formatting", 0.2));
+		newMarking.addRow(new WeightedField("Code Reuse", 0.4));
+		newMarking.addRow(new WeightedField("Variable naming", 0.4));
 
-		Map<String, Map<String, String>> data = new TreeMap<String, Map<String, String>>();
-		for (Tuple column : columns) {
-			Map<String, String> currData = new TreeMap<String, String>();
-			for (Tuple row : rows) {
-				currData.put(row.getName(), "");
+		for (WeightedField column : newMarking.getColumnHeader()) {
+			for (WeightedField row : newMarking.getRowHeader()) {
+				newMarking.addData(new HandMarkData(column, row, ""));
 			}
-			data.put(column.getName(), currData);
 		}
-		newMarking.setData(data);
 
 		updateHandMarking(newMarking);
 	}
@@ -1211,5 +1358,40 @@ public class AssessmentDAO {
 			}
 		}
 	}
-
+	
+	public void save(Assessment assessment) {
+		try {
+			getHibernateTemplate().saveOrUpdate(assessment);
+			logger.info("Saved assessment " + assessment.getName());
+		} catch (Exception e) {
+			logger.error("Could not save assessment " + assessment.getName(), e);
+		}
+	}
+	
+	public void update(Assessment assessment) {
+		try {
+			getHibernateTemplate().saveOrUpdate(assessment);
+			logger.info("Updated assessment " + assessment.getName());
+		} catch (Exception e) {
+			logger.error("Could not update assessment " + assessment.getName(), e);
+		}
+	}
+	
+	public void delete(Assessment assessment) {
+		try {
+			getHibernateTemplate().delete(assessment);
+			logger.info("Deleted assessment " + assessment.getName());
+		} catch (Exception e) {
+			logger.error("Could not delete assessment " + assessment.getName(), e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Assessment> getAllAssessments() {
+		return getHibernateTemplate().find("FROM Assessment");
+	}
+	
+	public Assessment getAssessment(long id) {
+		return getHibernateTemplate().get(Assessment.class, id);
+	}
 }

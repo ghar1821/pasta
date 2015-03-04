@@ -29,8 +29,21 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.result;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 
 import pasta.domain.template.UnitTest;
 
@@ -42,12 +55,32 @@ import pasta.domain.template.UnitTest;
  * @since 2012-11-13
  * 
  */
-public class UnitTestResult implements Comparable<UnitTestResult> {
+@Entity
+@Table (name = "unit_test_results")
+public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
+	
+	private static final long serialVersionUID = -4862404513190004578L;
+
+	@Id @GeneratedValue
+	@Column (name = "id")
+	private long id;
+	
+	@ManyToOne
+	@JoinColumn (name = "unit_test_id")
 	private UnitTest test;
+	
 	private boolean secret;
+	
+	@Column (name = "compile_errors")
 	private String compileErrors;
+	
+	@Column (name = "runtime_errors")
 	private String runtimeErrors;
-	private ArrayList<UnitTestCaseResult> testCases;
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinColumn (name = "test_case_id")
+	@OrderBy ("testName")
+	private List<UnitTestCaseResult> testCases;
 
 	public UnitTest getTest() {
 		return test;
@@ -81,7 +114,7 @@ public class UnitTestResult implements Comparable<UnitTestResult> {
 		this.runtimeErrors = runtimeErrors;
 	}
 
-	public ArrayList<UnitTestCaseResult> getTestCases() {
+	public List<UnitTestCaseResult> getTestCases() {
 		return testCases;
 	}
 

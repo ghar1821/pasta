@@ -108,7 +108,7 @@ public class SubmissionManager {
 	 *  <li>Extract the submitted file if it ends with .zip using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
 	 *  <li>If there are any unit tests associated with the assessment, check to see if there are any compilation errors.
 	 *  This process is done by copying the submission and then the unit tests to 
-	 *  $ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestName.
+	 *  $ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestId.
 	 *  This order of copy was chosen such that the unit test code will override any identically named file that
 	 *  the student has submitted (e.g. makefiles), which could compromise the security of the machine or 
 	 *  validity of the assessment. The ant tasks compile and clean are executed and any errors during
@@ -145,30 +145,30 @@ public class SubmissionManager {
 			for(WeightedUnitTest test: currAssessment.getUnitTests()){
 				try {
 					// create folder
-					(new File(unitTestsLocation + "/" + test.getTest().getShortName())).mkdirs();
+					(new File(unitTestsLocation + "/" + test.getTest().getId())).mkdirs();
 
 
 					// copy over submission
 					FileUtils.copyDirectory(new File(location),
-							new File(unitTestsLocation + "/" + test.getTest().getShortName()));
+							new File(unitTestsLocation + "/" + test.getTest().getId()));
 					
 					// copy over unit test
 					FileUtils.copyDirectory(new File(test.getTest().getFileLocation()
 							+ "/code/"),
-							new File(unitTestsLocation + "/" + test.getTest().getShortName()));
+							new File(unitTestsLocation + "/" + test.getTest().getId()));
 					
 					// compile
-					File buildFile = new File(unitTestsLocation + "/" + test.getTest().getShortName()
+					File buildFile = new File(unitTestsLocation + "/" + test.getTest().getId()
 							+ "/build.xml");
 
 					ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
 					Project project = new Project();
 
 					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-					project.setBasedir(unitTestsLocation + "/" + test.getTest().getShortName());
+					project.setBasedir(unitTestsLocation + "/" + test.getTest().getId());
 					DefaultLogger consoleLogger = new DefaultLogger();
 					PrintStream runErrors = new PrintStream(
-							unitTestsLocation + "/" + test.getTest().getShortName()
+							unitTestsLocation + "/" + test.getTest().getId()
 							+ "/run.errors");
 					consoleLogger.setOutputPrintStream(runErrors);
 					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
@@ -188,10 +188,10 @@ public class SubmissionManager {
 								+ test.getTest().getName() + e);
 						
 						PrintStream compileErrors = new PrintStream(
-								unitTestsLocation + "/" + test.getTest().getShortName()
+								unitTestsLocation + "/" + test.getTest().getId()
 								+ "/compile.errors");
 						compileErrors.print(e.toString().replaceAll(".*" +
-								unitTestsLocation + "/" + test.getTest().getShortName() + "/" , "folder "));
+								unitTestsLocation + "/" + test.getTest().getId() + "/" , "folder "));
 						compileErrors.close();
 					}
 
@@ -200,7 +200,7 @@ public class SubmissionManager {
 					
 					// scrape compiler errors from run.errors
 					try{
-						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getShortName()
+						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getId()
 								+ "/run.errors"));
 						boolean containsError = false;
 						boolean importantData = false;
@@ -221,7 +221,7 @@ public class SubmissionManager {
 						
 						if(containsError){
 							PrintStream compileErrors = new PrintStream(
-									unitTestsLocation + "/" + test.getTest().getShortName()
+									unitTestsLocation + "/" + test.getTest().getId()
 									+ "/compile.errors");
 							compileErrors.print(output);
 							compileErrors.close();
@@ -232,10 +232,10 @@ public class SubmissionManager {
 					}
 					
 					// delete everything else
-					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getShortName()))
+					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getId()))
 							.list();
 					for (String file : allFiles) {
-						File actualFile = new File(unitTestsLocation + "/" + test.getTest().getShortName()
+						File actualFile = new File(unitTestsLocation + "/" + test.getTest().getId()
 								+ "/" + file);
 						if (actualFile.isDirectory()) {
 							FileUtils.deleteDirectory(actualFile);
@@ -250,7 +250,7 @@ public class SubmissionManager {
 					
 					if(compiled){
 						try{
-							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getShortName()
+							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getId()
 									+ "/compile.errors"));
 						}
 						catch(FileNotFoundException e){}

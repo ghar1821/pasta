@@ -29,8 +29,11 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.beans.PropertyEditorSupport;
 import java.util.Map;
 import java.util.TreeMap;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,9 +52,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
+import pasta.domain.template.WeightedField;
 import pasta.domain.upload.NewHandMarking;
 import pasta.service.HandMarkingManager;
 import pasta.service.UserManager;
+import pasta.util.ProjectProperties;
 
 /**
  * Controller class for Hand marking functions. 
@@ -145,7 +152,7 @@ public class HandMarkingController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * $PASTAUrl$/handMarking/{handMarkingName}/
+	 * $PASTAUrl$/handMarking/{handMarkingId}/
 	 * <p>
 	 * View the hand marking template.
 	 * 
@@ -161,13 +168,13 @@ public class HandMarkingController {
 	 * 
 	 * JSP:<ul><li>assessment/view/handMarks</li></ul>
 	 * 
-	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 * @param handMarkingId the id of the hand marking template
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/handMarks"
 	 */
-	@RequestMapping(value = "{handMarkingName}/")
+	@RequestMapping(value = "{handMarkingId}/")
 	public String viewHandMarking(
-			@PathVariable("handMarkingName") String handMarkingName, Model model) {
+			@PathVariable("handMarkingId") Long handMarkingId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -178,12 +185,12 @@ public class HandMarkingController {
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("handMarking",
-				handMarkingManager.getHandMarking(handMarkingName));
+				handMarkingManager.getHandMarking(handMarkingId));
 		return "assessment/view/handMarks";
 	}
 
 	/**
-	 * $PASTAUrl/handMarking/{handMarkingName}/ - POST
+	 * $PASTAUrl/handMarking/{handMarkingId}/ - POST
 	 * <p>
 	 * Update the hand marking template
 	 * 
@@ -196,15 +203,15 @@ public class HandMarkingController {
 	 * 
 	 * @param form the updated hand marking object
 	 * @param result the binding result used for feedback
-	 * @param handMarkingName the short name (no whitespace) if the hand marking template
+	 * @param handMarkingId the id of the hand marking template
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
-	@RequestMapping(value = "{handMarkingName}/", method = RequestMethod.POST)
+	@RequestMapping(value = "{handMarkingId}/", method = RequestMethod.POST)
 	public String updateHandMarking(
 			@ModelAttribute(value = "handMarking") HandMarking form,
 			BindingResult result,
-			@PathVariable("handMarkingName") String handMarkingName, Model model) {
+			@PathVariable("handMarkingId") Long handMarkingId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -213,7 +220,7 @@ public class HandMarkingController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			form.setName(handMarkingName);
+			form.setId(handMarkingId);
 			handMarkingManager.updateHandMarking(form);
 		}
 		return "redirect:.";
@@ -292,7 +299,7 @@ public class HandMarkingController {
 	}
 
 	/**
-	 * $PASTAUrl$/handMarking/delete/{handMarkingName}/
+	 * $PASTAUrl$/handMarking/delete/{handMarkingId}/
 	 * <p>
 	 * Delete a hand marking template.
 	 * 
@@ -308,9 +315,9 @@ public class HandMarkingController {
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
-	@RequestMapping(value = "delete/{handMarkingName}/")
+	@RequestMapping(value = "delete/{handMarkingId}/")
 	public String deleteHandMarking(
-			@PathVariable("handMarkingName") String handMarkingName, Model model) {
+			@PathVariable("handMarkingId") Long handMarkingId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -319,9 +326,26 @@ public class HandMarkingController {
 			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
-			handMarkingManager.removeHandMarking(handMarkingName);
+			handMarkingManager.removeHandMarking(handMarkingId);
 		}
 		return "redirect:../../";
+	}
+	
+	@InitBinder
+	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
+	    // when passing a column/row as an id, convert that id into an actual WeightedField object
+		binder.registerCustomEditor(WeightedField.class, new PropertyEditorSupport() {
+		    @Override
+		    public void setAsText(String text) {
+		    	WeightedField field = ProjectProperties.getInstance().getHandMarkingDAO()
+		    			.getWeightedField(Long.parseLong(text));
+		    	if(field == null) {
+		    		field = new WeightedField();
+		    		field.setId(Long.parseLong(text));
+		    	}
+		    	setValue(field);
+		    }
+	    });
 	}
 
 }

@@ -39,15 +39,15 @@ package pasta.domain.form;
  * @since 2013-02-28
  */
 public class ReleaseForm {
-	private String assessmentName;
+	private long assessmentId;
 	private String list;
 	private String specialRelease;
 	
-	public String getSpecialRelease() {
-		return specialRelease;
+	public long getAssessmentId() {
+		return assessmentId;
 	}
-	public void setSpecialRelease(String specialRelease) {
-		this.specialRelease = specialRelease;
+	public void setAssessmentId(long assessmentId) {
+		this.assessmentId = assessmentId;
 	}
 	public String getList() {
 		return list;
@@ -55,12 +55,10 @@ public class ReleaseForm {
 	public void setList(String list) {
 		this.list = list;
 	}
-	public String getAssessmentName() {
-		return assessmentName;
+	public String getSpecialRelease() {
+		return specialRelease;
 	}
-	public void setAssessmentName(String assessmentName) {
-		this.assessmentName = assessmentName;
+	public void setSpecialRelease(String specialRelease) {
+		this.specialRelease = specialRelease;
 	}
-	
-	
 }

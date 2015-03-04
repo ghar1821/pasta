@@ -60,6 +60,7 @@ import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
+import pasta.repository.UnitTestDAO;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -82,6 +83,9 @@ public class UnitTestManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	
+	@Autowired
+	private UnitTestDAO unitTestDAO;
 		
 	@Autowired
 	private ApplicationContext context;
@@ -110,7 +114,8 @@ public class UnitTestManager {
 	 * @return the collection of all unit test templates
 	 */
 	public Collection<UnitTest> getUnitTestList() {
-		return assDao.getAllUnitTests().values();
+		return unitTestDAO.getAllUnitTests();
+		//return assDao.getAllUnitTests().values();
 	}
 
 	/**
@@ -119,8 +124,13 @@ public class UnitTestManager {
 	 * @param name the short name (no whitespace) of a unit test.
 	 * @return the unit test template or null if not available
 	 */
+	@Deprecated
 	public UnitTest getUnitTest(String name) {
 		return assDao.getAllUnitTests().get(name);
+	}
+	
+	public UnitTest getUnitTest(long id) {
+		return unitTestDAO.getUnitTest(id);
 	}
 
 	/**
@@ -128,7 +138,7 @@ public class UnitTestManager {
 	 * 
 	 * @param thisTest the unit test to save
 	 */
-	public void saveUnitTest(UnitTest thisTest) {
+	public void updateUnitTest(UnitTest thisTest) {
 		try {
 
 			// create space on the file system.
@@ -142,6 +152,13 @@ public class UnitTestManager {
 			logger.error("TEST " + thisTest.getName()
 					+ " could not be saved successfully!"
 					+ System.getProperty("line.separator") + e);
+		}
+		
+		// Save unit test to database
+		try {
+			unitTestDAO.update(thisTest);
+		} catch (Exception e) {
+			logger.error("Could not update unit test " + thisTest.getName(), e);
 		}
 	}
 
@@ -159,6 +176,13 @@ public class UnitTestManager {
 	public void addUnitTest(NewUnitTest newTest) {
 		UnitTest thisTest = new UnitTest(newTest.getTestName(), false);
 
+		// Save unit test to database
+		try {
+			unitTestDAO.save(thisTest);
+		} catch (Exception e) {
+			logger.error("Could not save unit test " + thisTest.getName(), e);
+		}
+		
 		try {
 
 			// create space on the file system.
@@ -197,8 +221,6 @@ public class UnitTestManager {
 
 			FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
 					+ "/test/")));
-
-			assDao.addUnitTest(thisTest);
 		} catch (Exception e) {
 			(new File(thisTest.getFileLocation())).delete();
 			logger.error("TEST " + thisTest.getName()
@@ -229,8 +251,25 @@ public class UnitTestManager {
 	 * @see pasta.repository.AssessmentDAO#removeUnitTest(String)
 	 * @param testName the short name (no whitespace) of the unit test template to be removed
 	 */
+	@Deprecated
 	public void removeUnitTest(String testName) {
 		assDao.removeUnitTest(testName);
+		
+		// Delete unit test from database
+		try {
+			unitTestDAO.delete(unitTestDAO.getUnitTest(testName));
+		} catch (Exception e) {
+			logger.error("Could not delete unit test " + testName, e);
+		}
+	}
+	
+	public void removeUnitTest(long id) {
+		// Delete unit test from database
+		try {
+			unitTestDAO.delete(unitTestDAO.getUnitTest(id));
+		} catch (Exception e) {
+			logger.error("Could not delete unit test " + id, e);
+		}
 	}
 
 	/**
@@ -256,6 +295,7 @@ public class UnitTestManager {
 	 * @param submission the submission form (containing the zip)
 	 * @param testName the short name (no whitespace) of the test
 	 */
+	@Deprecated
 	public void testUnitTest(Submission submission, String testName) {
 		PrintStream compileErrors = null;
 		PrintStream runErrors = null;
@@ -363,6 +403,137 @@ public class UnitTestManager {
 			compileErrors.close();
 		}
 	}
+	
+	/**
+	 * Method to test the unit tests uploaded
+	 * <p>
+	 * This method is used to test whether the unit tests are working
+	 * as anticipated on the system before assigning it as a part of an assessment
+	 * and releasing it to students.
+	 * 
+	 * There is no queue system implemented for this now. As soon as the method
+	 * is called, the testing proceeds. Use at your own risk.
+	 * 
+	 * <ol>
+	 * 	<li>Create a new folder $ProjectLocation$/template/unitTest/$unitTestId$/test, 
+	 * if folder already exists, delete it and make a new one</li>
+	 * 	<li>Copy and extract submission code to that folder using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
+	 * 	<li>Copy the unit test code from $ProjectLocation$/template/unitTest/$unitTestId$/code</li>
+	 * 	<li>run the ant targets "build", "test", "clean"</li>
+	 * 	<li>any errors will be written to "compile.errors" and "run.errors" and the results are written to
+	 * results.xml</li>
+	 * </ol>
+	 * 
+	 * @param submission the submission form (containing the zip)
+	 * @param testId the id of the test
+	 */
+	public void testUnitTest(Submission submission, long testId) {
+		PrintStream compileErrors = null;
+		PrintStream runErrors = null;
+		try {
+			UnitTest thisTest = getUnitTest(testId);
+			// delete old submission if exists
+			FileUtils.deleteDirectory(new File(thisTest.getFileLocation()
+					+ "/test/"));
+			
+			// create folder
+			(new File(thisTest.getFileLocation() + "/test/")).mkdirs();
+			// extract submission
+			submission.getFile().transferTo(
+					new File(thisTest.getFileLocation() + "/test/"
+							+ submission.getFile().getOriginalFilename()));
+			PASTAUtil.extractFolder(thisTest.getFileLocation()
+					+ "/test/" + submission.getFile().getOriginalFilename());
+			FileUtils.forceDelete(new File(thisTest.getFileLocation()
+					+ "/test/" + submission.getFile().getOriginalFilename()));
+			
+			// copy over unit test
+			FileUtils.copyDirectory(new File(thisTest.getFileLocation()
+					+ "/code/"),
+					new File(thisTest.getFileLocation() + "/test/"));
+			
+			// compile
+			File buildFile = new File(thisTest.getFileLocation()
+					+ "/test/build.xml");
+			
+			ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
+			Project project = new Project();
+			
+			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
+			project.setBasedir(thisTest.getFileLocation() + "/test");
+			DefaultLogger consoleLogger = new DefaultLogger();
+			runErrors = new PrintStream(thisTest.getFileLocation()
+					+ "/test/run.errors");
+			consoleLogger.setOutputPrintStream(runErrors);
+			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
+			project.addBuildListener(consoleLogger);
+			project.init();
+			
+			project.addReference("ant.projectHelper", projectHelper);
+			projectHelper.parse(project, buildFile);
+			try {
+				project.executeTarget("build");
+				project.executeTarget("test");
+				project.executeTarget("clean");
+			} catch (BuildException e) {
+				throw new RuntimeException(String.format(
+						"Run %s [%s] failed: %s", buildFile, "everything",
+						e.getMessage()), e);
+			}
+			
+			runErrors.close();
+			
+			// scrape compiler errors from run.errors
+			try{
+				Scanner in = new Scanner (new File(thisTest.getFileLocation() + "/test/" + "/run.errors"));
+				boolean containsError = false;
+				boolean importantData = false;
+				String output = "";
+				while(in.hasNextLine()){
+					String line = in.nextLine();
+					if(line.contains(": error:")){
+						containsError = true;
+					}
+					if(line.contains("[javac] Files to be compiled:")){
+						importantData = true;
+					}
+					if(importantData){
+						output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
+					}
+				}
+				in.close();
+				
+				if(containsError){
+					compileErrors = new PrintStream(
+							thisTest.getFileLocation() + "/test/" + "/compile.errors");
+					compileErrors.print(output);
+					compileErrors.close();
+					
+				}
+			}
+			catch (Exception e){
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				logger.error("Something went wrong: " + sw.toString());
+			}
+			
+		} catch (IOException e) {
+			logger.error("Unable to test unit test "
+					+ getUnitTest(testId).getName()
+					+ System.getProperty("line.separator") + e);
+		} catch (Exception e){
+			// catch the rest of the exceptions
+		}
+		
+		// ensure everything is closed
+		if(runErrors != null){
+			runErrors.close();
+		}
+		if(compileErrors != null){
+			compileErrors.close();
+		}
+	}
 
 	/**
 	 * Update the unit test with new code.
@@ -370,9 +541,12 @@ public class UnitTestManager {
 	 * @param newTest the form containing the new unit test form.
 	 */
 	public void updateUnitTestCode(NewUnitTest newTest) {
-		UnitTest thisTest = getUnitTest(newTest.getTestName());
-
-		if(thisTest != null){
+		UnitTest thisTest;
+		
+		if(newTest.getTestId() == null || 
+				(thisTest = getUnitTest(newTest.getTestId())) == null) {
+			addUnitTest(newTest);
+		} else {
 			try {
 	
 				// force delete old location
@@ -405,16 +579,13 @@ public class UnitTestManager {
 	
 				// set it as not tested
 				thisTest.setTested(false);
-				saveUnitTest(thisTest);
+				updateUnitTest(thisTest);
 			} catch (Exception e) {
 				(new File(thisTest.getFileLocation())).delete();
 				logger.error("TEST " + thisTest.getName()
 						+ " could not be updated successfully!"
 						+ System.getProperty("line.separator") + e);
 			}
-		}
-		else{
-			addUnitTest(newTest);
 		}
 	}
 	

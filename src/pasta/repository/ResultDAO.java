@@ -51,6 +51,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -82,12 +86,20 @@ import pasta.util.ProjectProperties;
  * @since 2012-11-16
   *
  */
-public class ResultDAO {
+@Repository("resultDAO")
+public class ResultDAO extends HibernateDaoSupport{
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
 	Map<String, Map<String, AssessmentResult>> results;
 	Map<String, CompetitionResult> competitionResults;
+	
+	// Default required by hibernate
+	@Autowired
+	public void setMySession(SessionFactory sessionFactory) {
+		setSessionFactory(sessionFactory);
+	}
+
 	
 	/**
 	 * loads up all of the latest results
@@ -95,7 +107,7 @@ public class ResultDAO {
 	 * assessments. This is done to allow modifications to the assessment
 	 * to dynamically change the marks.
 	 */
-	public ResultDAO(AssessmentDAO assDao){
+	public void init(AssessmentDAO assDao){
 		loadAssessmentHistoryFromFile(assDao);
 		loadCompetitionsFromFile(assDao);
 	}
@@ -414,11 +426,12 @@ public class ResultDAO {
 		try {
 			// read in the file
 			Scanner in = new Scanner(new File(location+"/result.txt"));
-			Map<String,String> resultMap = new TreeMap<String, String>();
+			Map<Long,Long> resultMap = new TreeMap<Long, Long>();
 			while(in.hasNextLine()){
 				String[] currResults = in.nextLine().split(",");
 				if(currResults.length >= 2){
-					resultMap.put(currResults[0].trim(), currResults[1].trim());
+					resultMap.put(Long.parseLong(currResults[0]),
+							Long.parseLong(currResults[1]));
 				}
 			}
 			in.close();
@@ -472,14 +485,14 @@ public class ResultDAO {
 					+ assessmentName
 					+ "/"
 					+ assessmentDate
-					+ "/handMarking/" + result.getHandMarkingTemplateShortName();
+					+ "/handMarking/" + result.getId();
 			// create the directory
 			(new File(location)).mkdirs();
 			// save data
 			try {
 				PrintWriter out = new PrintWriter(new File(location
 									+ "/result.txt"));
-				for(Entry<String, String> entry: result.getResult().entrySet()){
+				for(Entry<Long, Long> entry: result.getResult().entrySet()){
 					out.println(entry.getKey() + "," + entry.getValue());
 				}
 				out.close();
@@ -520,7 +533,7 @@ public class ResultDAO {
 						+ assessment.getShortName()
 						+ "/"
 						+ assessmentDate
-						+ "/unitTests/" + uTest.getTest().getShortName());
+						+ "/unitTests/" + uTest.getTest().getId());
 				if (result == null) {
 					result = new UnitTestResult();
 				}
@@ -538,7 +551,7 @@ public class ResultDAO {
 						+ assessment.getShortName()
 						+ "/"
 						+ assessmentDate
-						+ "/unitTests/" + uTest.getTest().getShortName());
+						+ "/unitTests/" + uTest.getTest().getId());
 				if (result == null) {
 					result = new UnitTestResult();
 				}
@@ -562,8 +575,6 @@ public class ResultDAO {
 				if (result == null) {
 					result = new HandMarkingResult();
 				} 
-				result.setHandMarkingTemplateShortName(hMarking
-						.getHandMarking().getShortName());
 				result.setMarkingTemplate(hMarking.getHandMarking());
 				handResults.add(result);
 			}
@@ -879,5 +890,32 @@ public class ResultDAO {
 			// e.printStackTrace();
 			return null;
 		}
+	}
+	
+	/**
+	 * Save the unit test result to the database.
+	 * 
+	 * @param result the unit test result being saved
+	 */
+	public void save(UnitTestResult result) {
+		getHibernateTemplate().save(result);
+	}
+
+	/**
+	 * Update the unit test result in the database.
+	 * 
+	 * @param result the unit test result being updated
+	 */
+	public void update(UnitTestResult result) {
+		getHibernateTemplate().update(result);
+	}
+	
+	/**
+	 * Delete the unit test result from the database.
+	 * 
+	 * @param result the unit test result being deleted
+	 */
+	public void delete(UnitTestResult result) {
+		getHibernateTemplate().delete(result);
 	}
 }

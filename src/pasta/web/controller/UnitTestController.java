@@ -200,7 +200,7 @@ public class UnitTestController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * $PASTAUrl$/unitTest/{testName}/
+	 * $PASTAUrl$/unitTest/{testId}/
 	 * <p>
 	 * View the details of a unit test.
 	 * 
@@ -218,12 +218,12 @@ public class UnitTestController {
 	 * 
 	 * JSP: <ul><li>assessment/view/unitTest</li></ul>
 	 * 
-	 * @param testName the short name (no whitespace) of the test.
+	 * @param testId the id of the test.
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/unitTest"
 	 */
-	@RequestMapping(value = "{testName}/")
-	public String viewUnitTest(@PathVariable("testName") String testName,
+	@RequestMapping(value = "{testId}/")
+	public String viewUnitTest(@PathVariable("testId") long testId,
 			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -234,20 +234,20 @@ public class UnitTestController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("unitTest", unitTestManager.getUnitTest(testName));
+		model.addAttribute("unitTest", unitTestManager.getUnitTest(testId));
 		model.addAttribute(
 				"latestResult",
-				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testName)
+				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testId)
 						.getFileLocation() + "/test"));
 		model.addAttribute(
 				"node",
-				PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testName)
+				PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testId)
 						.getFileLocation() + "/code"));
 		return "assessment/view/unitTest";
 	}
 	
 	/**
-	 * $PASTAUrl$/unitTest/{testName}/download/
+	 * $PASTAUrl$/unitTest/{testId}/download/
 	 * <p>
 	 * Download the unit test code on the machine.
 	 * 
@@ -255,12 +255,12 @@ public class UnitTestController {
 	 * 
 	 * Otherwise create a zip file with the name: $testName$.zip
 	 * 
-	 * @param testName the short name (no whitespace) of the unit test
+	 * @param testId the id of the unit test
 	 * @param model the model being used
 	 * @param response the response being used to serve the zip
 	 */
-	@RequestMapping(value = "{testName}/download/")
-	public void downloadUnitTest(@PathVariable("testName") String testName,
+	@RequestMapping(value = "{testId}/download/")
+	public void downloadUnitTest(@PathVariable("testId") long testId,
 			Model model,HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -270,18 +270,20 @@ public class UnitTestController {
 			return;
 		}
 		
+		String testName = unitTestManager.getUnitTest(testId).getShortName();
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment;filename=\""
 				+ testName + ".zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
 		try {
+			
 			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
 					.getUnitTestsLocation()
-					+ testName
+					+ testId
 					+ "/code/"), ProjectProperties.getInstance()
 					.getUnitTestsLocation()
-					+ testName
+					+ testId
 					+ "/code/");
 			zip.closeEntry();
 			zip.close();
@@ -297,7 +299,7 @@ public class UnitTestController {
 	}
 	
 	/**
-	 * $PASTAUrl$/unitTest/{testName}/ - POST
+	 * $PASTAUrl$/unitTest/{testId}/ - POST
 	 * <p>
 	 * Upload some code to test the unit test on the production machine or
 	 * to update the unit tests on the system.
@@ -312,15 +314,15 @@ public class UnitTestController {
 	 * 	<li><b>testing test code</b> - done using {@link pasta.service.UnitTestManager#testUnitTest(Submission, String)}</li> 
 	 * </ul>
 	 * 
-	 * @param testName the short name (no whitespace) of the test
+	 * @param testId the id of the test
 	 * @param form used for updating the unit test code
 	 * @param subForm used for testing the unit test code
 	 * @param result binding results used for feedback.
 	 * @param model the model being used.
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
-	@RequestMapping(value = "{testName}/", method = RequestMethod.POST)
-	public String updateTestCode(@PathVariable("testName") String testName,
+	@RequestMapping(value = "{testId}/", method = RequestMethod.POST)
+	public String updateTestCode(@PathVariable("testId") long testId,
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			@ModelAttribute(value = "submission") Submission subForm,
 			BindingResult result, Model model) {
@@ -344,7 +346,7 @@ public class UnitTestController {
 				&& subForm.getFile() != null && 
 				!subForm.getFile().isEmpty() && getUser().isInstructor()) {
 			// upload submission
-			unitTestManager.testUnitTest(subForm, testName);
+			unitTestManager.testUnitTest(subForm, testId);
 		}
 
 		return "redirect:/mirror/";
@@ -424,11 +426,8 @@ public class UnitTestController {
 			Collection<UnitTest> allUnitTests = unitTestManager.getUnitTestList();
 
 			for (UnitTest test : allUnitTests) {
-				if (test.getName()
-						.toLowerCase()
-						.replace(" ", "")
-						.equals(form.getTestName().toLowerCase()
-								.replace(" ", ""))) {
+				if (test.getName().toLowerCase()
+						.equals(form.getTestName().toLowerCase())) {
 					result.reject("UnitTest.New.NameNotUnique");
 				}
 			}
@@ -443,7 +442,7 @@ public class UnitTestController {
 	}
 
 	/**
-	 * $PASTAUrl$/unitTest/delete/{testName}/
+	 * $PASTAUrl$/unitTest/delete/{testId}/
 	 * <p>
 	 * Delete a unit test from the system.
 	 * 
@@ -452,15 +451,15 @@ public class UnitTestController {
 	 * If the user is not a tutor: redirect to home.
 	 * 
 	 * If the user is an instructor: delete the unit test using
-	 * {@link pasta.service.UnitTestManager#removeUnitTest(String)}
+	 * {@link pasta.service.UnitTestManager#removeUnitTest(long)}
 	 * then redirect to $PASTAUrl$/unitTest/
 	 * 
-	 * @param testName the short name (no whitespace) of the unit test.
+	 * @param testId the id of the unit test.
 	 * @param model the model being used.
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
-	@RequestMapping(value = "delete/{testName}/")
-	public String deleteUnitTest(@PathVariable("testName") String testName,
+	@RequestMapping(value = "delete/{testId}/")
+	public String deleteUnitTest(@PathVariable("testId") long testId,
 			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -470,13 +469,13 @@ public class UnitTestController {
 			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
-			unitTestManager.removeUnitTest(testName);
+			unitTestManager.removeUnitTest(testId);
 		}
 		return "redirect:../../";
 	}
 
 	/**
-	 * $PASTAUrl$/unitTest/tested/{testName}/
+	 * $PASTAUrl$/unitTest/tested/{testId}/
 	 * <p>
 	 * Mark a unit test as tested.
 	 * 
@@ -486,12 +485,12 @@ public class UnitTestController {
 	 * 
 	 * If the user is an instructor: mark the unit test as tested.
 	 * 
-	 * @param testName the short name (no whitespace) of the test
+	 * @param testId the id of the test
 	 * @param model the model being used.
-	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../$testName$/"
+	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../$testId$/"
 	 */
-	@RequestMapping(value = "tested/{testName}/")
-	public String testedUnitTest(@PathVariable("testName") String testName,
+	@RequestMapping(value = "tested/{testId}/")
+	public String testedUnitTest(@PathVariable("testId") long testId,
 			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -501,10 +500,11 @@ public class UnitTestController {
 			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
-			unitTestManager.getUnitTest(testName).setTested(true);
-			unitTestManager.saveUnitTest(unitTestManager.getUnitTest(testName));
+			UnitTest test = unitTestManager.getUnitTest(testId);
+			test.setTested(true);
+			unitTestManager.updateUnitTest(test);
 		}
-		return "redirect:../../" + testName + "/";
+		return "redirect:../../" + testId + "/";
 	}
 
 	

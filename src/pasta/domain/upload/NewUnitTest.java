@@ -41,6 +41,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
  */
 public class NewUnitTest {
 	private String testName;
+	private Long testId;
 	private CommonsMultipartFile file;
 	
 	public String getTestName() {
@@ -48,6 +49,12 @@ public class NewUnitTest {
 	}
 	public void setTestName(String testName) {
 		this.testName = testName;
+	}
+	public Long getTestId() {
+		return testId;
+	}
+	public void setTestId(Long testId) {
+		this.testId = testId;
 	}
 	public CommonsMultipartFile getFile() {
 		return file;

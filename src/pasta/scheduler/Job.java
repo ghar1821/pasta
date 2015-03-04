@@ -71,16 +71,27 @@ import javax.persistence.UniqueConstraint;
 				"USERNAME", "ASSESSMENT_NAME", "RUN_DATE"
 		})})
 public class Job implements Serializable{
+
+	private static final long serialVersionUID = 2058301754166837748L;
+	
 	private Integer id;
 	private String username;
-	private String assessmentName;
+	@Deprecated private String assessmentName;
+	private long assessmentId;
 	private Date runDate;
 	
 	public Job(){}
 	
+	@Deprecated
 	public Job(String username, String assessmentName, Date runDate){
 		this.username = username;
 		this.assessmentName = assessmentName;
+		this.runDate = runDate;
+	}
+	
+	public Job(String username, long assessmentId, Date runDate){
+		this.username = username;
+		this.assessmentId = assessmentId;
 		this.runDate = runDate;
 	}
 	

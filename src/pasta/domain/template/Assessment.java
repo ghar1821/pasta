@@ -29,8 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,10 +37,24 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.validation.constraints.Size;
+
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 /**
  * Container class for the assessment.
@@ -106,112 +119,155 @@ import org.apache.commons.logging.LogFactory;
  * @since 2012-11-13
  *
  */
-public class Assessment implements Comparable<Assessment>{
+@Entity
+@Table (name = "assessments")
+public class Assessment implements Serializable, Comparable<Assessment>{
+
+	private static final long serialVersionUID = -387829953944113890L;
+
+	@Transient
+	protected final Log logger = LogFactory.getLog(getClass());
+	
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	private String name;
+	private double marks;
+	private Date dueDate = new Date();
+	
+	@Column (length = 64000) // Controls database column size
+	@Size (max = 64000) // Validates max length when attempting to insert into database
+	private String description;
+	
+	@Column (name = "num_submission_allowed")
+	private int numSubmissionsAllowed;
+	
+	private String category;
+	
+	@Column (name = "released_classes")
+	private String releasedClasses;
+	
+	@Column (name = "special_release")
+	private String specialRelease;
+	
+	@Column (name = "count_uncompilable")
+	private boolean countUncompilable = true;
+	
 	/*
 	 * The assessment modules have to be in a lazy list for the drag and drop
 	 * Functionality on the web front end. Without this, there would be errors
 	 * when adding assessment modules.
 	 */
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="assessment_unit_tests",
+	joinColumns=@JoinColumn(name = "assessment_id"),
+	inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="assessment_secret_unit_tests",
+			joinColumns=@JoinColumn(name = "assessment_id"),
+			inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	
+	@Transient
 	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
 			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
+	
+	@Transient
 	private List<WeightedCompetition> competitions = LazyList.decorate(new ArrayList<WeightedCompetition>(),
 			FactoryUtils.instantiateFactory(WeightedCompetition.class));
-	private String name;
-	private double marks;
-	private Date dueDate = new Date();
-	private String description = "";
-	private int numSubmissionsAllowed;
-	private String category;
-	private String specialRelease;
-	private String releasedClasses = null;
-	private boolean countUncompilable = true;
-
-	protected final Log logger = LogFactory.getLog(getClass());
 	
-	public String getSpecialRelease() {
-		return specialRelease;
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public void setSpecialRelease(String specialRelease) {
-		this.specialRelease = specialRelease;
+	public double getMarks() {
+		return marks;
 	}
-
+	public void setMarks(double marks) {
+		this.marks = marks;
+	}
+	
+	public Date getDueDate() {
+		return dueDate;
+	}
+	public void setDueDate(Date dueDate) {
+		this.dueDate = dueDate;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public int getNumSubmissionsAllowed() {
+		return numSubmissionsAllowed;
+	}
+	public void setNumSubmissionsAllowed(int numSubmissionsAllowed) {
+		this.numSubmissionsAllowed = numSubmissionsAllowed;
+	}
+	
 	public String getCategory() {
 		if(category == null){
 			return "";
 		}
 		return category;
 	}
-
 	public void setCategory(String category) {
 		this.category = category;
 	}
-
+	
 	public String getReleasedClasses() {
 		return releasedClasses;
 	}
-
-	public void addUnitTest(WeightedUnitTest test) {
-		unitTests.add(test);
-	}
-
-	public void removeUnitTest(WeightedUnitTest test) {
-		unitTests.remove(test);
-	}
-
-	public boolean isReleased() {
-		return (releasedClasses != null && !releasedClasses.isEmpty()) || 
-				(specialRelease != null && !specialRelease.isEmpty());
-	}
-	
 	public void setReleasedClasses(String released) {
-		
-			this.releasedClasses = released;
-	}
-	public void addSecretUnitTest(WeightedUnitTest test) {
-		secretUnitTests.add(test);
-	}
-
-	public void removeSecretUnitTest(WeightedUnitTest test) {
-		secretUnitTests.remove(test);
+		this.releasedClasses = released;
 	}
 	
-	public void addHandMarking(WeightedHandMarking test) {
-		handMarking.add(test);
+	public String getSpecialRelease() {
+		return specialRelease;
 	}
-
-	public void removeHandMarking(WeightedHandMarking test) {
-		handMarking.remove(test);
+	public void setSpecialRelease(String specialRelease) {
+		this.specialRelease = specialRelease;
 	}
-
-	public double getMarks() {
-		return marks;
+	
+	public boolean isCountUncompilable() {
+		return countUncompilable;
+	}
+	public void setCountUncompilable(boolean countUncompilable) {
+		this.countUncompilable = countUncompilable;
 	}
 
 	public List<WeightedUnitTest> getUnitTests() {
 		return unitTests;
 	}
-	
-	public List<WeightedUnitTest> getAllUnitTests() {
-		List<WeightedUnitTest> allUnitTests = new LinkedList<WeightedUnitTest>();
-		allUnitTests.addAll(unitTests);
-		allUnitTests.addAll(secretUnitTests);
-		return allUnitTests;
-	}
-
 	public void setUnitTests(List<WeightedUnitTest> unitTests) {
 		this.unitTests.clear();
 		this.unitTests.addAll(unitTests);
 	}
-
+	
 	public List<WeightedUnitTest> getSecretUnitTests() {
 		return secretUnitTests;
 	}
-
 	public void setSecretUnitTests(List<WeightedUnitTest> secretUnitTests) {
 		this.secretUnitTests.clear();
 		this.secretUnitTests.addAll(secretUnitTests);
@@ -220,7 +276,6 @@ public class Assessment implements Comparable<Assessment>{
 	public List<WeightedHandMarking> getHandMarking() {
 		return handMarking;
 	}
-
 	public void setHandMarking(List<WeightedHandMarking> handMarking) {
 		this.handMarking.clear();
 		this.handMarking.addAll(handMarking);
@@ -229,30 +284,57 @@ public class Assessment implements Comparable<Assessment>{
 	public List<WeightedCompetition> getCompetitions() {
 		return competitions;
 	}
-
 	public void setCompetitions(List<WeightedCompetition> competitions) {
 		this.competitions.clear();
 		this.competitions.addAll(competitions);
 	}
-
-	public String getName() {
-		return name;
+	
+	public List<WeightedUnitTest> getAllUnitTests() {
+		List<WeightedUnitTest> allUnitTests = new LinkedList<WeightedUnitTest>();
+		allUnitTests.addAll(getUnitTests());
+		allUnitTests.addAll(getSecretUnitTests());
+		return allUnitTests;
 	}
-
+	
+	public boolean isReleased() {
+		return (releasedClasses != null && !releasedClasses.isEmpty()) || 
+				(specialRelease != null && !specialRelease.isEmpty());
+	}
+	
 	public String getShortName() {
 		return name.replace(" ", "");
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	
+	public void addUnitTest(WeightedUnitTest test) {
+		getAllUnitTests().add(test);
+	}
+	
+	public void removeUnitTest(WeightedUnitTest test) {
+		getAllUnitTests().remove(test);
 	}
 
-	public void setMarks(double marks) {
-		this.marks = marks;
+	public void addSecretUnitTest(WeightedUnitTest test) {
+		getSecretUnitTests().add(test);
+	}
+	
+	public void removeSecretUnitTest(WeightedUnitTest test) {
+		getSecretUnitTests().remove(test);
+	}
+	
+	public void addHandMarking(WeightedHandMarking test) {
+		getHandMarking().add(test);
+	}
+	
+	public void removeHandMarking(WeightedHandMarking test) {
+		getHandMarking().remove(test);
 	}
 
-	public Date getDueDate() {
-		return dueDate;
+	public void addCompetition(WeightedCompetition weightedComp) {
+		getCompetitions().add(weightedComp);
+	}
+	
+	public void removeCompetition(WeightedCompetition weightedComp) {
+		getCompetitions().remove(weightedComp);
 	}
 
 	public String getSimpleDueDate() {
@@ -261,37 +343,12 @@ public class Assessment implements Comparable<Assessment>{
 	}
 
 	public void setSimpleDueDate(String date) {
-		logger.info(date);
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 			dueDate = sdf.parse(date.trim());
 		} catch (ParseException e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			logger.error("Could not parse date " + sw.toString());
+			logger.error("Could not parse date", e);
 		}
-		logger.info(dueDate);
-	}
-
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public int getNumSubmissionsAllowed() {
-		return numSubmissionsAllowed;
-	}
-
-	public void setNumSubmissionsAllowed(int numSubmissionsAllowed) {
-		this.numSubmissionsAllowed = numSubmissionsAllowed;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	public boolean isCompletelyTested() {
@@ -300,7 +357,6 @@ public class Assessment implements Comparable<Assessment>{
 				return false;
 			}
 		}
-
 		for (WeightedUnitTest test : secretUnitTests) {
 			if (!test.getTest().isTested()) {
 				return false;
@@ -312,6 +368,29 @@ public class Assessment implements Comparable<Assessment>{
 	public boolean isClosed() {
 		return (new Date()).after(getDueDate());
 	}  
+	
+	public double getWeighting(UnitTest test){
+		for(WeightedUnitTest myTest: unitTests){
+			if(test == myTest.getTest()){
+				return myTest.getWeight();
+			}
+		}
+		for(WeightedUnitTest myTest: secretUnitTests){
+			if(test == myTest.getTest()){
+				return myTest.getWeight();
+			}
+		}
+		return 0;
+	}
+	
+	public double getWeighting(HandMarking test){
+		for(WeightedHandMarking myTest: handMarking){
+			if(test == myTest.getHandMarking()){
+				return myTest.getWeight();
+			}
+		}
+		return 0;
+	}
 	
 	public void setGarbage(List<WeightedUnitTest> unitTests) {
 	}
@@ -400,7 +479,6 @@ public class Assessment implements Comparable<Assessment>{
 				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
 						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
 			}
-
 			for (WeightedUnitTest unitTest : secretUnitTests) {
 				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
 						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
@@ -429,47 +507,8 @@ public class Assessment implements Comparable<Assessment>{
 		return output;
 	}
 	
-	public double getWeighting(UnitTest test){
-		for(WeightedUnitTest myTest: unitTests){
-			if(test == myTest.getTest()){
-				return myTest.getWeight();
-			}
-		}
-		for(WeightedUnitTest myTest: secretUnitTests){
-			if(test == myTest.getTest()){
-				return myTest.getWeight();
-			}
-		}
-		return 0;
-	}
-	
-	public double getWeighting(HandMarking test){
-		for(WeightedHandMarking myTest: handMarking){
-			if(test == myTest.getHandMarking()){
-				return myTest.getWeight();
-			}
-		}
-		return 0;
-	}
-
-	public void addCompetition(WeightedCompetition weightedComp) {
-		competitions.add(weightedComp);
-	}
-	
-	public void removeCompetition(WeightedCompetition weightedComp) {
-		competitions.remove(weightedComp);
-	}
-
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
-	}
-
-	public boolean isCountUncompilable() {
-		return countUncompilable;
-	}
-
-	public void setCountUncompilable(boolean countUncompilable) {
-		this.countUncompilable = countUncompilable;
 	}
 }

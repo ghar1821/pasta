@@ -53,6 +53,7 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
+import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
 import pasta.util.ProjectProperties;
@@ -76,6 +77,9 @@ public class AssessmentManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	
+	@Autowired
+	private UnitTestDAO unitTestDAO;
 	
 	private ExecutionScheduler scheduler;
 	
@@ -109,8 +113,20 @@ public class AssessmentManager {
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @return the assessment (null if it does not exist)
 	 */
+	@Deprecated
 	public Assessment getAssessment(String assessmentName) {
 		return assDao.getAssessment(assessmentName);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.AssessmentDAO#getAssessment(long)
+	 * @param assessmentId the id of the assessment
+	 * @return the assessment (null if it does not exist)
+	 */
+	public Assessment getAssessment(long assessmentId) {
+		return assDao.getAssessment(assessmentId);
 	}
 	
 
@@ -122,8 +138,21 @@ public class AssessmentManager {
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @return the collection of submission history for a user for a given assessment
 	 */
+	@Deprecated
 	public Collection<AssessmentResult> getAssessmentHistory(String username, String assessmentName){
 		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentName));
+	}
+	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.ResultDAO#getAssessmentHistory(String, Assessment)
+	 * @param username the name of the user
+	 * @param assessmentId the id of the assessment
+	 * @return the collection of submission history for a user for a given assessment
+	 */
+	public Collection<AssessmentResult> getAssessmentHistory(String username, long assessmentId){
+		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentId));
 	}
 
 	/**
@@ -133,10 +162,22 @@ public class AssessmentManager {
 	 * @param assessmentName the short name (no whitespace) of the assessment
 	 * @param releaseForm {@link pasta.domain.form.ReleaseForm} 
 	 */
+	@Deprecated
 	public void releaseAssessment(String assessmentName, ReleaseForm releaseForm)
 	{
 		assDao.releaseAssessment(assessmentName,releaseForm);
-		
+	}
+	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#releaseAssessment(long, ReleaseForm)
+	 * @param assessmentId the id of the assessment
+	 * @param releaseForm {@link pasta.domain.form.ReleaseForm} 
+	 */
+	public void releaseAssessment(long assessmentId, ReleaseForm releaseForm)
+	{
+		assDao.releaseAssessment(assessmentId,releaseForm);
 	}
 
 	/**
@@ -145,8 +186,19 @@ public class AssessmentManager {
 	 * @see pasta.repository.AssessmentDAO#removeAssessment(String)
 	 * @param assessment the short name (no whitespace) of the assessment
 	 */
+	@Deprecated
 	public void removeAssessment(String assessment) {
 		assDao.removeAssessment(assessment);
+	}
+	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.AssessmentDAO#removeAssessment(long)
+	 * @param assessmentId the id of the assessment
+	 */
+	public void removeAssessment(long assessmentId) {
+		assDao.removeAssessment(assessmentId);
 	}
 	
 	/**
@@ -162,21 +214,16 @@ public class AssessmentManager {
 	 */
 	public void addAssessment(Assessment assessmentToAdd) {
 		try {
-
 			// unit Tests
 			for (WeightedUnitTest test : assessmentToAdd.getUnitTests()) {
-				if (assDao.getAllUnitTests().get(test.getUnitTestName().replace(" ", "")) != null) {
-					test.setTest(assDao.getAllUnitTests().get(test.getUnitTestName().replace(
-							" ", "")));
-				}
+				test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
+				test.setAssessment(assessmentToAdd);
 			}
 
 			// secret unit tests
 			for (WeightedUnitTest test : assessmentToAdd.getSecretUnitTests()) {
-				if (assDao.getAllUnitTests().get(test.getUnitTestName().replace(" ", "")) != null) {
-					test.setTest(assDao.getAllUnitTests().get(test.getUnitTestName().replace(
-							" ", "")));
-				}
+				test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
+				test.setAssessment(assessmentToAdd);
 			}
 			
 			// hand marking
@@ -187,52 +234,52 @@ public class AssessmentManager {
 				}
 			}
 			
-			// competitions
-			for (WeightedCompetition competition : assessmentToAdd.getCompetitions()) {
-				if (assDao.getCompetition(competition.getCompName().replace(" ", "")) != null) {
-					competition.setCompetition(assDao.getCompetition(competition.getCompName().replace(
-							" ", "")));
-					
-					// if the competition is not already live, add comp/arenas to the scheduler
-					if(!assDao.getCompetition(competition.getCompName().replace(" ", "")).isLive()){
-						if(assDao.getCompetition(competition.getCompName().replace(" ", "")).isCalculated()){
-							// add competition 
-							scheduler.save(new Job("PASTACompetitionRunner", 
-									assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName(), 
-									assDao.getCompetition(competition.getCompName().replace(" ", "")).getNextRunDate()));
-						}
-						else{
-							// add arenas
-							// official
-							if(assDao.getCompetition(competition.getCompName().replace(" ", "")).getOfficialArena() != null){
-								Arena arena = assDao.getCompetition(competition.getCompName().replace(" ", "")).getOfficialArena();
-								scheduler.save(new Job("PASTACompetitionRunner", 
-										assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
-										arena.getNextRunDate()));
-							}
-							// outstanding
-							if(assDao.getCompetition(competition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
-								for(Arena arena : assDao.getCompetition(competition.getCompName().replace(" ", "")).getOutstandingArenas()){
-									scheduler.save(new Job("PASTACompetitionRunner", 
-											assDao.getCompetition(competition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
-											arena.getNextRunDate()));
-								}
-							}
-						}
-					}
-					if (assDao.getAssessment(assessmentToAdd.getShortName()) == null) {
-						assDao.getCompetition(
-								competition.getCompName().replace(" ", ""))
-								.addAssessment(assessmentToAdd);
-					} else {
-						assDao.getCompetition(
-								competition.getCompName().replace(" ", ""))
-								.addAssessment(
-										assDao.getAssessment(assessmentToAdd
-												.getShortName()));
-					}
-				}
-			}
+//			// competitions
+//			for (WeightedCompetition compeition : assessmentToAdd.getCompetitions()) {
+//				if (assDao.getCompetition(compeition.getCompName().replace(" ", "")) != null) {
+//					compeition.setTest(assDao.getCompetition(compeition.getCompName().replace(
+//							" ", "")));
+//					
+//					// if the competition is not already live, add comp/arenas to the scheduler
+//					if(!assDao.getCompetition(compeition.getCompName().replace(" ", "")).isLive()){
+//						if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).isCalculated()){
+//							// add competition 
+//							scheduler.save(new Job("PASTACompetitionRunner", 
+//									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName(), 
+//									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getNextRunDate()));
+//						}
+//						else{
+//							// add arenas
+//							// official
+//							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena() != null){
+//								Arena arena = assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena();
+//								scheduler.save(new Job("PASTACompetitionRunner", 
+//										assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+//										arena.getNextRunDate()));
+//							}
+//							// outstanding
+//							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
+//								for(Arena arena : assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas()){
+//									scheduler.save(new Job("PASTACompetitionRunner", 
+//											assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
+//											arena.getNextRunDate()));
+//								}
+//							}
+//						}
+//					}
+//					if (assDao.getAssessment(assessmentToAdd.getId()) == null) {
+//						assDao.getCompetition(
+//								compeition.getCompName().replace(" ", ""))
+//								.addAssessment(assessmentToAdd);
+//					} else {
+//						assDao.getCompetition(
+//								compeition.getCompName().replace(" ", ""))
+//								.addAssessment(
+//										assDao.getAssessment(assessmentToAdd
+//												.getId()));
+//					}
+//				}
+//			}
 
 			// add it to the directory structure
 			File location = new File(ProjectProperties.getInstance()
@@ -300,9 +347,24 @@ public class AssessmentManager {
 	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss"
 	 * @return the queried assessment result or null if not available.
 	 */
+	@Deprecated
 	public AssessmentResult getAssessmentResult(String username, String assessmentName,
 			String assessmentDate) {
 		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
+	}
+	
+	/**
+	 * Helper method.
+	 * 
+	 * @see pasta.repository.ResultDAO#getAsssessmentResult(String, Assessment, String)
+	 * @param username the name of the user
+	 * @param assessmentId the id of the assessment 
+	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss"
+	 * @return the queried assessment result or null if not available.
+	 */
+	public AssessmentResult getAssessmentResult(String username, long assessmentId,
+			String assessmentDate) {
+		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentId), assessmentDate);
 	}
 	
 	/**

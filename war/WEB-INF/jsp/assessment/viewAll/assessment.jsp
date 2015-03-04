@@ -53,16 +53,16 @@ either expressed or implied, of the PASTA Project.
 					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
 				</c:if>
 				<div style="clear: both;"></div>
-				<div id="release${assessment.shortName}" class="popup">
-					<form:form action="release/${assessment.shortName}/"
+				<div id="release${assessment.id}" class="popup">
+					<form:form action="release/${assessment.id}/"
 						commandName="assessmentRelease" method="POST">
 						<h2>${assessment.name}</h2>
 						Select which classes to release this assessment to.
 						<ul class="tristate list">
 							<li class="list"><input type="checkbox"> All
 								<ul>
-									<form:input type="hidden" path="assessmentName"
-										value="${assessment.shortName }" />
+									<form:input type="hidden" path="assessmentId"
+										value="${assessment.id }" />
 									<c:forEach var="stream" items="${tutorialByStream}">
 										<c:if test="${!empty stream.key }">
 											<li class="list"><form:checkbox 
@@ -139,29 +139,29 @@ ${fn:length(assessment.competitions)} Competitions <br />
 			<td>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="location.href='./${assessment.shortName}/'">Details</button>
+						onclick="location.href='./${assessment.id}/'">Details</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="$('#release${assessment.shortName}').bPopup()">Release</button>
+						onclick="$('#release${assessment.id}').bPopup()">Release</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="location.href='./stats/${assessment.shortName}/'">Statistics</button>
+						onclick="location.href='./stats/${assessment.id}/'">Statistics</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="location.href='./downloadLatest/${assessment.shortName}/'">Download Latest Submissions</button>
+						onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="location.href='../moss/view/${assessment.shortName}/'">MOSS</button>
+						onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
 						onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
 					<button style="float: left; display: none; text-align: center;"
-						onclick="location.href='./delete/${assessment.shortName}/'"
+						onclick="location.href='./delete/${assessment.id}/'"
 						onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
 				</div> <c:if
 					test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests)) != 0}">
@@ -169,7 +169,7 @@ ${fn:length(assessment.competitions)} Competitions <br />
 						<button style="float: left; text-align: center;"
 							onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
 						<button style="float: left; display: none; text-align: center;"
-							onclick="location.href='./${assessment.shortName}/run/'"
+							onclick="location.href='./${assessment.id}/run/'"
 							onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
 					</div>
 				</c:if>

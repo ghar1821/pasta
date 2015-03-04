@@ -76,6 +76,7 @@ either expressed or implied, of the PASTA Project.
 			<form:input autocomplete="off" type="hidden" path="testName" value="${unitTest.shortName}"/>
 			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
 		</table>
+		<form:input type="hidden" path="testId" value="${unitTest.id}"/>
     	<input type="submit" value="Update" id="submit"/>
 	</form:form>
 </div>
@@ -108,7 +109,7 @@ either expressed or implied, of the PASTA Project.
 		</c:forEach>
 		<br />
 		<br />
-		<button id="acceptUnitTest" onclick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.shortName}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
+		<button id="acceptUnitTest" onclick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.id}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 			<c:forEach var="testCase" items="${latestResult.testCases}">

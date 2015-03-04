@@ -29,6 +29,16 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * Container class for a weighted unit test.
  * <p>
@@ -43,31 +53,63 @@ package pasta.domain.template;
  * @since 2012-11-14
  *
  */
-public class WeightedUnitTest {
-	private UnitTest test = new UnitTest();
-	private double weight;
-	private String unitTestName;
+
+@Entity
+@Table (name = "weighted_unit_tests")
+public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTest> {
 	
-	public UnitTest getTest() {
-		return test;
+	private static final long serialVersionUID = 2594905907808283182L;
+
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	private double weight;
+	
+	@ManyToOne
+	@JoinColumn(name = "unit_test_id")
+	private UnitTest test;
+	
+	@ManyToOne (cascade = CascadeType.ALL)
+	private Assessment assessment;
+	
+	public long getId() {
+		return id;
 	}
-	public void setTest(UnitTest test) {
-		this.test = test;
-		if(!test.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
-			unitTestName = test.getName();
-		}
+	public void setId(long id) {
+		this.id = id;
 	}
+	
 	public double getWeight() {
 		return weight;
 	}
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
-	public String getUnitTestName() {
-		return unitTestName;
+	
+	public UnitTest getTest() {
+		return test;
 	}
-	public void setUnitTestName(String unitTestName) {
-		this.unitTestName = unitTestName;
+	public void setTest(UnitTest test) {
+		this.test = test;
+	}
+	
+	public Assessment getAssessment() {
+		return assessment;
+	}
+	public void setAssessment(Assessment assessment) {
+		this.assessment = assessment;
+	}
+	
+	@Override
+	public int compareTo(WeightedUnitTest other) {
+		int diff = this.test.compareTo(other.test);
+		if(diff != 0) {
+			return diff;
+		}
+		else {
+			return (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
+		}
 	}
 	
 }

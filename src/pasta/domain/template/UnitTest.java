@@ -29,6 +29,13 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import pasta.util.ProjectProperties;
 
 /**
@@ -48,8 +55,18 @@ import pasta.util.ProjectProperties;
  * @version 2.0
  * @since 2012-11-13
  */
-public class UnitTest {
+
+@Entity
+@Table (name = "unit_tests")
+public class UnitTest implements Serializable, Comparable<UnitTest> {
+	
+	private static final long serialVersionUID = -7413957282304051135L;
+
+	@Id @GeneratedValue
+	private long id;
+	
 	private String name;
+	
 	private boolean tested;
 
 	/**
@@ -76,7 +93,7 @@ public class UnitTest {
 	}
 
 	public String getFileLocation() {
-		return ProjectProperties.getInstance().getUnitTestsLocation() + getShortName();
+		return ProjectProperties.getInstance().getUnitTestsLocation() + getId();
 	}
 
 	public boolean isTested() {
@@ -86,12 +103,25 @@ public class UnitTest {
 	public void setTested(boolean tested) {
 		this.tested = tested;
 	}
+		
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 
-	public String toString() {
+	public String toString(){
 		String output = "<unitTestProperties>" + System.getProperty("line.separator");
+		output += "\t<id>"+id+"</id>" + System.lineSeparator();
 		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
 		output += "\t<tested>" + tested + "</tested>" + System.getProperty("line.separator");
 		output += "</unitTestProperties>";
 		return output;
+	}
+
+	@Override
+	public int compareTo(UnitTest other) {
+		return this.name.compareTo(other.name);
 	}
 }
