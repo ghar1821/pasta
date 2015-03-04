@@ -38,7 +38,6 @@ import java.net.Proxy;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -84,11 +83,11 @@ public class ProjectProperties {
 	// location of the project
 	private String projectLocation;
 	// location of the templates
-	private static String unitTestsLocation = "template/unitTest/";
+	private static String unitTestsLocation = "template" + File.separator + "unitTest" + File.separator;
 	// location of the submissions
-	private static String submissionsLocation = "submissions/";
+	private static String submissionsLocation = "submissions" + File.separator;
 	// location of the submissions
-	private static String competitionsLocation = "competitions/";
+	private static String competitionsLocation = "competitions" + File.separator;
 	// auth type (dummy, imap, database)
 	private String authType;
 	// list of mail servers to auth with (imap auth only)
@@ -101,8 +100,7 @@ public class ProjectProperties {
 	private Proxy proxy;
 	
 	private LoginDAO loginDAO;
-	private PlayerDAO playerDAO;
-
+	
 	@Autowired
 	private AssessmentDAO assessmentDAO;
 	@Autowired
@@ -111,11 +109,13 @@ public class ProjectProperties {
 	private UnitTestDAO unitTestDAO;
 	@Autowired
 	private HandMarkingDAO handMarkingDAO;
+	@Autowired
+	private PlayerDAO playerDAO;
 
 	private ProjectProperties(Map<String, String> settings) {
 		projectLocation = settings.get("location");
-		if (projectLocation != null && !projectLocation.isEmpty() && !projectLocation.endsWith("/")) {
-			projectLocation += "/";
+		if (projectLocation != null && !projectLocation.isEmpty() && !projectLocation.endsWith(File.separator)) {
+			projectLocation += File.separator;
 		}
 
 		createAccountOnSuccessfulLogin = Boolean.parseBoolean(settings.get("createAccountOnSuccessfulLogin"));
@@ -130,7 +130,7 @@ public class ProjectProperties {
 
 		authType = settings.get("authentication").toLowerCase();
 
-		if (new File(getProjectLocation() + "/authentication.settings").exists()) {
+		if (new File(getProjectLocation() + File.separator + "authentication.settings").exists()) {
 			logger.info("exists");
 			decryptAuthContent();
 		}
@@ -164,13 +164,11 @@ public class ProjectProperties {
 		logger.info("UnitTests location set to: " + unitTestsLocation);
 		logger.info("Submissions location set to: " + submissionsLocation);
 		logger.info("Competitions Location set to: " + competitionsLocation);
-
-		playerDAO = new PlayerDAO();
-		
 	}
 	
 	@PostConstruct
 	public void initDAOs() {
+		this.playerDAO.init();
 		this.assessmentDAO.init();
 		this.resultDAO.init(assessmentDAO);
 	}
@@ -200,8 +198,8 @@ public class ProjectProperties {
 			}
 		}
 
-		if (newPath != null && !newPath.isEmpty() && !newPath.endsWith("/")) {
-			newPath += "/";
+		if (newPath != null && !newPath.isEmpty() && !newPath.endsWith(File.separator)) {
+			newPath += File.separator;
 		}
 		return newPath;
 	}
@@ -314,7 +312,7 @@ public class ProjectProperties {
 	private void decryptAuthContent() {
 
 		try {
-			Scanner in = new Scanner(new File(getProjectLocation() + "/authentication.settings"));
+			Scanner in = new Scanner(new File(getProjectLocation() + File.separator + "authentication.settings"));
 
 			authType = in.nextLine();
 			serverAddresses.clear();
