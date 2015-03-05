@@ -41,6 +41,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Repository;
 
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
@@ -57,6 +59,8 @@ import pasta.util.ProjectProperties;
  * @version 2.0
  * @since 2014-05-01
  */
+@Repository("playerDAO")
+@DependsOn("projectProperties")
 public class PlayerDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -64,10 +68,13 @@ public class PlayerDAO {
 	// username, competition, player
 	Map<String, Map<String, Map<String, PlayerHistory>>> players;
 
+	public PlayerDAO() {
+	}
+	
 	/**
 	 * Loads all player histories (statistics) into cache
 	 */
-	public PlayerDAO() {
+	public void init() {
 		// load all players.
 		players = new TreeMap<String, Map<String, Map<String, PlayerHistory>>>();
 

@@ -35,6 +35,7 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -48,6 +49,7 @@ import pasta.domain.form.ReleaseForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
@@ -109,38 +111,12 @@ public class AssessmentManager {
 	/**
 	 * Helper method
 	 * 
-	 * @see pasta.repository.AssessmentDAO#getAssessment(String)
-	 * @param assessmentName the short name (no whitespace) of the assessment
-	 * @return the assessment (null if it does not exist)
-	 */
-	@Deprecated
-	public Assessment getAssessment(String assessmentName) {
-		return assDao.getAssessment(assessmentName);
-	}
-	
-	/**
-	 * Helper method
-	 * 
 	 * @see pasta.repository.AssessmentDAO#getAssessment(long)
 	 * @param assessmentId the id of the assessment
 	 * @return the assessment (null if it does not exist)
 	 */
 	public Assessment getAssessment(long assessmentId) {
 		return assDao.getAssessment(assessmentId);
-	}
-	
-
-	/**
-	 * Helper method.
-	 * 
-	 * @see pasta.repository.ResultDAO#getAssessmentHistory(String, Assessment)
-	 * @param username the name of the user
-	 * @param assessmentName the short name (no whitespace) of the assessment
-	 * @return the collection of submission history for a user for a given assessment
-	 */
-	@Deprecated
-	public Collection<AssessmentResult> getAssessmentHistory(String username, String assessmentName){
-		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentName));
 	}
 	
 	/**
@@ -154,19 +130,6 @@ public class AssessmentManager {
 	public Collection<AssessmentResult> getAssessmentHistory(String username, long assessmentId){
 		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentId));
 	}
-
-	/**
-	 * Helper method.
-	 * 
-	 * @see pasta.repository.AssessmentDAO#releaseAssessment(String, ReleaseForm)
-	 * @param assessmentName the short name (no whitespace) of the assessment
-	 * @param releaseForm {@link pasta.domain.form.ReleaseForm} 
-	 */
-	@Deprecated
-	public void releaseAssessment(String assessmentName, ReleaseForm releaseForm)
-	{
-		assDao.releaseAssessment(assessmentName,releaseForm);
-	}
 	
 	/**
 	 * Helper method.
@@ -178,17 +141,6 @@ public class AssessmentManager {
 	public void releaseAssessment(long assessmentId, ReleaseForm releaseForm)
 	{
 		assDao.releaseAssessment(assessmentId,releaseForm);
-	}
-
-	/**
-	 * Helper method.
-	 * 
-	 * @see pasta.repository.AssessmentDAO#removeAssessment(String)
-	 * @param assessment the short name (no whitespace) of the assessment
-	 */
-	@Deprecated
-	public void removeAssessment(String assessment) {
-		assDao.removeAssessment(assessment);
 	}
 	
 	/**
@@ -213,26 +165,32 @@ public class AssessmentManager {
 	 * @param assessmentToAdd the assessment to add.
 	 */
 	public void addAssessment(Assessment assessmentToAdd) {
-		try {
-			// unit Tests
-			for (WeightedUnitTest test : assessmentToAdd.getUnitTests()) {
-				test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
-				test.setAssessment(assessmentToAdd);
-			}
-
-			// secret unit tests
-			for (WeightedUnitTest test : assessmentToAdd.getSecretUnitTests()) {
-				test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
-				test.setAssessment(assessmentToAdd);
-			}
-			
-			// hand marking
-			for (WeightedHandMarking handMarking : assessmentToAdd.getHandMarking()) {
-				if (assDao.getHandMarking(handMarking.getHandMarkingName().replace(" ", "")) != null) {
-					handMarking.setHandMarking(assDao.getHandMarking(handMarking.getHandMarkingName().replace(
-							" ", "")));
-				}
-			}
+		
+		// unit Tests
+		for (WeightedUnitTest test : assessmentToAdd.getUnitTests()) {
+			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
+			test.setAssessment(assessmentToAdd);
+		}
+		
+		// secret unit tests
+		for (WeightedUnitTest test : assessmentToAdd.getSecretUnitTests()) {
+			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
+			test.setAssessment(assessmentToAdd);
+		}
+	
+		// hand marking
+		for (WeightedHandMarking handMarking : assessmentToAdd.getHandMarking()) {
+			HandMarking realTemplate = ProjectProperties.getInstance().getHandMarkingDAO()
+					.getHandMarking(handMarking.getHandMarking().getId());
+			handMarking.setHandMarking(realTemplate);
+			handMarking.setAssessment(assessmentToAdd);
+		}
+		
+		ProjectProperties.getInstance().getAssessmentDAO().merge(assessmentToAdd);
+//		if(assessmentToAdd.getId() == 0) {
+//			ProjectProperties.getInstance().getAssessmentDAO().save(assessmentToAdd);
+//		} else {
+//		}
 			
 //			// competitions
 //			for (WeightedCompetition compeition : assessmentToAdd.getCompetitions()) {
@@ -281,30 +239,22 @@ public class AssessmentManager {
 //				}
 //			}
 
-			// add it to the directory structure
-			File location = new File(ProjectProperties.getInstance()
-					.getProjectLocation()
-					+ "/template/assessment/"
-					+ assessmentToAdd.getName().replace(" ", ""));
-			location.mkdirs();
-
-			PrintStream out = new PrintStream(location.getAbsolutePath()
-					+ "/assessmentProperties.xml");
-			out.print(assessmentToAdd);
-			out.close();
-
-			PrintStream descriptionOut = new PrintStream(
-					location.getAbsolutePath() + "/description.html");
-			descriptionOut.print(assessmentToAdd.getDescription());
-			descriptionOut.close();
-
-			// add it to the list.
-			assDao.addAssessment(assessmentToAdd);
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//			// add it to the directory structure
+//			File location = new File(ProjectProperties.getInstance()
+//					.getProjectLocation()
+//					+ "/template/assessment/"
+//					+ assessmentToAdd.getName().replace(" ", ""));
+//			location.mkdirs();
+//
+//			PrintStream out = new PrintStream(location.getAbsolutePath()
+//					+ "/assessmentProperties.xml");
+//			out.print(assessmentToAdd);
+//			out.close();
+//
+//			PrintStream descriptionOut = new PrintStream(
+//					location.getAbsolutePath() + "/description.html");
+//			descriptionOut.print(assessmentToAdd.getDescription());
+//			descriptionOut.close();
 	}
 
 	/**
@@ -314,7 +264,7 @@ public class AssessmentManager {
 	 * @param username the name of the user
 	 * @return all of the cached assessment results.
 	 */
-	public Map<String, AssessmentResult> getLatestResultsForUser(String username){
+	public Map<Long, AssessmentResult> getLatestResultsForUser(String username){
 		return resultDAO.getLatestResults(username);
 	}
 	
@@ -325,32 +275,17 @@ public class AssessmentManager {
 	 * collection of users given.
 	 * 
 	 * @param allUsers the collection of {@link pasta.domain.PASTAUser} that are being queried
-	 * @return the map (String username , String assessmentName, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
+	 * @return the map (String username , Long assessmentId, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
 	 */
-	public Map<String, Map<String, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
-		Map<String, Map<String, AssessmentResult>> results = new TreeMap<String, Map<String, AssessmentResult>>();
+	public Map<String, Map<Long, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
+		Map<String, Map<Long, AssessmentResult>> results = new TreeMap<String, Map<Long, AssessmentResult>>();
 		
 		for(PASTAUser user: allUsers){
-			Map<String, AssessmentResult> currResultMap = resultDAO.getLatestResults(user.getUsername());
+			Map<Long, AssessmentResult> currResultMap = resultDAO.getLatestResults(user.getUsername());
 			results.put(user.getUsername(), currResultMap);
 		}
 		
 		return results;
-	}
-	
-	/**
-	 * Helper method.
-	 * 
-	 * @see pasta.repository.ResultDAO#getAsssessmentResult(String, Assessment, String)
-	 * @param username the name of the user
-	 * @param assessmentName the short name (no whitespace) of the assessment 
-	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss"
-	 * @return the queried assessment result or null if not available.
-	 */
-	@Deprecated
-	public AssessmentResult getAssessmentResult(String username, String assessmentName,
-			String assessmentDate) {
-		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
 	}
 	
 	/**
@@ -373,7 +308,7 @@ public class AssessmentManager {
 	 * @see pasta.repository.AssessmentDAO#getAllAssessmentsByCategory()
 	 * @return a map of the categories and the list of all assessments belonging to that category.
 	 */
-	public Map<String, List<Assessment>> getAllAssessmentsByCategory() {
+	public Map<String, Set<Assessment>> getAllAssessmentsByCategory() {
 		return assDao.getAllAssessmentsByCategory();
 	}
 }

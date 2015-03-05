@@ -82,6 +82,7 @@
 				<value>pasta.domain.template.HandMarking</value>
 				<value>pasta.domain.template.UnitTest</value>
 				<value>pasta.domain.template.WeightedField</value>
+				<value>pasta.domain.template.WeightedHandMarking</value>
 				<value>pasta.domain.template.WeightedUnitTest</value>
 			</list>
 	    </property>

@@ -76,6 +76,7 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.unitTests}">
 								<tr>
 									<td>
+										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].id" value="${unitTest.id}"/>
 										<form:input type="hidden" path="unitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
 										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
@@ -94,6 +95,7 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${assessment.secretUnitTests}">
 								<tr>
 									<td>
+										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].id" value="${unitTest.id}"/>
 										<form:input type="hidden" path="secretUnitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
 										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
@@ -115,6 +117,7 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
 								<tr>
 									<td>
+										<form:input type="hidden" path="garbage[${unitTestIndex.index}].id" value="${unitTest.id}"/>
 										<form:input type="hidden" path="garbage[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
 										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
 									</td>
@@ -122,7 +125,7 @@ either expressed or implied, of the PASTA Project.
 									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -141,13 +144,14 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${assessment.handMarking}">
 								<tr>
 									<td>
-										<form:input type="hidden" path="handMarking[${handMarkingIndex.index}].handMarkingName" value="${handMarking.handMarkingName}"/>
+										<form:input type="hidden" path="handMarking[${handMarkingIndex.index}].id" value="${handMarking.id}"/>
+										<form:input type="hidden" path="handMarking[${handMarkingIndex.index}].handMarking.id" value="${handMarking.handMarking.id}"/>
 										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="handMarking[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -161,13 +165,14 @@ either expressed or implied, of the PASTA Project.
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${otherHandMarking}">
 								<tr>
 									<td>
-										<form:input type="hidden" path="handGarbage[${handMarkingIndex.index}].handMarkingName" value="${handMarking.handMarkingName}"/>
+										<form:input type="hidden" path="handGarbage[${handMarkingIndex.index}].id" value="${handMarking.id}"/>
+										<form:input type="hidden" path="handGarbage[${handMarkingIndex.index}].handMarking.id" value="${handMarking.handMarking.id}"/>
 										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
 									</td>
 									<td><form:input size="5" type="text" path="handGarbage[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -192,7 +197,7 @@ either expressed or implied, of the PASTA Project.
 									<td><form:input size="5" type="text" path="competitions[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -212,7 +217,7 @@ either expressed or implied, of the PASTA Project.
 									<td><form:input size="5" type="text" path="compGarbage[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
 								</tr>
 							</c:forEach>
-							<tr id="buffer" class="sortableDisabled"></tr>
+							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
 						</tbody>
 					</table>
 				</div>
@@ -279,9 +284,13 @@ either expressed or implied, of the PASTA Project.
             		for(var j=0; j<childrenNodes.length; ++j){
             			
 						if(childrenNodes[j].getAttribute("id") != "buffer"){
-							// td -> input - unitTestName
-							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".test.id");
-							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".test.id");
+							// td -> input - id
+							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".id");
+							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".id");
+							
+							// td -> input - unitTest - id
+							childrenNodes[j].children[0].children[1].setAttribute("id", prefix+j+".test.id");
+							childrenNodes[j].children[0].children[1].setAttribute("name", prefix+"["+j+"]"+".test.id");
 							
 							// td -> input - weight
 							childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
@@ -306,9 +315,13 @@ either expressed or implied, of the PASTA Project.
             		for(var j=0; j<childrenNodes.length; ++j){
             			
 						if(childrenNodes[j].getAttribute("id") != "buffer"){
-	            			// td -> input - unitTestName
-	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".handMarkingName");
-	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".handMarkingName");
+	            			// td -> input - id
+	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".id");
+	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".id");
+	            			
+	            			// td -> input - handMarking - id
+	            			childrenNodes[j].children[0].children[1].setAttribute("id", prefix+j+".handMarking.id");
+	            			childrenNodes[j].children[0].children[1].setAttribute("name", prefix+"["+j+"]"+".handMarking.id");
 	            			
 	            			// td -> input - weight
 	            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");

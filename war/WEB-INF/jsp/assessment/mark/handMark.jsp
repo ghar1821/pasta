@@ -47,107 +47,107 @@ th, td{
 
 <form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
 <c:choose>
-				<c:when test="${assessmentResult.compileError}">
-					<div style="width:100%; text-align:right;">
-						<button type="button" onclick='$("#details").slideToggle("slow")'>Details</button>
-					</div>
-					<h5>Compile Errors</h5>
-					<div id="details" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
-						<pre>
-							${assessmentResult.compilationError}
-						</pre>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<h3>Automatic Marking Results</h3>
-					<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
+		<c:when test="${assessmentResult.compileError}">
+			<div style="width:100%; text-align:right;">
+				<button type="button" onclick='$("#details").slideToggle("slow")'>Details</button>
+			</div>
+			<h5>Compile Errors</h5>
+			<div id="details" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
+				<pre>
+					${assessmentResult.compilationError}
+				</pre>
+			</div>
+		</c:when>
+		<c:otherwise>
+			<h3>Automatic Marking Results</h3>
+			<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
+				<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
+					<c:choose>
+						<c:when test="${allUnitTests.secret}">
+							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
+							</c:forEach>
+						</c:when>
+						<c:otherwise>
+							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
+							</c:forEach>
+						</c:otherwise>
+					</c:choose>
+				</c:forEach>
+			</c:if>
+			<div style="width:100%; text-align:right;">
+				<button type=button onclick='$("#details").slideToggle("slow")'>Details</button>
+			</div>
+			<div id="details" style="display:none">
+				<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
+					<table class="pastaTable" >
+						<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 						<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
-							<c:choose>
-								<c:when test="${allUnitTests.secret}">
-									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-									</c:forEach>
-								</c:when>
-								<c:otherwise>
-									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-									</c:forEach>
-								</c:otherwise>
-							</c:choose>
-						</c:forEach>
-					</c:if>
-					<div style="width:100%; text-align:right;">
-						<button type=button onclick='$("#details").slideToggle("slow")'>Details</button>
-					</div>
-					<div id="details" style="display:none">
-						<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
-							<table class="pastaTable" >
-								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-								<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
-									<c:forEach var="testCase" items="${allUnitTests.testCases}">
-										<tr>
-											<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-											<td style="text-align:left;">${testCase.testName}</td>
-											<td>${testCase.time}</td>
-											<td>
-												<pre>${testCase.type} - ${fn:replace(fn:replace(testCase.testMessage, '>', '&gt;'), '<', '&lt;')}</pre>
-
-											</td>
-										</tr>
-									</c:forEach>
-								</c:forEach>
-							</table>
-						</c:if>
-					</div>
-				</c:otherwise>
-			</c:choose>
-
-			<h3>Hand Marking Guidelines</h3>
-			<c:set var="totalHandMarkingCategories" value="0" />
-			<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
-				<h4>${handMarking.handMarking.name}</h4>
-				<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
-				<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].id" value="${handMarking.handMarking.id}"/>
-				<div style="width:100%; overflow:auto">
-					<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
-						<thead>
-							<tr>
-								<th></th> <!-- empty on purpose -->
-								<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
-									<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
-										${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-										${handMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
-									</th>
-								</c:forEach>
-							</tr>
-						</thead>
-						<tbody>
-							<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
-								<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
+							<c:forEach var="testCase" items="${allUnitTests.testCases}">
 								<tr>
-									<th>
-										${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-										${handMarking.handMarking.rowHeader[rowStatus.index].weight}
-									</th>
-									<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-										<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
-											<c:if test="${not empty handMarking.handMarking.data[column.id][row.id] or handMarking.handMarking.data[column.id][row.id] == \"\"}">
-												<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-												<br />
-												${handMarking.handMarking.data[column.id][row.id]}<br />
-												<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.id}']" value="${column.name}"/>
-											</c:if>
-										</td>
-									</c:forEach>
+									<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+									<td style="text-align:left;">${testCase.testName}</td>
+									<td>${testCase.time}</td>
+									<td>
+										<pre>${testCase.type} - ${fn:replace(fn:replace(testCase.testMessage, '>', '&gt;'), '<', '&lt;')}</pre>
+
+									</td>
 								</tr>
 							</c:forEach>
-						</tbody>
+						</c:forEach>
 					</table>
-				</div>
-			</c:forEach>
-			
-			<form:textarea style="height:200px; width:95%" path="comments"/>
-			<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
+				</c:if>
+			</div>
+		</c:otherwise>
+	</c:choose>
+
+	<h3>Hand Marking Guidelines</h3>
+	<c:set var="totalHandMarkingCategories" value="0" />
+	<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
+		<h4>${handMarking.handMarking.name}</h4>
+		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
+		<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].id" value="${handMarking.handMarking.id}"/>
+		<div style="width:100%; overflow:auto">
+			<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
+				<thead>
+					<tr>
+						<th></th> <!-- empty on purpose -->
+						<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
+							<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
+								${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+								${handMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
+							</th>
+						</c:forEach>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+						<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
+						<tr>
+							<th>
+								${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
+								${handMarking.handMarking.rowHeader[rowStatus.index].weight}
+							</th>
+							<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
+								<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
+									<c:if test="${not empty handMarking.handMarking.data[column.id][row.id] or handMarking.handMarking.data[column.id][row.id] == \"\"}">
+										<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
+										<br />
+										${handMarking.handMarking.data[column.id][row.id]}<br />
+										<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.id}']" value="${column.name}"/>
+									</c:if>
+								</td>
+							</c:forEach>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</div>
+	</c:forEach>
+	
+	<form:textarea style="height:200px; width:95%" path="comments"/>
+	<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
 	
 </form:form>
 

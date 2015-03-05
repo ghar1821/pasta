@@ -93,18 +93,6 @@ public class HandMarkingManager {
 	public Collection<HandMarking> getHandMarkingList() {
 		return assDao.getHandMarkingList();
 	}
-
-	/**
-	 * Helper method
-	 * 
-	 * @param handMarkingName the short name (no whitespace) of the hand marking template
-	 * @see pasta.repository.AssessmentDAO#getHandMarking(String)
-	 * @return the hand marking template with that name, null if it does not exist
-	 */
-	@Deprecated
-	public HandMarking getHandMarking(String handMarkingName) {
-		return assDao.getHandMarking(handMarkingName);
-	}
 	
 
 	/**
@@ -196,34 +184,19 @@ public class HandMarkingManager {
 	 * Save hand marking results.
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param handMarkingResults the list of hand marking results to save
 	 */
-	public void saveHandMarkingResults(String username, String assessmentName,
+	public void saveHandMarkingResults(String username, long assessmentId,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
-		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentName), assessmentDate);
+		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentId), assessmentDate);
 		// save to memory
 		if(result != null){
 			result.setHandMarkingResults(handMarkingResults);
 			// save to file
-			resultDAO.saveHandMarkingToFile(username, assessmentName, assessmentDate, handMarkingResults);
+			resultDAO.saveHandMarkingToFile(username, assessmentId, assessmentDate, handMarkingResults);
 		}
-	}
-
-	/**
-	 * Remove a hand marking template
-	 * 
-	 * @param handMarkingName the short name (no whitespace) of the hand marking template
-	 */
-	public void removeHandMarking(String handMarkingName) {
-		assDao.removeHandMarking(handMarkingName);
-		// delete file
-		try {
-			FileUtils.deleteDirectory(new File(ProjectProperties.getInstance().getProjectLocation()
-					+ "/template/handMarking/"
-					+ handMarkingName));
-		} catch (IOException e) {}
 	}
 	
 	/**
@@ -235,19 +208,19 @@ public class HandMarkingManager {
 		ProjectProperties.getInstance().getHandMarkingDAO().delete(
 				ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId));
 	}
-
+	
 	/**
 	 * Save the comment
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of assessment submission (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param comments the comments that will be saved
 	 */
-	public void saveComment(String username, String assessmentName,
+	public void saveComment(String username, long assessmentId,
 			String assessmentDate, String comments) {
 		// make that better
-		resultDAO.saveHandMarkingComments(username, assessmentName, assessmentDate, comments);
+		resultDAO.saveHandMarkingComments(username, assessmentId, assessmentDate, comments);
 	}
 
 }

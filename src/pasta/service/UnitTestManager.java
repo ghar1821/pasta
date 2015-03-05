@@ -117,17 +117,6 @@ public class UnitTestManager {
 		return unitTestDAO.getAllUnitTests();
 		//return assDao.getAllUnitTests().values();
 	}
-
-	/**
-	 * Get a unit test template
-	 * 
-	 * @param name the short name (no whitespace) of a unit test.
-	 * @return the unit test template or null if not available
-	 */
-	@Deprecated
-	public UnitTest getUnitTest(String name) {
-		return assDao.getAllUnitTests().get(name);
-	}
 	
 	public UnitTest getUnitTest(long id) {
 		return unitTestDAO.getUnitTest(id);
@@ -244,24 +233,6 @@ public class UnitTestManager {
     Charset charset = StandardCharsets.UTF_8;
     return new String(Files.readAllBytes(templateBuildXML.toPath()), charset);
 	}
-
-  /**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.AssessmentDAO#removeUnitTest(String)
-	 * @param testName the short name (no whitespace) of the unit test template to be removed
-	 */
-	@Deprecated
-	public void removeUnitTest(String testName) {
-		assDao.removeUnitTest(testName);
-		
-		// Delete unit test from database
-		try {
-			unitTestDAO.delete(unitTestDAO.getUnitTest(testName));
-		} catch (Exception e) {
-			logger.error("Could not delete unit test " + testName, e);
-		}
-	}
 	
 	public void removeUnitTest(long id) {
 		// Delete unit test from database
@@ -269,138 +240,6 @@ public class UnitTestManager {
 			unitTestDAO.delete(unitTestDAO.getUnitTest(id));
 		} catch (Exception e) {
 			logger.error("Could not delete unit test " + id, e);
-		}
-	}
-
-	/**
-	 * Method to test the unit tests uploaded
-	 * <p>
-	 * This method is used to test whether the unit tests are working
-	 * as anticipated on the system before assigning it as a part of an assessment
-	 * and releasing it to students.
-	 * 
-	 * There is no queue system implemented for this now. As soon as the method
-	 * is called, the testing proceeds. Use at your own risk.
-	 * 
-	 * <ol>
-	 * 	<li>Create a new folder $ProjectLocation$/template/unitTest/$unitTestName$/test, 
-	 * if folder already exists, delete it and make a new one</li>
-	 * 	<li>Copy and extract submission code to that folder using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
-	 * 	<li>Copy the unit test code from $ProjectLocation$/template/unitTest/$unitTestName$/code</li>
-	 * 	<li>run the ant targets "build", "test", "clean"</li>
-	 * 	<li>any errors will be written to "compile.errors" and "run.errors" and the results are written to
-	 * results.xml</li>
-	 * </ol>
-	 * 
-	 * @param submission the submission form (containing the zip)
-	 * @param testName the short name (no whitespace) of the test
-	 */
-	@Deprecated
-	public void testUnitTest(Submission submission, String testName) {
-		PrintStream compileErrors = null;
-		PrintStream runErrors = null;
-		try {
-			UnitTest thisTest = getUnitTest(testName);
-			// delete old submission if exists
-			FileUtils.deleteDirectory(new File(thisTest.getFileLocation()
-					+ "/test/"));
-
-			// create folder
-			(new File(thisTest.getFileLocation() + "/test/")).mkdirs();
-			// extract submission
-			submission.getFile().transferTo(
-					new File(thisTest.getFileLocation() + "/test/"
-							+ submission.getFile().getOriginalFilename()));
-			PASTAUtil.extractFolder(thisTest.getFileLocation()
-					+ "/test/" + submission.getFile().getOriginalFilename());
-			FileUtils.forceDelete(new File(thisTest.getFileLocation()
-					+ "/test/" + submission.getFile().getOriginalFilename()));
-
-			// copy over unit test
-			FileUtils.copyDirectory(new File(thisTest.getFileLocation()
-					+ "/code/"),
-					new File(thisTest.getFileLocation() + "/test/"));
-
-			// compile
-			File buildFile = new File(thisTest.getFileLocation()
-					+ "/test/build.xml");
-
-			ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-			Project project = new Project();
-
-			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-			project.setBasedir(thisTest.getFileLocation() + "/test");
-			DefaultLogger consoleLogger = new DefaultLogger();
-			 runErrors = new PrintStream(thisTest.getFileLocation()
-					  + "/test/run.errors");
-			consoleLogger.setOutputPrintStream(runErrors);
-			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-			project.addBuildListener(consoleLogger);
-			project.init();
-
-			project.addReference("ant.projectHelper", projectHelper);
-			projectHelper.parse(project, buildFile);
-			try {
-				project.executeTarget("build");
-				project.executeTarget("test");
-				project.executeTarget("clean");
-			} catch (BuildException e) {
-				throw new RuntimeException(String.format(
-						"Run %s [%s] failed: %s", buildFile, "everything",
-						e.getMessage()), e);
-			}
-
-			runErrors.close();
-			
-			// scrape compiler errors from run.errors
-			try{
-				Scanner in = new Scanner (new File(thisTest.getFileLocation() + "/test/" + "/run.errors"));
-				boolean containsError = false;
-				boolean importantData = false;
-				String output = "";
-				while(in.hasNextLine()){
-					String line = in.nextLine();
-					if(line.contains(": error:")){
-						containsError = true;
-					}
-					if(line.contains("[javac] Files to be compiled:")){
-						importantData = true;
-					}
-					if(importantData){
-						output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
-					}
-				}
-				in.close();
-				
-				if(containsError){
-					compileErrors = new PrintStream(
-							thisTest.getFileLocation() + "/test/" + "/compile.errors");
-					compileErrors.print(output);
-					compileErrors.close();
-					
-				}
-			}
-			catch (Exception e){
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.error("Something went wrong: " + sw.toString());
-			}
-
-		} catch (IOException e) {
-			logger.error("Unable to test unit test "
-					+ getUnitTest(testName).getName()
-					+ System.getProperty("line.separator") + e);
-		} catch (Exception e){
-			// catch the rest of the exceptions
-		}
-		
-		// ensure everything is closed
-		if(runErrors != null){
-			runErrors.close();
-		}
-		if(compileErrors != null){
-			compileErrors.close();
 		}
 	}
 	
@@ -523,7 +362,7 @@ public class UnitTestManager {
 					+ getUnitTest(testId).getName()
 					+ System.getProperty("line.separator") + e);
 		} catch (Exception e){
-			// catch the rest of the exceptions
+			logger.error("Unknown error while testing unit test: ", e);
 		}
 		
 		// ensure everything is closed

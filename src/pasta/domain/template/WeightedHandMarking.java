@@ -29,6 +29,16 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * Container class for a weighted hand marking.
  * <p>
@@ -43,30 +53,61 @@ package pasta.domain.template;
  * @since 2013-04-01
  *
  */
-public class WeightedHandMarking {
-	private HandMarking handMarking = new HandMarking();
-	private double weight;
-	private String handMarkingName;
+
+@Entity
+@Table (name = "weighted_hand_markings")
+public class WeightedHandMarking implements Serializable, Comparable<WeightedHandMarking> {
+
+	private static final long serialVersionUID = -3429348535279846933L;
 	
-	public HandMarking getHandMarking() {
-		return handMarking;
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	private double weight;
+	
+	@ManyToOne
+	@JoinColumn(name = "hand_marking_id")
+	private HandMarking handMarking;
+	
+	@ManyToOne (cascade = CascadeType.ALL)
+	private Assessment assessment;
+	
+	
+	public long getId() {
+		return id;
 	}
-	public void setHandMarking(HandMarking handMarking) {
-		this.handMarking = handMarking;
-		if(!handMarking.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
-			handMarkingName = handMarking.getName();
-		}
+	public void setId(long id) {
+		this.id = id;
 	}
+	
 	public double getWeight() {
 		return weight;
 	}
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
-	public String getHandMarkingName() {
-		return handMarkingName;
+	
+	public HandMarking getHandMarking() {
+		return handMarking;
 	}
-	public void setHandMarkingName(String handMarkingName) {
-		this.handMarkingName = handMarkingName;
+	public void setHandMarking(HandMarking handMarking) {
+		this.handMarking = handMarking;
+	}
+	
+	public Assessment getAssessment() {
+		return assessment;
+	}
+	public void setAssessment(Assessment assessment) {
+		this.assessment = assessment;
+	}
+	
+	@Override
+	public int compareTo(WeightedHandMarking other) {
+		int diff = this.handMarking.compareTo(other.handMarking);
+		if(diff != 0) {
+			return diff;
+		}
+		return (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
 	}
 }
