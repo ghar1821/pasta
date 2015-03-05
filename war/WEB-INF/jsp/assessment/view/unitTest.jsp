@@ -58,7 +58,7 @@ either expressed or implied, of the PASTA Project.
 		</table>
 		<form:input type="hidden" path="submittingUsername" value="${submittingUsername}"/>
 		<form:input type="hidden" path="submittingForUsername" value="${submittingForUsername}"/>
-		<form:input type="hidden" path="assessment" value="UNIT TEST CHECK - ${unitTest.shortName}"/>
+		<form:input type="hidden" path="assessment" value="${unitTest.id}"/>
     	<input type="submit" value="Upload" id="submit"/>
 	</form:form>
 </div>
@@ -73,7 +73,6 @@ either expressed or implied, of the PASTA Project.
 	<h1> Update Unit Test </h1>
 	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
 		<table>
-			<form:input autocomplete="off" type="hidden" path="testName" value="${unitTest.shortName}"/>
 			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
 		</table>
 		<form:input type="hidden" path="testId" value="${unitTest.id}"/>

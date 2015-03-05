@@ -132,10 +132,10 @@ public class APIController {
 				out.println();
 
 				// username, assessment name, result
-				Map<String, Map<String, AssessmentResult>> latestResults = assessmentManager
+				Map<String, Map<Long, AssessmentResult>> latestResults = assessmentManager
 						.getLatestResults(userManager.getUserList());
 
-				for (Entry<String, Map<String, AssessmentResult>> entry : latestResults
+				for (Entry<String, Map<Long, AssessmentResult>> entry : latestResults
 						.entrySet()) {
 					PASTAUser user = userManager.getUser(entry.getKey());
 					if (user != null) {
@@ -145,12 +145,12 @@ public class APIController {
 
 					for (Assessment assessment : assessments) {
 						if (entry.getValue() == null ||
-								entry.getValue().get(assessment.getShortName()) == null) {
+								entry.getValue().get(assessment.getId()) == null) {
 							out.print(",-");
 						} else {
 							out.print(","
 									+ entry.getValue()
-											.get(assessment.getShortName())
+											.get(assessment.getId())
 											.getMarks());
 						}
 					}

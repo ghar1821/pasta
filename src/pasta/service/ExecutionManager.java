@@ -524,7 +524,7 @@ public class ExecutionManager {
 				+ "/submission";
 
 		Assessment currAssessment = assDao.getAssessment(job
-				.getAssessmentName());
+				.getAssessmentId());
 
 		try {
 

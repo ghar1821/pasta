@@ -161,16 +161,16 @@ public class PASTAUtil {
 	 * Helper method for {@link #generateFileTree(String)}
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the name of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment
 	 * @return the file tree node that is root for the file tree.
 	 */
 	public static FileTreeNode generateFileTree(String username,
-			String assessmentName, String assessmentDate) {
+			long assessmentId, String assessmentDate) {
 		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
-				+ assessmentName
+				+ assessmentId
 				+ "/"
 				+ assessmentDate
 				+ "/submission");
@@ -224,21 +224,21 @@ public class PASTAUtil {
 	 * Calls {@link #generateFileTree(String)} for all submission attempts.
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the short (no whitespace) name of the assessment
+	 * @param assessmentId the short (no whitespace) name of the assessment
 	 * @return the map of file tree nodes for each submission with the submission
 	 * date as a key.
 	 */
-	public static Map<String, FileTreeNode> genereateFileTree(String username, String assessmentName) {
+	public static Map<String, FileTreeNode> genereateFileTree(String username, long assessmentId) {
 		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
 		String[] allSubs = (new File(ProjectProperties.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
-				+ assessmentName).list());
+				+ assessmentId).list());
 		if(allSubs != null && allSubs.length > 0){
 			for(String submission : allSubs){
 				if(submission.matches("\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d-\\d\\d-\\d\\d")){
-					allsubmissions.put(submission, generateFileTree(username, assessmentName, submission));
+					allsubmissions.put(submission, generateFileTree(username, assessmentId, submission));
 				}
 			}
 		}

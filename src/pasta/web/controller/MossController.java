@@ -100,7 +100,7 @@ public class MossController {
 	// ///////////////////////////////////////////////////////////////////////////
 	
 	/**
-	 * $PASTAUrl$/moss/run/{assessmentName}/
+	 * $PASTAUrl$/moss/run/{assessmentId}/
 	 * <p>
 	 * Run moss.
 	 * 
@@ -112,12 +112,12 @@ public class MossController {
 	 * 
 	 * @param model the mode being used
 	 * @param request the http request used for redirecting back to the referrer url
-	 * @param assessment the short name (no whitespace) of the assessment.
+	 * @param assessmentId the id of the assessment.
 	 * @return "redirect:/login/" or redirect back to the referrer
 	 */
-	@RequestMapping(value = "/run/{assessmentName}/")
+	@RequestMapping(value = "/run/{assessmentId}/")
 	public String runMoss(ModelMap model, HttpServletRequest request,
-			@PathVariable("assessmentName") String assessment) {
+			@PathVariable("assessmentId") long assessmentId) {
 		
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -127,12 +127,12 @@ public class MossController {
 			return "redirect:/home/";
 		}
 	
-		mossManager.runMoss(assessment);
+		mossManager.runMoss(assessmentId);
 		return "redirect:" + request.getHeader("Referer");
 	}
 	
 	/**
-	 * $PASTAUrl$/moss/view/{assessmentName}/
+	 * $PASTAUrl$/moss/view/{assessmentId}/
 	 * <p>
 	 * View the list of moss executions for an assessment.
 	 * 
@@ -143,19 +143,19 @@ public class MossController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
-	 * 	<tr><td>assessmentName</td><td>the name of the assessment</td></tr>
+	 * 	<tr><td>assessmentId</td><td>the id of the assessment</td></tr>
 	 * 	<tr><td>mossList</td><td>the list of moss execution given by {@link pasta.service.MossManager#getMossList(String)}</td></tr>
 	 * </table>
 	 * 
 	 * JSP: <ul><li>moss/list</li></ul>
 	 * 
 	 * @param model the model being used
-	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/list"
 	 */
-	@RequestMapping(value = "/view/{assessmentName}/")
+	@RequestMapping(value = "/view/{assessmentId}/")
 	public String viewMoss(ModelMap model,
-			@PathVariable("assessmentName") String assessment) {
+			@PathVariable("assessmentId") long assessmentId) {
 				
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -166,13 +166,13 @@ public class MossController {
 		}
 		
 		model.addAttribute("unikey", user);
-		model.addAttribute("assessmentName", assessment);
-		model.addAttribute("mossList", mossManager.getMossList(assessment));
+		model.addAttribute("assessmentId", assessmentId);
+		model.addAttribute("mossList", mossManager.getMossList(assessmentId));
 		return "moss/list";
 	}
 	
 	/**
-	 * $PASTAUrl$/moss/view/{assessmentName}/{date}/
+	 * $PASTAUrl$/moss/view/{assessmentId}/{date}/
 	 * <p>
 	 * View the results of the moss execution.
 	 * 
@@ -189,13 +189,13 @@ public class MossController {
 	 * JSP:<ul><li>moss/view</li></ul>
 	 * 
 	 * @param model the model being used
-	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param assessment the id of the assessment
 	 * @param date the date as a string in the following format: yyyy-MM-dd'T'HH-mm-ss
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/view"
 	 */
-	@RequestMapping(value = "/view/{assessmentName}/{date}/")
+	@RequestMapping(value = "/view/{assessmentId}/{date}/")
 	public String viewMoss(ModelMap model,
-			@PathVariable("assessmentName") String assessment,
+			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("date") String date) {
 				
 		PASTAUser user = getUser();
@@ -207,7 +207,7 @@ public class MossController {
 		}
 		
 		model.addAttribute("unikey", user);
-		model.addAttribute("mossResults", mossManager.getMossRun(assessment, date));
+		model.addAttribute("mossResults", mossManager.getMossRun(assessmentId, date));
 		return "moss/view";
 	}
 }

@@ -311,7 +311,7 @@ public class HandMarkingController {
 	 * using {@link pasta.service.HandMarkingManager#removeHandMarking(String)}
 	 * then redirect to $PASTAUrl$/handMarking/
 	 * 
-	 * @param handMarkingName the short name (no whitespace) of the hand marking template
+	 * @param handMarkingId the id of the hand marking template
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */

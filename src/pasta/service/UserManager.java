@@ -176,13 +176,13 @@ public class UserManager {
 	 * 
 	 * @see pasta.service.UserManager#giveExtension(PASTAUser, String, Date)
 	 * @param username the username of the student getting an extension
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param extension the new due date for the assessment
 	 */
-	public void giveExtension(String username, String assessmentName, Date extension) {
+	public void giveExtension(String username, long assessmentId, Date extension) {
 		PASTAUser user = getUser(username);
 		if(user != null){
-			giveExtension(user, assessmentName, extension);
+			giveExtension(user, assessmentId, extension);
 		}
 	}
 	
@@ -191,20 +191,20 @@ public class UserManager {
 	 * <p>
 	 * Updates the extensions in the cahced user and writes them to disk
 	 * in the folder $ProjectLocation$/submissions/$username$/user.extensions
-	 *  using the following format: "$assessmentName$>yyyy-MM-dd'T'HH-mm-ss"
+	 *  using the following format: "$assessmentId$>yyyy-MM-dd'T'HH-mm-ss"
 	 * 
 	 * @param user the user of the student getting an extension
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param extension the new due date for the assessment
 	 */
-	public void giveExtension(PASTAUser user, String assessmentName, Date extension) {
-		user.getExtensions().put(assessmentName, extension);
+	public void giveExtension(PASTAUser user, long assessmentId, Date extension) {
+		user.getExtensions().put(assessmentId, extension);
 		
 		// update the files
 		try {
 			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation() +
 					user.getUsername() + "/user.extensions"));
-			for (Entry<String, Date> ex : user.getExtensions().entrySet()) {
+			for (Entry<Long, Date> ex : user.getExtensions().entrySet()) {
 				out.println(ex.getKey() + ">" + PASTAUtil.formatDate(ex.getValue()));
 			}
 			out.close();

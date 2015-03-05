@@ -270,7 +270,7 @@ public class UnitTestController {
 			return;
 		}
 		
-		String testName = unitTestManager.getUnitTest(testId).getShortName();
+		String testName = unitTestManager.getUnitTest(testId).getFileAppropriateName();
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment;filename=\""
 				+ testName + ".zip\"");

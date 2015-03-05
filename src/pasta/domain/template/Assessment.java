@@ -112,7 +112,7 @@ import org.hibernate.annotations.LazyCollectionOption;
  * 1, then they are worth 50% of the marks each.
  * 
  * <p>
- * File location on disk: $projectLocation$/template/assessment/$assessmentName$
+ * File location on disk: $projectLocation$/template/assessment/$assessmentId$
  * 
  * @author Alex Radu
  * @version 2.0
@@ -175,7 +175,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
 			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
 	
-	@Transient
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
+	@JoinColumn(name="assessment_id")
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
 			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
 	
@@ -277,8 +279,13 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return handMarking;
 	}
 	public void setHandMarking(List<WeightedHandMarking> handMarking) {
+		for(WeightedHandMarking template : this.handMarking) {
+			template.setAssessment(null);
+		}
 		this.handMarking.clear();
-		this.handMarking.addAll(handMarking);
+		for(WeightedHandMarking template : handMarking) {
+			addHandMarking(template);
+		}
 	}
 	
 	public List<WeightedCompetition> getCompetitions() {
@@ -301,8 +308,8 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 				(specialRelease != null && !specialRelease.isEmpty());
 	}
 	
-	public String getShortName() {
-		return name.replace(" ", "");
+	public String getFileAppropriateName() {
+		return name.replace("[^\\w]+", "");
 	}
 	
 	public void addUnitTest(WeightedUnitTest test) {
@@ -322,10 +329,12 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	
 	public void addHandMarking(WeightedHandMarking test) {
+		test.setAssessment(this);
 		getHandMarking().add(test);
 	}
 	
 	public void removeHandMarking(WeightedHandMarking test) {
+		test.setAssessment(null);
 		getHandMarking().remove(test);
 	}
 
@@ -476,11 +485,11 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if (unitTests.size() + secretUnitTests.size() > 0) {
 			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
 			for (WeightedUnitTest unitTest : unitTests) {
-				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
+				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
 						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
 			}
 			for (WeightedUnitTest unitTest : secretUnitTests) {
-				output += "\t\t<unitTest name=\"" + unitTest.getTest().getShortName() + "\" weight=\""
+				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
 						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
 			}
 			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
@@ -489,7 +498,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if (handMarking.size() > 0) {
 			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
 			for (WeightedHandMarking handMarks : handMarking) {
-				output += "\t\t<handMarks name=\"" + handMarks.getHandMarking().getShortName() + "\" weight=\""
+				output += "\t\t<handMarks id=\"" + handMarks.getHandMarking().getId() + "\" weight=\""
 						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
 			}
 			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");

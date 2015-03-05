@@ -425,7 +425,7 @@ public class UserDAO extends HibernateDaoSupport{
 						String[] line = in.nextLine().split(">");
 						if(line.length == 2){
 							try {
-								user.getExtensions().put(line[0], PASTAUtil.parseDate(line[1]));
+								user.getExtensions().put(Long.parseLong(line[0]), PASTAUtil.parseDate(line[1]));
 							} catch (ParseException e) {
 								// ignore
 							}

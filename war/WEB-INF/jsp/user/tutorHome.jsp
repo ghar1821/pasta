@@ -61,15 +61,15 @@ Your zip file should contain the src folder. If you are unsure, please email you
 				</c:if>
 					>
 				<td>
-					<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
-					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
-					<c:if test="${empty results[assessment.shortName]}">
+					<a href="../info/${assessment.id}/">${assessment.name}</a> - 
+					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.id].marks}" />
+					<c:if test="${empty results[assessment.id]}">
 						0
 					</c:if>
 					/ ${assessment.marks}<br />
 				<c:choose>
-					<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
-						${viewedUser.extensions[assessment.shortName]}
+					<c:when test="${not empty viewedUser.extensions[assessment.id]}">
+						${viewedUser.extensions[assessment.id]}
 					</c:when>
 					<c:otherwise>
 						${assessment.dueDate}
@@ -81,30 +81,30 @@ Your zip file should contain the src folder. If you are unsure, please email you
 						&infin; submissions allowed <br />
 					</c:when>
 					<c:otherwise>
-						<c:if test="${empty results[assessment.shortName]}">
+						<c:if test="${empty results[assessment.id]}">
 							0
 						</c:if>
-						${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+						${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
 					</c:otherwise>
 				</c:choose>
 				<c:choose>
-					<c:when test="${results[assessment.shortName].submissionsMade == 0 or empty results[assessment.shortName]}">
+					<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
 						No attempts on record.
 					</c:when>
-					<c:when test="${results[assessment.shortName].compileError}">
+					<c:when test="${results[assessment.id].compileError}">
 						<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
 							<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
 							<b>Compilation errors</b>
 						</div>
 					</c:when>
-					<c:when test="${empty results[assessment.shortName].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.shortName]}">
+					<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
 						<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
 							<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
 							<b>Code is queued for testing.</b>
 						</div>
 					</c:when>
 					<c:otherwise>
-						<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
+						<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
 								<c:choose>
 									<c:when test="${allUnitTests.secret}">
 										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
@@ -123,13 +123,13 @@ Your zip file should contain the src folder. If you are unsure, please email you
 				</td>
 				<td style="width:40px;">
 					<button type="button" style="float: left; text-align: center;"
-							onclick="submitAssessment('${assessment.shortName}');">Submit</button>
+							onclick="submitAssessment('${assessment.id}');">Submit</button>
 				</td>
 				<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
 					<td style="width:15em;">
                           <div style="float: left; width:100%">
                                   <button type="button" style="float: left; text-align: center;"
-                                          onclick="location.href='../mark/${assessment.shortName}/'">Mark my classes</button>
+                                          onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
                           </div>
                      </td>
 				</c:if>
@@ -138,7 +138,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					<td style="width:40px;">
 						<div style="float: left; width:100%">
 						<button type="button" style="float: left; text-align: center;"
-							onclick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+							onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
 						</div>
 					</td>
 				</c:if>

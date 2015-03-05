@@ -103,14 +103,14 @@ public class MossManager {
 	 * Method to initiate the execution of a moss script
 	 * <p>
 	 * <ol>
-	 * 	<li>Copy the template moss into assessmentName/date</li>
+	 * 	<li>Copy the template moss into assessmentId/date</li>
 	 * 	<li>Load up build.xml</li>
 	 * 	<li>Set "assessment" and "defaultLocation" properties with the correct values.</li>
 	 * 	<li>Execute target "run"</li>
 	 * 	<li>Wait for script to upload files to the moss server and get back a response</li>
 	 * 	<li>Read "location.txt" to get the URL that holds the moss results.</li>
 	 * 	<li>Go to the URL specified and parse the page</li>
-	 * 	<li>Store the similarity list to the file assessmentName/date.csv</li>
+	 * 	<li>Store the similarity list to the file assessmentId/date.csv</li>
 	 * 	<li>Delete the directory created in step 1.</li>
 	 * </ol>
 	 * 
@@ -120,14 +120,14 @@ public class MossManager {
 	 * 
 	 * If the system is set to use a proxy, this is where it's done.
 	 * 
-	 * @param assessment
+	 * @param assessmentId
 	 */
-	public void runMoss(String assessment){
+	public void runMoss(long assessmentId){
 		String location = ProjectProperties.getInstance().getProjectLocation()
-				+ "/moss/" + assessment + "/"
+				+ "/moss/" + assessmentId + "/"
 				+ PASTAUtil.formatDate(new Date());
 		// copy moss somewhere safe for it to run (own folder. ->
-		// moss/assessmentName/dateRun)
+		// moss/assessmentId/dateRun)
 		try {
 			FileUtils.copyDirectory(new File(ProjectProperties.getInstance()
 					.getProjectLocation() + "/moss/template"), new File(
@@ -139,7 +139,7 @@ public class MossManager {
 			Project project = new Project();
 
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-			project.setUserProperty("assessment", assessment);
+			project.setUserProperty("assessment", ""+assessmentId);
 			project.setUserProperty("defaultLocation", ProjectProperties
 					.getInstance().getSubmissionsLocation());
 
@@ -151,7 +151,7 @@ public class MossManager {
 			try {
 				project.executeTarget("run");
 			} catch (BuildException e) {
-				logger.error("Could not run moss " + assessment);
+				logger.error("Could not run moss " + assessmentId);
 			}
 			// wait for output
 			// read url
@@ -220,21 +220,21 @@ public class MossManager {
 	/**
 	 * Get the results of a moss execution
 	 * <p>
-	 * Read $ProjectLocation$/moss/$assessmentName$/$date$.csv and store
+	 * Read $ProjectLocation$/moss/$assessmentId$/$date$.csv and store
 	 * it as a {@link pasta.domain.moss.MossResults}.
 	 * 
-	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param date the date (format yyyy-MM-dd'T'HH-mm-ss) 
 	 * @return the correct moss results (will never return null)
 	 */
-	public MossResults getMossRun(String assessment, String date) {
+	public MossResults getMossRun(long assessmentId, String date) {
 		MossResults results = new MossResults();
 
 		try {
 			Scanner in = new Scanner(new File(ProjectProperties.getInstance()
 					.getProjectLocation()
 					+ "/moss/"
-					+ assessment
+					+ assessmentId
 					+ "/"
 					+ date
 					+ ".csv"));
@@ -265,14 +265,14 @@ public class MossManager {
 	/**
 	 * Get the list of moss results.
 	 * 
-	 * @param assessment the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @return a map key: date (format yyyy-MM-dd'T'HH-mm-ss), value: date (format Date.toString()) 
 	 */
-	public Map<String,String> getMossList(String assessment) {
+	public Map<String,String> getMossList(long assessmentId) {
 		Map<String,String> mossList = new TreeMap<String,String>();
 		
 		String[] filenames = new File(ProjectProperties.getInstance().getProjectLocation()
-				+"/moss/"+assessment).list(new FilenameFilter() {
+				+"/moss/"+assessmentId).list(new FilenameFilter() {
 					
 					@Override
 					public boolean accept(File dir, String name) {

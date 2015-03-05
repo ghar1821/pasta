@@ -44,8 +44,8 @@ public class NewHandMarking {
 		return name;
 	}
 	
-	public String getShortName(){
-		return name.replace(" ", "");
+	public String getFileAppropriateName() {
+		return name.replace("[^\\w]+", "");
 	}
 
 	public void setName(String name) {

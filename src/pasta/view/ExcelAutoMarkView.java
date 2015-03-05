@@ -97,11 +97,11 @@ public class ExcelAutoMarkView extends AbstractExcelView{
 				currRow.createCell(2).setCellValue(student.getTutorial());
 				double total = 0;
 				for(int j=0; j<assList.size(); ++j){
-					if(resultList.get(student.getUsername()) == null || resultList.get(student.getUsername()).get(assList.get(j).getShortName()) == null){
+					if(resultList.get(student.getUsername()) == null || resultList.get(student.getUsername()).get(assList.get(j).getId()) == null){
 						currRow.createCell(j+3).setCellValue("N/A");
 					}
 					else{
-						double mark = resultList.get(student.getUsername()).get(assList.get(j).getShortName()).getAutoMarks();
+						double mark = resultList.get(student.getUsername()).get(assList.get(j).getId()).getAutoMarks();
 						currRow.createCell(j+3).setCellValue(mark);
 						total += mark;
 					}

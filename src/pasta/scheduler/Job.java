@@ -121,6 +121,13 @@ public class Job implements Serializable{
 		this.assessmentName = assessmentName;
 	}
 	
+	public long getAssessmentId() {
+		return assessmentId;
+	}
+	public void setAssessmentId(long assessmentId) {
+		this.assessmentId = assessmentId;
+	}
+
 	@Column(name = "RUN_DATE", nullable = false)
 	public Date getRunDate() {
 		return runDate;

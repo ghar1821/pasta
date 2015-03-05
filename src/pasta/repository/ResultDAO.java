@@ -91,7 +91,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
-	Map<String, Map<String, AssessmentResult>> results;
+	Map<String, Map<Long, AssessmentResult>> results;
 	Map<String, CompetitionResult> competitionResults;
 	
 	// Default required by hibernate
@@ -293,7 +293,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param username the name of the user
 	 * @return the map which holds the assessment results with a key which is the assessment name
 	 */
-	public Map<String, AssessmentResult> getLatestResults(String username){
+	public Map<Long, AssessmentResult> getLatestResults(String username){
 		return results.get(username);
 	}
 	
@@ -310,7 +310,7 @@ public class ResultDAO extends HibernateDaoSupport{
 				.getInstance().getSubmissionsLocation()
 				+ username
 				+ "/assessments/"
-				+ assessment.getShortName())).list();
+				+ assessment.getId())).list();
 		
 		Collection<AssessmentResult> results = new LinkedList<AssessmentResult>();
 		
@@ -336,7 +336,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param assDao the Assessment Data Access Object
 	 */
 	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
-		results = new TreeMap<String, Map<String, AssessmentResult>>();
+		results = new TreeMap<String, Map<Long, AssessmentResult>>();
 		
 		// scan all users
 		String[] allUsers = (new File(ProjectProperties.getInstance()
@@ -347,7 +347,7 @@ public class ResultDAO extends HibernateDaoSupport{
 				Collection<Assessment> allAssessments = assDao
 						.getAssessmentList();
 
-				Map<String, AssessmentResult> currUserResults = new TreeMap<String, AssessmentResult>();
+				Map<Long, AssessmentResult> currUserResults = new TreeMap<Long, AssessmentResult>();
 				for (Assessment assessment : allAssessments) {
 					// scan all submissions
 
@@ -357,7 +357,7 @@ public class ResultDAO extends HibernateDaoSupport{
 							.getInstance().getSubmissionsLocation()
 							+ currUser
 							+ "/assessments/"
-							+ assessment.getShortName()
+							+ assessment.getId()
 							+ "latestOverride.txt").exists()){
 						// overriden latest
 						Scanner in;
@@ -366,7 +366,7 @@ public class ResultDAO extends HibernateDaoSupport{
 								.getInstance().getSubmissionsLocation()
 								+ currUser
 								+ "/assessments/"
-								+ assessment.getShortName()
+								+ assessment.getId()
 								+ "latestOverride.txt"));
 							latest = in.nextLine().trim();
 							in.close();
@@ -380,7 +380,7 @@ public class ResultDAO extends HibernateDaoSupport{
 							.getInstance().getSubmissionsLocation()
 							+ currUser
 							+ "/assessments/"
-							+ assessment.getShortName())).list();
+							+ assessment.getId())).list();
 					
 					if (allFiles != null && allFiles.length > 0) {
 						Arrays.sort(allFiles);
@@ -405,7 +405,7 @@ public class ResultDAO extends HibernateDaoSupport{
 						latest = null;
 					}
 					
-					currUserResults.put(assessment.getShortName(),
+					currUserResults.put(assessment.getId(),
 							loadAssessmentResultFromDisk(currUser, assessment, latest));
 				}
 				results.put(currUser, currUserResults);
@@ -456,8 +456,8 @@ public class ResultDAO extends HibernateDaoSupport{
 			Assessment assessment, String assessmentDate) {
 		// check if it's the latest
 		try{
-			if(results.get(username).get(assessment.getShortName()).getFormattedSubmissionDate().equals(assessmentDate)){
-				return results.get(username).get(assessment.getShortName());
+			if(results.get(username).get(assessment.getId()).getFormattedSubmissionDate().equals(assessmentDate)){
+				return results.get(username).get(assessment.getId());
 			}
 		}
 		catch(Exception e){
@@ -470,11 +470,11 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * Save the hand marking to a file
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the assessment short name (no whitespace)
+	 * @param assessmentId the assessment id
 	 * @param assessmentDate the date of the submission (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param handMarkingResults the results of the hand marking
 	 */
-	public void saveHandMarkingToFile(String username, String assessmentName,
+	public void saveHandMarkingToFile(String username, long assessmentId,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
 		 
 		for(HandMarkingResult result: handMarkingResults){
@@ -482,7 +482,7 @@ public class ResultDAO extends HibernateDaoSupport{
 					.getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
-					+ assessmentName
+					+ assessmentId
 					+ "/"
 					+ assessmentDate
 					+ "/handMarking/" + result.getId();
@@ -519,7 +519,7 @@ public class ResultDAO extends HibernateDaoSupport{
 
 		AssessmentResult assessResult = null;
 		if ((new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-				+ assessment.getShortName() + "/" + assessmentDate)).exists()) {
+				+ assessment.getId() + "/" + assessmentDate)).exists()) {
 			assessResult = new AssessmentResult();
 			assessResult.setAssessment(assessment);
 
@@ -530,7 +530,7 @@ public class ResultDAO extends HibernateDaoSupport{
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
-						+ assessment.getShortName()
+						+ assessment.getId()
 						+ "/"
 						+ assessmentDate
 						+ "/unitTests/" + uTest.getTest().getId());
@@ -548,7 +548,7 @@ public class ResultDAO extends HibernateDaoSupport{
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
-						+ assessment.getShortName()
+						+ assessment.getId()
 						+ "/"
 						+ assessmentDate
 						+ "/unitTests/" + uTest.getTest().getId());
@@ -567,11 +567,11 @@ public class ResultDAO extends HibernateDaoSupport{
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
-						+ assessment.getShortName()
+						+ assessment.getId()
 						+ "/"
 						+ assessmentDate
 						+ "/handMarking/"
-						+ hMarking.getHandMarking().getShortName());
+						+ hMarking.getHandMarking().getId());
 				if (result == null) {
 					result = new HandMarkingResult();
 				} 
@@ -586,15 +586,15 @@ public class ResultDAO extends HibernateDaoSupport{
 			} catch (ParseException e) {
 				assessResult.setSubmissionDate(new Date());
 				logger.error("Submission date " + assessmentDate + " - "
-						+ username + " - " + assessment.getShortName());
+						+ username + " - " + assessment.getName());
 			}
 			
 			if(assessment.isCountUncompilable() || assessment.getUnitTests().isEmpty()){
 				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-					+ assessment.getShortName() + "/").list().length);
+					+ assessment.getId() + "/").list().length);
 			}else{
 				File[] allSubmissions = new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-						+ assessment.getShortName()).listFiles();
+						+ assessment.getId()).listFiles();
 				
 				int numSubmissionsMade = 0;
 				if(allSubmissions!=null)for(File submission: allSubmissions){
@@ -623,7 +623,7 @@ public class ResultDAO extends HibernateDaoSupport{
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
-						+ assessment.getShortName()
+						+ assessment.getId()
 						+ "/"
 						+ assessmentDate
 						+ "/comments.txt"));
@@ -647,18 +647,18 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * Method to save the hand marking comments
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the assessment short name (no whitespace)
+	 * @param assessmentId the assessment id
 	 * @param assessmentDate the date of the submission
 	 * @param comments the comments about the submission
 	 */
-	public void saveHandMarkingComments(String username, String assessmentName,
+	public void saveHandMarkingComments(String username, long assessmentId,
 			String assessmentDate, String comments) {
 		// save to file
 		try {
 			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation()
 					+ username
 					+ "/assessments/"
-					+ assessmentName
+					+ assessmentId
 					+ "/"
 					+ assessmentDate
 					+ "/comments.txt"));
@@ -671,8 +671,8 @@ public class ResultDAO extends HibernateDaoSupport{
 		
 		// update if latest
 		try{
-			if(results.get(username).get(assessmentName).getFormattedSubmissionDate().equals(assessmentDate)){
-				results.get(username).get(assessmentName).setComments(comments);
+			if(results.get(username).get(assessmentId).getFormattedSubmissionDate().equals(assessmentDate)){
+				results.get(username).get(assessmentId).setComments(comments);
 			}
 		}
 		catch(Exception e){
@@ -694,12 +694,12 @@ public class ResultDAO extends HibernateDaoSupport{
 		// check if latest
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		if(results.get(username)==null){
-			results.put(username, new TreeMap<String, AssessmentResult>());
+			results.put(username, new TreeMap<Long, AssessmentResult>());
 		}
-		if(results.get(username).get(assessment.getShortName()) == null ||
-				results.get(username).get(assessment.getShortName()).getSubmissionDate().before(runDate) || 
-				results.get(username).get(assessment.getShortName()).getSubmissionDate().equals(runDate)){
-			results.get(username).put(assessment.getShortName(), loadAssessmentResultFromDisk(username, assessment, sdf.format(runDate)));
+		if(results.get(username).get(assessment.getId()) == null ||
+				results.get(username).get(assessment.getId()).getSubmissionDate().before(runDate) || 
+				results.get(username).get(assessment.getId()).getSubmissionDate().equals(runDate)){
+			results.get(username).put(assessment.getId(), loadAssessmentResultFromDisk(username, assessment, sdf.format(runDate)));
 		}
 	}
 

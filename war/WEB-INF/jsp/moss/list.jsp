@@ -34,7 +34,7 @@ either expressed or implied, of the PASTA Project.
 
 <div style="float: left">
 	<button style="float: left; text-align: center;"
-		onclick="location.href='../../run/${assessmentName}/'">Run
+		onclick="location.href='../../run/${assessmentId}/'">Run
 		MOSS</button>
 </div>
 

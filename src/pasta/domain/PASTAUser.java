@@ -57,7 +57,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	private String tutorial = "";
 	private String stream = "";
 	private UserPermissionLevel permissionLevel;
-	private Map<String, Date> extensions = new TreeMap<String, Date>();
+	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
 	
 	@Id
 	@Column(name = "USERNAME", nullable = false)
@@ -127,18 +127,18 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	}
 	
 	@Transient
-	public Map<String, Date> getExtensions(){
+	public Map<Long, Date> getExtensions(){
 		return extensions;
 	}
 	
 	@Transient
-	public void setExtension(Map<String, Date> extensions){
+	public void setExtension(Map<Long, Date> extensions){
 		this.extensions = extensions;
 	}
 	
 	@Transient
-	public void giveExtension(String assessmentName, Date newDueDate){
-		extensions.put(assessmentName, newDueDate);
+	public void giveExtension(Long assessmentId, Date newDueDate){
+		extensions.put(assessmentId, newDueDate);
 	}
 	
 	@Transient

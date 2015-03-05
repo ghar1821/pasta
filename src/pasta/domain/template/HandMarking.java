@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +74,9 @@ import org.hibernate.annotations.LazyCollectionOption;
  */
 @Entity
 @Table (name = "hand_markings")
-public class HandMarking {
+public class HandMarking implements Serializable, Comparable<HandMarking> {
+
+	private static final long serialVersionUID = 5276980986516750657L;
 
 	@Id
 	@GeneratedValue 
@@ -112,8 +115,8 @@ public class HandMarking {
 		return name;
 	}
 	
-	public String getShortName() {
-		return name.replace(" ", "");
+	public String getFileAppropriateName() {
+		return name.replace("[^\\w]+", "");
 	}
 
 	public void setName(String name) {
@@ -228,5 +231,10 @@ public class HandMarking {
 	
 	public boolean removeRow(WeightedField row) {
 		return getRowHeader().remove(row);
+	}
+
+	@Override
+	public int compareTo(HandMarking other) {
+		return this.name.compareTo(other.name);
 	}
 }

@@ -69,20 +69,20 @@ ${assessment.description}
 							<c:when test="${not empty viewedUser}">
 								<c:choose>
 									<c:when test="${ not result.finishedHandMarking }">
-										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 									</c:when>
 									<c:otherwise>
-										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
 							</c:when>
 							<c:otherwise>
 								<c:choose>
 									<c:when test="${ not result.finishedHandMarking }">
-										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
+										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
 									</c:when>
 									<c:otherwise>
-										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
+										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
 									</c:otherwise>
 								</c:choose>
 							</c:otherwise>
@@ -92,19 +92,19 @@ ${assessment.description}
 					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 						<c:choose>
 							<c:when test="${not empty viewedUser}">	
-								<button onclick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								<button onclick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 							</c:when>
 							<c:otherwise>
-								<button onclick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+								<button onclick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 							</c:otherwise>
 						</c:choose>
 					</c:if>
 					<c:choose>
 						<c:when test="${not empty viewedUser}">	
-							<button onclick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+							<button onclick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 						</c:when>
 						<c:otherwise>
-							<button onclick="window.location.href='../../download/${viewedUser.username}/${result.assessment.shortName}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+							<button onclick="window.location.href='../../download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 						</c:otherwise>
 					</c:choose>
 				</c:if>
@@ -124,7 +124,7 @@ ${assessment.description}
 							<c:choose>
 								<c:when test="${allUnitTests.secret}">
 									<c:choose>
-										<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.shortName] or viewedUser.extensions[assessment.shortName] lt now))}">
+										<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}">
 											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
 												<div class="pastaUnitTestBoxResult secret ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 											</c:forEach>
@@ -154,7 +154,7 @@ ${assessment.description}
 											<c:choose>
 												<c:when test="${allUnitTests.secret}">
 													<c:choose>
-														<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty unikey.extensions[assessment.shortName] or unikey.extensions[assessment.shortName] lt now))}">
+														<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty unikey.extensions[assessment.id] or unikey.extensions[assessment.id] lt now))}">
 															<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
 															<td style="text-align:left;">Secret - ${testCase.testName}</td>
 															<td>${testCase.time}</td>
@@ -186,23 +186,23 @@ ${assessment.description}
 							</table>
 						</c:if>
 						<c:if test="${not empty viewedUser}">
-							<button type="button" onclick="$('div#updateComments${assessment.shortName}').show();$(this).hide()">Modify Comments</button>
-							<div id="updateComments${assessment.shortName}"  style="display:none;">
+							<button type="button" onclick="$('div#updateComments${assessment.id}').show();$(this).hide()">Modify Comments</button>
+							<div id="updateComments${assessment.id}"  style="display:none;">
 								<form action="updateComment/" enctype="multipart/form-data" method="POST">
 									<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}">
-									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.shortName}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
-									<button id="updateComments${assessment.shortName}" type="submit" >Update Comments</button>
+									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.id}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
+									<button id="updateComments${assessment.id}" type="submit" >Update Comments</button>
 								</form>
 								<script>
 							    $(function() {
-									$("#modifyComments${assessment.shortName}").on('keyup', function() {
-							            $("#comments${assessment.shortName}").html(document.getElementById("modifyComments${assessment.shortName}").value);
+									$("#modifyComments${assessment.id}").on('keyup', function() {
+							            $("#comments${assessment.id}").html(document.getElementById("modifyComments${assessment.id}").value);
 							        });
 							    });
 								
 								(function($) {
 									$(document).ready(function() {
-										$('#modifyComments${assessment.shortName}').wysiwyg({
+										$('#modifyComments${assessment.id}').wysiwyg({
 											initialContent: function() {
 												return value_of_textarea;
 											},
@@ -317,7 +317,7 @@ ${assessment.description}
 				</c:forEach>
 			</c:if>
 			<h5>Comments</h2>
-			<div id="comments${assessment.shortName}">
+			<div id="comments${assessment.id}">
 				<c:choose>
 					<c:when test="${empty result.comments}">
 						No comments

@@ -103,12 +103,12 @@ public class SubmissionManager {
 	 * <p>
 	 * <ol>
 	 * 	<li>Create new folder to hold the submission
-	 *  ($ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/submission)</li>
+	 *  ($ProjectLocation$/submissions/$username$/assessments/$assessmentId$/$date$/submission)</li>
 	 *  <li>Copy submission file from memory to the newly created folder</li>
 	 *  <li>Extract the submitted file if it ends with .zip using {@link pasta.util.PASTAUtil#extractFolder(String)}</li>
 	 *  <li>If there are any unit tests associated with the assessment, check to see if there are any compilation errors.
 	 *  This process is done by copying the submission and then the unit tests to 
-	 *  $ProjectLocation$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestId.
+	 *  $ProjectLocation$/submissions/$username$/assessments/$assessmentId$/$date$/unitTests/$unitTestId.
 	 *  This order of copy was chosen such that the unit test code will override any identically named file that
 	 *  the student has submitted (e.g. makefiles), which could compromise the security of the machine or 
 	 *  validity of the assessment. The ant tasks compile and clean are executed and any errors during
@@ -267,7 +267,7 @@ public class SubmissionManager {
 			
 			// add to scheduler
 			if(compiled){
-				runAssessment(username, currAssessment.getShortName(), currDate);
+				runAssessment(username, currAssessment.getId(), currDate);
 			}
 		} catch (Exception e) {
 			logger.error("Submission error for " + username + " - " + form + "   " + e);
@@ -281,7 +281,7 @@ public class SubmissionManager {
 	 * @param username the name of the user
 	 * @return a map containing the latest results for a given user.
 	 */
-	public Map<String, AssessmentResult> getLatestResultsForUser(String username){
+	public Map<Long, AssessmentResult> getLatestResultsForUser(String username){
 		return resultDAO.getLatestResults(username);
 	}
 	
@@ -289,15 +289,15 @@ public class SubmissionManager {
 	 * Schedule an assessment attempt for a given user for execution
 	 * 
 	 * @param username the name of the user
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
 	 */
-	public void runAssessment(String username, String assessmentName, String assessmentDate){
+	public void runAssessment(String username, long assessmentId, String assessmentDate){
 		try {
-			scheduler.save(new Job(username, assessmentName, PASTAUtil.parseDate(assessmentDate)));
+			scheduler.save(new Job(username, assessmentId, PASTAUtil.parseDate(assessmentDate)));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
-					+ assessmentName + " for " + username
+					+ assessmentId + " for " + username
 					+ System.getProperty("line.separator") + e);
 		}
 	}
@@ -314,10 +314,10 @@ public class SubmissionManager {
 		for(PASTAUser user: allUsers){
 			// add them to the queue
 			if(resultDAO.getLatestResults(user.getUsername())!=null){
-				AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getShortName());
+				AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getId());
 				if(currResult != null){
 					scheduler.save(new Job(user.getUsername(), 
-							assessment.getShortName(), 
+							assessment.getId(), 
 							currResult.getSubmissionDate()));
 				}
 			}

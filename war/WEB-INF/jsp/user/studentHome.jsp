@@ -69,17 +69,17 @@ Your zip file should contain the src folder. If you are unsure, please email you
 	<table class="pastaQuickFeedback">
 		<c:forEach var="assessment" items="${assessmentCategory.value}">
 			<c:if test="${((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, releaseUsername)))}">
-				<c:out value="${viewedUser.extensions[assessment.shortName]}"/>
+				<c:out value="${viewedUser.extensions[assessment.id]}"/>
 				<c:set var="closedAssessment" value="false"/>
 				<tr <c:choose>
-						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
-							<c:if test="${viewedUser.extensions[assessment.shortName] lt now}">
+						<c:when test="${not empty viewedUser.extensions[assessment.id]}">
+							<c:if test="${viewedUser.extensions[assessment.id] lt now}">
 								class="closedAssessment"
 								<c:set var="closedAssessment" value="true"/>
 							</c:if>
 						</c:when>
-						<c:when test="${not empty unikey.extensions[assessment.shortName]}">
-							<c:if test="${unikey.extensions[assessment.shortName] lt now}">
+						<c:when test="${not empty unikey.extensions[assessment.id]}">
+							<c:if test="${unikey.extensions[assessment.id] lt now}">
 								class="closedAssessment"
 								<c:set var="closedAssessment" value="true"/>
 							</c:if>
@@ -93,35 +93,35 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					</c:choose> >
 					<td>
 						<c:choose>
-							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage == 1 and results[assessment.shortName].submissionsMade == 1}">
+							<c:when test = "${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage == 1 and results[assessment.id].submissionsMade == 1}">
 								<div style="float:right;"><img src="<c:url value="/static/images/Diamond_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
-							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage == 1}">
+							<c:when test = "${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage == 1}">
 								<div style="float:right;"><img src="<c:url value="/static/images/Gold_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
-							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage >= 0.85}">
+							<c:when test = "${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.85}">
 								<div style="float:right;"><img src="<c:url value="/static/images/Silver_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
-							<c:when test = "${((results[assessment.shortName].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.shortName].percentage >= 0.75}">
+							<c:when test = "${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
 								<div style="float:right;"><img src="<c:url value="/static/images/Bronze_Star.png"/>" alt="Good Job" height="42px" width="42px"></div>
 							</c:when>
 						</c:choose>
-						<a href="../info/${assessment.shortName}/">${assessment.name}</a> - 
+						<a href="../info/${assessment.id}/">${assessment.name}</a> - 
 						<c:choose>
-							<c:when test="${empty results[assessment.shortName]}">
+							<c:when test="${empty results[assessment.id]}">
 								0
 							</c:when>
-							<c:when test="${(not results[assessment.shortName].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
+							<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
 								???
 							</c:when>
 							<c:otherwise>
-								<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.shortName].marks}" />
+								<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.id].marks}" />
 							</c:otherwise>
 						</c:choose>
 						/ ${assessment.marks}<br />
 					<c:choose>
-						<c:when test="${not empty viewedUser.extensions[assessment.shortName]}">
-							${viewedUser.extensions[assessment.shortName]}
+						<c:when test="${not empty viewedUser.extensions[assessment.id]}">
+							${viewedUser.extensions[assessment.id]}
 						</c:when>
 						<c:otherwise>
 							${assessment.dueDate}
@@ -133,34 +133,34 @@ Your zip file should contain the src folder. If you are unsure, please email you
 							&infin; submissions allowed <br />
 						</c:when>
 						<c:otherwise>
-							<c:if test="${empty results[assessment.shortName]}">
+							<c:if test="${empty results[assessment.id]}">
 								0
 							</c:if>
-							${results[assessment.shortName].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+							${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
 						</c:otherwise>
 					</c:choose>
 					<c:choose>
-						<c:when test="${results[assessment.shortName].submissionsMade == 0 or empty results[assessment.shortName]}">
+						<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
 							No attempts on record.
 						</c:when>
-						<c:when test="${results[assessment.shortName].compileError}">
+						<c:when test="${results[assessment.id].compileError}">
 							<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
 								<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
 								<b>Compilation errors</b>
 							</div>
 						</c:when>
-						<c:when test="${empty results[assessment.shortName].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.shortName]}">
+						<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
 							<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
 								<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
 								<b>Code is queued for testing.</b>
 							</div>
 						</c:when>
 						<c:otherwise>
-							<c:forEach var="allUnitTests" items="${results[assessment.shortName].unitTests}">
+							<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
 								<c:choose>
 									<c:when test="${allUnitTests.secret}">
 										<c:choose>
-											<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.shortName] or viewedUser.extensions[assessment.shortName] lt now))}">
+											<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}">
 												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
 													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 												</c:forEach>
@@ -183,14 +183,14 @@ Your zip file should contain the src folder. If you are unsure, please email you
 					</c:choose>
 					<td style="width:40px;">
 						<button type="button" style="float: left; text-align: center;"
-								onclick="submitAssessment('${assessment.shortName}');">Submit</button>
+								onclick="submitAssessment('${assessment.id}');">Submit</button>
 					</td>
 					<c:if test="${ not empty viewedUser}">
 						<!-- tutor is viewing a user and they may give out an extension -->
 						<td>
 							<div style="float: left; width:100%">
 							<button type="button" style="float: left; text-align: center;"
-								onclick="giveExtension('${assessment.shortName}', '${assessment.simpleDueDate}')">Give extension</button>
+								onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
 							</div>
 						</td>
 					</c:if>
@@ -225,22 +225,22 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<h1>Give an extension to this assessment for this student.</h1>
 		<input type="text" id="simpleDueDate" name="simpleDueDate" />
-		<div style="display:none" id="assessmentName"></div>
+		<div style="display:none" id="assessmentId"></div>
 		
 		<button id="confirm" onclick="confirmExtension()">Confirm</button>
 	</div>
 	<script>
 		function giveExtension(assessment, dueDate){
-			document.getElementById('assessmentName').innerHTML=assessment;
+			document.getElementById('assessmentId').innerHTML=assessment;
 			document.getElementById('simpleDueDate').value = dueDate;
 			$('#extensionPopup').bPopup();
 
 		}
 		
 		function confirmExtension(){
-			var assessmentName = document.getElementById('assessmentName').innerHTML;
+			var assessmentId = document.getElementById('assessmentId').innerHTML;
 			var newDueDate = document.getElementById('simpleDueDate').value.replace("/", "-").replace("/", "-");
-			window.location = "../extension/"+assessmentName+"/"+newDueDate+"/";
+			window.location = "../extension/"+assessmentId+"/"+newDueDate+"/";
 		}
 		
 		(function($) {

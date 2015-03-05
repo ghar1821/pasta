@@ -75,9 +75,9 @@ either expressed or implied, of the PASTA Project.
 					<td><a href="../tutorial/${user.tutorial}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.tutorial}</a></td>
 					<c:forEach var="assessment" items="${assessmentList}">
 						<td class="gradeCentreMark" >
-							<a href="../student/${user.username}/info/${assessment.shortName}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">
-							<span style="display:none">${latestResults[user.username][assessment.shortName].percentage}</span>
-							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.shortName].marks}" />
+							<a href="../student/${user.username}/info/${assessment.id}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">
+							<span style="display:none">${latestResults[user.username][assessment.id].percentage}</span>
+							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user.username][assessment.id].marks}" />
 							</a>
 						</td>
 					</c:forEach>

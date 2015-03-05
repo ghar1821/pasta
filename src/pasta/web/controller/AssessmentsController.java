@@ -265,7 +265,7 @@ public class AssessmentsController {
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
 		model.addAttribute("assessment", currAssessment);
 
-		List<WeightedUnitTest> otherUnitTetsts = new LinkedList<WeightedUnitTest>();
+		List<WeightedUnitTest> otherUnitTests = new LinkedList<WeightedUnitTest>();
 
 		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
@@ -287,10 +287,10 @@ public class AssessmentsController {
 			}
 
 			if (!contains) {
-				WeightedUnitTest weigthedTest = new WeightedUnitTest();
-				weigthedTest.setTest(test);
-				weigthedTest.setWeight(0);
-				otherUnitTetsts.add(weigthedTest);
+				WeightedUnitTest weightedTest = new WeightedUnitTest();
+				weightedTest.setTest(test);
+				weightedTest.setWeight(0);
+				otherUnitTests.add(weightedTest);
 			}
 		}
 
@@ -300,7 +300,7 @@ public class AssessmentsController {
 			boolean contains = false;
 			for (WeightedHandMarking weightedHandMarking : currAssessment
 					.getHandMarking()) {
-				if (weightedHandMarking.getHandMarking() == test) {
+				if (weightedHandMarking.getHandMarking().getId() == test.getId()) {
 					contains = true;
 					break;
 				}
@@ -335,7 +335,7 @@ public class AssessmentsController {
 		}
 
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("otherUnitTests", otherUnitTetsts);
+		model.addAttribute("otherUnitTests", otherUnitTests);
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
 		model.addAttribute("unikey", user);
@@ -540,7 +540,7 @@ public class AssessmentsController {
 	}
 
 	/**
-	 * $PASTAUrl$/assessments/delete/{assessmentName}/
+	 * $PASTAUrl$/assessments/delete/{assessmentId}/
 	 * <p>
 	 * Delete the assessment
 	 * <p>
@@ -549,16 +549,16 @@ public class AssessmentsController {
 	 * If the user is not a tutor: redirect to home
 	 * 
 	 * If the user is an instructor: delete assessment using 
-	 * {@link pasta.service.AssessmentManager#removeAssessment(String)}.
+	 * {@link pasta.service.AssessmentManager#removeAssessment(long)}.
 	 * redirect to $PASTAUrl$/assessments/
 	 * 
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param model the model used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
-	@RequestMapping(value = "delete/{assessmentName}/")
+	@RequestMapping(value = "delete/{assessmentId}/")
 	public String deleteAssessment(
-			@PathVariable("assessmentName") String assessmentName, Model model) {
+			@PathVariable("assessmentId") long assessmentId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -567,59 +567,61 @@ public class AssessmentsController {
 			return "redirect:/home/";
 		}
 		if (getUser().isInstructor()) {
-			assessmentManager.removeAssessment(assessmentName);
+			assessmentManager.removeAssessment(assessmentId);
 		}
 		return "redirect:../../";
 	}
 	
 	/**
-	 * $PASTAUrl$/assessments/downloadLatest/{assessmentName}/
+	 * $PASTAUrl$/assessments/downloadLatest/{assessmentId}/
 	 * <p>
 	 * Download the latest submissions for a given assessment.
 	 * <p>
 	 * If the user has not authenticated or is not a tutor: do nothing.
 	 * <p>
-	 * The http response will contain a zip file with the name $assessmentName$-latest.zip.
+	 * The http response will contain a zip file with the name $assessmentId$-latest.zip.
 	 * Within that there will be a set of folders, one for each student that has made a
 	 * submission with their username as the name of the folder. Within that folder is the
 	 * code they submitted.
 	 * 
 	 * When the zip has been downloaded, it will be removed from memory.
 	 * 
-	 * @param assessmentName the short name (no whitespace) for the assessment
+	 * @param assessmentId the id for the assessment
 	 * @param model the model used (or not used in this case)
 	 * @param response the http response that will be used to give the user the correct zip.
 	 */
-	@RequestMapping(value = "downloadLatest/{assessmentName}/")
+	@RequestMapping(value = "downloadLatest/{assessmentId}/")
 	public void downloadLatest(
-			@PathVariable("assessmentName") String assessmentName, Model model,
+			@PathVariable("assessmentId") long assessmentId, Model model,
 			HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user == null || !user.isTutor()) {
 			return;
 		}
 		
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment;filename=\""
-				+ assessmentName + "-latest.zip\"");
+				+ assessment.getFileAppropriateName() + "-latest.zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
-		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
+		Map<String, Map<Long, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
 		try {
-			for(Entry<String, Map<String, AssessmentResult> > entry : allResults.entrySet()){
+			for(Entry<String, Map<Long, AssessmentResult> > entry : allResults.entrySet()){
 				if(entry.getValue() != null && 
-						entry.getValue().containsKey(assessmentName) &&
-						entry.getValue().get(assessmentName) != null &&
-						entry.getValue().get(assessmentName).getSubmissionDate() != null){
+						entry.getValue().containsKey(assessmentId) &&
+						entry.getValue().get(assessmentId) != null &&
+						entry.getValue().get(assessmentId).getSubmissionDate() != null){
 					// add
 
 					PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
 							.getSubmissionsLocation()
 							+ entry.getKey()
 							+ "/assessments/"
-							+ assessmentName
+							+ assessmentId
 							+ "/"
-							+ PASTAUtil.formatDate(entry.getValue().get(assessmentName).getSubmissionDate())
+							+ PASTAUtil.formatDate(entry.getValue().get(assessmentId).getSubmissionDate())
 							+ "/submission/"), "(" + ProjectProperties.getInstance()
 							.getSubmissionsLocation()
 							+ ")|(assessments.*submission/)" );
@@ -645,7 +647,7 @@ public class AssessmentsController {
 	}
 			
 	/**
-	 * $PASTAUrl$/assessments/stats/{assessmentName}/
+	 * $PASTAUrl$/assessments/stats/{assessmentId}/
 	 * <p>
 	 * Get the statistics for an assessment. Currently only shows a histogram of the
 	 * number of submissions and a histogram of the marks.
@@ -668,13 +670,13 @@ public class AssessmentsController {
 	 * 
 	 * JSP:<ol><li>assessment/view/assessmentStats</li></ol>
 	 * 
-	 * @param assessmentName the short name (no whitespace) of the assessment
+	 * @param assessmentId the id of the assessment
 	 * @param model the model being used.
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessmentStats"
 	 */
-	@RequestMapping(value = "stats/{assessmentName}/")
+	@RequestMapping(value = "stats/{assessmentId}/")
 	public String statisticsForAssessment(
-			@PathVariable("assessmentName") String assessmentName, Model model) {
+			@PathVariable("assessmentId") long assessmentId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -682,7 +684,7 @@ public class AssessmentsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-		Map<String, Map<String, AssessmentResult>> allResults = assessmentManager
+		Map<String, Map<Long, AssessmentResult>> allResults = assessmentManager
 				.getLatestResults(userManager.getUserList());
 		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 
@@ -690,15 +692,15 @@ public class AssessmentsController {
 
 		int[] markDistribution = new int[maxBreaks + 1];
 
-		for (Entry<String, Map<String, AssessmentResult>> entry : allResults
+		for (Entry<String, Map<Long, AssessmentResult>> entry : allResults
 				.entrySet()) {
 			int spot = 0;
 			int numSubmissionsMade = 0;
 			if (entry.getValue() != null
-					&& entry.getValue().get(assessmentName) != null) {
-				spot = ((int) (entry.getValue().get(assessmentName)
+					&& entry.getValue().get(assessmentId) != null) {
+				spot = ((int) (entry.getValue().get(assessmentId)
 						.getPercentage() * 100 / (100 / maxBreaks)));
-				numSubmissionsMade = entry.getValue().get(assessmentName)
+				numSubmissionsMade = entry.getValue().get(assessmentId)
 						.getSubmissionsMade();
 			}
 			// mark histogram
@@ -713,7 +715,7 @@ public class AssessmentsController {
 		}
 
 		model.addAttribute("assessment",
-				assessmentManager.getAssessment(assessmentName));
+				assessmentManager.getAssessment(assessmentId));
 		model.addAttribute("maxBreaks", maxBreaks);
 		model.addAttribute("markDistribution", markDistribution);
 		model.addAttribute("submissionDistribution", submissionDistribution);

@@ -41,7 +41,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
  */
 public class Submission {
 	private CommonsMultipartFile file;
-	private String assessment;
+	private Long assessment;
 	private String submittingUsername;
 	private String submittingForUsername;
 	
@@ -51,10 +51,10 @@ public class Submission {
 	public void setFile(CommonsMultipartFile file) {
 		this.file = file;
 	}
-	public String getAssessment() {
+	public Long getAssessment() {
 		return assessment;
 	}
-	public void setAssessment(String assessment) {
+	public void setAssessment(Long assessment) {
 		this.assessment = assessment;
 	}
 	public String getSubmittingUsername() {

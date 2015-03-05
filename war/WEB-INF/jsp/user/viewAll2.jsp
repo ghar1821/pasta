@@ -93,7 +93,7 @@ either expressed or implied, of the PASTA Project.
 					{ "mData": "stream" },
 					{ "mData": "class" },
 					<c:forEach var="assessment" items="${assessmentList}" varStatus="assessmentStatus">
-					{ "mData": {_: "${assessment.shortName}", sort: "${assessment.shortName}.percentage"}}<c:if test="${assessmentStatus.index < (fn:length(assessmentList)-1)}">,</c:if>
+					{ "mData": {_: "${assessment.id}", sort: "${assessment.id}.percentage"}}<c:if test="${assessmentStatus.index < (fn:length(assessmentList)-1)}">,</c:if>
 					</c:forEach>
 		         ],
 				 "aoColumnDefs": [ {

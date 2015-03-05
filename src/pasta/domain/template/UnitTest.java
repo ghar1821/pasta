@@ -49,7 +49,7 @@ import pasta.util.ProjectProperties;
  * </unitTestProperties>}
  * </pre>
  * <p>
- * File location on disk: $projectLocation$/template/unitTest/$unitTestName$
+ * File location on disk: $projectLocation$/template/unitTest/$unitTestId$
  * 
  * @author Alex Radu
  * @version 2.0
@@ -88,8 +88,8 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		return name;
 	}
 
-	public String getShortName() {
-		return name.replace(" ", "");
+	public String getFileAppropriateName() {
+		return name.replace("[^\\w]+", "");
 	}
 
 	public String getFileLocation() {
