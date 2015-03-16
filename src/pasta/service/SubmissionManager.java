@@ -115,7 +115,7 @@ public class SubmissionManager {
 	 *  this process are written to compile.errors and run.errors.</li>
 	 *  <li>Clean up the testing code by deleting everything other that "compile.errors", "run.errors" and "results.xml"</li>
 	 *  <li>The cache is updated with the new submission information (testing queued/compile errors)</li>
-	 *  <li>If the submission compiled, run the assessment using {@link #runAssessment(String, String, String)}</li>
+	 *  <li>If the submission compiled, run the assessment using {@link #runAssessment(String, String, String, AssessmentResult)}</li>
 	 * </ol>
 	 * 
 	 * @param username the name of the user
@@ -130,6 +130,18 @@ public class SubmissionManager {
 		
 		Assessment currAssessment = assDao.getAssessment(form.getAssessment());
 		boolean compiled = true;
+		
+		AssessmentResult result = new AssessmentResult();
+		result.setAssessment(currAssessment);
+		result.setUsername(username);
+		
+		try {
+			result.setSubmissionDate(sdf.parse(currDate));
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		resultDAO.save(result);
 
 		(new File(location)).mkdirs();
 		try {
@@ -263,11 +275,11 @@ public class SubmissionManager {
 				}
 			}
 			
-			resultDAO.updateUnitTestResults(username, currAssessment, now);
+//			resultDAO.updateUnitTestResults(username, currAssessment, now);
 			
 			// add to scheduler
 			if(compiled){
-				runAssessment(username, currAssessment.getId(), currDate);
+				runAssessment(username, currAssessment.getId(), currDate, result);
 			}
 		} catch (Exception e) {
 			logger.error("Submission error for " + username + " - " + form + "   " + e);
@@ -286,15 +298,28 @@ public class SubmissionManager {
 	}
 	
 	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.ResultDAO#getLatestResultsForUserAssessment(String, long)
+	 * @param username the name of the user
+	 * @param assessmentId the id of the assessment
+	 * @return the latest results for a given user for a given assessment.
+	 */
+	public AssessmentResult getLatestResultsForUserAssessment(String username, long assessmentId){
+		return resultDAO.getLatestResultsForUserAssessment(username, assessmentId);
+	}
+	
+	/**
 	 * Schedule an assessment attempt for a given user for execution
 	 * 
 	 * @param username the name of the user
 	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
+	 * @param result the assessment result object to store results in
 	 */
-	public void runAssessment(String username, long assessmentId, String assessmentDate){
+	public void runAssessment(String username, long assessmentId, String assessmentDate, AssessmentResult result){
 		try {
-			scheduler.save(new Job(username, assessmentId, PASTAUtil.parseDate(assessmentDate)));
+			scheduler.save(new Job(username, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
 					+ assessmentId + " for " + username
@@ -309,7 +334,7 @@ public class SubmissionManager {
 	 * @param assessment the assessment for which the latest attempts must be re-run
 	 * @param allUsers the collection of users for which the latest attempt will be executed
 	 */
-	public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
+	@Deprecated public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
 		// scan to see all who made a submission
 		for(PASTAUser user: allUsers){
 			// add them to the queue
@@ -318,7 +343,7 @@ public class SubmissionManager {
 				if(currResult != null){
 					scheduler.save(new Job(user.getUsername(), 
 							assessment.getId(), 
-							currResult.getSubmissionDate()));
+							currResult.getSubmissionDate(), currResult));
 				}
 			}
 		}

@@ -189,7 +189,8 @@ ${assessment.description}
 							<button type="button" onclick="$('div#updateComments${assessment.id}').show();$(this).hide()">Modify Comments</button>
 							<div id="updateComments${assessment.id}"  style="display:none;">
 								<form action="updateComment/" enctype="multipart/form-data" method="POST">
-									<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}">
+									<input name="resultId" type="hidden" value="${result.id}">
+									<%--<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}"> --%>
 									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.id}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
 									<button id="updateComments${assessment.id}" type="submit" >Update Comments</button>
 								</form>
@@ -278,7 +279,7 @@ ${assessment.description}
 				</c:otherwise>
 			</c:choose>
 			<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
-				<h5>Hand Marking</h2>
+				<h5>Hand Marking</h5>
 				<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
 					<div style="width:100%; overflow:auto">
 						<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
@@ -301,13 +302,7 @@ ${assessment.description}
 											<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
 										</th>
 										<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-											<td <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.name] == column.name}" > class="handMarkingHighlight" </c:if>>
-												<c:if test="${not empty handMarking.handMarking.data[column.name][row.name] or handMarking.handMarking.data[column.name][row.name] == \"\"}">
-													<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-													<br />
-													${handMarking.handMarking.data[column.name][row.name]}<br />
-												</c:if>
-											</td>
+											<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>><%-- To be filled with JavaScript --%></td>
 										</c:forEach>
 									</tr>
 								</c:forEach>
@@ -316,7 +311,7 @@ ${assessment.description}
 					</div>
 				</c:forEach>
 			</c:if>
-			<h5>Comments</h2>
+			<h5>Comments</h5>
 			<div id="comments${assessment.id}">
 				<c:choose>
 					<c:when test="${empty result.comments}">
@@ -328,6 +323,31 @@ ${assessment.description}
 				</c:choose>
 			</div>
 		</c:forEach>
+		<script src='<c:url value="/static/scripts/assessment/userViewAssessment.js"/>'></script>
+		<script>		
+			function fillCells() {
+				var cell;
+				<c:forEach var="result" items="${history}" varStatus="resultStatus">
+					<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
+						<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
+							<c:forEach var="datum" items="${handMarking.handMarking.data}" varStatus="datumStatus">
+								cell = document.getElementById("cell_${result.id}_${handMarking.id}_${datum.column.id}_${datum.row.id}");
+								<c:if test="${not empty datum.data or datum.data == \"\"}">
+									fillCell(cell, 
+										<fmt:formatNumber type='number' maxIntegerDigits='3' value='${handMarking.weight * datum.row.weight * datum.column.weight}' />,
+										"${datum.data}");
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+					</c:if>
+				</c:forEach>
+				registerEvents();
+			}
+			
+			$(function() {
+				fillCells()
+			});
+		</script>
 	</c:when>
 	
 	<c:otherwise>

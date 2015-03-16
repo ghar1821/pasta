@@ -50,6 +50,7 @@ import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.upload.NewHandMarking;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
@@ -188,8 +189,9 @@ public class HandMarkingManager {
 	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param handMarkingResults the list of hand marking results to save
 	 */
-	public void saveHandMarkingResults(String username, long assessmentId,
+	@Deprecated public void saveHandMarkingResults(String username, long assessmentId,
 			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
+		
 		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentId), assessmentDate);
 		// save to memory
 		if(result != null){
@@ -217,10 +219,15 @@ public class HandMarkingManager {
 	 * @param assessmentDate the date of assessment submission (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param comments the comments that will be saved
 	 */
-	public void saveComment(String username, long assessmentId,
+	@Deprecated public void saveComment(String username, long assessmentId,
 			String assessmentDate, String comments) {
 		// make that better
 		resultDAO.saveHandMarkingComments(username, assessmentId, assessmentDate, comments);
+	}
+
+
+	public WeightedHandMarking getWeightedHandMarking(long id) {
+		return resultDAO.getWeightedHandMarking(id);
 	}
 
 }

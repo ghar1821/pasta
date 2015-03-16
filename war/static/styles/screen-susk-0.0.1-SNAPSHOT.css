@@ -2,6 +2,10 @@
 	height:2em;
 }
 
+td.selectedMark {
+	background-color:#DDF;
+}
+
 .closedAssessment{
 	background-color:#DDD;
 }

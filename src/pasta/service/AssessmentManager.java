@@ -32,6 +32,8 @@ package pasta.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,7 @@ import org.springframework.stereotype.Service;
 import pasta.domain.PASTAUser;
 import pasta.domain.form.ReleaseForm;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarking;
@@ -58,6 +61,7 @@ import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.Job;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 /**
@@ -128,7 +132,8 @@ public class AssessmentManager {
 	 * @return the collection of submission history for a user for a given assessment
 	 */
 	public Collection<AssessmentResult> getAssessmentHistory(String username, long assessmentId){
-		return resultDAO.getAssessmentHistory(username, getAssessment(assessmentId));
+		return resultDAO.getAllResultsForUserAssessment(username, assessmentId);
+		//return resultDAO.getAssessmentHistory(username, getAssessment(assessmentId));
 	}
 	
 	/**
@@ -166,14 +171,48 @@ public class AssessmentManager {
 	 */
 	public void addAssessment(Assessment assessmentToAdd) {
 		
-		// unit Tests
-		for (WeightedUnitTest test : assessmentToAdd.getUnitTests()) {
-			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
-			test.setAssessment(assessmentToAdd);
+		// unlink any unnecessary unit test and hand marking templates
+		Assessment previousAssessment = ProjectProperties.getInstance().getAssessmentDAO()
+				.getAssessment(assessmentToAdd.getId());
+		boolean removed = false;
+		if(previousAssessment != null) {
+			List<WeightedUnitTest> newTests = assessmentToAdd.getAllUnitTests();
+			for(WeightedUnitTest test : previousAssessment.getAllUnitTests()) {
+				boolean keep = false;
+				for(WeightedUnitTest newTest : newTests) {
+					if(newTest.getId() == test.getId()) {
+						keep = true;
+						break;
+					}
+				}
+				if(!keep) {
+					test.setAssessment(null);
+					test.setTest(null);
+					removed = true;
+				}
+			}
+			for(WeightedHandMarking handMarking : previousAssessment.getHandMarking()) {
+				boolean keep = false;
+				for(WeightedHandMarking newHandMarking : assessmentToAdd.getHandMarking()) {
+					if(newHandMarking.getId() == handMarking.getId()) {
+						keep = true;
+						break;
+					}
+				}
+				if(!keep) {
+					handMarking.setAssessment(null);
+					handMarking.setHandMarking(null);
+					removed = true;
+				}
+			}
+			
+			if(removed) {
+				ProjectProperties.getInstance().getAssessmentDAO().merge(previousAssessment);
+			}
 		}
 		
-		// secret unit tests
-		for (WeightedUnitTest test : assessmentToAdd.getSecretUnitTests()) {
+		// unit Tests
+		for (WeightedUnitTest test : assessmentToAdd.getAllUnitTests()) {
 			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
 			test.setAssessment(assessmentToAdd);
 		}
@@ -187,6 +226,7 @@ public class AssessmentManager {
 		}
 		
 		ProjectProperties.getInstance().getAssessmentDAO().merge(assessmentToAdd);
+		
 //		if(assessmentToAdd.getId() == 0) {
 //			ProjectProperties.getInstance().getAssessmentDAO().save(assessmentToAdd);
 //		} else {
@@ -289,17 +329,28 @@ public class AssessmentManager {
 	}
 	
 	/**
-	 * Helper method.
+	 * Gets an assessment result given a username, assessment and formatted submission date.
 	 * 
-	 * @see pasta.repository.ResultDAO#getAsssessmentResult(String, Assessment, String)
 	 * @param username the name of the user
 	 * @param assessmentId the id of the assessment 
-	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss"
+	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss")
 	 * @return the queried assessment result or null if not available.
 	 */
-	public AssessmentResult getAssessmentResult(String username, long assessmentId,
+	public AssessmentResult loadAssessmentResult(String username, long assessmentId,
 			String assessmentDate) {
-		return resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentId), assessmentDate);
+		AssessmentResult result;
+		try {
+			result = resultDAO.getAssessmentResult(username, assessmentId, PASTAUtil.parseDate(assessmentDate));
+		} catch (ParseException e) {
+			logger.error("Error parsing date", e);
+			return null;
+		}
+		
+		return result;
+	}
+	
+	public AssessmentResult getAssessmentResult(long id) {
+		return ProjectProperties.getInstance().getResultDAO().getAssessmentResult(id);
 	}
 	
 	/**
@@ -310,5 +361,24 @@ public class AssessmentManager {
 	 */
 	public Map<String, Set<Assessment>> getAllAssessmentsByCategory() {
 		return assDao.getAllAssessmentsByCategory();
+	}
+
+	public void updateComment(long resultId, String newComment) {
+		AssessmentResult result = getAssessmentResult(resultId);
+		result.setComments(newComment);
+		ProjectProperties.getInstance().getResultDAO().update(result);
+	}
+
+	public void updateAssessmentResults(AssessmentResult result) {
+		ProjectProperties.getInstance().getResultDAO().update(result);
+	}
+
+	public AssessmentResult getLatestAssessmentResult(String username, long assessmentId) {
+		List<AssessmentResult> allResults = ProjectProperties.getInstance().getResultDAO()
+				.getAllResultsForUserAssessment(username, assessmentId);
+		if(allResults == null || allResults.isEmpty()) {
+			return null;
+		}
+		return allResults.get(0);
 	}
 }

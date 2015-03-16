@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
@@ -91,7 +96,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	// username, assessment, date
-	Map<String, Map<Long, AssessmentResult>> results;
+	@Deprecated Map<String, Map<Long, AssessmentResult>> results;
 	Map<String, CompetitionResult> competitionResults;
 	
 	// Default required by hibernate
@@ -171,7 +176,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param location the location of the test
 	 * @return the result of the unit test
 	 */
-	public UnitTestResult getUnitTestResult(String location){
+	public UnitTestResult getUnitTestResultFromDisk(String location){
 		UnitTestResult result = new UnitTestResult();
 		
 		// check to see if there is a results.xml file
@@ -286,16 +291,7 @@ public class ResultDAO extends HibernateDaoSupport{
 		}
 		return null; // TODO check if in the database
 	}
-	
-	/**
-	 * Get the latest result for a user.
-	 * 
-	 * @param username the name of the user
-	 * @return the map which holds the assessment results with a key which is the assessment name
-	 */
-	public Map<Long, AssessmentResult> getLatestResults(String username){
-		return results.get(username);
-	}
+
 	
 	/**
 	 * Get the assessment history for a particular user and assessment
@@ -335,7 +331,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * Done at startup.
 	 * @param assDao the Assessment Data Access Object
 	 */
-	private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
+	@Deprecated private void loadAssessmentHistoryFromFile(AssessmentDAO assDao){
 		results = new TreeMap<String, Map<Long, AssessmentResult>>();
 		
 		// scan all users
@@ -452,7 +448,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param assessmentDate the date of the submission
 	 * @return the assessment or null if it does not exist
 	 */
-	public AssessmentResult getAsssessmentResult(String username,
+	@Deprecated public AssessmentResult getAsssessmentResult(String username,
 			Assessment assessment, String assessmentDate) {
 		// check if it's the latest
 		try{
@@ -526,7 +522,7 @@ public class ResultDAO extends HibernateDaoSupport{
 			// unit tests;
 			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
 			for (WeightedUnitTest uTest : assessment.getUnitTests()) {
-				UnitTestResult result = getUnitTestResult(ProjectProperties
+				UnitTestResult result = getUnitTestResultFromDisk(ProjectProperties
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
@@ -544,7 +540,7 @@ public class ResultDAO extends HibernateDaoSupport{
 			
 			// secret unit tests;
 			for (WeightedUnitTest uTest : assessment.getSecretUnitTests()) {
-				UnitTestResult result = getUnitTestResult(ProjectProperties
+				UnitTestResult result = getUnitTestResultFromDisk(ProjectProperties
 						.getInstance().getSubmissionsLocation()
 						+ username
 						+ "/assessments/"
@@ -575,7 +571,7 @@ public class ResultDAO extends HibernateDaoSupport{
 				if (result == null) {
 					result = new HandMarkingResult();
 				} 
-				result.setMarkingTemplate(hMarking.getHandMarking());
+				result.setWeightedHandMarking(hMarking);
 				handResults.add(result);
 			}
 
@@ -590,8 +586,8 @@ public class ResultDAO extends HibernateDaoSupport{
 			}
 			
 			if(assessment.isCountUncompilable() || assessment.getUnitTests().isEmpty()){
-				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-					+ assessment.getId() + "/").list().length);
+//				assessResult.setSubmissionsMade(new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
+//					+ assessment.getId() + "/").list().length);
 			}else{
 				File[] allSubmissions = new File(ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
 						+ assessment.getId()).listFiles();
@@ -614,7 +610,7 @@ public class ResultDAO extends HibernateDaoSupport{
 						}
 					}
 				}
-				assessResult.setSubmissionsMade(numSubmissionsMade);
+//				assessResult.setSubmissionsMade(numSubmissionsMade);
 			}
 			
 			// comments
@@ -892,6 +888,10 @@ public class ResultDAO extends HibernateDaoSupport{
 		}
 	}
 	
+	public AssessmentResult getAssessmentResult(long id) {
+		return getHibernateTemplate().get(AssessmentResult.class, id);
+	}
+	
 	/**
 	 * Save the unit test result to the database.
 	 * 
@@ -917,5 +917,145 @@ public class ResultDAO extends HibernateDaoSupport{
 	 */
 	public void delete(UnitTestResult result) {
 		getHibernateTemplate().delete(result);
+	}
+	
+	
+	/**
+	 * Save the assessment result to the database.
+	 * 
+	 * @param result the assessment result being saved
+	 */
+	public void save(AssessmentResult result) {
+		getHibernateTemplate().save(result);
+	}
+
+	/**
+	 * Update the assessment result in the database.
+	 * 
+	 * @param result the assessment result being updated
+	 */
+	public void update(AssessmentResult result) {
+		getHibernateTemplate().saveOrUpdate(result);
+	}
+	
+	/**
+	 * Delete the assessment result from the database.
+	 * 
+	 * @param result assessment test result being deleted
+	 */
+	public void delete(AssessmentResult result) {
+		getHibernateTemplate().delete(result);
+	}
+	
+	public AssessmentResult getLatestResultsForUserAssessment(String username, long assessmentId) {
+		List<AssessmentResult> results = getResultsForUserAssessment(username, assessmentId, 1);
+		if (results == null || results.isEmpty()) {
+			return null;
+		}
+		return results.get(0);
+	}
+
+	public List<AssessmentResult> getAllResultsForUserAssessment(String username, long assessmentId) {
+		return getResultsForUserAssessment(username, assessmentId, -1);
+	}
+	
+	private List<AssessmentResult> getResultsForUserAssessment(String username,
+			long assessmentId, int resultCount) {
+		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		cr.add(Restrictions.eq("username", username));
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		cr.addOrder(Order.desc("submissionDate"));
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = getHibernateTemplate().findByCriteria(cr, 0, resultCount);
+		for(AssessmentResult result : results) {
+			refreshHandMarking(result);
+		}
+		return results;
+	}
+
+
+	public AssessmentResult getAssessmentResult(String username, long assessmentId, Date submissionDate) {
+		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		cr.add(Restrictions.eq("username", username));
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		cr.add(Restrictions.eq("submissionDate", submissionDate));
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		if(results == null || results.isEmpty()) {
+			return null;
+		}
+		AssessmentResult result = results.get(0);
+		refreshHandMarking(result);
+		return result;
+	}
+	
+	
+	/**
+	 * Get the latest result for a user.
+	 * 
+	 * @param username the name of the user
+	 * @return the map which holds the assessment results with a key which is the assessment name
+	 */
+	public Map<Long, AssessmentResult> getLatestResults(String username){
+		Map<Long, AssessmentResult> results = new HashMap<Long, AssessmentResult>();
+		
+		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		cr.add(Restrictions.eq("username", username));
+		cr.addOrder(Order.desc("submissionDate"));
+		
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> allResults = getHibernateTemplate().findByCriteria(cr);
+		
+		for(AssessmentResult result : allResults) {
+			if(results.containsKey(result.getAssessment().getId())) {
+				continue;
+			}
+			refreshHandMarking(result);
+			results.put(result.getAssessment().getId(), result);
+		}
+		
+		return results;
+	}
+	
+	private void refreshHandMarking(AssessmentResult result) {
+		List<HandMarkingResult> oldResults = new ArrayList<HandMarkingResult>(result.getHandMarkingResults());
+		result.getHandMarkingResults().clear();
+				
+		for(WeightedHandMarking template : result.getAssessment().getHandMarking()) {
+			boolean found = false;
+			for(HandMarkingResult currResult : oldResults) {
+				if(currResult.getWeightedHandMarking().getId() == template.getId()) {
+					found = true;
+					result.addHandMarkingResult(currResult);
+					break;
+				}
+			}
+			if(!found) {
+				HandMarkingResult newResult = new HandMarkingResult();
+				newResult.setWeightedHandMarking(template);
+				ProjectProperties.getInstance().getResultDAO().saveOrUpdate(newResult);
+				result.addHandMarkingResult(newResult);
+			}
+		}
+	}
+
+	public void delete(HandMarkingResult result) {
+		getHibernateTemplate().delete(result);
+	}
+
+	public void saveOrUpdate(HandMarkingResult result) {
+		getHibernateTemplate().saveOrUpdate(result);
+	}
+
+	public WeightedHandMarking getWeightedHandMarking(long id) {
+		return getHibernateTemplate().get(WeightedHandMarking.class, id);
+	}
+
+	public int getSubmissionCount(String username, long assessmentId) {
+		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		cr.setProjection(Projections.rowCount())
+		.add(Restrictions.eq("username", username))
+		.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		return ((Number)getHibernateTemplate().findByCriteria(cr).get(0)).intValue();
 	}
 }

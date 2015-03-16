@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.result;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,13 +37,27 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.list.LazyList;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Size;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.util.ProjectProperties;
 /**
  * Container for the results of an assessment.
  * <p>
@@ -62,38 +77,84 @@ import pasta.domain.template.WeightedUnitTest;
  * @since 2012-11-13
  *
  */
-public class AssessmentResult {
-	private ArrayList<UnitTestResult> unitTests;
-	private List<HandMarkingResult> handMarkingResults = LazyList.decorate(new ArrayList<HandMarkingResult>(),
-			FactoryUtils.instantiateFactory(HandMarkingResult.class));
+@Entity
+@Table(name = "assessment_results",
+uniqueConstraints = { @UniqueConstraint(columnNames={
+		"username", "assessment_id", "submission_date"
+})})
+public class AssessmentResult implements Serializable, Comparable<AssessmentResult>{
+
+	private static final long serialVersionUID = 447867201394779087L;
+
+	@Id
+	@GeneratedValue 
+	private long id;
+	
+	@Column(name="username", nullable = false)
+	private String username;
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="assessment_result_unit_test_joins",
+		joinColumns=@JoinColumn(name = "assessment_result_id"),
+		inverseJoinColumns=@JoinColumn(name = "unit_test_result_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<UnitTestResult> unitTests = new ArrayList<UnitTestResult>();
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="assessment_result_hand_marking_joins",
+		joinColumns=@JoinColumn(name = "assessment_result_id"),
+		inverseJoinColumns=@JoinColumn(name = "hand_marking_result_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<HandMarkingResult> handMarkingResults = new ArrayList<HandMarkingResult>();
+	
+	@ManyToOne
+	@JoinColumn (name = "assessment_id", nullable = false)
 	private Assessment assessment;
-	private int submissionsMade;
-	private Date submissionDate;
+	
+	@Column (name = "submission_date", nullable = false)
+	private Date submissionDate = new Date();
+	
+	@Column (length=64000)
+	@Size (max = 64000)
 	private String comments;
+	
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
 	
 	public Collection<UnitTestResult> getUnitTests() {
 		return unitTests;
 	}
-
-	public void setUnitTests(ArrayList<UnitTestResult> unitTests) {
-		this.unitTests = unitTests;
+	public void setUnitTests(List<UnitTestResult> unitTests) {
+		this.unitTests.clear();
+		this.unitTests.addAll(unitTests);
 		Collections.sort(this.unitTests);
 	}
 
 	public Assessment getAssessment() {
 		return assessment;
 	}
-
 	public void setAssessment(Assessment assessment) {
 		this.assessment = assessment;
 	}
 	
 	public int getSubmissionsMade() {
-		return submissionsMade;
-	}
-
-	public void setSubmissionsMade(int submissionsMade) {
-		this.submissionsMade = submissionsMade;
+		if(username == null || assessment == null) {
+			return 0;
+		}
+		return ProjectProperties.getInstance().getResultDAO()
+				.getSubmissionCount(username, assessment.getId());
 	}
 
 	public Date getSubmissionDate() {
@@ -107,17 +168,15 @@ public class AssessmentResult {
 	 */
 	public String getFormattedSubmissionDate(){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-		return sdf.format(submissionDate);
+		return sdf.format(getSubmissionDate());
 	}
-
 	public void setSubmissionDate(Date submissionDate) {
-		this.submissionDate = submissionDate;
+		this.submissionDate = new java.sql.Date(submissionDate.getTime());
 	}
 	
 	public List<HandMarkingResult> getHandMarkingResults() {
 		return handMarkingResults;
 	}
-
 	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
 		this.handMarkingResults.clear();
 		this.handMarkingResults.addAll(handMarkingResults);
@@ -126,7 +185,6 @@ public class AssessmentResult {
 	public void addUnitTest(UnitTestResult test){
 		unitTests.add(test);
 	}
-	
 	public void removeUnitTest(UnitTestResult test){
 		unitTests.remove(test);
 	}
@@ -192,7 +250,7 @@ public class AssessmentResult {
 		// hand marking
 		for(HandMarkingResult result : handMarkingResults){
 			try{
-				marks += result.getPercentage()*assessment.getWeighting(result.getMarkingTemplate());
+				marks += result.getPercentage()*assessment.getWeighting(result.getHandMarking());
 			}
 			catch(Exception e){
 				// ignore anything that throws exceptions (probably a partially marked submission)
@@ -279,4 +337,20 @@ public class AssessmentResult {
 		return true;
 	}
 
+	@Override
+	public int compareTo(AssessmentResult o) {
+		int diff = this.getAssessment().compareTo(o.getAssessment());
+		if(diff != 0) {
+			return diff;
+		}
+		return o.getSubmissionDate().compareTo(this.submissionDate);
+	}
+	
+	public void addHandMarkingResult(HandMarkingResult result) {
+		this.handMarkingResults.add(result);
+	}
+	
+	public void removeHandMarkingResult(HandMarkingResult result) {
+		this.handMarkingResults.remove(result);
+	}
 }

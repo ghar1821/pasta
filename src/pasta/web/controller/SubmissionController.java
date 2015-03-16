@@ -67,11 +67,15 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.mysql.jdbc.ResultSet;
+
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
+import pasta.domain.template.HandMarking;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.upload.NewCompetition;
 import pasta.domain.upload.NewUnitTest;
 import pasta.domain.upload.Submission;
@@ -85,8 +89,8 @@ import pasta.view.ExcelAutoMarkView;
 import pasta.view.ExcelMarkView;
 
 /**
- * Controller class for the submission (pretty much other, I just dump 
- * everything that didn't fit in the other controllers in here) functions. 
+ * Controller class for the submission (pretty much other, I just dump
+ * everything that didn't fit in the other controllers in here) functions.
  * <p>
  * Handles mappings of $PASTAUrl$/...
  * <p>
@@ -102,8 +106,8 @@ import pasta.view.ExcelMarkView;
 public class SubmissionController {
 
 	/**
-	 * Initializes the codeStyle tag mapping of file endings to 
-	 * javascript tag requirements for syntax highlighting.
+	 * Initializes the codeStyle tag mapping of file endings to javascript tag
+	 * requirements for syntax highlighting.
 	 */
 	public SubmissionController() {
 		codeStyle = new TreeMap<String, String>();
@@ -192,16 +196,16 @@ public class SubmissionController {
 	 * @return the currently used user, null if nobody is logged in.
 	 */
 	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
+		String username = (String) RequestContextHolder.currentRequestAttributes().getAttribute("user",
+				RequestAttributes.SCOPE_SESSION);
 		return getOrCreateUser(username);
 	}
-	
+
 	/**
 	 * Get or create the user given a username
 	 * 
-	 * @param username the username of the user
+	 * @param username
+	 *            the username of the user
 	 * @return the user, null if the username is null.
 	 */
 	public PASTAUser getOrCreateUser(String username) {
@@ -214,19 +218,20 @@ public class SubmissionController {
 	/**
 	 * Get the currently logged in user.
 	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
+	 * @return the currently used user, null if nobody is logged in or user
+	 *         isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
+		String username = (String) RequestContextHolder.currentRequestAttributes().getAttribute("user",
+				RequestAttributes.SCOPE_SESSION);
 		return getUser(username);
 	}
-	
+
 	/**
 	 * Get the user given a username
 	 * 
-	 * @param username the username of the user
+	 * @param username
+	 *            the username of the user
 	 * @return the user, null if the username is null or user isn't registered.
 	 */
 	public PASTAUser getUser(String username) {
@@ -243,14 +248,16 @@ public class SubmissionController {
 	/**
 	 * $PASTAUrl$/mirror/
 	 * <p>
-	 * Redirect back to the referrer.
-	 * This is mainly used to get rid of the resubmitting a form when
-	 * refreshing a page.
+	 * Redirect back to the referrer. This is mainly used to get rid of the
+	 * resubmitting a form when refreshing a page.
 	 * 
-	 * @param request the http request used for redirection
-	 * @param session the http session that is never used here directly, but is passed
-	 * to other methods to ensure that the binding result information is kept when using
-	 * the mirror to stop the refreshing may re-submit form.
+	 * @param request
+	 *            the http request used for redirection
+	 * @param session
+	 *            the http session that is never used here directly, but is
+	 *            passed to other methods to ensure that the binding result
+	 *            information is kept when using the mirror to stop the
+	 *            refreshing may re-submit form.
 	 * @return redirect to the referrer.
 	 */
 	@RequestMapping(value = "mirror/")
@@ -267,21 +274,32 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBTUES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
-	 * 	<tr><td>assessments</td><td>map of all assessments by category (key of category: String, value of list of 
-	 * 	{@link pasta.domain.template.Assessment}</td></tr>
-	 * 	<tr><td>results</td><td>The results as a map (key of id of assessment: Long, value
-	 * 	of {@link pasta.domain.result.AssessmentResult}</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>the user object for the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessments</td>
+	 * <td>map of all assessments by category (key of category: String, value of
+	 * list of {@link pasta.domain.template.Assessment}</td>
+	 * </tr>
+	 * <tr>
+	 * <td>results</td>
+	 * <td>The results as a map (key of id of assessment: Long, value of
+	 * {@link pasta.domain.result.AssessmentResult}</td>
+	 * </tr>
 	 * </table>
 	 * 
 	 * JSP:
 	 * <ul>
-	 * 	<li>user/tutorHome - if the user is a tutor</li>
-	 * 	<li>user/studentHome - if the user is a student</li>
+	 * <li>user/tutorHome - if the user is a tutor</li>
+	 * <li>user/studentHome - if the user is a student</li>
 	 * </ul>
 	 * 
-	 * @param model the model being used
-	 * @param session the http session that may hold the binding result information.
+	 * @param model
+	 *            the model being used
+	 * @param session
+	 *            the http session that may hold the binding result information.
 	 * @return "redirect:/login/" or "user/tutorHome" or "user/studentHome"
 	 */
 	@RequestMapping(value = "home/")
@@ -291,15 +309,14 @@ public class SubmissionController {
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		
-		model.addAttribute("unikey", user);
-		model.addAttribute("assessments",
-				assessmentManager.getAllAssessmentsByCategory());
-		model.addAttribute("results",
-				manager.getLatestResultsForUser(user.getUsername()));
 
-		if(session.getAttribute("binding")!= null){
-			model.addAttribute("org.springframework.validation.BindingResult.submission", session.getAttribute("binding"));
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
+		model.addAttribute("results", manager.getLatestResultsForUser(user.getUsername()));
+
+		if (session.getAttribute("binding") != null) {
+			model.addAttribute("org.springframework.validation.BindingResult.submission",
+					session.getAttribute("binding"));
 			session.removeAttribute("binding");
 		}
 		if (user.isTutor()) {
@@ -318,32 +335,46 @@ public class SubmissionController {
 	 * 
 	 * FAIL CONDITIONS:
 	 * <table>
-	 * 	<tr><td>Submission.NoFile</td><td>The form doesn't contain a file</td></tr>
-	 * 	<tr><td>Submission.NotZip</td><td>The file is not a zip file (extension of .zip)</td></tr>
-	 * 	<tr><td>Submission.AfterClosingDate</td><td>The submission is past the due date</td></tr>
-	 * 	<tr><td>Submission.NoAttempts</td><td>There are no attempts left to this user</td></tr>
+	 * <tr>
+	 * <td>Submission.NoFile</td>
+	 * <td>The form doesn't contain a file</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Submission.NotZip</td>
+	 * <td>The file is not a zip file (extension of .zip)</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Submission.AfterClosingDate</td>
+	 * <td>The submission is past the due date</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Submission.NoAttempts</td>
+	 * <td>There are no attempts left to this user</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * If the submission is validated correctly and doesn't encounter any
-	 * of the fail conditions, it's submitted using 
+	 * If the submission is validated correctly and doesn't encounter any of the
+	 * fail conditions, it's submitted using
 	 * {@link pasta.service.SubmissionManager#submit(String, Submission)}
 	 * 
-	 * Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission buffer such
-	 * that pressing reload has no chance of resubmitting your form.
+	 * Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission
+	 * buffer such that pressing reload has no chance of resubmitting your form.
 	 * 
-	 * @param form the submission form holding the code
-	 * @param result the binding result used for feedback
-	 * @param model the model being used
-	 * @param session the http session used for allowing passing the binding result
-	 * along while using $PASTAUrl$/mirror/ to redirect and such that you will not
-	 * resubmit the form if you refresh the page 
+	 * @param form
+	 *            the submission form holding the code
+	 * @param result
+	 *            the binding result used for feedback
+	 * @param model
+	 *            the model being used
+	 * @param session
+	 *            the http session used for allowing passing the binding result
+	 *            along while using $PASTAUrl$/mirror/ to redirect and such that
+	 *            you will not resubmit the form if you refresh the page
 	 * @return "redirect:/login/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "home/", method = RequestMethod.POST)
-	public String submitAssessment(
-			@ModelAttribute(value = "submission") Submission form,
-			BindingResult result, Model model,
-			HttpSession session) {
+	public String submitAssessment(@ModelAttribute(value = "submission") Submission form,
+			BindingResult result, Model model, HttpSession session) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -354,33 +385,27 @@ public class SubmissionController {
 			result.rejectValue("file", "Submission.NoFile");
 		}
 
-		logger.warn("Form submission:");
-		logger.warn(form);
-		logger.warn(form.getFile());
-		logger.warn(form.getFile().getOriginalFilename());
-		
 		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
 			result.rejectValue("file", "Submission.NotZip");
 		}
 		Date now = new Date();
 		if (assessmentManager.getAssessment(form.getAssessment()).isClosed()
 				&& (user.getExtensions() == null // no extension
-						|| user.getExtensions().get(form.getAssessment()) == null || user
-						.getExtensions().get(form.getAssessment()).before(now))
-				&& (!user.isTutor())) {
+						|| user.getExtensions().get(form.getAssessment()) == null || user.getExtensions()
+						.get(form.getAssessment()).before(now)) && (!user.isTutor())) {
 			result.rejectValue("file", "Submission.AfterClosingDate");
 		}
-		if ((!user.isTutor())
-				&& manager.getLatestResultsForUser(user.getUsername()) != null
-				&& manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()) != null
-				&& assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed() != 0
-				&& manager.getLatestResultsForUser(user.getUsername()).get(form.getAssessment()).getSubmissionsMade() >= assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed()) {
+		AssessmentResult latestResult = manager.getLatestResultsForUserAssessment(user.getUsername(),
+				form.getAssessment());
+		int maxSubmissions = assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed();
+		if ((!user.isTutor()) && latestResult != null && maxSubmissions != 0
+				&& latestResult.getSubmissionsMade() >= maxSubmissions) {
 			result.rejectValue("file", "Submission.NoAttempts");
 		}
 		if (!result.hasErrors()) {
 			// accept the submission
 			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment()).getName() 
+					.getAssessment(form.getAssessment()).getName()
 					+ " submitted by " + user.getUsername());
 			manager.submit(user.getUsername(), form);
 		}
@@ -391,41 +416,57 @@ public class SubmissionController {
 	/**
 	 * $PASTAUrl$/info/{assessmentId}/
 	 * <p>
-	 * View the details and history for an assessment. 
+	 * View the details and history for an assessment.
 	 * 
 	 * If the user has not authenticated: redirect to login.
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} of the user logged in</td></tr>
-	 * 	<tr><td>assessment</td><td>{@link pasta.domain.template.Assessment} the assessment</td></tr>
-	 * 	<tr><td>history</td><td>Collection of {@link pasta.domain.result.AssessmentResult} for all of the submissions</td></tr>
-	 * 	<tr><td>nodeList</td><td>Map of {@link pasta.domain.FileTreeNode} with the key as the date of the
-	 * submission and the value being the root node of the code that was submitted.</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessment</td>
+	 * <td>{@link pasta.domain.template.Assessment} the assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>history</td>
+	 * <td>Collection of {@link pasta.domain.result.AssessmentResult} for all of
+	 * the submissions</td>
+	 * </tr>
+	 * <tr>
+	 * <td>nodeList</td>
+	 * <td>Map of {@link pasta.domain.FileTreeNode} with the key as the date of
+	 * the submission and the value being the root node of the code that was
+	 * submitted.</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewAssessment</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewAssessment</li>
+	 * </ul>
 	 * 
-	 * @param assessmentId the id of the assessment
-	 * @param model the model being used
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "user/viewAssessment"
 	 */
 	@RequestMapping(value = "info/{assessmentId}/")
-	public String viewAssessmentInfo(
-			@PathVariable("assessmentId") long assessmentId, Model model) {
+	public String viewAssessmentInfo(@PathVariable("assessmentId") long assessmentId, Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		
+
 		model.addAttribute("unikey", user);
-		model.addAttribute("assessment",
-				assessmentManager.getAssessment(assessmentId));
-		model.addAttribute("history", assessmentManager.getAssessmentHistory(
-				user.getUsername(), assessmentId));
-		model.addAttribute("nodeList",
-				PASTAUtil.genereateFileTree(user.getUsername(), assessmentId));
+		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
+		model.addAttribute("history",
+				assessmentManager.getAssessmentHistory(user.getUsername(), assessmentId));
+		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(user.getUsername(), assessmentId));
 
 		return "user/viewAssessment";
 	}
@@ -443,13 +484,15 @@ public class SubmissionController {
 	 * 
 	 * If the user is not a tutor: redirect to home.
 	 * 
-	 * @param request the http request that is kinda not used.
-	 * @param response also not really used
-	 * @return the model and view (which is actually a {@link pasta.view.ExcelMarkView})
+	 * @param request
+	 *            the http request that is kinda not used.
+	 * @param response
+	 *            also not really used
+	 * @return the model and view (which is actually a
+	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadMarks/")
-	public ModelAndView viewExcel(HttpServletRequest request,
-			HttpServletResponse response) {
+	public ModelAndView viewExcel(HttpServletRequest request, HttpServletResponse response) {
 		PASTAUser user = getUser();
 		ModelAndView model = new ModelAndView();
 
@@ -465,8 +508,7 @@ public class SubmissionController {
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
 		data.put("userList", userManager.getUserList());
-		data.put("latestResults",
-				assessmentManager.getLatestResults(userManager.getUserList()));
+		data.put("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 
 		return new ModelAndView(new ExcelMarkView(), data);
 	}
@@ -474,19 +516,22 @@ public class SubmissionController {
 	/**
 	 * $PASTAUrl$/downloadAutoMarks/
 	 * <p>
-	 * Download the only the automated marks (all but hand marking) as an excel sheet.
+	 * Download the only the automated marks (all but hand marking) as an excel
+	 * sheet.
 	 * 
 	 * If the user has not authenticated: redirect to login.
 	 * 
 	 * If the user is not a tutor: redirect to home.
 	 * 
-	 * @param request the http request that is kinda not used.
-	 * @param response also not really used
-	 * @return the model and view (which is actually a {@link pasta.view.ExcelMarkView})
+	 * @param request
+	 *            the http request that is kinda not used.
+	 * @param response
+	 *            also not really used
+	 * @return the model and view (which is actually a
+	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadAutoMarks/")
-	public ModelAndView viewAutoExcel(HttpServletRequest request,
-			HttpServletResponse response) {
+	public ModelAndView viewAutoExcel(HttpServletRequest request, HttpServletResponse response) {
 		PASTAUser user = getUser();
 		ModelAndView model = new ModelAndView();
 
@@ -502,8 +547,7 @@ public class SubmissionController {
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
 		data.put("userList", userManager.getUserList());
-		data.put("latestResults",
-				assessmentManager.getLatestResults(userManager.getUserList()));
+		data.put("latestResults", assessmentManager.getLatestResults(userManager.getUserList()));
 
 		return new ModelAndView(new ExcelAutoMarkView(), data);
 	}
@@ -511,22 +555,25 @@ public class SubmissionController {
 	/**
 	 * $PASTAUrl$/student/{username}/info/{assessmentId}/updateComment/ - POST
 	 * <p>
-	 * Update the comment for a given user for a given assessment for a
-	 * given submission using 
+	 * Update the comment for a given user for a given assessment for a given
+	 * submission using
 	 * {@link pasta.service.HandMarkingManager#saveComment(String, long, String, String)}
 	 * 
-	 * @param newComment the new comment
-	 * @param assessmentDate the assessment date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param username the name of the user
-	 * @param assessmentId the id of the assessment
-	 * @param model the model being used
+	 * @param newComment
+	 *            the new comment
+	 * @param assessmentDate
+	 *            the assessment date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param username
+	 *            the name of the user
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../"
 	 */
 	@RequestMapping(value = "student/{username}/info/{assessmentId}/updateComment/", method = RequestMethod.POST)
 	public String updateComment(@RequestParam("newComment") String newComment,
-			@RequestParam("assessmentDate") String assessmentDate,
-			@PathVariable("username") String username,
-			@PathVariable("assessmentId") long assessmentId, Model model) {
+			@RequestParam("resultId") long resultId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -534,8 +581,7 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
-		handMarkingManager.saveComment(username, assessmentId,
-				assessmentDate, newComment);
+		assessmentManager.updateComment(resultId, newComment);
 		return "redirect:../";
 	}
 
@@ -544,32 +590,30 @@ public class SubmissionController {
 	 * <p>
 	 * View a file.
 	 * 
-	 * If the user has authenticated and is a tutor, 
-	 * serve up the document, otherwise do nothing.
+	 * If the user has authenticated and is a tutor, serve up the document,
+	 * otherwise do nothing.
 	 * 
 	 * <b>Not sure if it's actually being used</b>
 	 * 
-	 * @param fileName the path to the file.
-	 * @param response the http response being used to serve the content
+	 * @param fileName
+	 *            the path to the file.
+	 * @param response
+	 *            the http response being used to serve the content
 	 */
 	@RequestMapping(value = "viewFile/loadFile", method = RequestMethod.GET)
-	public void getFile(@RequestParam("file_name") String fileName,
-			HttpServletResponse response) {
+	public void getFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user != null && user.isTutor()) {
-			if (!codeStyle.containsKey(fileName.substring(fileName
-					.lastIndexOf(".") + 1))) {
+			if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
 				try {
 					// get your file as InputStream
-					InputStream is = new FileInputStream(fileName.replace("\"",
-							""));
+					InputStream is = new FileInputStream(fileName.replace("\"", ""));
 					// copy it to response's OutputStream
 					IOUtils.copy(is, response.getOutputStream());
 					response.flushBuffer();
 					is.close();
 				} catch (IOException ex) {
-					throw new RuntimeException(
-							"IOError writing file to output stream");
+					throw new RuntimeException("IOError writing file to output stream");
 				}
 			}
 		}
@@ -580,38 +624,36 @@ public class SubmissionController {
 	 * <p>
 	 * Download a file
 	 * 
-	 * If the user has authenticated and is a tutor, 
-	 * serve up the document, otherwise do nothing.
+	 * If the user has authenticated and is a tutor, serve up the document,
+	 * otherwise do nothing.
 	 * 
-	 * @param fileName the path to the file.
-	 * @param response the http response being used to serve the content
+	 * @param fileName
+	 *            the path to the file.
+	 * @param response
+	 *            the http response being used to serve the content
 	 */
 	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
-	public void downloadFile(@RequestParam("file_name") String fileName,
-			HttpServletResponse response) {
+	public void downloadFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user != null && user.isTutor()) {
-			if (!codeStyle.containsKey(fileName.substring(fileName
-					.lastIndexOf(".") + 1))) {
+			if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
 				try {
 					// get your file as InputStream
-					InputStream is = new FileInputStream(fileName.replace("\"",
-							""));
+					InputStream is = new FileInputStream(fileName.replace("\"", ""));
 					// copy it to response's OutputStream
 					response.setContentType("application/octet-stream;");
 					response.setHeader(
 							"Content-Disposition",
 							"attachment; filename="
-									+ fileName.replace("\"", "").substring(
-											fileName.replace("\"", "")
-													.replace("\\", "/")
-													.lastIndexOf("/") + 1));
+									+ fileName.replace("\"", "")
+											.substring(
+													fileName.replace("\"", "").replace("\\", "/")
+															.lastIndexOf("/") + 1));
 					IOUtils.copy(is, response.getOutputStream());
 					response.flushBuffer();
 					is.close();
 				} catch (IOException ex) {
-					throw new RuntimeException(
-							"IOError writing file to output stream");
+					throw new RuntimeException("IOError writing file to output stream");
 				}
 			}
 		}
@@ -628,23 +670,44 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} of the currently logged in user</td></tr>
-	 * 	<tr><td>location</td><td>The location of the disk of the file</td></tr>
-	 * 	<tr><td>codeStyle</td><td>The map of coding styles. Map<string, string></td></tr>
-	 * 	<tr><td>fileEnding</td><td>The file ending of the file you're viewing</td></tr>
-	 * 	<tr><td>fileContents</td><td>The contents of the file, with the &gt; and &lt; escaped </td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>location</td>
+	 * <td>The location of the disk of the file</td>
+	 * </tr>
+	 * <tr>
+	 * <td>codeStyle</td>
+	 * <td>The map of coding styles. Map<string, string></td>
+	 * </tr>
+	 * <tr>
+	 * <td>fileEnding</td>
+	 * <td>The file ending of the file you're viewing</td>
+	 * </tr>
+	 * <tr>
+	 * <td>fileContents</td>
+	 * <td>The contents of the file, with the &gt; and &lt; escaped</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP:<ul><li>assessment/mark/viewFile</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>assessment/mark/viewFile</li>
+	 * </ul>
 	 * 
-	 * @param location the path to the file location
-	 * @param model the model being used
-	 * @param response the response that's not really being used
+	 * @param location
+	 *            the path to the file location
+	 * @param model
+	 *            the model being used
+	 * @param response
+	 *            the response that's not really being used
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@RequestParam("location") String location,
-			Model model, HttpServletResponse response) {
+	public String viewFile(@RequestParam("location") String location, Model model,
+			HttpServletResponse response) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -656,13 +719,11 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("location", location);
 		model.addAttribute("codeStyle", codeStyle);
-		model.addAttribute("fileEnding",
-				location.substring(location.lastIndexOf(".") + 1));
+		model.addAttribute("fileEnding", location.substring(location.lastIndexOf(".") + 1));
 
-		if (codeStyle
-				.containsKey(location.substring(location.lastIndexOf(".") + 1))) {
-			model.addAttribute("fileContents", PASTAUtil.scrapeFile(location)
-					.replace(">", "&gt;").replace("<", "&lt;"));
+		if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))) {
+			model.addAttribute("fileContents",
+					PASTAUtil.scrapeFile(location).replace(">", "&gt;").replace("<", "&lt;"));
 
 		}
 		return "assessment/mark/viewFile";
@@ -679,23 +740,39 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} for the currently logged in user</td></tr>
-	 * 	<tr><td>viewedUser</td><td>{@link pasta.domain.PASTAUser} for the viewed user</td></tr>
-	 * 	<tr><td>assessments</td><td>map of all assessments by category (key of category: String, value of list of 
-	 * 	{@link pasta.domain.template.Assessment}</td></tr>
-	 * 	<tr><td>results</td><td>The results as a map (key of id of assessment: Long, value
-	 * 	of {@link pasta.domain.result.AssessmentResult}</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} for the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>viewedUser</td>
+	 * <td>{@link pasta.domain.PASTAUser} for the viewed user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessments</td>
+	 * <td>map of all assessments by category (key of category: String, value of
+	 * list of {@link pasta.domain.template.Assessment}</td>
+	 * </tr>
+	 * <tr>
+	 * <td>results</td>
+	 * <td>The results as a map (key of id of assessment: Long, value of
+	 * {@link pasta.domain.result.AssessmentResult}</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP:<ul><li>user/studentHome</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/studentHome</li>
+	 * </ul>
 	 * 
-	 * @param username the name of the user you are looking at
-	 * @param model the model being used
+	 * @param username
+	 *            the name of the user you are looking at
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/studentHome"
 	 */
 	@RequestMapping(value = "student/{username}/home/")
-	public String viewStudent(@PathVariable("username") String username,
-			Model model) {
+	public String viewStudent(@PathVariable("username") String username, Model model) {
 		// check if tutor or student
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -707,10 +784,8 @@ public class SubmissionController {
 		PASTAUser viewedUser = getOrCreateUser(username);
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("assessments",
-				assessmentManager.getAllAssessmentsByCategory());
-		model.addAttribute("results",
-				manager.getLatestResultsForUser(viewedUser.getUsername()));
+		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
+		model.addAttribute("results", manager.getLatestResultsForUser(viewedUser.getUsername()));
 		return "user/studentHome";
 	}
 
@@ -725,29 +800,39 @@ public class SubmissionController {
 	 * 
 	 * FAIL CONDITIONS:
 	 * <table>
-	 * 	<tr><td>Submission.NoFile</td><td>The form doesn't contain a file</td></tr>
-	 * 	<tr><td>Submission.NotZip</td><td>The file is not a zip file (extension of .zip)</td></tr>
+	 * <tr>
+	 * <td>Submission.NoFile</td>
+	 * <td>The form doesn't contain a file</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Submission.NotZip</td>
+	 * <td>The file is not a zip file (extension of .zip)</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * If the submission is validated correctly and doesn't encounter any
-	 * of the fail conditions, it's submitted using 
+	 * If the submission is validated correctly and doesn't encounter any of the
+	 * fail conditions, it's submitted using
 	 * {@link pasta.service.SubmissionManager#submit(String, Submission)}
 	 * 
-	 * Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission buffer such
-	 * that pressing reload has no chance of resubmitting your form.
+	 * Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission
+	 * buffer such that pressing reload has no chance of resubmitting your form.
 	 * 
-	 * @param form the submission form holding the code
-	 * @param result the binding result used for feedback
-	 * @param model the model being used
-	 * @param session the http session used for allowing passing the binding result
-	 * along while using $PASTAUrl$/mirror/ to redirect and such that you will not
-	 * resubmit the form if you refresh the page 
+	 * @param form
+	 *            the submission form holding the code
+	 * @param result
+	 *            the binding result used for feedback
+	 * @param model
+	 *            the model being used
+	 * @param session
+	 *            the http session used for allowing passing the binding result
+	 *            along while using $PASTAUrl$/mirror/ to redirect and such that
+	 *            you will not resubmit the form if you refresh the page
 	 * @return "redirect:/login/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
 	public String submitAssessment(@PathVariable("username") String username,
-			@ModelAttribute(value = "submission") Submission form,
-			BindingResult result, Model model, HttpSession session) {
+			@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model,
+			HttpSession session) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -765,18 +850,18 @@ public class SubmissionController {
 		if (!result.hasErrors()) {
 			// accept the submission
 			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment()).getName() + " submitted for " 
-					+ username + " by " + user.getUsername());
+					.getAssessment(form.getAssessment()).getName()
+					+ " submitted for " + username + " by " + user.getUsername());
 			manager.submit(username, form);
 		}
 		session.setAttribute("binding", result);
 		return "redirect:/mirror/";
 	}
-	
+
 	/**
 	 * $PASTAUrl$/student/{username}/info/{assessmentId}/
 	 * <p>
-	 * View the details and history for an assessment. 
+	 * View the details and history for an assessment.
 	 * 
 	 * If the user has not authenticated: redirect to login.
 	 * 
@@ -784,19 +869,42 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} of the user logged in</td></tr>
-	 * 	<tr><td>viewedUser</td><td>{@link pasta.domain.PASTAUser} of the user being viewed</td></tr>
-	 * 	<tr><td>assessment</td><td>{@link pasta.domain.template.Assessment} the assessment</td></tr>
-	 * 	<tr><td>history</td><td>Collection of {@link pasta.domain.result.AssessmentResult} for all of the submissions</td></tr>
-	 * 	<tr><td>nodeList</td><td>Map of {@link pasta.domain.FileTreeNode} with the key as the date of the
-	 * submission and the value being the root node of the code that was submitted.</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * </tr>
+	 * <tr>
+	 * <td>viewedUser</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the user being viewed</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessment</td>
+	 * <td>{@link pasta.domain.template.Assessment} the assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>history</td>
+	 * <td>Collection of {@link pasta.domain.result.AssessmentResult} for all of
+	 * the submissions</td>
+	 * </tr>
+	 * <tr>
+	 * <td>nodeList</td>
+	 * <td>Map of {@link pasta.domain.FileTreeNode} with the key as the date of
+	 * the submission and the value being the root node of the code that was
+	 * submitted.</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewAssessment</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewAssessment</li>
+	 * </ul>
 	 * 
-	 * @param username the username for the user you are viewing
-	 * @param assessmentId the id of the assessment
-	 * @param model the model being used
+	 * @param username
+	 *            the username for the user you are viewing
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAssessment"
 	 */
 	@RequestMapping(value = "student/{username}/info/{assessmentId}/")
@@ -810,15 +918,12 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-		
+
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", getUser(username));
-		model.addAttribute("assessment",
-				assessmentManager.getAssessment(assessmentId));
-		model.addAttribute("history", assessmentManager.getAssessmentHistory(
-				username, assessmentId));
-		model.addAttribute("nodeList",
-				PASTAUtil.genereateFileTree(username, assessmentId));
+		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
+		model.addAttribute("history", assessmentManager.getAssessmentHistory(username, assessmentId));
+		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(username, assessmentId));
 
 		return "user/viewAssessment";
 	}
@@ -826,7 +931,7 @@ public class SubmissionController {
 	/**
 	 * $PASTAUrl$/download/{username}/{assessmentId}/{assessmentDate}/
 	 * <p>
-	 * Serve the zip file that contains the submission for the username for a 
+	 * Serve the zip file that contains the submission for the username for a
 	 * given assessment at a given time.
 	 * 
 	 * If the user has not authenticated or is not a tutor: do nothing
@@ -834,49 +939,40 @@ public class SubmissionController {
 	 * Otherwise create the zip file and serve the zip file. The file name is
 	 * $username$-$assessmentId$-$assessmentDate$.zip
 	 * 
-	 * @param username the user which you want to download the submission for
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param model the model being used
-	 * @param response the http response being used to serve the zip file.
+	 * @param username
+	 *            the user which you want to download the submission for
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param assessmentDate
+	 *            the date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param model
+	 *            the model being used
+	 * @param response
+	 *            the http response being used to serve the zip file.
 	 */
 	@RequestMapping(value = "download/{username}/{assessmentId}/{assessmentDate}/")
 	public void downloadAssessment(@PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId,
-			@PathVariable("assessmentDate") String assessmentDate, Model model,
-			HttpServletResponse response) {
-		
+			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletResponse response) {
+
 		PASTAUser user = getUser();
 		if (user == null || !user.isTutor()) {
 			return;
 		}
-		
+
 		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment;filename=\""
-				+ username + "-" + assessmentId + "-" + assessmentDate
-				+ ".zip\"");
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + username + "-" + assessmentId
+				+ "-" + assessmentDate + ".zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
 		try {
-			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
-					.getSubmissionsLocation()
-					+ username
-					+ "/assessments/"
-					+ assessmentId
-					+ "/"
-					+ assessmentDate
-					+ "/submission/"), ProjectProperties.getInstance()
-					.getSubmissionsLocation()
-					+ username
-					+ "/assessments/"
-					+ assessmentId
-					+ "/"
-					+ assessmentDate
-					+ "/submission/");
+			PASTAUtil.zip(zip, new File(ProjectProperties.getInstance().getSubmissionsLocation() + username
+					+ "/assessments/" + assessmentId + "/" + assessmentDate + "/submission/"),
+					ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
+							+ assessmentId + "/" + assessmentDate + "/submission/");
 			zip.closeEntry();
 			zip.close();
-			IOUtils.copy(new ByteArrayInputStream(outStream.toByteArray()),
-					response.getOutputStream());
+			IOUtils.copy(new ByteArrayInputStream(outStream.toByteArray()), response.getOutputStream());
 			response.flushBuffer();
 
 		} catch (IOException e) {
@@ -897,18 +993,23 @@ public class SubmissionController {
 	 * Otherwise: run assessment using
 	 * {@link pasta.service.SubmissionManager#runAssessment(String, long, String)}
 	 * 
-	 * @param username the user which you want to download the submission for
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param model the model being used
-	 * @param request the http request being used for redirecting.
-	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the referrer
+	 * @param username
+	 *            the user which you want to download the submission for
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param assessmentDate
+	 *            the date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param model
+	 *            the model being used
+	 * @param request
+	 *            the http request being used for redirecting.
+	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the
+	 *         referrer
 	 */
 	@RequestMapping(value = "runAssessment/{username}/{assessmentId}/{assessmentDate}/")
 	public String runAssessment(@PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId,
-			@PathVariable("assessmentDate") String assessmentDate, Model model,
-			HttpServletRequest request) {
+			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletRequest request) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -918,10 +1019,12 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		manager.runAssessment(username, assessmentId, assessmentDate);
+		AssessmentResult result = assessmentManager.loadAssessmentResult(username, assessmentId,
+				assessmentDate);
+		manager.runAssessment(username, assessmentId, assessmentDate, result);
 		return "redirect:" + request.getHeader("Referer");
 	}
-	
+
 	/**
 	 * $PASTAUrl$/student/{username}/extension/{assessmentId}/{extension}/
 	 * <p>
@@ -932,21 +1035,26 @@ public class SubmissionController {
 	 * If the user is not a tutor: redirect to home.
 	 * 
 	 * If the user is an instructor: give the extension using
-	 * {@link pasta.service.UserManager#giveExtension(String, long, Date)}
-	 * then redirect to the referrer page.
+	 * {@link pasta.service.UserManager#giveExtension(String, long, Date)} then
+	 * redirect to the referrer page.
 	 * 
-	 * @param username the user which you want to download the submission for
-	 * @param assessmentId the id of the assessment
-	 * @param extension the date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param model the model being used
-	 * @param request the request begin used to redirect back to the referer.
-	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the referrer
+	 * @param username
+	 *            the user which you want to download the submission for
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param extension
+	 *            the date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param model
+	 *            the model being used
+	 * @param request
+	 *            the request begin used to redirect back to the referer.
+	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the
+	 *         referrer
 	 */
 	@RequestMapping(value = "student/{username}/extension/{assessmentId}/{extension}/")
 	public String giveExtension(@PathVariable("username") String username,
-			@PathVariable("assessmentId") long assessmentId,
-			@PathVariable("extension") String extension, Model model,
-			HttpServletRequest request) {
+			@PathVariable("assessmentId") long assessmentId, @PathVariable("extension") String extension,
+			Model model, HttpServletRequest request) {
 		// check if tutor or student
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -958,13 +1066,12 @@ public class SubmissionController {
 		if (user.isInstructor()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 			try {
-				userManager.giveExtension(username, assessmentId,
-						sdf.parse(extension));
+				userManager.giveExtension(username, assessmentId, sdf.parse(extension));
 			} catch (ParseException e) {
 				logger.error("Parse Exception");
 			}
 		}
-		
+
 		return "redirect:" + request.getHeader("Referer");
 	}
 
@@ -979,21 +1086,48 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} the user logged in</td></tr>
-	 * 	<tr><td>student</td><td>{@link pasta.domain.PASTAUser} the user being viewed</td></tr>
-	 * 	<tr><td>assessmentId</td><td>the id of the assessment</td></tr>
-	 * 	<tr><td>node</td><td>The root {@link pasta.domain.FileTreeNode} for the root of the submitted code</td></tr>
-	 * 	<tr><td>assessmentResult</td><td>The {@link pasta.domain.result.AssessmentResult} for this assessment</td></tr>
-	 * 	<tr><td>handMarkingList</td><td>The list of {@link pasta.domain.template.WeightedHandMarking}</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} the user logged in</td>
+	 * </tr>
+	 * <tr>
+	 * <td>student</td>
+	 * <td>{@link pasta.domain.PASTAUser} the user being viewed</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentName</td>
+	 * <td>the name of the assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>node</td>
+	 * <td>The root {@link pasta.domain.FileTreeNode} for the root of the
+	 * submitted code</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentResult</td>
+	 * <td>The {@link pasta.domain.result.AssessmentResult} for this assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>handMarkingList</td>
+	 * <td>The list of {@link pasta.domain.template.WeightedHandMarking}</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>assessment/mark/handMark</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>assessment/mark/handMark</li>
+	 * </ul>
 	 * 
-	 * @param username the user which you want to download the submission for
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param model the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/mark/handMark"
+	 * @param username
+	 *            the user which you want to download the submission for
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param assessmentDate
+	 *            the date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param model
+	 *            the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or
+	 *         "assessment/mark/handMark"
 	 */
 	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/")
 	public String handMarkAssessment(@PathVariable("username") String username,
@@ -1009,16 +1143,24 @@ public class SubmissionController {
 		}
 		model.addAttribute("unikey", user);
 		model.addAttribute("student", username);
-		model.addAttribute("assessmentId", assessmentId);
 
-		AssessmentResult result = assessmentManager.getAssessmentResult(
-				username, assessmentId, assessmentDate);
+		String assessmentName = ProjectProperties.getInstance().getAssessmentDAO()
+				.getAssessment(assessmentId).getName();
+		model.addAttribute("assessmentName", assessmentName);
 
-		model.addAttribute("node", PASTAUtil.generateFileTree(username,
-				assessmentId, assessmentDate));
+		// TODO this object's handmarkingresults are not being got from a passed
+		// ID rom the JSP
+
+		AssessmentResult result = assessmentManager.loadAssessmentResult(username, assessmentId,
+				assessmentDate);
+
+		logger.warn("Loading result: " + result.getId());
+		logger.warn("hand marks: " + result.getHandMarkingResults().size());
+
+		model.addAttribute("node", PASTAUtil.generateFileTree(username, assessmentId, assessmentDate));
 		model.addAttribute("assessmentResult", result);
-		model.addAttribute("handMarkingList", result.getAssessment()
-				.getHandMarking());
+		model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
+		model.addAttribute("handMarkingResultList", result.getHandMarkingResults());
 
 		return "assessment/mark/handMark";
 	}
@@ -1034,24 +1176,29 @@ public class SubmissionController {
 	 * 
 	 * Otherwise: update the hand marking results and comments using
 	 * {@link pasta.service.HandMarkingManager#saveHandMarkingResults(String, long, String, List)}
-	 * and 
+	 * and
 	 * {@link pasta.service.HandMarkingManager#saveComment(String, long, String, String)}
 	 * 
-	 * @param username the user which you want to download the submission for
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param form the assessment result object
-	 * @param result the binding result used for feedback
-	 * @param model the model being used
+	 * @param username
+	 *            the user which you want to download the submission for
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param assessmentDate
+	 *            the date (format: yyyy-MM-dd'T'HH-mm-ss)
+	 * @param form
+	 *            the assessment result object
+	 * @param result
+	 *            the binding result used for feedback
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/", method = RequestMethod.POST)
-	public String saveHandMarkAssessment(
-			@PathVariable("username") String username,
+	public String saveHandMarkAssessment(@PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate,
-			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
-			BindingResult result, Model model) {
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form, BindingResult result,
+			Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -1060,16 +1207,20 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+
+		AssessmentResult assessResult = assessmentManager.loadAssessmentResult(username, assessmentId,
+				assessmentDate);
+
 		// rebinding hand marking results with their hand marking templates
 		List<HandMarkingResult> results = form.getHandMarkingResults();
 		for (HandMarkingResult currResult : results) {
-			currResult.setMarkingTemplate(handMarkingManager
-					.getHandMarking(currResult.getId()));
+			currResult.setWeightedHandMarking(handMarkingManager.getWeightedHandMarking(currResult
+					.getWeightedHandMarking().getId()));
 		}
-		handMarkingManager.saveHandMarkingResults(username, assessmentId,
-				assessmentDate, form.getHandMarkingResults());
-		handMarkingManager.saveComment(username, assessmentId,
-				assessmentDate, form.getComments());
+
+		assessResult.setComments(form.getComments());
+		assessResult.setHandMarkingResults(results);
+		assessmentManager.updateAssessmentResults(assessResult);
 
 		return "redirect:/mirror/";
 	}
@@ -1084,49 +1235,90 @@ public class SubmissionController {
 	 * If the user is not a tutor: redirect to home.
 	 * 
 	 * POST: Save the {@link pasta.domain.result.AssessmentResult} form for the
-	 * last user you marked using 
+	 * last user you marked using
 	 * {@link pasta.service.HandMarkingManager#saveHandMarkingResults(String, long, String, List)}
-	 * and {@link pasta.service.HandMarkingManager#saveComment(String, long, String, String)}
+	 * and
+	 * {@link pasta.service.HandMarkingManager#saveComment(String, long, String, String)}
 	 * 
 	 * GET: Takes you to the hand marking template(s) to the user.
 	 * 
-	 * If the studentIndex is pointing to a student that has no submissions, 
-	 * go to the next one.
+	 * If the studentIndex is pointing to a student that has no submissions, go
+	 * to the next one.
 	 * 
 	 * If the index is past the end of the array, go back to home.
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} of the user logged in</td></tr>
-	 * 	<tr><td>assessmentId</td><td>the id of the assessment</td></tr>
-	 * 	<tr><td>student</td><td>{@link pasta.domain.PASTAUser} of the student being viewed</td></tr>
-	 * 	<tr><td>node</td><td>The root {@link pasta.domain.FileTreeNode} of the submitted files</td></tr>
-	 * 	<tr><td>assessmentResult</td><td>The {@link pasta.domain.result.AssessmentResult} for this assessment</td></tr>
-	 * 	<tr><td>handMarkingList</td><td>The list of {@link pasta.domain.template.WeightedHandMarking}</td></tr>
-	 * 	<tr><td>savingStudentIndex</td><td>A string representation of the index of the student you are saving</td></tr>
-	 * 	<tr><td>hasSubmission</td><td>Flag to say whether the current student has a submission</td></tr>
-	 * 	<tr><td>completedMarking</td><td>Flag to say whether the marking is complete for this student</td></tr>
-	 * 	<tr><td>myStudents</td><td>The list of {@link pasta.domain.PASTAUser} of the users that belong in your class(es) </td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentId</td>
+	 * <td>the id of the assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>student</td>
+	 * <td>{@link pasta.domain.PASTAUser} of the student being viewed</td>
+	 * </tr>
+	 * <tr>
+	 * <td>node</td>
+	 * <td>The root {@link pasta.domain.FileTreeNode} of the submitted files</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentResult</td>
+	 * <td>The {@link pasta.domain.result.AssessmentResult} for this assessment</td>
+	 * </tr>
+	 * <tr>
+	 * <td>handMarkingList</td>
+	 * <td>The list of {@link pasta.domain.template.WeightedHandMarking}</td>
+	 * </tr>
+	 * <tr>
+	 * <td>savingStudentIndex</td>
+	 * <td>A string representation of the index of the student you are saving</td>
+	 * </tr>
+	 * <tr>
+	 * <td>hasSubmission</td>
+	 * <td>Flag to say whether the current student has a submission</td>
+	 * </tr>
+	 * <tr>
+	 * <td>completedMarking</td>
+	 * <td>Flag to say whether the marking is complete for this student</td>
+	 * </tr>
+	 * <tr>
+	 * <td>myStudents</td>
+	 * <td>The list of {@link pasta.domain.PASTAUser} of the users that belong
+	 * in your class(es)</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP:<ul><li>assessment/mark/handMarkBatch</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>assessment/mark/handMarkBatch</li>
+	 * </ul>
 	 * 
-	 * @param studentIndex the index of the student being viewed
-	 * @param assessmentId the id of the assessment
-	 * @param student the student that you have just marked and is getting saved
-	 * @param form the assessment result form to be saved
-	 * @param request the http request that's not being used
-	 * @param model the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/mark/handMarkBatch"
+	 * @param studentIndex
+	 *            the index of the student being viewed
+	 * @param assessmentId
+	 *            the id of the assessment
+	 * @param student
+	 *            the student that you have just marked and is getting saved
+	 * @param form
+	 *            the assessment result form to be saved
+	 * @param request
+	 *            the http request that's not being used
+	 * @param model
+	 *            the model being used
+	 * @return "redirect:/login/" or "redirect:/home/" or
+	 *         "assessment/mark/handMarkBatch"
 	 */
-	@RequestMapping(value = "mark/{assessmentId}/{studentIndex}/", method = {
-			RequestMethod.POST, RequestMethod.GET })
-	public String handMarkAssessmentBatch(
-			@PathVariable("studentIndex") String studentIndex,
+	@RequestMapping(value = "mark/{assessmentId}/{studentIndex}/", method = { RequestMethod.POST,
+			RequestMethod.GET })
+	public String handMarkAssessmentBatch(@PathVariable("studentIndex") String studentIndex,
 			@PathVariable("assessmentId") long assessmentId,
 			@RequestParam(value = "student", required = false) String student,
-			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
-			HttpServletRequest request, Model model) {
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form, HttpServletRequest request,
+			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -1150,31 +1342,29 @@ public class SubmissionController {
 			// save changes
 			List<HandMarkingResult> results = form.getHandMarkingResults();
 			for (HandMarkingResult currResult : results) {
-				currResult.setMarkingTemplate(handMarkingManager
-						.getHandMarking(currResult.getId()));
+				currResult.setWeightedHandMarking(handMarkingManager.getWeightedHandMarking(currResult
+						.getWeightedHandMarking().getId()));
 			}
-			handMarkingManager.saveHandMarkingResults(student, assessmentId,
-					manager.getLatestResultsForUser(student)
-							.get(assessmentId).getFormattedSubmissionDate(),
-					form.getHandMarkingResults());
-			handMarkingManager.saveComment(student, assessmentId, manager
-					.getLatestResultsForUser(student).get(assessmentId)
-					.getFormattedSubmissionDate(), form.getComments());
+
+			AssessmentResult assessResult = assessmentManager
+					.getLatestAssessmentResult(student, assessmentId);
+			assessResult.setComments(form.getComments());
+			assessResult.setHandMarkingResults(results);
+			assessmentManager.updateAssessmentResults(assessResult);
 		}
 
 		boolean[] hasSubmission = new boolean[myStudents.length];
 		boolean[] completedMarking = new boolean[myStudents.length];
+		int lastIndex = -1;
 		for (int i = 0; i < myStudents.length; ++i) {
-
-			hasSubmission[i] = (myStudents[i] != null
-					&& manager.getLatestResultsForUser(myStudents[i]
-							.getUsername()) != null && manager
-					.getLatestResultsForUser(myStudents[i].getUsername()).get(
-							assessmentId) != null);
+			AssessmentResult latestResult = manager.getLatestResultsForUserAssessment(
+					myStudents[i].getUsername(), assessmentId);
+			hasSubmission[i] = (myStudents[i] != null && latestResult != null);
+			if(hasSubmission[i]) {
+				lastIndex = i;
+			}
 			if (hasSubmission[i]) {
-				completedMarking[i] = manager
-						.getLatestResultsForUser(myStudents[i].getUsername())
-						.get(assessmentId).isFinishedHandMarking();
+				completedMarking[i] = latestResult.isFinishedHandMarking();
 			}
 		}
 
@@ -1182,26 +1372,29 @@ public class SubmissionController {
 		try {
 			int i_studentIndex = Integer.parseInt(studentIndex);
 			if (i_studentIndex >= 0 && i_studentIndex < myStudents.length
-					&& myStudents[i_studentIndex] != null
-					&& hasSubmission[i_studentIndex]) {
+					&& myStudents[i_studentIndex] != null && hasSubmission[i_studentIndex]) {
 
 				PASTAUser currStudent = myStudents[i_studentIndex];
 
 				model.addAttribute("student", currStudent.getUsername());
 
-				AssessmentResult result = manager.getLatestResultsForUser(
-						currStudent.getUsername()).get(assessmentId);
-				model.addAttribute("node", PASTAUtil.generateFileTree(
-						currStudent.getUsername(), assessmentId,
-						result.getFormattedSubmissionDate()));
+				AssessmentResult result = manager.getLatestResultsForUserAssessment(
+						currStudent.getUsername(), assessmentId);
+				model.addAttribute(
+						"node",
+						PASTAUtil.generateFileTree(currStudent.getUsername(), assessmentId,
+								result.getFormattedSubmissionDate()));
 				model.addAttribute("assessmentResult", result);
-				model.addAttribute("handMarkingList", result.getAssessment()
-						.getHandMarking());
-
+				model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
+				model.addAttribute("handMarkingResultList", result.getHandMarkingResults());
 				model.addAttribute("savingStudentIndex", i_studentIndex);
 				model.addAttribute("hasSubmission", hasSubmission);
 				model.addAttribute("completedMarking", completedMarking);
 				model.addAttribute("myStudents", myStudents);
+				
+				if(i_studentIndex == lastIndex) {
+					model.addAttribute("last", "last");
+				}
 
 			} else {
 				return "redirect:/home/";
@@ -1213,39 +1406,36 @@ public class SubmissionController {
 
 		return "assessment/mark/handMarkBatch";
 	}
-	
-  @RequestMapping(value = "mark/{assessmentId}/", method = RequestMethod.GET)
-  public String handMarkAssessmentBatchStart(
-      @PathVariable("assessmentId") long assessmentId,
-      HttpServletRequest request, Model model) {
 
-    PASTAUser user = getUser();
-    if (user == null) {
-      return "redirect:/login/";
-    }
-    if (!user.isTutor()) {
-      return "redirect:/home/.";
-    }
+	@RequestMapping(value = "mark/{assessmentId}/", method = RequestMethod.GET)
+	public String handMarkAssessmentBatchStart(@PathVariable("assessmentId") long assessmentId,
+			HttpServletRequest request, Model model) {
 
-    model.addAttribute("unikey", user);
-    model.addAttribute("assessmentId", assessmentId);
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
 
-    if (assessmentManager.getAssessment(assessmentId) != null) {
-      // find the first student with a submission
-      int i = 0;
-      for (String tutorial : user.getTutorClasses()) {
-        for (PASTAUser student : userManager.getUserListByTutorial(tutorial)) {
-          if (manager.getLatestResultsForUser(student.getUsername()) != null
-              && manager.getLatestResultsForUser(student.getUsername()).get(
-            		  assessmentId) != null) {
-            return "redirect:" + request.getServletPath() + i + "/";
-          }
-          ++i;
-        }
-      }
-    }
-    return "redirect:/home/.";
-  }
+		model.addAttribute("unikey", user);
+		model.addAttribute("assessmentId", assessmentId);
+
+		if (assessmentManager.getAssessment(assessmentId) != null) {
+			// find the first student with a submission
+			int i = 0;
+			for (String tutorial : user.getTutorClasses()) {
+				for (PASTAUser student : userManager.getUserListByTutorial(tutorial)) {
+					if (assessmentManager.getLatestAssessmentResult(student.getUsername(), assessmentId) != null) {
+						return "redirect:" + request.getServletPath() + i + "/";
+					}
+					++i;
+				}
+			}
+		}
+		return "redirect:/home/.";
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// GRADE CENTRE //
@@ -1257,14 +1447,13 @@ public class SubmissionController {
 	 * Serves up the JSON data container for the grade center.
 	 * 
 	 * If the user has not authenticated or is not a tutor: return nothing.
-	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])}
-	 * for all users.
+	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])} for
+	 * all users.
 	 * 
 	 * @return the appropriate json file
 	 */
 	@RequestMapping(value = "gradeCentre/DATA/")
-	public @ResponseBody
-	String viewGradeCentreData() {
+	public @ResponseBody String viewGradeCentreData() {
 		PASTAUser currentUser = getUser();
 		if (currentUser == null) {
 			return "";
@@ -1272,7 +1461,7 @@ public class SubmissionController {
 		if (!currentUser.isTutor()) {
 			return "";
 		}
-		
+
 		return generateJSON(userManager.getUserList().toArray(new PASTAUser[0]));
 	}
 
@@ -1282,15 +1471,14 @@ public class SubmissionController {
 	 * Serves up the JSON data container for the grade center for a stream.
 	 * 
 	 * If the user has not authenticated or is not a tutor: return nothing.
-	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])}
-	 * for all users in the given stream. Return nothing if the stream
-	 * doesn't exist.
+	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])} for
+	 * all users in the given stream. Return nothing if the stream doesn't
+	 * exist.
 	 * 
 	 * @return the appropriate json file
 	 */
 	@RequestMapping(value = "stream/{streamName}/DATA/")
-	public @ResponseBody
-	String viewStreamData(@PathVariable("streamName") String streamName) {
+	public @ResponseBody String viewStreamData(@PathVariable("streamName") String streamName) {
 		PASTAUser currentUser = getUser();
 		if (currentUser == null) {
 			return "";
@@ -1303,25 +1491,24 @@ public class SubmissionController {
 		if (userManager.getUserListByStream(streamName) == null) {
 			return "";
 		}
-		return generateJSON(userManager.getUserListByStream(streamName)
-				.toArray(new PASTAUser[0]));
+		return generateJSON(userManager.getUserListByStream(streamName).toArray(new PASTAUser[0]));
 	}
 
 	/**
 	 * $PASTAUrl$/tutorial/{className}/DATA/
 	 * <p>
-	 * Serves up the JSON data container for the grade center for a tutorial class.
+	 * Serves up the JSON data container for the grade center for a tutorial
+	 * class.
 	 * 
 	 * If the user has not authenticated or is not a tutor: return nothing.
-	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])}
-	 * for all users in the given tutorial class. Return nothing if the tutorial
+	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])} for
+	 * all users in the given tutorial class. Return nothing if the tutorial
 	 * class doesn't exist.
 	 * 
 	 * @return the appropriate json file
 	 */
 	@RequestMapping(value = "tutorial/{className}/DATA/")
-	public @ResponseBody
-	String viewTutorialData(@PathVariable("className") String className) {
+	public @ResponseBody String viewTutorialData(@PathVariable("className") String className) {
 		PASTAUser currentUser = getUser();
 		if (currentUser == null) {
 			return "";
@@ -1335,8 +1522,7 @@ public class SubmissionController {
 			return "";
 		}
 
-		return generateJSON(userManager.getUserListByTutorial(className)
-				.toArray(new PASTAUser[0]));
+		return generateJSON(userManager.getUserListByTutorial(className).toArray(new PASTAUser[0]));
 	}
 
 	/**
@@ -1346,14 +1532,13 @@ public class SubmissionController {
 	 * tutorial class.
 	 * 
 	 * If the user has not authenticated or is not a tutor: return nothing.
-	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])}
-	 * for all users in the user's tutorial class.
+	 * Otherwise use {@link SubmissionController#generateJSON(PASTAUser[])} for
+	 * all users in the user's tutorial class.
 	 * 
 	 * @return the appropriate json file
 	 */
 	@RequestMapping(value = "myTutorials/DATA/")
-	public @ResponseBody
-	String viewMyTutorialData() {
+	public @ResponseBody String viewMyTutorialData() {
 		PASTAUser currentUser = getUser();
 		if (currentUser == null) {
 			return "";
@@ -1374,53 +1559,57 @@ public class SubmissionController {
 	 * Generate the JSON
 	 * <p>
 	 * format:
-	 * <pre>{@code {
-	"data": 
-	[
-		{
-			"name": "$username$",
-			"stream": "$stream$",
-			"class": "$class$",
-			"$assessmentId$": {
-				"mark": "######.###",
-				"percentage": "double",
-				"assessmentid": "$assessmentId$"
-				"assessmentname": "$assessmentName$"
-			},
-			...
-			"$assessmentId$": {
-				"mark": "######.###",
-				"percentage": "double",
-				"assessmentid": "$assessmentId$"
-				"assessmentname": "$assessmentName$"
-			}
-		},
-		...
-		{
-			"name": "$username$",
-			"stream": "$stream$",
-			"class": "$class$",
-			"$assessmentId$": {
-				"mark": "######.###",
-				"percentage": "double",
-				"assessmentid": "$assessmentId$"
-				"assessmentname": "$assessmentName$"
-			},
-			...
-			"$assessmentId$": {
-				"mark": "######.###",
-				"percentage": "double",
-				"assessmentid": "$assessmentId$"
-				"assessmentname": "$assessmentName$"
-			}
-		}
-	]
-}}</pre>
-
-	 * If there is no submission, mark and percentage will be "".
-	 * Percentage is [1.0,0.0]. Mark is displayed to 3 decimal places.
 	 * 
-	 * @param allUsers the users for which to generate the JSON
+	 * <pre>
+	 * {@code {
+	 * 	"data": 
+	 * 	[
+	 * 		{
+	 * 			"name": "$username$",
+	 * 			"stream": "$stream$",
+	 * 			"class": "$class$",
+	 * 			"$assessmentId$": {
+	 * 				"mark": "######.###",
+	 * 				"percentage": "double",
+	 * 				"assessmentid": "$assessmentId$"
+	 * 				"assessmentname": "$assessmentName$"
+	 * 			},
+	 * 			...
+	 * 			"$assessmentId$": {
+	 * 				"mark": "######.###",
+	 * 				"percentage": "double",
+	 * 				"assessmentid": "$assessmentId$"
+	 * 				"assessmentname": "$assessmentName$"
+	 * 			}
+	 * 		},
+	 * 		...
+	 * 		{
+	 * 			"name": "$username$",
+	 * 			"stream": "$stream$",
+	 * 			"class": "$class$",
+	 * 			"$assessmentId$": {
+	 * 				"mark": "######.###",
+	 * 				"percentage": "double",
+	 * 				"assessmentid": "$assessmentId$"
+	 * 				"assessmentname": "$assessmentName$"
+	 * 			},
+	 * 			...
+	 * 			"$assessmentId$": {
+	 * 				"mark": "######.###",
+	 * 				"percentage": "double",
+	 * 				"assessmentid": "$assessmentId$"
+	 * 				"assessmentname": "$assessmentName$"
+	 * 			}
+	 * 		}
+	 * 	]
+	 * }}
+	 * </pre>
+	 * 
+	 * If there is no submission, mark and percentage will be "". Percentage is
+	 * [1.0,0.0]. Mark is displayed to 3 decimal places.
+	 * 
+	 * @param allUsers
+	 *            the users for which to generate the JSON
 	 * @return the JSON string
 	 */
 	private String generateJSON(PASTAUser[] allUsers) {
@@ -1428,8 +1617,7 @@ public class SubmissionController {
 
 		String data = "{\r\n  \"data\": [\r\n";
 
-		Assessment[] allAssessments = assessmentManager.getAssessmentList()
-				.toArray(new Assessment[0]);
+		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
 		for (int i = 0; i < allUsers.length; ++i) {
 			PASTAUser user = allUsers[i];
 
@@ -1446,32 +1634,20 @@ public class SubmissionController {
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
 				Assessment currAssessment = allAssessments[j];
-				userData += "      \"" + currAssessment.getId()
-						+ "\": {\r\n";
+				userData += "      \"" + currAssessment.getId() + "\": {\r\n";
 				String mark = "";
 				String percentage = "";
 
-				if (assessmentManager.getLatestResultsForUser(user
-						.getUsername()) != null
-						&& assessmentManager.getLatestResultsForUser(
-								user.getUsername()).get(
-								currAssessment.getId()) != null) {
-					mark = df.format(assessmentManager
-							.getLatestResultsForUser(user.getUsername())
-							.get(currAssessment.getId()).getMarks());
-					percentage = ""
-							+ assessmentManager
-									.getLatestResultsForUser(user.getUsername())
-									.get(currAssessment.getId())
-									.getPercentage();
+				AssessmentResult latestResult = assessmentManager.getLatestAssessmentResult(
+						user.getUsername(), currAssessment.getId());
+				if (latestResult != null) {
+					mark = df.format(latestResult.getMarks());
+					percentage = String.valueOf(latestResult.getPercentage());
 				}
 				userData += "        \"mark\": \"" + mark + "\",\r\n";
-				userData += "        \"percentage\": \"" + percentage
-						+ "\",\r\n";
-				userData += "        \"assessmentid\": \""
-						+ currAssessment.getId() + "\"\r\n";
-				userData += "        \"assessmentname\": \""
-						+ currAssessment.getName() + "\"\r\n";
+				userData += "        \"percentage\": \"" + percentage + "\",\r\n";
+				userData += "        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n";
+				userData += "        \"assessmentname\": \"" + currAssessment.getName() + "\"\r\n";
 				userData += "      }";
 
 				if (j < allAssessments.length - 1) {
@@ -1503,13 +1679,24 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td></tr>
-	 * 	<tr><td>assessmentList</td><td>The list of all {@link pasta.domain.template.Assessment} on the system</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentList</td>
+	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
+	 * system</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewAll2</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewAll2</li>
+	 * </ul>
 	 * 
-	 * @param model the model being used
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll2"
 	 */
 	@RequestMapping(value = "gradeCentre/")
@@ -1523,8 +1710,7 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
 		return "user/viewAll2";
@@ -1541,18 +1727,28 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td></tr>
-	 * 	<tr><td>assessmentList</td><td>The list of all {@link pasta.domain.template.Assessment} on the system</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentList</td>
+	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
+	 * system</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewSome</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewSome</li>
+	 * </ul>
 	 * 
-	 * @param model the model being used
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewSome"
 	 */
 	@RequestMapping(value = "tutorial/{className}/")
-	public String viewClass(@PathVariable("className") String className,
-			Model model) {
+	public String viewClass(@PathVariable("className") String className, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -1561,8 +1757,7 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
 		return "user/viewSome";
@@ -1579,18 +1774,28 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td></tr>
-	 * 	<tr><td>assessmentList</td><td>The list of all {@link pasta.domain.template.Assessment} on the system</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentList</td>
+	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
+	 * system</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewSome</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewSome</li>
+	 * </ul>
 	 * 
-	 * @param model the model being used
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewSome"
 	 */
 	@RequestMapping(value = "stream/{streamName}/")
-	public String viewStream(@PathVariable("streamName") String streamName,
-			Model model) {
+	public String viewStream(@PathVariable("streamName") String streamName, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -1599,8 +1804,7 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
 		return "user/viewSome";
@@ -1617,13 +1821,24 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td></tr>
-	 * 	<tr><td>assessmentList</td><td>The list of all {@link pasta.domain.template.Assessment} on the system</td></tr>
+	 * <tr>
+	 * <td>unikey</td>
+	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * </tr>
+	 * <tr>
+	 * <td>assessmentList</td>
+	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
+	 * system</td>
+	 * </tr>
 	 * </table>
 	 * 
-	 * JSP: <ul><li>user/viewAll2</li></ul>
+	 * JSP:
+	 * <ul>
+	 * <li>user/viewAll2</li>
+	 * </ul>
 	 * 
-	 * @param model the model being used
+	 * @param model
+	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll2"
 	 */
 	@RequestMapping(value = "myTutorials/")
@@ -1636,12 +1851,10 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("assessmentList",
-				assessmentManager.getAssessmentList());
+		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
 		return "user/viewAll2";
 	}
 
 }
-

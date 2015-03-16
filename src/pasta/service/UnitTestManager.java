@@ -99,12 +99,12 @@ public class UnitTestManager {
 	/**
 	 * Helper method
 	 * 
-	 * @see pasta.repository.ResultDAO#getUnitTestResult(String)
+	 * @see pasta.repository.ResultDAO#getUnitTestResultFromDisk(String)
 	 * @param location get the non cached unit test results from a location
 	 * @return the unit test result
 	 */
 	public UnitTestResult getUnitTestResult(String location) {
-		return resultDAO.getUnitTestResult(location);
+		return resultDAO.getUnitTestResultFromDisk(location);
 	}
 
 	/**

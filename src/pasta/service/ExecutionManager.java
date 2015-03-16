@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -520,7 +521,7 @@ public class ExecutionManager {
 		// do it
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		String location = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername() + "/assessments/"
-				+ job.getAssessmentName() + "/" + sdf.format(job.getRunDate())
+				+ job.getAssessmentId() + "/" + sdf.format(job.getRunDate())
 				+ "/submission";
 
 		Assessment currAssessment = assDao.getAssessment(job
@@ -535,7 +536,7 @@ public class ExecutionManager {
 					.getSubmissionsLocation()
 					+ job.getUsername()
 					+ "/assessments/"
-					+ job.getAssessmentName()
+					+ job.getAssessmentId()
 					+ "/"
 					+ sdf.format(job.getRunDate()) + "/unitTests";
 
@@ -593,7 +594,7 @@ public class ExecutionManager {
 						project.executeTarget("clean");
 					} catch (BuildException e) {
 						logger.error("Could not compile " + job.getUsername()
-								+ " - " + currAssessment.getName() + " - "
+								+ " - " + currAssessment.getId() + " - "
 								+ test.getTest().getName() + e);
 						failedToCompile = true;
 					}
@@ -658,19 +659,54 @@ public class ExecutionManager {
 			// delete it
 			scheduler.delete(job);
 
-			// update resultDAO
-			resultDAO.updateUnitTestResults(job.getUsername(), currAssessment,
-					job.getRunDate());
+			// unit tests;
+			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
+			for (WeightedUnitTest uTest : currAssessment.getUnitTests()) {
+				UnitTestResult result = ProjectProperties.getInstance().getResultDAO()
+						.getUnitTestResultFromDisk(
+								ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername()
+										+ "/assessments/" + currAssessment.getId() + "/"
+										+ sdf.format(job.getRunDate()) + "/unitTests/"
+										+ uTest.getTest().getId());
+				if (result == null) {
+					result = new UnitTestResult();
+				}
+				result.setTest(uTest.getTest());
+				utresults.add(result);
+			}
+			
+			// secret unit tests;
+			for (WeightedUnitTest uTest : currAssessment.getSecretUnitTests()) {
+				UnitTestResult result = ProjectProperties.getInstance().getResultDAO()
+						.getUnitTestResultFromDisk(
+								ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername()
+										+ "/assessments/" + currAssessment.getId() + "/"
+										+ sdf.format(job.getRunDate()) + "/unitTests/"
+										+ uTest.getTest().getId());
+				if (result == null) {
+					result = new UnitTestResult();
+				}
+				result.setSecret(true);
+				result.setTest(uTest.getTest());
+				utresults.add(result);
+			}
 			
 			// save results to database
-			try {
-				for(UnitTestResult result : resultDAO.getAsssessmentResult(job.getUsername(), currAssessment,
-						sdf.format(job.getRunDate())).getUnitTests()) {
-					resultDAO.save(result);
-				}
-			} catch( Exception e ) {
-				logger.error("Error saving unit test results to database.", e);
-			}
+			job.getResults().setUnitTests(utresults);
+			ProjectProperties.getInstance().getResultDAO().save(job.getResults());
+			
+//			// update resultDAO
+//			resultDAO.updateUnitTestResults(job.getUsername(), currAssessment,
+//					job.getRunDate());
+			
+//			try {
+//				for(UnitTestResult result : resultDAO.getAsssessmentResult(job.getUsername(), currAssessment,
+//						sdf.format(job.getRunDate())).getUnitTests()) {
+//					resultDAO.save(result);
+//				}
+//			} catch( Exception e ) {
+//				logger.error("Error saving unit test results to database.", e);
+//			}
 		} catch (Exception e) {
 			logger.error("Execution error for " + job.getUsername() + " - "
 					+ job.getAssessmentName() + "   " + e);

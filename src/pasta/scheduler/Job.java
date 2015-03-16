@@ -36,8 +36,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+
+import pasta.domain.result.AssessmentResult;
 
 /**
  * Class that holds the details of jobs.
@@ -66,18 +71,32 @@ import javax.persistence.UniqueConstraint;
  * 
  */
 @Entity
-@Table(name = "Jobs",
+@Table(name = "jobs",
 		uniqueConstraints = { @UniqueConstraint(columnNames={
-				"USERNAME", "ASSESSMENT_NAME", "RUN_DATE"
+				"username", "assessment_id", "run_date"
 		})})
 public class Job implements Serializable{
 
 	private static final long serialVersionUID = 2058301754166837748L;
 	
-	private Integer id;
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	@Column(nullable = false)
 	private String username;
-	@Deprecated private String assessmentName;
+	
+	@Transient @Deprecated 
+	private String assessmentName;
+	
+	@Column(name = "assessment_id", nullable = false)
 	private long assessmentId;
+	
+	@ManyToOne
+	@JoinColumn (name = "assessment_result_id")
+	private AssessmentResult results;
+	
+	@Column(name = "run_date", nullable = false)
 	private Date runDate;
 	
 	public Job(){}
@@ -89,23 +108,21 @@ public class Job implements Serializable{
 		this.runDate = runDate;
 	}
 	
-	public Job(String username, long assessmentId, Date runDate){
+	public Job(String username, long assessmentId, Date runDate, AssessmentResult result){
 		this.username = username;
 		this.assessmentId = assessmentId;
 		this.runDate = runDate;
+		this.results = result;
 	}
 	
-	@Id
-	@GeneratedValue
-	@Column(name = "ID", unique = true, nullable = false)
-	public Integer getId() {
+	
+	public Long getId() {
 		return id;
 	}
 	public void setId(Integer id) {
 		this.id = id;
 	}
 	
-	@Column(name = "USERNAME", nullable = false)
 	public String getUsername() {
 		return username;
 	}
@@ -113,7 +130,6 @@ public class Job implements Serializable{
 		this.username = username;
 	}
 	
-	@Column(name = "ASSESSMENT_NAME", nullable = false)
 	public String getAssessmentName() {
 		return assessmentName;
 	}
@@ -128,7 +144,13 @@ public class Job implements Serializable{
 		this.assessmentId = assessmentId;
 	}
 
-	@Column(name = "RUN_DATE", nullable = false)
+	public AssessmentResult getResults() {
+		return results;
+	}
+	public void setResults(AssessmentResult results) {
+		this.results = results;
+	}
+
 	public Date getRunDate() {
 		return runDate;
 	}

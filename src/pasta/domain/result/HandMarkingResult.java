@@ -39,6 +39,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -54,6 +55,7 @@ import org.apache.commons.logging.LogFactory;
 
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
+import pasta.domain.template.WeightedHandMarking;
 
 /**
  * Container class for the results of hand marking.
@@ -72,19 +74,19 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 	@Id @GeneratedValue
 	private long id;
 	
-	@ElementCollection
+	@ElementCollection (fetch=FetchType.EAGER)
     @MapKeyColumn(name="row_id")
     @Column(name="column_id")
     @CollectionTable(name="hand_marking_map_results", joinColumns=@JoinColumn(name="hand_marking_result_id"))
 	private Map<Long, Long> result = LazyMap.decorate(new TreeMap<Long, Long>(), 
-			FactoryUtils.instantiateFactory(String.class));
+			FactoryUtils.instantiateFactory(Long.class));
 	
     @Transient
 	protected final Log logger = LogFactory.getLog(getClass());
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn (name = "hand_marking_id")
-	private HandMarking markingTemplate;
+    @ManyToOne
+    @JoinColumn (name = "weighted_hand_marking_id")
+	private WeightedHandMarking weightedHandMarking;
 	
 	public long getId() {
 		return id;
@@ -102,19 +104,23 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 		this.result = result;
 	}
 
-	public HandMarking getMarkingTemplate() {
-		return markingTemplate;
+	public WeightedHandMarking getWeightedHandMarking() {
+		return weightedHandMarking;
 	}
-
-	public void setMarkingTemplate(HandMarking markingTemplate) {
-		this.markingTemplate = markingTemplate;
+	public void setWeightedHandMarking(WeightedHandMarking weightedHandMarking) {
+		this.weightedHandMarking = weightedHandMarking;
 	}
 	
+	public HandMarking getHandMarking() {
+		return weightedHandMarking.getHandMarking();
+	}
+	
+
 	public double getPercentage(){
 		double percentage = 0;
-		for (WeightedField t : markingTemplate.getRowHeader()) {
-			if(result.containsKey(t.getName()) && markingTemplate.hasColumn(result.get(t.getId()))){
-				percentage += (t.getWeight() * markingTemplate.getColumnWeight(result.get(t.getId())));
+		for (WeightedField t : getHandMarking().getRowHeader()) {
+			if(result.containsKey(t.getName()) && getHandMarking().hasColumn(result.get(t.getId()))){
+				percentage += (t.getWeight() * getHandMarking().getColumnWeight(result.get(t.getId())));
 			}
 		}
 		
@@ -122,10 +128,8 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 	}
 	
 	public boolean isFinishedMarking(){
-		if(result.size() >= markingTemplate.getRowHeader().size()){
+		if(result.size() >= getHandMarking().getRowHeader().size()){
 			for(Entry<Long, Long> entry: result.entrySet()){
-				logger.info(entry.getKey());
-				logger.info(entry.getValue());
 				if(entry.getKey() == null 
 						|| !(entry.getValue() instanceof Long)
 						|| entry.getValue() == null){
@@ -139,7 +143,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 
 	@Override
 	public int compareTo(HandMarkingResult other) {
-		return markingTemplate.getName().compareTo(other.getMarkingTemplate().getName());
+		return getHandMarking().getName().compareTo(other.getHandMarking().getName());
 	}
 	
 }

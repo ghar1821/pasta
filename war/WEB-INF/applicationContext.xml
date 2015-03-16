@@ -74,6 +74,7 @@
 				<value>pasta.scheduler.Job</value>
 				<value>pasta.domain.PASTAUser</value>
 				<value>pasta.domain.PASTALoginUser</value>
+				<value>pasta.domain.result.AssessmentResult</value>
 				<value>pasta.domain.result.HandMarkingResult</value>
 				<value>pasta.domain.result.UnitTestCaseResult</value>
 				<value>pasta.domain.result.UnitTestResult</value>

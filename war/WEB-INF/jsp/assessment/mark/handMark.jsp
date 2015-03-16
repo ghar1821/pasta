@@ -104,40 +104,35 @@ th, td{
 
 	<h3>Hand Marking Guidelines</h3>
 	<c:set var="totalHandMarkingCategories" value="0" />
-	<c:forEach var="handMarking" items="${handMarkingList}" varStatus="handMarkingStatus">
-		<h4>${handMarking.handMarking.name}</h4>
+	<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
+		<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
+		<h4>${weightedHandMarking.handMarking.name}</h4>
 		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
-		<form:input type="hidden" path="handMarkingResults[${handMarkingStatus.index}].id" value="${handMarking.handMarking.id}"/>
+		<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].id" value="${handMarkingResult.id}"/>
+		<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].weightedHandMarking.id" value="${weightedHandMarking.id}" />
 		<div style="width:100%; overflow:auto">
-			<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
+			<table id="handMarkingTable${handMarkingResultStatus.index}" style="table-layout:fixed; overflow:auto">
 				<thead>
 					<tr>
-						<th></th> <!-- empty on purpose -->
-						<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
-							<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingStatus.index})">
-								${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-								${handMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
+						<th></th> <%-- empty on purpose --%>
+						<c:forEach items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
+							<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingResultStatus.index})">
+								${weightedHandMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+								${weightedHandMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
 							</th>
 						</c:forEach>
 					</tr>
 				</thead>
 				<tbody>
-					<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+					<c:forEach var="row" items="${weightedHandMarking.handMarking.rowHeader}" varStatus="rowStatus">
 						<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
-						<tr>
+						<tr class='handMarkRow'>
 							<th>
-								${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-								${handMarking.handMarking.rowHeader[rowStatus.index].weight}
+								${weightedHandMarking.handMarking.rowHeader[rowStatus.index].name}<br />
+								${weightedHandMarking.weight * weightedHandMarking.handMarking.rowHeader[rowStatus.index].weight}
 							</th>
-							<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-								<td style="cursor:pointer" onclick="clickCell(this.cellIndex, this.parentNode.rowIndex ,${handMarkingStatus.index})">
-									<c:if test="${not empty handMarking.handMarking.data[column.id][row.id] or handMarking.handMarking.data[column.id][row.id] == \"\"}">
-										<span><fmt:formatNumber type="number" maxIntegerDigits="3" value="${row.weight * column.weight}" /></span>
-										<br />
-										${handMarking.handMarking.data[column.id][row.id]}<br />
-										<form:radiobutton path="handMarkingResults[${handMarkingStatus.index}].result['${row.id}']" value="${column.name}"/>
-									</c:if>
-								</td>
+							<c:forEach var="column" items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
+								<td id="cell_${weightedHandMarking.id}_${weightedHandMarking.handMarking.columnHeader[columnStatus.index].id}_${weightedHandMarking.handMarking.rowHeader[rowStatus.index].id}"><%-- To be filled by javascript --%></td>
 							</c:forEach>
 						</tr>
 					</c:forEach>
@@ -151,103 +146,29 @@ th, td{
 	
 </form:form>
 
+<script src='<c:url value="/static/scripts/assessment/markHandMarking.js"/>'></script>
 <script>
-	function clickAllInColumn(column, tableIndex){
-		var table=document.getElementById("handMarkingTable"+tableIndex);
-		for (var i=1; i<table.rows.length; i++) {
-			var currHeader = table.rows[i].cells[column].getElementsByTagName("input");
-			
-			if(currHeader.length != 0){
-				currHeader[0].checked = true;
-			}
-		}
+	function fillCells() {
+		var cell;
+		<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
+			<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
+			<c:forEach var="datum" items="${weightedHandMarking.handMarking.data}" varStatus="datumStatus">
+				cell = document.getElementById("cell_${weightedHandMarking.id}_${datum.column.id}_${datum.row.id}");
+				<c:if test="${not empty datum.data or datum.data == \"\"}">
+					fillCell(cell, 
+						<fmt:formatNumber type='number' maxIntegerDigits='3' value='${weightedHandMarking.weight * datum.row.weight * datum.column.weight}' />,
+						"${handMarkingResult.result[datum.row.id] == datum.column.id}",
+						"${handMarkingResultStatus.index}",
+						"${datum.column.id}",
+						"${datum.row.id}",
+						"${datum.data}");
+				</c:if>
+			</c:forEach>
+		</c:forEach>
+		registerEvents();
 	}
 	
-	function clickCell(column,  row, tableIndex){
-		var table=document.getElementById("handMarkingTable"+tableIndex);
-		var currHeader = table.rows[row].cells[column].getElementsByTagName("input");
-			
-		if(currHeader.length != 0){
-			currHeader[0].checked = true;
-		}
-	}
-	
-	(function($) {
-	$(document).ready(function() {
-		
-		window.onbeforeunload = function() {
-			if($('input[type=radio]:checked').size() != ${totalHandMarkingCategories}){
-				return "You have not completed marking."
-			}
-		}
-		
-		$('#comments').wysiwyg({
-			initialContent: function() {
-				return value_of_textarea;
-			},
-		  controls: {
-			bold          : { visible : true },
-			italic        : { visible : true },
-			underline     : { visible : true },
-			strikeThrough : { visible : true },
-			
-			justifyLeft   : { visible : true },
-			justifyCenter : { visible : true },
-			justifyRight  : { visible : true },
-			justifyFull   : { visible : true },
-
-			indent  : { visible : true },
-			outdent : { visible : true },
-
-			subscript   : { visible : true },
-			superscript : { visible : true },
-			
-			undo : { visible : true },
-			redo : { visible : true },
-			
-			insertOrderedList    : { visible : true },
-			insertUnorderedList  : { visible : true },
-			insertHorizontalRule : { visible : true },
-
-			h4: {
-				visible: true,
-				className: 'h4',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h4>' : 'h4',
-				tags: ['h4'],
-				tooltip: 'Header 4'
-			},
-			h5: {
-				visible: true,
-				className: 'h5',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h5>' : 'h5',
-				tags: ['h5'],
-				tooltip: 'Header 5'
-			},
-			h6: {
-				visible: true,
-				className: 'h6',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h6>' : 'h6',
-				tags: ['h6'],
-				tooltip: 'Header 6'
-			},
-			cut   : { visible : true },
-			copy  : { visible : true },
-			paste : { visible : true },
-			html  : { visible: true },
-			increaseFontSize : { visible : true },
-			decreaseFontSize : { visible : true },
-			exam_html: {
-				exec: function() {
-					this.insertHtml('<abbr title="exam">Jam</abbr>');
-					return true;
-				},
-				visible: true
-			}
-		  }
-		});
+	$(function() {
+		fillCells()
 	});
-})(jQuery);
 </script>
