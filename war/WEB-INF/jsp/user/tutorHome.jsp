@@ -153,7 +153,7 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		<div style="font-size:150%">
 			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
 		</div>
-		<input accept="application/zip" type="file" />
+		<form:input path="file" accept="application/zip" type="file" />
 		<form:input type="hidden" path="assessment" value=""/>
 	   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
    	</form:form>
