@@ -39,15 +39,29 @@ either expressed or implied, of the PASTA Project.
 <jsp:include page="../../recursive/fileWriter.jsp"/>
 </ul>
 
-<table>
-	<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
-</table> 
+<form:form commandName="unitTest" enctype="multipart/form-data" method="POST">
+	<form:input path="id" type="hidden" />
+	<table>
+		<tr><td>Name:</td><td><form:input path="name" /></td></tr>
+		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
+		<tr>
+			<td>Main class:</td>
+			<td>
+				<form:select path="mainClassName">
+					<form:option value="" label="--- Select ---"/>
+					<form:options items="${candidateMainFiles}" />
+				</form:select>
+			</td>
+		</tr>
+		<tr><td></td><td><input type="submit" value="Save Changes" id="submit" /></td></tr>
+	</table> 
+</form:form>
 
 <button id="newPopup"> Test Unit Test </button>
 <button id="updateTest"> Update Test </button>
 <a href="./download/"><button id="downloadTest"> Download Test </button></a>
 
-<div id="testUnitTest" syle="display:none;">
+<div id="testUnitTest" style="display:none;">
 <span class="button bClose">
 	<span><b>X</b></span>
 </span>
@@ -63,14 +77,14 @@ either expressed or implied, of the PASTA Project.
 	</form:form>
 </div>
 
-<div id="updateUnitTest" syle="display:none;">
+<div id="updateUnitTestCode" style="display:none;">
 <span class="button bClose">
 	<span><b>X</b></span>
 </span>
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1> Update Unit Test </h1>
+	<h1> Update Unit Test Code </h1>
 	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
 		<table>
 			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
@@ -85,9 +99,6 @@ either expressed or implied, of the PASTA Project.
 		<c:if test="${not empty latestResult.compileErrors}">
 			- Compilation Errors Detected
 		</c:if>
-		<c:if test="${not empty latestResult.runtimeErrors}">
-			- Runtime Errors Detected
-		</c:if>
 		<c:if test="${not empty latestResult.testCases}">
 			- Execution Successful
 		</c:if>
@@ -97,9 +108,9 @@ either expressed or implied, of the PASTA Project.
 			<pre>${latestResult.compileErrors}</pre>
 		</div>
 	</c:if>
-	<c:if test="${not empty latestResult.runtimeErrors}">
+	<c:if test="${not empty latestResult.runtimeOutput}">
 		<div class="ui-state-error">
-			<pre>${latestResult.runtimeErrors}</pre>
+			<pre>${latestResult.runtimeOutput}</pre>
 		</div>
 	</c:if>
 	<c:if test="${not empty latestResult.testCases}">
@@ -160,7 +171,7 @@ either expressed or implied, of the PASTA Project.
                 e.preventDefault();
 
                 // Triggering bPopup when click event is fired
-                $('#updateUnitTest').bPopup();
+                $('#updateUnitTestCode').bPopup();
 
             });
 

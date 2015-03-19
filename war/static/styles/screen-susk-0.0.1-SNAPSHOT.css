@@ -187,7 +187,7 @@ smallbutton{
 	position:relative; 
 	top:-.7em;
 }
-.popup, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTest,#released, #newCompetition, #newArena
+.popup, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTestCode,#released, #newCompetition, #newArena
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;

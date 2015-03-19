@@ -109,13 +109,22 @@ ${assessment.description}
 					</c:choose>
 				</c:if>
 			</div>
+			<c:if test="${ unikey.tutor }" >
+				<h5>Files Compiled <a onclick='$("#files_${resultStatus.index}").slideToggle("fast")'>(toggle)</a></h5>
+				<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
+					<c:forEach var="unitTest" items="${result.unitTests}">
+						<h6 style="margin-top:0.8em;">${unitTest.test.name}</h6>
+						<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
+					</c:forEach>
+				</div>
+			</c:if>
 			<c:choose>
 				<c:when test="${result.compileError}">
 					<h5>Compile Errors</h5>
-					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
-						<pre>
-							<c:out value="${result.compilationError}" escapeXml="true"/>
-						</pre>
+					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
+						<c:forEach var="compError" items="${result.compilationErrors}">
+							<div style="margin-top:1em;"><pre><c:out value="${compError}" escapeXml="true"/></pre></div>
+						</c:forEach>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -341,7 +350,6 @@ ${assessment.description}
 						</c:forEach>
 					</c:if>
 				</c:forEach>
-				registerEvents();
 			}
 			
 			$(function() {

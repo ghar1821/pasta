@@ -434,5 +434,22 @@ public class UnitTestManager {
     out.print(test);
     out.close();
 	}
+
+	/**
+	 * Updates an existing unit test with the details found in
+	 * <tt>updatedTest</tt>.
+	 * 
+	 * @param updatedTest
+	 *            the new details of the unit test, with the original ID
+	 */
+	public void copyAndUpdateUnitTest(UnitTest updatedTest) {
+		UnitTest original = ProjectProperties.getInstance().getUnitTestDAO().getUnitTest(updatedTest.getId());
+		if (original == null) {
+			updateUnitTest(updatedTest);
+		}
+		original.setName(updatedTest.getName());
+		original.setMainClassName(updatedTest.getMainClassName());
+		updateUnitTest(original);
+	}
 	
 }

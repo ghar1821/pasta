@@ -37,6 +37,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Column;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -44,6 +45,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.template.UnitTest;
 
@@ -65,21 +70,34 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Column (name = "id")
 	private long id;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn (name = "unit_test_id")
 	private UnitTest test;
 	
 	private boolean secret;
 	
-	@Column (name = "compile_errors")
+	@Column (name = "files_compiled", length = 64000)
+	@Size (max = 64000)
+	private String filesCompiled;
+	
+	@Column (name = "compile_errors", length = 64000)
+	@Size (max = 64000)
 	private String compileErrors;
 	
-	@Column (name = "runtime_errors")
-	private String runtimeErrors;
+	@Column (name = "runtime_output", length = 128000)
+	@Size (max = 128000)
+	private String runtimeOutput;
 	
-	@OneToMany (cascade = CascadeType.ALL)
+	@Column (name = "runtime_error")
+	private boolean runtimeError;
+	
+	@Column (name = "clean_error")
+	private boolean cleanError;
+	
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn (name = "test_case_id")
 	@OrderBy ("testName")
+	@LazyCollection (LazyCollectionOption.FALSE)
 	private List<UnitTestCaseResult> testCases;
 
 	public UnitTest getTest() {
@@ -106,19 +124,51 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.compileErrors = compileErrors;
 	}
 
-	public String getRuntimeErrors() {
-		return runtimeErrors;
+	public String getRuntimeOutput() {
+		return runtimeOutput;
 	}
 
-	public void setRuntimeErrors(String runtimeErrors) {
-		this.runtimeErrors = runtimeErrors;
+	public void setRuntimeOutput(String runtimeOutput) {
+		this.runtimeOutput = runtimeOutput;
+	}
+	
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public boolean isRuntimeError() {
+		return runtimeError;
+	}
+
+	public void setRuntimeError(boolean runtimeError) {
+		this.runtimeError = runtimeError;
+	}
+
+	public boolean isCleanError() {
+		return cleanError;
+	}
+
+	public void setCleanError(boolean cleanError) {
+		this.cleanError = cleanError;
+	}
+
+	public String getFilesCompiled() {
+		return filesCompiled;
+	}
+
+	public void setFilesCompiled(String filesCompiled) {
+		this.filesCompiled = filesCompiled;
 	}
 
 	public List<UnitTestCaseResult> getTestCases() {
 		return testCases;
 	}
 
-	public void setTestCases(ArrayList<UnitTestCaseResult> testCases) {
+	public void setTestCases(List<UnitTestCaseResult> testCases) {
 		this.testCases = testCases;
 		Collections.sort(this.testCases);
 	}

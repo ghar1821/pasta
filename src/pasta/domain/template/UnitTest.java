@@ -31,6 +31,7 @@ package pasta.domain.template;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -68,6 +69,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	private String name;
 	
 	private boolean tested;
+	
+	@Column (name = "main_class_name")
+	private String mainClassName;
 
 	/**
 	 * Default constructor
@@ -89,7 +93,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 
 	public String getFileAppropriateName() {
-		return name.replace("[^\\w]+", "");
+		return name.replaceAll("[^\\w]+", "");
 	}
 
 	public String getFileLocation() {
@@ -123,5 +127,17 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@Override
 	public int compareTo(UnitTest other) {
 		return this.name.compareTo(other.name);
+	}
+
+	public String getMainClassName() {
+		return mainClassName;
+	}
+
+	public void setMainClassName(String mainClassName) {
+		this.mainClassName = mainClassName;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

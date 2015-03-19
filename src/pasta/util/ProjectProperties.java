@@ -83,11 +83,13 @@ public class ProjectProperties {
 	// location of the project
 	private String projectLocation;
 	// location of the templates
-	private static String unitTestsLocation = "template" + File.separator + "unitTest" + File.separator;
+	private String unitTestsLocation = "template" + File.separator + "unitTest" + File.separator;
 	// location of the submissions
-	private static String submissionsLocation = "submissions" + File.separator;
+	private String submissionsLocation = "submissions" + File.separator;
 	// location of the submissions
-	private static String competitionsLocation = "competitions" + File.separator;
+	private String competitionsLocation = "competitions" + File.separator;
+	// location of the testing sandbox
+	private String sandboxLocation = "sandbox" + File.separator;
 	// auth type (dummy, imap, database)
 	private String authType;
 	// list of mail servers to auth with (imap auth only)
@@ -159,11 +161,13 @@ public class ProjectProperties {
 		unitTestsLocation = checkPath(settings.get("pathUnitTests"), projectLocation + unitTestsLocation);
 		submissionsLocation = checkPath(settings.get("pathSubmissions"), projectLocation + submissionsLocation);
 		competitionsLocation = checkPath(settings.get("pathCompetitions"), projectLocation + competitionsLocation);
+		sandboxLocation = checkPath(settings.get("pathSandbox"), projectLocation + sandboxLocation);
 
 		logger.info("Project location set to: " + projectLocation);
 		logger.info("UnitTests location set to: " + unitTestsLocation);
 		logger.info("Submissions location set to: " + submissionsLocation);
 		logger.info("Competitions Location set to: " + competitionsLocation);
+		logger.info("Sandbox Location set to: " + sandboxLocation);
 		
 		ProjectProperties.properties = this;
 	}
@@ -227,6 +231,10 @@ public class ProjectProperties {
 
 	public String getUnitTestsLocation() {
 		return unitTestsLocation;
+	}
+	
+	public String getSandboxLocation() {
+		return sandboxLocation;
 	}
 
 	public String getAuthType() {

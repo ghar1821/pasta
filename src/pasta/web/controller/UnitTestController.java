@@ -34,7 +34,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.zip.ZipOutputStream;
 
@@ -54,6 +56,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.FileTreeNode;
 import pasta.domain.PASTAUser;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTest;
@@ -239,10 +242,29 @@ public class UnitTestController {
 				"latestResult",
 				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testId)
 						.getFileLocation() + "/test"));
-		model.addAttribute(
-				"node",
-				PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testId)
-						.getFileLocation() + "/code"));
+		
+		FileTreeNode node = PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testId).getFileLocation() + "/code");
+		model.addAttribute("node", node);
+		
+		Map<String, String> candidateFiles = new HashMap<String, String>();
+		Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
+		toExpand.push(node);
+		int dirStart = node.getLocation().length();
+		
+		while(!toExpand.isEmpty()) {
+			FileTreeNode expandNode = toExpand.pop();
+			String location = expandNode.getLocation().substring(dirStart);
+			if(location.endsWith(".java")) {
+				candidateFiles.put(location.substring(0, location.length()-5), location);
+			}
+			if(!expandNode.isLeaf()) {
+				for(FileTreeNode child : expandNode.getChildren()) {
+					toExpand.push(child);
+				}
+			}
+		}
+		model.addAttribute("candidateMainFiles", candidateFiles);
+		
 		return "assessment/view/unitTest";
 	}
 	
@@ -325,6 +347,7 @@ public class UnitTestController {
 	public String updateTestCode(@PathVariable("testId") long testId,
 			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
 			@ModelAttribute(value = "submission") Submission subForm,
+			@ModelAttribute(value = "unitTest") UnitTest updatedTest,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -334,6 +357,11 @@ public class UnitTestController {
 			return "redirect:/home/";
 		}
 
+		if (updatedTest != null && updatedTest.getId() > 0 && updatedTest.getName() != null
+				&& getUser().isInstructor()) {
+			unitTestManager.copyAndUpdateUnitTest(updatedTest);
+		}
+		
 		// if submission exists
 		if (form != null && form.getTestName() != null && form.getFile() != null && 
 				!form.getFile().isEmpty() && getUser().isInstructor()) {

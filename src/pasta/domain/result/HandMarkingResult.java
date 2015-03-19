@@ -78,8 +78,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
     @MapKeyColumn(name="row_id")
     @Column(name="column_id")
     @CollectionTable(name="hand_marking_map_results", joinColumns=@JoinColumn(name="hand_marking_result_id"))
-	private Map<Long, Long> result = LazyMap.decorate(new TreeMap<Long, Long>(), 
-			FactoryUtils.instantiateFactory(Long.class));
+	private Map<Long, Long> result = LazyMap.decorate(new TreeMap<Long, Long>(), FactoryUtils.constantFactory(0l));
 	
     @Transient
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -119,7 +118,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 	public double getPercentage(){
 		double percentage = 0;
 		for (WeightedField t : getHandMarking().getRowHeader()) {
-			if(result.containsKey(t.getName()) && getHandMarking().hasColumn(result.get(t.getId()))){
+			if(result.containsKey(t.getId()) && getHandMarking().hasColumn(result.get(t.getId()))){
 				percentage += (t.getWeight() * getHandMarking().getColumnWeight(result.get(t.getId())));
 			}
 		}

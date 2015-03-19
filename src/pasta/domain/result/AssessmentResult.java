@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -203,24 +204,35 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	/**
-	 * Get the aggregated compilation errors.
+	 * Get the set aggregated (unique) compilation errors.
 	 * <p>
 	 * Iterates over all of the unit test results and compiles all of the 
 	 * compilation errors across all of the unit tests that have compilation
 	 * errors. 
-	 * @return the aggregated compilation errors for the submission.
+	 * @return the aggregated (unique) compilation errors for the submission.
 	 */
 	public String getCompilationError() {
+		boolean first = true;
 		String compilationError = "";
-		for(UnitTestResult result : unitTests){
-			if(result.getCompileErrors()!= null && !result.getCompileErrors().isEmpty()){
-				compilationError += result.getCompileErrors() 
-						+ System.getProperty("line.separator")
-						+ System.getProperty("line.separator")
-						+ System.getProperty("line.separator");
+		for(String compileError : getCompilationErrors()){
+			if(first) {
+				first = false;
+			} else {
+				compilationError += System.lineSeparator() + System.lineSeparator();
 			}
+			compilationError += compileError;
 		}
 		return compilationError;
+	}
+	
+	public Collection<String> getCompilationErrors() {
+		LinkedHashSet<String> uniqueErrors = new LinkedHashSet<String>();
+		for(UnitTestResult result : unitTests){
+			if(result.getCompileErrors()!= null && !result.getCompileErrors().isEmpty()){
+				uniqueErrors.add(result.getCompileErrors());
+			}
+		}
+		return uniqueErrors;
 	}
 
 	public double getMarks(){
@@ -236,6 +248,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		double maxWeight = getAssessmentHandMarkingWeight() 
 				+ getAssessmentUnitTestsWeight()
 				+ getAssessmentCompetitionWeight();
+		
 		// unit tests
 		// regular
 		for(UnitTestResult result : unitTests){

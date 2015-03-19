@@ -233,63 +233,11 @@ public class ResultDAO extends HibernateDaoSupport{
 				return result;
 			} 
 			catch (Exception e){
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.error("Could not read result.xml" + System.getProperty("line.separator")+sw.toString());
+				logger.error("Could not read result.xml", e);
 			}
 		}
 		
-		// check to see if there is a compile.errors file
-		File compileErrors = new File(location+"/compile.errors");
-		if(compileErrors.exists() && compileErrors.length() != 0){
-			try{
-				// read in
-				Scanner in = new Scanner (compileErrors);
-				String input = "";
-				while(in.hasNextLine()){
-					input+=in.nextLine() + System.getProperty("line.separator");
-				}
-				// set 
-				result.setCompileErrors(input);
-				in.close();
-				
-				// return
-				return result;
-			}
-			catch(Exception e){
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.error("Could not read compile.errors" + System.getProperty("line.separator")+sw.toString());
-			}
-		}
-		
-		// check to see if there is a run.errors file
-		File runErrors = new File(location+"/run.errors");
-		if(runErrors.exists() && runErrors.length() != 0){
-			try{
-				// read in
-				Scanner in = new Scanner (runErrors);
-				String input = "";
-				while(in.hasNextLine()){
-					input+=in.nextLine() + System.getProperty("line.separator");
-				}
-				// set 
-				result.setRuntimeErrors(input);
-				in.close();
-				
-				// return
-				return result;
-			}
-			catch(Exception e){
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.error("Could not read run.errors" + System.getProperty("line.separator")+sw.toString());
-			}
-		}
-		return null; // TODO check if in the database
+		return null;
 	}
 
 	
