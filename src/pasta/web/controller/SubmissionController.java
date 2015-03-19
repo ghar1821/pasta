@@ -1646,7 +1646,7 @@ public class SubmissionController {
 				}
 				userData += "        \"mark\": \"" + mark + "\",\r\n";
 				userData += "        \"percentage\": \"" + percentage + "\",\r\n";
-				userData += "        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n";
+				userData += "        \"assessmentid\": \"" + currAssessment.getId() + "\",\r\n";
 				userData += "        \"assessmentname\": \"" + currAssessment.getName() + "\"\r\n";
 				userData += "      }";
 
