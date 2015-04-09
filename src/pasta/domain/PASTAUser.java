@@ -34,16 +34,22 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 /**
  * @author Alex Radu
  * @version 2.0
@@ -53,6 +59,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 
 	private static final long serialVersionUID = -9070027568016757820L;
 	
+	private long id;
 	private String username = "";
 	private String tutorial = "";
 	private String stream = "";
@@ -60,11 +67,18 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
 	
 	@Id
-	@Column(name = "USERNAME", nullable = false)
+	@GeneratedValue
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	@Column(name = "username", nullable = false)
 	public String getUsername() {
 		return username;
 	}
-	
 	public void setUsername(String username) {
 		if(username == null){
 			username = "";
@@ -72,11 +86,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.username = username.trim();
 	}
 	
-	@Column(name = "TUTORIAL", nullable = false)
+	@Column(name = "tutorial", nullable = false)
 	public String getTutorial() {
 		return tutorial;
 	}
-	
 	public void setTutorial(String tutorial) {
 		if(tutorial == null){
 			tutorial = "";
@@ -84,11 +97,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.tutorial = tutorial.trim();
 	}
 	
-	@Column(name = "STREAM", nullable = false)
+	@Column(name = "stream", nullable = false)
 	public String getStream() {
 		return stream;
 	}
-	
 	public void setStream(String stream) {
 		if(stream == null){
 			stream = "";
@@ -96,12 +108,11 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.stream = stream.trim();
 	}
 	
-	@Column(name = "PERMISSION_LEVEL", nullable = false)
+	@Column(name = "permission_level", nullable = false)
 	@Enumerated(EnumType.STRING)
 	public UserPermissionLevel getPermissionLevel() {
 		return permissionLevel;
 	}
-	
 	public void setPermissionLevel(UserPermissionLevel permissionLevel) {
 		this.permissionLevel = permissionLevel;
 	}
@@ -126,13 +137,14 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return new String[0];
 	}
 	
-	@Transient
+	@ElementCollection (fetch=FetchType.EAGER)
+    @MapKeyColumn(name="assessment_id")
+    @Column(name="due_date")
+    @CollectionTable(name="student_assessment_extensions", joinColumns=@JoinColumn(name="pasta_user_id"))
 	public Map<Long, Date> getExtensions(){
 		return extensions;
 	}
-	
-	@Transient
-	public void setExtension(Map<Long, Date> extensions){
+	public void setExtensions(Map<Long, Date> extensions){
 		this.extensions = extensions;
 	}
 	
@@ -145,9 +157,9 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public boolean equals(PASTAUser user){
 		return (username.equals(user.getUsername()));
 	}
+	
 	@Override
 	public int compareTo(PASTAUser o) {
 		return getUsername().trim().compareTo(o.getUsername().trim());
 	}
-	
 }

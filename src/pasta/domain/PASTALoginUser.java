@@ -35,7 +35,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "LoginUser")
+@Table(name = "user_logins")
 /**
  * @author Alex Radu
  * @version 2.0
@@ -53,7 +53,7 @@ public class PASTALoginUser {
 	public PASTALoginUser(){}
 	
 	@Id
-	@Column(name = "USERNAME", nullable = false)
+	@Column(name = "username", nullable = false)
 	public String getUsername() {
 		return username;
 	}
@@ -61,7 +61,7 @@ public class PASTALoginUser {
 		this.username = username;
 	}
 	
-	@Column(name = "HASHEDPASSWORD", nullable = false)
+	@Column(name = "hashed_password", nullable = false)
 	public String getHashedPassword() {
 		return hashedPassword;
 	}
