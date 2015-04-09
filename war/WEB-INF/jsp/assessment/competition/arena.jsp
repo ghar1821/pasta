@@ -41,7 +41,7 @@ either expressed or implied, of the PASTA Project.
 		<th>Next Execution Date</th>
 	</tr>
 	<tr>
-		<td><a href="${competition.officialArena.shortName}/">${competition.officialArena.name}</a></td>
+		<td><a href="${competition.officialArena.id}/">${competition.officialArena.name}</a></td>
 		<td>${competition.officialArena.numPlayers}</td>
 		<td>${competition.officialArena.nextRunDate}</td>
 	</tr>
@@ -49,7 +49,7 @@ either expressed or implied, of the PASTA Project.
 
 <h1>Unofficial Arenas</h1>
 
-<c:if test="${competition.studentCreatableArena || unikey.tutor}">
+<c:if test="${competition.studentCanCreateArena || unikey.tutor}">
 	<div style="float: left">
 		<button style="float: left; text-align: center;" id="newPopup">Add
 			Arena</button>
@@ -65,7 +65,7 @@ either expressed or implied, of the PASTA Project.
 	</tr>
 	<c:forEach var="arena" items="${competition.outstandingArenas}">
 		<tr>
-			<td><a href="${arena.shortName}/">${arena.name}</a></td>
+			<td><a href="${arena.id}/">${arena.name}</a></td>
 			<td>${arena.numPlayers}</td>
 			<td>${arena.nextRunDate}</td>
 			<!-- 
@@ -83,7 +83,7 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 	<c:forEach var="arena" items="${competition.completedArenas}">
 		<tr>
-			<td><a href="${arena.shortName}/">${arena.name}</a></td>
+			<td><a href="${arena.id}/">${arena.name}</a></td>
 			<td>${arena.numPlayers}</td>
 			<td>Completed</td>
 			<!-- 
@@ -101,7 +101,7 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </table>
 
-<c:if test="${competition.studentCreatableArena || unikey.tutor}">
+<c:if test="${competition.studentCanCreateArena || unikey.tutor}">
 
 	<div id="newArena">
 		<span class="button bClose"> <span><b>X</b></span>
@@ -150,6 +150,7 @@ either expressed or implied, of the PASTA Project.
 				</tr>
 				 -->
 			</table>
+			<form:input type="hidden" path="competition.id" value="${competition.id}"/>
 			<button type="submit" id="submit">Create</button>
 		</form:form>
 	</div>

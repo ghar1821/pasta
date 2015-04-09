@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
+import pasta.domain.template.Competition;
 
 /**
  * Groups together commonly used methods.
@@ -89,7 +91,7 @@ public class PASTAUtil {
 
 	    ZipFile zip = new ZipFile(file);
 	    
-	    String newPath = zipFile.substring(0, zipFile.lastIndexOf("/"));
+	    String newPath = file.getParent();
 
 	    new File(newPath).mkdir();
 	    Enumeration zipFileEntries = zip.entries();
@@ -250,21 +252,18 @@ public class PASTAUtil {
 	 * Generate the file tree for the players used by arena based competitions.
 	 * 
 	 * @param username the name of the user
-	 * @param competitionName the short (no whitespace) name of the competition
+	 * @param competition the competition
 	 * @param players a collection of players you are interested in.
 	 * @return the map of file tree nodes, with the name of the player as the key.
 	 */
 	public static Map<String, FileTreeNode> generateFileTree(String username,
-			String competitionName, Collection<PlayerHistory> players) {
+			Competition competition, Collection<PlayerHistory> players) {
 		Map<String, FileTreeNode> allPlayers = new TreeMap<String, FileTreeNode>();
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){
-				FileTreeNode node = generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
-						+ username
-						+ "/competitions/"
-						+ competitionName
-						+ "/"
+				FileTreeNode node = generateFileTree(competition.getFileLocation()
+						+ "/players/" + username + "/"
 						+ player.getPlayerName()
 						+ "/active/code/");
 				if(node != null){
@@ -312,4 +311,26 @@ public class PASTAUtil {
 		}
 	}
 	
+	public static Map<String, String> generateFileMap(File root) {
+		return generateFileMap(root.getAbsolutePath());
+	}
+	
+	public static Map<String, String> generateFileMap(String root) {
+		File rootFile = new File(root);
+		Map<String, String> filenames = new LinkedHashMap<String, String>();
+		listFilesRecursive(root, rootFile, filenames);
+		return filenames;
+	}
+
+	private static void listFilesRecursive(String root, File file, Map<String, String> filenames) {
+		if(file.isFile()) {
+			String path = file.getAbsolutePath();
+			String shortened = path.substring(root.length());
+			filenames.put(file.getAbsolutePath(), shortened);
+		} else if(file.isDirectory()) {
+			for(File child : file.listFiles()) {
+				listFilesRecursive(root, child, filenames);
+			}
+		}
+	}
 }

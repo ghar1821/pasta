@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Alex Radu
+Copyright (c) 2015, Joshua Stretton
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -33,49 +33,13 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.Lob;
+import javax.persistence.MappedSuperclass;
 
-import pasta.domain.result.AssessmentResult;
-
-/**
- * Class that holds the details of jobs.
- * <p>
- * This is a the holding object that deals with the 'job' system
- * used in PASTA to ensure only one assessment is executed at a time.
- * 
- * Database schema is automatically created based on this class.
- * 
- * Database schema:
- * <pre>
- * 	Integer ID, 
- *  Text username (not null),
- *  Text assessmentName (not null),
- *  Data runDate (not null)
- * </pre>
- * 
- * For competitions, the username will be PASTACompetitionRunner.
- * For calculated competition, the assessmentName will be the name of the competition.
- * For arena based competition, the assessmentName will be competitionName#PASTAArena#arenaName(
- * e.g. BattleShipLeague#PASTAArena#OfficialArena).
- * 
- * @author Alex Radu
- * @version 2.0
- * @since 2012-12-04
- * 
- */
-@Entity
-@Table(name = "jobs",
-		uniqueConstraints = { @UniqueConstraint(columnNames={
-				"username", "assessment_id", "run_date"
-		})})
-public class Job implements Serializable{
+@MappedSuperclass
+public abstract class Job implements Serializable {
 
 	private static final long serialVersionUID = 2058301754166837748L;
 	
@@ -83,72 +47,20 @@ public class Job implements Serializable{
 	@GeneratedValue
 	private long id;
 	
-	@Column(nullable = false)
-	private String username;
-	
-	@Transient @Deprecated 
-	private String assessmentName;
-	
-	@Column(name = "assessment_id", nullable = false)
-	private long assessmentId;
-	
-	@ManyToOne
-	@JoinColumn (name = "assessment_result_id")
-	private AssessmentResult results;
-	
 	@Column(name = "run_date", nullable = false)
 	private Date runDate;
 	
 	public Job(){}
 	
-	@Deprecated
-	public Job(String username, String assessmentName, Date runDate){
-		this.username = username;
-		this.assessmentName = assessmentName;
+	public Job(Date runDate) {
 		this.runDate = runDate;
-	}
-	
-	public Job(String username, long assessmentId, Date runDate, AssessmentResult result){
-		this.username = username;
-		this.assessmentId = assessmentId;
-		this.runDate = runDate;
-		this.results = result;
-	}
-	
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	
-	public String getAssessmentName() {
-		return assessmentName;
-	}
-	public void setAssessmentName(String assessmentName) {
-		this.assessmentName = assessmentName;
-	}
-	
-	public long getAssessmentId() {
-		return assessmentId;
-	}
-	public void setAssessmentId(long assessmentId) {
-		this.assessmentId = assessmentId;
 	}
 
-	public AssessmentResult getResults() {
-		return results;
+	public long getId() {
+		return id;
 	}
-	public void setResults(AssessmentResult results) {
-		this.results = results;
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public Date getRunDate() {

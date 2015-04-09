@@ -29,12 +29,24 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.scheduler;
 
+import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+
+import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.CompetitionMarks;
+import pasta.domain.result.CompetitionResult;
+import pasta.domain.template.Arena;
+import pasta.domain.template.Assessment;
+import pasta.domain.template.Competition;
 
 /**
  * Class that handles the execution of jobs.
@@ -54,13 +66,30 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	public void setMySession(SessionFactory sessionFactory) {
 		setSessionFactory(sessionFactory);
 	}
+	
+	public void scheduleJob(String username, long assessmentId, AssessmentResult result, Date runDate) {
+		save(new AssessmentJob(username, assessmentId, runDate, result));
+	}
+	
+	public void scheduleJob(Competition comp, Arena arena, Date runDate) {
+		CompetitionMarks marks = new CompetitionMarks();
+		marks.setCompetition(comp);
+		CompetitionResult result = new CompetitionResult();
+		result.setArena(arena);
+		result.setCompetition(comp);
+		save(new CompetitionJob(comp, arena, marks, result, runDate));
+	}
+	
+	public void scheduleJob(Competition comp, Date runDate) {
+		scheduleJob(comp, null, runDate);
+	}
 
 	public void save(Job job) {
 		try{
 			getHibernateTemplate().save(job);
 		}
 		catch (Exception e){
-			logger.info("Exception while saving job " + e);
+			logger.error("Exception while saving job", e);
 		}
 	}
 
@@ -69,7 +98,7 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 			getHibernateTemplate().update(job);
 		}
 		catch (Exception e){
-			logger.info("Exception while updating job " + e);
+			logger.error("Exception while updating job", e);
 		}
 	}
 	
@@ -78,12 +107,12 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 			getHibernateTemplate().delete(job);
 		}
 		catch (Exception e){
-			logger.info("Exception while deleting job " + e);
+			logger.error("Exception while deleting job", e);
 		}
 	}
 
 	/**
-	 * Get the outstanding {@link pasta.scheduler.Job} for assessments.
+	 * Get the outstanding {@link pasta.scheduler.AssessmentJob} for assessments.
 	 * <p>
 	 * For a job to be outstanding, it has to have a run date later than now.
 	 * Pretty much all jobs in the list will fall into this category currently
@@ -92,16 +121,36 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	 *  
 	 * @return the list of assessment jobs that are outstanding
 	 */
-	public List<Job> getOutstandingAssessmentJobs(){
-		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND NOT username = 'PASTACompetitionRunner' GROUP BY runDate");
+	public List<AssessmentJob> getOutstandingAssessmentJobs(){
+		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentJob.class);
+		cr.add(Restrictions.le("runDate", new Date()));
+		cr.addOrder(Order.asc("runDate"));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
 	/**
-	 * Get the outstanding {@link pasta.scheduler.Job} for competitions.
+	 * Get the outstanding {@link pasta.scheduler.CompetitionJob} for competitions.
 	 *  
 	 * @return the list of competition jobs that are outstanding
 	 */
-	public List<Job> getOutstandingCompetitionJobs(){
-		return getHibernateTemplate().find("FROM Job WHERE runDate <= NOW() AND username = 'PASTACompetitionRunner' GROUP BY runDate");
+	public List<CompetitionJob> getOutstandingCompetitionJobs(){
+		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionJob.class);
+		cr.add(Restrictions.le("runDate", new Date()));
+		cr.add(Restrictions.isNull("arena"));
+		cr.addOrder(Order.asc("runDate"));
+		return getHibernateTemplate().findByCriteria(cr);
+	}
+	
+	/**
+	 * Get the outstanding {@link pasta.scheduler.CompetitionJob} for competitions.
+	 *  
+	 * @return the list of competition jobs that are outstanding
+	 */
+	public List<CompetitionJob> getOutstandingArenaJobs(){
+		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionJob.class);
+		cr.add(Restrictions.le("runDate", new Date()));
+		cr.add(Restrictions.isNotNull("arena"));
+		cr.addOrder(Order.asc("runDate"));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 }

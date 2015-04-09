@@ -1,7 +1,6 @@
 package pasta.testing;
 
 import java.io.File;
-import java.util.regex.Matcher;
 
 import pasta.util.ProjectProperties;
 
@@ -11,20 +10,11 @@ public class JUnitTestRunner extends Runner {
 	
 	public JUnitTestRunner() {
 		super(new File(TEMPLATE_FILENAME));
-		setLibDirectory(ProjectProperties.getInstance().getProjectLocation() + "lib/");
 		setMaxRunTime(60000);
 		addOption("outputFilename", "result");
 		addOption("testName", "TestName");
 		addOption("submissionDirectory", "src");
 		addOption("testDirectory", "test");
-	}
-	
-	public void setLibDirectory(String directory) {
-		directory = directory.replaceAll("[\\/]", Matcher.quoteReplacement(File.separator));
-		if(!directory.endsWith(File.separator)) {
-			directory += File.separator;
-		}
-		addOption("libDirectory", directory);
 	}
 	
 	public void setMaxRunTime(long milliseconds) {

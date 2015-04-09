@@ -7,8 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+
+import pasta.util.ProjectProperties;
 
 public class Runner {
 
@@ -24,10 +27,34 @@ public class Runner {
 			templateFile = null;
 		}
 		options = new HashMap<String, String>();
+		setLibDirectory(ProjectProperties.getInstance().getProjectLocation() + "lib/");
 	}
 	
 	public void addOption(String key, String value) {
 		options.put(key, value);
+	}
+	
+	public void addArgsOption(String key, String... values) {
+		addArgsOption(key, values);
+	}
+	
+	public void addArgsOption(String key, Iterable<String> values) {
+		StringBuilder sb = new StringBuilder();
+		for(String value : values) {
+			sb.append("<arg value=\"" + value + "\"/>");
+		}
+		options.put(key, sb.toString());
+	}
+	
+	public void addEnvOption(String key, Map<String, Map<String, String>> environments) {
+		StringBuilder sb = new StringBuilder();
+		for(Map.Entry<String, Map<String, String>> environment : environments.entrySet()) {
+			String type = environment.getKey();
+			for(Map.Entry<String, String> entry : environment.getValue().entrySet()) {
+				sb.append("<env key=\"" + entry.getKey() + "\" " + type + "=\"" + entry.getValue() + "\"/>");
+			}
+		}
+		options.put(key, sb.toString());
 	}
 	
 	public String getOption(String key) {
@@ -46,11 +73,44 @@ public class Runner {
 			return "";
 		}
 		
-		String templateText = template.toString();
-		for(Map.Entry<String, String> option : options.entrySet()) {
-			templateText = templateText.replaceAll("(?i)\\$\\{" + option.getKey() + "\\}", Matcher.quoteReplacement(option.getValue()));
+		// optional option syntax: only included if option <name> is not empty
+		// NOTE: only one per line!
+		//		{$?{<name>}<value>}
+		Pattern p = Pattern.compile("\\{\\$\\?\\{([^\\}]*)\\}");
+		Matcher m = p.matcher(template);
+		while(m.find()) {
+			int start = m.start();
+			int open = 1;
+			int end = m.end();
+			for(; end < template.length() && open > 0; end++) {
+				if(template.charAt(end) == '}') {
+					open--;
+				} else if(template.charAt(end) == '{') {
+					open++;
+				}
+			}
+			end--;
+			if(open != 0) {
+				break;
+			}
+			
+			String key = m.group(1);
+			if(options.get(key) != null && !options.get(key).isEmpty()) {
+				template.replace(start, m.end(), "");
+				end = end - (m.end() - start);
+				template.replace(end, end+1, "");
+			} else {
+				template.replace(start, end+1, "");
+			}
+			m.reset();
 		}
 		
+		String templateText = template.toString();
+		for(Map.Entry<String, String> option : options.entrySet()) {
+			// option syntax: replace with option <name>
+			//		{$<name>}
+			templateText = templateText.replaceAll("(?i)\\$\\{" + option.getKey() + "\\}", Matcher.quoteReplacement(option.getValue()));
+		}
 		return templateText;
 	}
 	
@@ -71,6 +131,14 @@ public class Runner {
 			Logger.getLogger(getClass()).error("Could not write build file " + file.getAbsolutePath(), e);
 		}
 		return file;
+	}
+	
+	public void setLibDirectory(String directory) {
+		directory = directory.replaceAll("[\\/]", Matcher.quoteReplacement(File.separator));
+		if(!directory.endsWith(File.separator)) {
+			directory += File.separator;
+		}
+		addOption("libDirectory", directory);
 	}
 	
 }

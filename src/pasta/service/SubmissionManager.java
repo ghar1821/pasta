@@ -59,7 +59,7 @@ import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.Job;
+import pasta.scheduler.AssessmentJob;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -151,129 +151,129 @@ public class SubmissionManager {
 				(new File(location+"/"+form.getFile().getOriginalFilename())).delete();
 			}
 			
-			String unitTestsLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-					+ form.getAssessment() + "/" + currDate + "/unitTests";
-			// ensure all unit tests compile
-			for(WeightedUnitTest test: currAssessment.getUnitTests()){
-				try {
-					// create folder
-					(new File(unitTestsLocation + "/" + test.getTest().getId())).mkdirs();
-
-
-					// copy over submission
-					FileUtils.copyDirectory(new File(location),
-							new File(unitTestsLocation + "/" + test.getTest().getId()));
-					
-					// copy over unit test
-					FileUtils.copyDirectory(new File(test.getTest().getFileLocation()
-							+ "/code/"),
-							new File(unitTestsLocation + "/" + test.getTest().getId()));
-					
-					// compile
-					File buildFile = new File(unitTestsLocation + "/" + test.getTest().getId()
-							+ "/build.xml");
-
-					ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-					Project project = new Project();
-
-					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-					project.setBasedir(unitTestsLocation + "/" + test.getTest().getId());
-					DefaultLogger consoleLogger = new DefaultLogger();
-					PrintStream runErrors = new PrintStream(
-							unitTestsLocation + "/" + test.getTest().getId()
-							+ "/run.errors");
-					consoleLogger.setOutputPrintStream(runErrors);
-					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-					project.addBuildListener(consoleLogger);
-					project.init();
-
-					project.addReference("ant.projectHelper", projectHelper);
-					projectHelper.parse(project, buildFile);
-					
-					try {
-						project.executeTarget("build");
-						project.executeTarget("clean");
-					} catch (BuildException e) {
-						compiled = false;
-						logger.error("Could not compile " + username + " - "
-								+ currAssessment.getName() + " - "
-								+ test.getTest().getName() + e);
-						
-						PrintStream compileErrors = new PrintStream(
-								unitTestsLocation + "/" + test.getTest().getId()
-								+ "/compile.errors");
-						compileErrors.print(e.toString().replaceAll(".*" +
-								unitTestsLocation + "/" + test.getTest().getId() + "/" , "folder "));
-						compileErrors.close();
-					}
-
-					runErrors.flush();
-					runErrors.close();
-					
-					// scrape compiler errors from run.errors
-					try{
-						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getId()
-								+ "/run.errors"));
-						boolean containsError = false;
-						boolean importantData = false;
-						String output = "";
-						while(in.hasNextLine()){
-							String line = in.nextLine();
-							if(line.contains(": error:")){
-								containsError = true;
-							}
-							if(line.contains("[javac] Files to be compiled:")){
-								importantData = true;
-							}
-							if(importantData){
-								output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
-							}
-						}
-						in.close();
-						
-						if(containsError){
-							PrintStream compileErrors = new PrintStream(
-									unitTestsLocation + "/" + test.getTest().getId()
-									+ "/compile.errors");
-							compileErrors.print(output);
-							compileErrors.close();
-						}
-					}
-					catch (Exception e){
-						// do nothing
-					}
-					
-					// delete everything else
-					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getId()))
-							.list();
-					for (String file : allFiles) {
-						File actualFile = new File(unitTestsLocation + "/" + test.getTest().getId()
-								+ "/" + file);
-						if (actualFile.isDirectory()) {
-							FileUtils.deleteDirectory(actualFile);
-						} else {
-							if (!file.equals("result.xml")
-									&& !file.equals("compile.errors")
-									&& !file.equals("run.errors")) {
-								FileUtils.forceDelete(actualFile);
-							}
-						}
-					}
-					
-					if(compiled){
-						try{
-							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getId()
-									+ "/compile.errors"));
-						}
-						catch(FileNotFoundException e){}
-					}
-					
-				} catch (IOException e) {
-					logger.error("Unable to compile unit test "
-							+ currAssessment.getName() + " for " + username
-							+ System.getProperty("line.separator") + e);
-				}
-			}
+//			String unitTestsLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
+//					+ form.getAssessment() + "/" + currDate + "/unitTests";
+//			// ensure all unit tests compile
+//			for(WeightedUnitTest test: currAssessment.getUnitTests()){
+//				try {
+//					// create folder
+//					(new File(unitTestsLocation + "/" + test.getTest().getId())).mkdirs();
+//
+//
+//					// copy over submission
+//					FileUtils.copyDirectory(new File(location),
+//							new File(unitTestsLocation + "/" + test.getTest().getId()));
+//					
+//					// copy over unit test
+//					FileUtils.copyDirectory(new File(test.getTest().getFileLocation()
+//							+ "/code/"),
+//							new File(unitTestsLocation + "/" + test.getTest().getId()));
+//					
+//					// compile
+//					File buildFile = new File(unitTestsLocation + "/" + test.getTest().getId()
+//							+ "/build.xml");
+//
+//					ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
+//					Project project = new Project();
+//
+//					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
+//					project.setBasedir(unitTestsLocation + "/" + test.getTest().getId());
+//					DefaultLogger consoleLogger = new DefaultLogger();
+//					PrintStream runErrors = new PrintStream(
+//							unitTestsLocation + "/" + test.getTest().getId()
+//							+ "/run.errors");
+//					consoleLogger.setOutputPrintStream(runErrors);
+//					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
+//					project.addBuildListener(consoleLogger);
+//					project.init();
+//
+//					project.addReference("ant.projectHelper", projectHelper);
+//					projectHelper.parse(project, buildFile);
+//					
+//					try {
+//						project.executeTarget("build");
+//						project.executeTarget("clean");
+//					} catch (BuildException e) {
+//						compiled = false;
+//						logger.error("Could not compile " + username + " - "
+//								+ currAssessment.getName() + " - "
+//								+ test.getTest().getName() + e);
+//						
+//						PrintStream compileErrors = new PrintStream(
+//								unitTestsLocation + "/" + test.getTest().getId()
+//								+ "/compile.errors");
+//						compileErrors.print(e.toString().replaceAll(".*" +
+//								unitTestsLocation + "/" + test.getTest().getId() + "/" , "folder "));
+//						compileErrors.close();
+//					}
+//
+//					runErrors.flush();
+//					runErrors.close();
+//					
+//					// scrape compiler errors from run.errors
+//					try{
+//						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getId()
+//								+ "/run.errors"));
+//						boolean containsError = false;
+//						boolean importantData = false;
+//						String output = "";
+//						while(in.hasNextLine()){
+//							String line = in.nextLine();
+//							if(line.contains(": error:")){
+//								containsError = true;
+//							}
+//							if(line.contains("[javac] Files to be compiled:")){
+//								importantData = true;
+//							}
+//							if(importantData){
+//								output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
+//							}
+//						}
+//						in.close();
+//						
+//						if(containsError){
+//							PrintStream compileErrors = new PrintStream(
+//									unitTestsLocation + "/" + test.getTest().getId()
+//									+ "/compile.errors");
+//							compileErrors.print(output);
+//							compileErrors.close();
+//						}
+//					}
+//					catch (Exception e){
+//						// do nothing
+//					}
+//					
+//					// delete everything else
+//					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getId()))
+//							.list();
+//					for (String file : allFiles) {
+//						File actualFile = new File(unitTestsLocation + "/" + test.getTest().getId()
+//								+ "/" + file);
+//						if (actualFile.isDirectory()) {
+//							FileUtils.deleteDirectory(actualFile);
+//						} else {
+//							if (!file.equals("result.xml")
+//									&& !file.equals("compile.errors")
+//									&& !file.equals("run.errors")) {
+//								FileUtils.forceDelete(actualFile);
+//							}
+//						}
+//					}
+//					
+//					if(compiled){
+//						try{
+//							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getId()
+//									+ "/compile.errors"));
+//						}
+//						catch(FileNotFoundException e){}
+//					}
+//					
+//				} catch (IOException e) {
+//					logger.error("Unable to compile unit test "
+//							+ currAssessment.getName() + " for " + username
+//							+ System.getProperty("line.separator") + e);
+//				}
+//			}
 			
 //			resultDAO.updateUnitTestResults(username, currAssessment, now);
 			
@@ -319,7 +319,7 @@ public class SubmissionManager {
 	 */
 	public void runAssessment(String username, long assessmentId, String assessmentDate, AssessmentResult result){
 		try {
-			scheduler.save(new Job(username, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
+			scheduler.save(new AssessmentJob(username, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
 					+ assessmentId + " for " + username
@@ -334,17 +334,15 @@ public class SubmissionManager {
 	 * @param assessment the assessment for which the latest attempts must be re-run
 	 * @param allUsers the collection of users for which the latest attempt will be executed
 	 */
-	@Deprecated public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
-		// scan to see all who made a submission
+	public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
 		for(PASTAUser user: allUsers){
-			// add them to the queue
-			if(resultDAO.getLatestResults(user.getUsername())!=null){
-				AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getId());
-				if(currResult != null){
-					scheduler.save(new Job(user.getUsername(), 
-							assessment.getId(), 
-							currResult.getSubmissionDate(), currResult));
-				}
+			// scan to see all who made a submission
+			AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getId());
+			if(currResult != null){
+				// add them to the queue
+				scheduler.save(new AssessmentJob(user.getUsername(), 
+						assessment.getId(), 
+						currResult.getSubmissionDate(), currResult));
 			}
 		}
 	}

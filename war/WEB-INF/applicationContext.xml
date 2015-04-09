@@ -71,17 +71,30 @@
 	 
 	    <property name="annotatedClasses">
 			<list>
+				<value>pasta.scheduler.AssessmentJob</value>
+				<value>pasta.scheduler.CompetitionJob</value>
 				<value>pasta.scheduler.Job</value>
-				<value>pasta.domain.PASTAUser</value>
 				<value>pasta.domain.PASTALoginUser</value>
+				<value>pasta.domain.PASTAPlayer</value>
+				<value>pasta.domain.PASTATime</value>
+				<value>pasta.domain.PASTAUser</value>
+				<value>pasta.domain.players.PlayerHistory</value>
+				<value>pasta.domain.players.PlayerResult</value>
 				<value>pasta.domain.result.AssessmentResult</value>
+				<value>pasta.domain.result.CompetitionMarks</value>
+				<value>pasta.domain.result.CompetitionPosition</value>
+				<value>pasta.domain.result.CompetitionResult</value>
+				<value>pasta.domain.result.CompetitionResultData</value>
 				<value>pasta.domain.result.HandMarkingResult</value>
 				<value>pasta.domain.result.UnitTestCaseResult</value>
 				<value>pasta.domain.result.UnitTestResult</value>
+				<value>pasta.domain.template.Arena</value>
 				<value>pasta.domain.template.Assessment</value>
+				<value>pasta.domain.template.Competition</value>
 				<value>pasta.domain.template.HandMarkData</value>
 				<value>pasta.domain.template.HandMarking</value>
 				<value>pasta.domain.template.UnitTest</value>
+				<value>pasta.domain.template.WeightedCompetition</value>
 				<value>pasta.domain.template.WeightedField</value>
 				<value>pasta.domain.template.WeightedHandMarking</value>
 				<value>pasta.domain.template.WeightedUnitTest</value>

@@ -29,35 +29,29 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.PASTAPlayer;
+import pasta.domain.PASTAUser;
+import pasta.domain.players.PlayerHistory;
+import pasta.domain.players.PlayerResult;
+import pasta.domain.result.CompetitionMarks;
+import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
@@ -65,9 +59,16 @@ import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
+import pasta.scheduler.CompetitionJob;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.Job;
+import pasta.scheduler.AssessmentJob;
+import pasta.testing.AntJob;
+import pasta.testing.AntResults;
+import pasta.testing.ArenaCompetitionRunner;
+import pasta.testing.GenericScriptRunner;
 import pasta.testing.JUnitTestRunner;
+import pasta.testing.options.ScriptOptions;
+import pasta.testing.task.DirectoryCopyTask;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -128,86 +129,107 @@ public class ExecutionManager {
 	 * 
 	 * @param job the calculated competition job
 	 */
-	private void executeCalculatedCompetitionJob(Job job) {
-
-		Competition comp = assDao.getCompetition(job.getAssessmentName());
-		if (comp != null) {
-
-			// if dead, remove from the list and do nothing
-			if (!comp.isLive()) {
-				scheduler.delete(job);
-				return;
-			}
-
-			// create folder
-			String competitionLocation = ProjectProperties.getInstance()
-					.getCompetitionsLocation()
-					+ comp.getShortName()
-					+ "/competition/"
-					+ PASTAUtil.formatDate(job.getRunDate());
-			(new File(competitionLocation)).mkdirs();
-
-			// copy across
-			try {
-				FileUtils.copyDirectory(new File(comp.getFileLocation()
-						+ "/code"), new File(competitionLocation));
-
-				// compile
-				File buildFile = new File(competitionLocation + "/build.xml");
-
-				ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-				Project project = new Project();
-
-				project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-				project.init();
-
-				project.addReference("ant.projectHelper", projectHelper);
-				projectHelper.parse(project, buildFile);
-
-				try {
-					project.executeTarget("build");
-					project.executeTarget("compete");
-					project.executeTarget("mark");
-					project.executeTarget("clean");
-				} catch (BuildException e) {
-					// TODO
-					logger.error("Could run competition " + comp.getName()
-							+ " - " + e);
-				}
-
-				// delete everything else
-				String[] allFiles = (new File(competitionLocation)).list();
-				for (String file : allFiles) {
-					File actualFile = new File(competitionLocation + "/" + file);
-					if (actualFile.isDirectory()) {
-						FileUtils.deleteDirectory(actualFile);
-					} else {
-						if (!file.equals("marks.csv")
-								&& !file.equals("results.csv")) {
-							FileUtils.forceDelete(actualFile);
-						}
-					}
-				}
-				// delete it
-				scheduler.delete(job);
-
-				// update resultDAO
-				resultDAO.updateCalculatedCompetitionResults(job
-						.getAssessmentName());
-
-				// check if still live and ready
-				if (comp.isLive()) {
-					scheduler.save(new Job("PASTACompetitionRunner", comp
-							.getShortName(), comp.getNextRunDate()));
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	private void executeCalculatedCompetitionJob(CompetitionJob job) {
+		Competition comp = job.getCompetition();
+		if(comp == null || !ProjectProperties.getInstance().getCompetitionDAO().isLive(comp)) {
+			scheduler.delete(job);
+			return;
 		}
+		
+		logger.info("Executing competition " + comp.getName());
+		
+		try {
+			// create folder
+			File compDir = new File(ProjectProperties.getInstance().getSandboxLocation() + "competition"
+					+ File.separator + comp.getFileAppropriateName());
+			File thisRunDir = new File(compDir, PASTAUtil.formatDate(job.getRunDate()));
+			thisRunDir.mkdirs();
+			
+			// copy each submission to ./submissions/<assignment>/<user>/
+			File allSubmissionsDir = new File(thisRunDir, "submissions");
+			for (Assessment linkedAssessment : ProjectProperties.getInstance().getCompetitionDAO()
+					.getAssessmentsUsingCompetition(comp)) {
+				for (PASTAUser user : ProjectProperties.getInstance().getUserDAO().getStudentList()) {
+					File submissionDir = ProjectProperties.getInstance().getResultDAO()
+							.getLastestSubmission(user, linkedAssessment);
+					if (submissionDir == null) {
+						continue;
+					}
+					File newLocation = new File(allSubmissionsDir, user.getUsername());
+					if (newLocation.exists()) {
+						logger.warn("User " + user.getUsername()
+								+ " has submitted to multiple assessments running competition "
+								+ comp.getName() + ". Assessment " + linkedAssessment.getName()
+								+ " submission will take precedence.");
+					}
+					FileUtils.copyDirectory(submissionDir, newLocation);
+				}
+			}
+		
+			GenericScriptRunner runner = new GenericScriptRunner();
+			ScriptOptions runOptions = new ScriptOptions();
+			// TODO make generic - test on unix machine
+			runOptions.scriptFilename = "calculate.sh";
+			runOptions.timeout = 180000;
+			runner.setRunScript(runOptions);
+			
+			AntJob antJob = new AntJob(thisRunDir, runner, "build", "execute", "clean");
+			antJob.addDependency("execute", "build");
+			
+			antJob.addSetupTask(new DirectoryCopyTask(new File(comp.getFileLocation(), "code"), new File(thisRunDir, "src")));
+
+			// clean up
+			boolean worked = true;
+			try {
+				FileUtils.copyFile(
+						new File(thisRunDir, CompetitionResult.RESULT_FILENAME),
+						new File(compDir, CompetitionResult.RESULT_FILENAME));
+			} catch (IOException e1) {
+				logger.error("Execution of competition " + comp.getName()
+						+ " did not create a " + CompetitionResult.RESULT_FILENAME + " file");
+				worked = false;
+			}
+			
+			try {
+				FileUtils.copyFile(
+						new File(thisRunDir, CompetitionMarks.MARKS_FILENAME),
+						new File(compDir, CompetitionMarks.MARKS_FILENAME));
+			} catch (IOException e1) {
+				logger.error("Execution of competition " + comp.getName()
+						+ " did not create a " + CompetitionMarks.MARKS_FILENAME + " file");
+				worked = false;
+			}
+
+			if (worked) {
+				CompetitionResult compResult = job.getResult();
+				compResult.setRunDate(new Date());
+				resultDAO.loadCompetitionResults(compResult, new File(compDir, CompetitionResult.RESULT_FILENAME));
+				resultDAO.saveOrUpdate(compResult);
+				
+				CompetitionMarks compMarks = job.getMarks();
+				compMarks.setRunDate(new Date());
+				resultDAO.loadCompetitionMarks(compMarks, new File(compDir, CompetitionMarks.MARKS_FILENAME));
+				resultDAO.saveOrUpdate(compMarks);
+
+			}
+			
+			// delete everything
+			FileUtils.deleteDirectory(thisRunDir);
+			
+			// check if still live and ready
+			if (ProjectProperties.getInstance().getCompetitionDAO().isLive(comp)) {
+				scheduler.scheduleJob(comp, comp.getNextRunDate());
+			}
+		} catch (Exception e) {
+			logger.error("Error executing competition " + comp.getName(), e);
+		}
+		
+		// delete job
+		scheduler.delete(job);
 	}
 
 	/**
-	 * Execute a calculated competition
+	 * Execute an arena competition
 	 * <p>
 	 * <ol>
 	 * 	<li>Create a folder where this will run $compLocation$/arenas/$arenaName$/$date$</li>
@@ -229,490 +251,184 @@ public class ExecutionManager {
 	 * 
 	 * @param job the arena competition job
 	 */
-	private void executeArenaCompetitionJob(Job job) {
-		Competition comp = assDao.getCompetition(job.getAssessmentName().split(
-				"#PASTAArena#")[0]);
-		Arena arena = null;
-		if (comp != null) {
-			arena = comp
-					.getArena(job.getAssessmentName().split("#PASTAArena#")[1]);
+	private void executeArenaJob(CompetitionJob job) {
+		Arena arena = job.getArena();
+		if(arena == null) {
+			scheduler.delete(job);
+			return;
 		}
-		if (comp != null && comp.isLive() && arena != null) {
-
-			logger.info("Executing " + job.getAssessmentName());
-
-			Map<String, String> playerLocations = new TreeMap<String, String>();
-
-			// copy across players
-			for (Entry<String, Set<String>> players : arena.getPlayers()
-					.entrySet()) {
-				String username = players.getKey();
-				for (String playerName : players.getValue()) {
-
-					String playerLocation = null;
-
-					// check if player is active
-					if (new File(ProjectProperties.getInstance()
-							.getSubmissionsLocation()
-							+ username
-							+ "/competitions/"
-							+ comp.getShortName()
-							+ "/"
-							+ playerName + "/active").exists()) {
-						// player is active
-						playerLocation = ProjectProperties.getInstance()
-								.getSubmissionsLocation()
-								+ username
-								+ "/competitions/"
-								+ comp.getShortName()
-								+ "/"
-								+ playerName
-								+ "/active/code";
-					} else {
-						// player is not
-						String[] retiredList = new File(ProjectProperties
-								.getInstance().getSubmissionsLocation()
-								+ username
-								+ "/competitions/"
-								+ comp.getShortName()
-								+ "/"
-								+ playerName
-								+ "/retired/").list();
-
-						if (retiredList == null || retiredList.length == 0) {
-							break;
-						}
-
-						Arrays.sort(retiredList);
-
-						playerLocation = ProjectProperties.getInstance()
-								.getSubmissionsLocation()
-								+ username
-								+ "/competitions/"
-								+ comp.getShortName()
-								+ "/"
-								+ playerName
-								+ "/retired/"
-								+ retiredList[retiredList.length - 1] + "/code";
-					}
-
-					if (playerLocation != null) {
-						// copy player across
-						playerLocations.put(username + "." + playerName,
-								playerLocation);
-
-						// make folder
-						(new File(comp.getFileLocation() + "/arenas/"
-								+ arena.getName() + "/"
-								+ PASTAUtil.formatDate(job.getRunDate())
-								+ "/players/" + username)).mkdirs();
-
-						// copy code across
-						try {
-							FileUtils.copyDirectory(
-									new File(playerLocation),
-									new File(comp.getFileLocation()
-											+ "/arenas/"
-											+ arena.getName()
-											+ "/"
-											+ PASTAUtil.formatDate(job
-													.getRunDate())
-											+ "/players/" + username + "/"));
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
+		Competition comp = arena.getCompetition();
+		if (comp == null) {
+			logger.error("Missing link to competition in arena " + arena.getName());
+			scheduler.delete(job);
+			return;
+		}
+		
+		if(!ProjectProperties.getInstance().getCompetitionDAO().isLive(comp)) {
+			scheduler.delete(job);
+			return;
+		}
+		
+		logger.info("Executing competition " + comp.getName() + " arena " + arena.getName());
+		Map<String, String> playerLocations = new TreeMap<String, String>();
+		
+		File arenaDir = new File(ProjectProperties.getInstance().getSandboxLocation() + "competitions/"
+				+ comp.getFileAppropriateName() + "/arenas/" + arena.getFileAppropriateName());
+		File thisRunDir = new File(arenaDir, PASTAUtil.formatDate(job.getRunDate()));
+		
+		for(PASTAPlayer player : arena.getPlayers()) {
+			String playerLocation = null;
+			PlayerHistory history = ProjectProperties.getInstance().getPlayerDAO().getPlayerHistory(player.getUsername(), comp.getId(), player.getPlayerName());
+			if(history.getActivePlayer() != null) {
+				playerLocation = comp.getFileLocation() + "players/" + player.getUsername() + "/"
+						+ player.getPlayerName() + "/active/code";
+			} else {
+				if(history.getRetiredPlayers() == null || history.getRetiredPlayers().isEmpty()) {
+					continue;
+				}
+				List<PlayerResult> retired = history.getRetiredPlayers();
+				playerLocation = comp.getFileLocation() + "players/" + player.getUsername() + "/"
+						+ player.getPlayerName() + "/retired/"
+						+ retired.get(retired.size() - 1).getFirstUploaded() + "/code";
+				logger.warn("DEBUGGING: MAKE SURE THIS IS MOST RECENT RETIRED PLAYER: " + playerLocation);
+			}
+			
+			if (playerLocation != null) {
+				// copy player across
+				playerLocations.put(player.getUsername() + "." + player.getPlayerName(), playerLocation);
+				
+				File playerDir = new File(thisRunDir, "players/" + player.getUsername());
+				
+				// make folder
+				playerDir.mkdirs();
+				
+				// copy code across
+				try {
+					FileUtils.copyDirectory(new File(playerLocation), playerDir);
+				} catch (IOException e) {
+					continue;
 				}
 			}
+		}
 
-			// copy across results if they are there
+		// copy across results if they are there
+		try {
+			FileUtils.copyFile(
+					new File(arenaDir, CompetitionResult.RESULT_FILENAME),
+					new File(thisRunDir, CompetitionResult.RESULT_FILENAME));
+		} catch (IOException e1) {
+			// do nothing
+		}
+
+		// copy across base code
+		try {
+			FileUtils.copyDirectory(new File(comp.getFileLocation() + "/code/"), thisRunDir);
+
+			ArenaCompetitionRunner runner = new ArenaCompetitionRunner();
+			runner.setCompetitionCodeLocation("src");
+			//TODO make dynamic
+			runner.setMainClassname("tournament.Tournament");
+			runner.setRepeats(arena.isRepeatable());
+			
+			AntJob antJob = new AntJob(thisRunDir, runner, "build", "compete", "mark", "clean");
+			antJob.addDependency("compete", "build");
+			antJob.addDependency("mark", "compete");
+			
+			antJob.run();
+			
+			AntResults results = antJob.getResults();
+			logger.warn(results.getFullOutput());
+
+			// remove job from queue
+			scheduler.delete(job);
+
+			if (arena.isRepeatable()) {
+				scheduler.scheduleJob(comp, arena, arena.getNextRunDate());
+			} else {
+				comp.completeArena(arena);
+			}
+
+			// clean up
+			boolean worked = true;
 			try {
 				FileUtils.copyFile(
-						new File(comp.getFileLocation() + "/arenas/"
-								+ arena.getName() + "/results.csv"),
-						new File(comp.getFileLocation() + "/arenas/"
-								+ arena.getName() + "/"
-								+ PASTAUtil.formatDate(job.getRunDate())
-								+ "/results.csv"));
+						new File(thisRunDir, CompetitionResult.RESULT_FILENAME),
+						new File(arenaDir, CompetitionResult.RESULT_FILENAME));
 			} catch (IOException e1) {
-				// do nothing
+				logger.error("Execution of arena " + arena.getName()
+						+ " of competition " + comp.getName()
+						+ " did not create a " + CompetitionResult.RESULT_FILENAME + " file");
+				worked = false;
 			}
-
-			// copy across base code
+			
 			try {
-				FileUtils.copyDirectory(
-						new File(comp.getFileLocation() + "/code/"),
-						new File(comp.getFileLocation() + "/arenas/"
-								+ arena.getName() + "/"
-								+ PASTAUtil.formatDate(job.getRunDate())));
-
-				// compile
-				File buildFile = new File(comp.getFileLocation() + "/arenas/"
-						+ arena.getName() + "/"
-						+ PASTAUtil.formatDate(job.getRunDate()) + "/build.xml");
-
-				ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-				Project project = new Project();
-
-				project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-				project.setBasedir(comp.getFileLocation() + "/arenas/"
-						+ arena.getName() + "/"
-						+ PASTAUtil.formatDate(job.getRunDate()));
-				project.init();
-
-				project.addReference("ant.projectHelper", projectHelper);
-				projectHelper.parse(project, buildFile);
-
-				// execute targets
-				try {
-					logger.info("Building " + job.getAssessmentName());
-					project.executeTarget("build");
-					logger.info("Competing " + job.getAssessmentName());
-					project.executeTarget("compete");
-					logger.info("Marking " + job.getAssessmentName());
-					project.executeTarget("mark");
-					logger.info("Cleaning " + job.getAssessmentName());
-					project.executeTarget("clean");
-				} catch (BuildException e) {
-					logger.error("Could not complete execution of arena "
-							+ arena.getName() + " for competition "
-							+ comp.getName() + " : " + e);
-					PrintStream compileErrors = new PrintStream(
-							comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/compile.errors");
-					compileErrors.print(e.toString());
-					compileErrors.close();
-				}
-
-				// remove job from queue
-				scheduler.delete(job);
-
-				if (arena.isRepeatable()) {
-					scheduler.save(new Job(job.getUsername(), job
-							.getAssessmentName(), arena.getNextRunDate()));
-				} else {
-					comp.completeArena(arena);
-				}
-
-				// clean up
-				boolean worked = true;
-				try {
-					FileUtils.copyFile(
-							new File(comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/"
-									+ PASTAUtil.formatDate(job.getRunDate())
-									+ "/results.csv"),
-							new File(comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/results.csv"));
-				} catch (IOException e1) {
-					logger.error("Execution of arena " + arena.getName()
-							+ " of competition " + comp.getName()
-							+ " did not create a results.csv file");
-					worked = false;
-				}
-				try {
-					FileUtils.copyFile(
-							new File(comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/"
-									+ PASTAUtil.formatDate(job.getRunDate())
-									+ "/marks.csv"),
-							new File(comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/marks.csv"));
-				} catch (IOException e1) {
-					logger.error("Execution of arena " + arena.getName()
-							+ " of competition " + comp.getName()
-							+ " did not create a marks.csv file");
-					worked = false;
-				}
-
-				if (worked) {
-
-					// send updates to players
-					Scanner resultsIn = new Scanner(new File(
-							comp.getFileLocation() + "/arenas/"
-									+ arena.getName() + "/results.csv"));
-
-					String ending = "/../unofficial.stats";
-					if (arena.getName().replace(" ", "").toLowerCase()
-							.equals("officialarena")) {
-						ending = "/../official.stats";
-						resultDAO.updateArenaCompetitionResults(job
-								.getAssessmentName());
-					}
-
-					while (resultsIn.hasNextLine()) {
-						String[] data = resultsIn.nextLine().split(",");
-						// ensure a player with the name exists.
-						String[] userData = data[0].split("\\.");
-						if (arena.getPlayers().containsKey(userData[0])) {
-							// write out to the correct location.
-							String location = playerLocations.get(userData[0]
-									+ "." + userData[userData.length - 1])
-									+ ending;
-
-							if (location != null) {
-
-								try {
-									PrintWriter out = new PrintWriter(
-											new BufferedWriter(new FileWriter(
-													location, true)));
-									out.println(data[1] + "," + data[2] + ","
-											+ data[3] + "," + data[4] + ","
-											+ data[5]);
-									out.close();
-								} catch (IOException e1) {
-									// do nothing
-								}
-							}
-						}
-					}
-
-					resultsIn.close();
-
-					// delete everything else
-					String[] allFiles = (new File(comp.getFileLocation()
-							+ "/arenas/" + arena.getName() + "/"
-							+ PASTAUtil.formatDate(job.getRunDate()))).list();
-					for (String file : allFiles) {
-						File actualFile = new File(comp.getFileLocation()
-								+ "/arenas/" + arena.getName() + "/"
-								+ PASTAUtil.formatDate(job.getRunDate()) + "/"
-								+ file);
-						if (actualFile.isDirectory()) {
-							FileUtils.deleteDirectory(actualFile);
-						} else {
-							if (!file.equals("marks.csv")
-									&& !file.equals("results.csv")) {
-								FileUtils.forceDelete(actualFile);
-							}
-						}
-					}
-				}
-
-			} catch (IOException e) {
-				logger.error(e.toString());
+				FileUtils.copyFile(
+						new File(thisRunDir, CompetitionMarks.MARKS_FILENAME),
+						new File(arenaDir, CompetitionMarks.MARKS_FILENAME));
+			} catch (IOException e1) {
+				logger.error("Execution of arena " + arena.getName()
+						+ " of competition " + comp.getName()
+						+ " did not create a " + CompetitionMarks.MARKS_FILENAME + " file");
+				worked = false;
 			}
 
-		} else {
-			scheduler.delete(job);
-		}
-	}
-
-	/**
-	 * Execute a normal job (not competition)
-	 * <p>
-	 * <ol>
-	 * 	<li>Create a folder where this will run $location$/submissions/$username$/assessments/$assessmentName$/$date$/unitTests/$unitTestId$</li>
-	 * 	<li>Copy unit test code (if there are multiple unit tests, run them all sequentially)</li>
-	 * 	<li>Run ant: 
-	 * 		<ol>
-	 * 			<li>build</li>
-	 * 			<li>test</li>
-	 * 			<li>clean</li>
-	 * 		</ol>
-	 * 	</li>
-	 * 	<li>Deletes all except result.xml, compile.errors, run.errors</li>
-	 * 	<li>Delete the job from the queue</li>
-	 * 	<li>Update the cached results</li>
-	 * </ol>
-	 * 
-	 * @param job the job to run
-	 */
-	private void executeNormalJobOld(Job job) {
-		// do it
-		String location = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername() + "/assessments/"
-				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate())
-				+ "/submission";
-
-		Assessment currAssessment = assDao.getAssessment(job.getAssessmentId());
-
-		try {
-			logger.info("Running unit test " + currAssessment.getName()
-					+ " for " + job.getUsername() + " with ExecutionScheduler - " + this);
-
-			String unitTestsLocation = ProjectProperties.getInstance()
-					.getSubmissionsLocation()
-					+ job.getUsername()
-					+ "/assessments/"
-					+ job.getAssessmentId()
-					+ "/"
-					+ PASTAUtil.formatDate(job.getRunDate()) + "/unitTests";
-
-			if (new File(unitTestsLocation).exists()) {
-				FileUtils.deleteDirectory(new File(unitTestsLocation));
-			}
-
-			PrintStream runErrors = null;
-			// run unit tests
-			for (WeightedUnitTest test : currAssessment.getAllUnitTests()) {
-				try {
-					// create folder
-					(new File(unitTestsLocation + "/"
-							+ test.getTest().getId())).mkdirs();
-
-					// copy over submission
-					FileUtils.copyDirectory(new File(location), new File(
-							unitTestsLocation + "/"
-									+ test.getTest().getId()));
-					
-					// copy over unit test
-					FileUtils.copyDirectory(new File(test.getTest()
-							.getFileLocation() + "/code/"), new File(
-							unitTestsLocation + "/"
-									+ test.getTest().getId()));
-
-					// compile
-					File buildFile = new File(unitTestsLocation + "/"
-							+ test.getTest().getId() + "/build.xml");
-
-					ProjectHelper projectHelper = ProjectHelper
-							.getProjectHelper();
-					Project project = new Project();
-
-					project.setUserProperty("ant.file",
-							buildFile.getAbsolutePath());
-					project.setBasedir(unitTestsLocation + "/"
-							+ test.getTest().getId());
-					DefaultLogger consoleLogger = new DefaultLogger();
-					runErrors = new PrintStream(unitTestsLocation + "/"
-							+ test.getTest().getId() + "/run.errors");
-					consoleLogger.setOutputPrintStream(runErrors);
-					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-					project.addBuildListener(consoleLogger);
-					project.init();
-
-					project.addReference("ant.projectHelper", projectHelper);
-					projectHelper.parse(project, buildFile);
-					
-					boolean failedToCompile = false;
-
-					try {
-						project.executeTarget("build");
-						project.executeTarget("test");
-						project.executeTarget("clean");
-					} catch (BuildException e) {
-						logger.error("Could not compile " + job.getUsername()
-								+ " - " + currAssessment.getId() + " - "
-								+ test.getTest().getName() + e);
-						failedToCompile = true;
-					}
-					
-					runErrors.close();
-					
-					if(failedToCompile){
-						PrintStream compileErrors = new PrintStream(
-								unitTestsLocation + "/"
-										+ test.getTest().getId()
-										+ "/compile.errors");
-						
-						Scanner in = new Scanner (new File(unitTestsLocation + "/"
-								+ test.getTest().getId() + "/run.errors"));
-						
-						boolean print = false;
-						
-						while(in.hasNextLine()){
-							String line = in.nextLine();
-							
-							if(line.contains("[javac] Files to be compiled:")){
-								print = true;
-							}
-							
-							if(print && line.contains("[javac]")){
-								compileErrors.println(line.replace("[javac]", "").replaceAll(
-										".*" + unitTestsLocation + "/"
-												+ test.getTest().getId() + "/",
-										"folder "));
-							}
-						}
-						
-						compileErrors.close();
-						in.close();
-					}
-
-					// delete everything else
-					String[] allFiles = (new File(unitTestsLocation + "/"
-							+ test.getTest().getId())).list();
-					for (String file : allFiles) {
-						File actualFile = new File(unitTestsLocation + "/"
-								+ test.getTest().getId() + "/" + file);
-						if (actualFile.isDirectory()) {
-							FileUtils.deleteDirectory(actualFile);
-						} else {
-							if (!file.equals("result.xml")
-									&& !file.equals("compile.errors")
-									&& !file.equals("run.errors")) {
-								FileUtils.forceDelete(actualFile);
-							}
-						}
-					}
-
-				} catch (IOException e) {
-					logger.error("Unable to compile unit test "
-							+ currAssessment.getName() + " for "
-							+ job.getUsername()
-							+ System.getProperty("line.separator") + e);
-				}
-			}
-
-			// delete it
-			scheduler.delete(job);
-
-			// unit tests;
-			ArrayList<UnitTestResult> utresults = new ArrayList<UnitTestResult>();
-			for (WeightedUnitTest uTest : currAssessment.getUnitTests()) {
-				UnitTestResult result = ProjectProperties.getInstance().getResultDAO()
-						.getUnitTestResultFromDisk(
-								ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername()
-										+ "/assessments/" + currAssessment.getId() + "/"
-										+ PASTAUtil.formatDate(job.getRunDate()) + "/unitTests/"
-										+ uTest.getTest().getId());
-				if (result == null) {
-					result = new UnitTestResult();
-				}
-				result.setTest(uTest.getTest());
-				utresults.add(result);
-			}
-			
-			// secret unit tests;
-			for (WeightedUnitTest uTest : currAssessment.getSecretUnitTests()) {
-				UnitTestResult result = ProjectProperties.getInstance().getResultDAO()
-						.getUnitTestResultFromDisk(
-								ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername()
-										+ "/assessments/" + currAssessment.getId() + "/"
-										+ PASTAUtil.formatDate(job.getRunDate()) + "/unitTests/"
-										+ uTest.getTest().getId());
-				if (result == null) {
-					result = new UnitTestResult();
-				}
-				result.setSecret(true);
-				result.setTest(uTest.getTest());
-				utresults.add(result);
-			}
-			
-			// save results to database
-			job.getResults().setUnitTests(utresults);
-			ProjectProperties.getInstance().getResultDAO().save(job.getResults());
-			
-//			// update resultDAO
-//			resultDAO.updateUnitTestResults(job.getUsername(), currAssessment,
-//					job.getRunDate());
-			
-//			try {
-//				for(UnitTestResult result : resultDAO.getAsssessmentResult(job.getUsername(), currAssessment,
-//						sdf.format(job.getRunDate())).getUnitTests()) {
-//					resultDAO.save(result);
+			if (worked) {
+				CompetitionResult compResult = job.getResult();
+				compResult.setRunDate(new Date());
+				resultDAO.loadCompetitionResults(compResult, new File(arenaDir, CompetitionResult.RESULT_FILENAME));
+				resultDAO.saveOrUpdate(compResult);
+				
+				CompetitionMarks compMarks = job.getMarks();
+				compMarks.setRunDate(new Date());
+				resultDAO.loadCompetitionMarks(compMarks, new File(arenaDir, CompetitionMarks.MARKS_FILENAME));
+				resultDAO.saveOrUpdate(compMarks);
+				
+				
+				// TODO send updates to player results objects 
+				// this is what it used to do:
+//				Scanner resultsIn = new Scanner(new File(arenaDir, CompetitionResult.RESULT_FILENAME));
+//				while (resultsIn.hasNextLine()) {
+//					String[] data = resultsIn.nextLine().split(",");
+//					// ensure a player with the name exists.
+//					String[] userData = data[0].split("\\.");
+//					if(arena.hasUser(userData[0])) {
+//						String username = userData[0];
+//						String playerName = userData[userData.length - 1];
+//						
+//						// write out to the correct location.
+//						String location = playerLocations.get(userData[0]
+//								+ "." + userData[userData.length - 1])
+//								+ ending;
+//
+//						if (location != null) {
+//
+//							try {
+//								PrintWriter out = new PrintWriter(
+//										new BufferedWriter(new FileWriter(
+//												location, true)));
+//								out.println(data[1] + "," + data[2] + ","
+//										+ data[3] + "," + data[4] + ","
+//										+ data[5]);
+//								out.close();
+//							} catch (IOException e1) {
+//								// do nothing
+//							}
+//						}
+//					}
 //				}
-//			} catch( Exception e ) {
-//				logger.error("Error saving unit test results to database.", e);
-//			}
-		} catch (Exception e) {
-			logger.error("Execution error for " + job.getUsername() + " - "
-					+ job.getAssessmentId(), e);
+//				resultsIn.close();
+				
+
+				// delete everything
+				FileUtils.deleteDirectory(thisRunDir);
+			}
+
+		} catch (IOException e) {
+			logger.error("Error executing arena job.", e);
 		}
 	}
 	
-	private void executeNormalJob(Job job) {
+	private void executeNormalJob(AssessmentJob job) {
 		// TODO: remove /submission
 		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername() + "/assessments/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
@@ -744,62 +460,34 @@ public class ExecutionManager {
 					File testLoc = new File(sandboxLoc, test.getTest().getFileAppropriateName());
 					testLoc.mkdirs();
 					
-					// copy over submission
-					FileUtils.copyDirectory(submissionLoc, testLoc);
-					
-					// copy over unit test
-					FileUtils.copyDirectory(new File(test.getTest().getFileLocation() + "/code/"), testLoc);
-					
-					// compile
 					JUnitTestRunner runner = new JUnitTestRunner();
 					runner.setMainTestClassname(test.getTest().getMainClassName());
-					File buildFile = runner.createBuildFile(new File(testLoc, "build.xml"));
 					
-					ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-					Project project = new Project();
+					AntJob antJob = new AntJob(testLoc, runner, "build", "test", "clean");
+					antJob.addDependency("test", "build");
 					
-					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-					project.setBasedir(testLoc.getAbsolutePath());
-					DefaultLogger consoleLogger = new DefaultLogger();
+					antJob.addSetupTask(new DirectoryCopyTask(submissionLoc, testLoc));
+					antJob.addSetupTask(new DirectoryCopyTask(new File(test.getTest().getFileLocation() + "/code/"), testLoc));
 					
-					ByteArrayOutputStream output = new ByteArrayOutputStream();
-					PrintStream runErrors = new PrintStream(output);
-					consoleLogger.setOutputPrintStream(runErrors);
-					consoleLogger.setErrorPrintStream(runErrors);
-					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-					project.addBuildListener(consoleLogger);
-					project.init();
-
-					project.addReference("ant.projectHelper", projectHelper);
-					projectHelper.parse(project, buildFile);			
+					antJob.run();
 					
-
-					StringBuilder allRunOutput = new StringBuilder();
+					AntResults results = antJob.getResults();
 					
-					boolean compileFailed = false;
-					try {
-						output.reset();
-						project.executeTarget("build");
-					} catch (BuildException e) {
-						compileFailed = true;
-						logger.error("Could not build " + job.getUsername() + " - "
-								+ currAssessment.getName() + " - " + test.getTest().getName() + ": " + e);
-					}
-					String buildContents = output.toString();
-					allRunOutput.append(buildContents);
-					Scanner scn = new Scanner(buildContents);
+					Scanner scn = new Scanner(results.getOutput("build"));
 					StringBuilder files = new StringBuilder();
 					StringBuilder compErrors = new StringBuilder();
 					String line = "";
 					if(scn.hasNext()) {
-						while((line = scn.nextLine()) != null) {
+						while(scn.hasNextLine()) {
+							line = scn.nextLine();
 							if(line.contains("Files to be compiled")) {
 								break;
 							}
 						}
 					}
-					if(scn.hasNext()) {
-						while((line = scn.nextLine()) != null) {
+					if(scn.hasNextLine()) {
+						while(scn.hasNextLine()) {
+							line = scn.nextLine();
 							if(line.contains("error")) {
 								break;
 							}
@@ -808,9 +496,9 @@ public class ExecutionManager {
 						// Chop off the trailing "\n"
 						files.replace(files.length()-1, files.length(), "");
 					}
-					if(line != null) {
+					if(scn.hasNextLine()) {
 						compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-						while(scn.hasNext()) {
+						while(scn.hasNextLine()) {
 							line = scn.nextLine();
 							compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
 						}
@@ -818,33 +506,6 @@ public class ExecutionManager {
 						compErrors.replace(compErrors.length()-1, compErrors.length(), "");
 					}
 					scn.close();
-					
-					boolean runFailed = false;
-					if(!compileFailed) {
-						try {
-							output.reset();
-							project.executeTarget("test");
-						} catch (BuildException e) {
-							runFailed = true;
-							logger.error("Could not test " + job.getUsername() + " - "
-									+ currAssessment.getName() + " - " + test.getTest().getName(), e);
-						}
-						String testContents = output.toString();
-						allRunOutput.append(testContents);
-					}
-					
-					boolean cleanFailed = false;
-					try {
-						output.reset();
-						project.executeTarget("clean");
-					} catch (BuildException e) {
-						cleanFailed = true;
-						logger.error("Could not clean " + job.getUsername() + " - "
-								+ currAssessment.getName() + " - " + test.getTest().getName(), e);
-					}
-					String cleanContents = output.toString();
-					allRunOutput.append(cleanContents).append(System.lineSeparator());
-					runErrors.close();
 					
 					// Check if this test has already been run
 					UnitTestResult currentResult = null;
@@ -859,31 +520,31 @@ public class ExecutionManager {
 					}
 					
 					// Get results from ant output
-					UnitTestResult results = ProjectProperties.getInstance().getResultDAO()
+					UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
 							.getUnitTestResultFromDisk(testLoc.getAbsolutePath());
-					if(results == null) {
-						results = new UnitTestResult();
-						results.setTest(test.getTest());
+					if(utResults == null) {
+						utResults = new UnitTestResult();
+						utResults.setTest(test.getTest());
 					}
 					
 					// If the test has been done before, update results, otherwise save new results
 					if(currentResult == null) {
-						currentResult = results;
+						currentResult = utResults;
 						job.getResults().addUnitTest(currentResult);
 						currentResult.setTest(test.getTest());
 					} else {
 						currentResult.getTestCases().clear();
-						currentResult.getTestCases().addAll(results.getTestCases());
+						currentResult.getTestCases().addAll(utResults.getTestCases());
 					}
 					
 					currentResult.setFilesCompiled(files.toString());
-					if(compileFailed) {
+					if(!results.isSuccess("build")) {
 						currentResult.setCompileErrors(compErrors.toString().replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
 					}
 					
-					currentResult.setRuntimeError(runFailed);
-					currentResult.setCleanError(cleanFailed);
-					currentResult.setRuntimeOutput(allRunOutput.toString());
+					currentResult.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
+					currentResult.setCleanError(!results.isSuccess("clean"));
+					currentResult.setRuntimeOutput(results.getFullOutput());
 					
 					ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 				} catch(Exception e2) {
@@ -892,6 +553,8 @@ public class ExecutionManager {
 									+ " - " + job.getAssessmentId(), e2);
 				}
 			}
+			
+			FileUtils.deleteDirectory(sandboxLoc);
 		}
 		catch (Exception e) {
 			logger.error("Execution error for " + job.getUsername() + " - "
@@ -913,9 +576,9 @@ public class ExecutionManager {
 	 */
 	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingAssessmentJobs() {
-		List<Job> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
+		List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-			for (Job job : outstandingJobs) {
+			for (AssessmentJob job : outstandingJobs) {
 				executeNormalJob(job);
 			}
 			outstandingJobs = scheduler.getOutstandingAssessmentJobs();
@@ -932,18 +595,35 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	//@Scheduled(fixedDelay = 10000)
+	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingCompetitionJobs() {
-		List<Job> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
+		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-			for (Job job : outstandingJobs) {
-				if (job.getAssessmentName().contains("#PASTAArena#")) {
-					executeArenaCompetitionJob(job);
-				} else {
-					executeCalculatedCompetitionJob(job);
-				}
+			for (CompetitionJob job : outstandingJobs) {
+				executeCalculatedCompetitionJob(job);
 			}
 			outstandingJobs = scheduler.getOutstandingCompetitionJobs();
+		}
+	}
+	
+	/**
+	 * Get outstanding competition jobs
+	 * <p>
+	 * This method runs on a fixed delay (currently 10 sec). The system waits
+	 * x ms between the end of the method and calling it again.
+	 * 
+	 * This queries the database for outstanding jobs, get the list, process them
+	 * all, then check the database again. When a check to the database is empty,
+	 * the system goes back to waiting.
+	 */
+	@Scheduled(fixedDelay = 10000)
+	public void executeRemainingArenaJobs() {
+		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingArenaJobs();
+		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
+			for (CompetitionJob job : outstandingJobs) {
+				executeArenaJob(job);
+			}
+			outstandingJobs = scheduler.getOutstandingArenaJobs();
 		}
 	}
 
