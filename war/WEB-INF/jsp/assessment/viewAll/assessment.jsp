@@ -55,14 +55,13 @@ either expressed or implied, of the PASTA Project.
 				<div style="clear: both;"></div>
 				<div id="release${assessment.id}" class="popup">
 					<form:form action="release/${assessment.id}/"
-						commandName="assessmentRelease" method="POST">
+						commandName="assessmentReleaseForm" method="POST">
 						<h2>${assessment.name}</h2>
 						Select which classes to release this assessment to.
 						<ul class="tristate list">
 							<li class="list"><input type="checkbox"> All
 								<ul>
-									<form:input type="hidden" path="assessmentId"
-										value="${assessment.id }" />
+									<form:input type="hidden" path="assessmentId" value="${assessment.id }" />
 									<c:forEach var="stream" items="${tutorialByStream}">
 										<c:if test="${!empty stream.key }">
 											<li class="list"><form:checkbox 
@@ -180,17 +179,16 @@ ${fn:length(assessment.competitions)} Competitions <br />
 
 <button id="newPopup">Add a new Assessment</button>
 
-<div id="newAssessment">
+<div id="newAssessment" class='popup'>
 	<span class="button bClose"> <span><b>X</b></span>
 	</span>
 	<h1>New Assessment</h1>
-	<form:form commandName="assessment" enctype="multipart/form-data"
+	<form:form commandName="newAssessmentForm" enctype="multipart/form-data"
 		method="POST">
 		<table>
 			<tr>
 				<td>Assessment Name:</td>
-				<td><form:input autocomplete="off" type="text" path="name"
-						value="" /></td>
+				<td><form:input autocomplete="off" type="text" path="name" /></td>
 			</tr>
 			<tr>
 				<td>Assessment Marks:</td>
@@ -198,23 +196,22 @@ ${fn:length(assessment.competitions)} Competitions <br />
 			</tr>
 			<tr>
 				<td>Assessment DueDate:</td>
-				<td><form:input type="text" path="simpleDueDate"
-						id="simpleDueDate" name="simpleDueDate" /></td>
+				<td><form:input type="text" path="strDate"/></td>
 			</tr>
 			<tr>
 				<td>Maximum Number of allowed submissions:</td>
-				<td><form:input type="text" path="numSubmissionsAllowed" /></td>
+				<td><form:input type="text" path="maxSubmissions" /></td>
 			</tr>
 		</table>
 		<input type="submit" value="Create" id="submit" />
 	</form:form>
 </div>
-
-<div id="released">
+<%--
+<div id="released" class='popup'>
 	<span class="button bClose"> <span><b>X</b></span>
 	</span>
 	<h1>Release</h1>
-	<form:form commandName="assessment" enctype="multipart/form-data"
+	<form:form commandName="assessmentReleaseForm" enctype="multipart/form-data"
 		method="POST">
 		<c:set var="rel" value="1" />
 		<table>
@@ -225,7 +222,7 @@ ${fn:length(assessment.competitions)} Competitions <br />
 			</tr>
 			<tr>
 				<td>
-					<ul class=tristate">
+					<ul class="tristate">
 
 					</ul>
 				</td>
@@ -237,12 +234,13 @@ ${fn:length(assessment.competitions)} Competitions <br />
 		<input type="submit" value="Release" id="submit" />
 	</form:form>
 </div>
+ --%>
 
-<div id="comfirmPopup">
+<div id="confirmPopup" class="popup">
 	<span class="button bClose"> <span><b>X</b></span>
 	</span>
 	<h1>Are you sure you want to do that?</h1>
-	<button id="comfirmButton" onclick="">Confirm</button>
+	<button id="confirmButton" onclick="">Confirm</button>
 </div>
 
 <script>
@@ -252,35 +250,19 @@ ${fn:length(assessment.competitions)} Competitions <br />
 		// DOM Ready
 		$(function() {
 
-			$("#simpleDueDate").datetimepicker({
+			$("#strDate").datetimepicker({
 				timeformat : 'hh:mm',
 				dateFormat : 'dd/mm/yy'
 			});// TODO
 
-			// Binding a click event
-			// From jQuery v.1.7.0 use .on() instead of .bind()
-			$('#newPopup').bind('click', function(e) {
-
+			$('#newPopup').on('click', function(e) {
 				// Prevents the default action to be triggered. 
 				e.preventDefault();
-
-				// Triggering bPopup when click event is fired
 				$('#newAssessment').bPopup();
-
 			});
-
 
 		});
 
 		$('ul.tristate').tristate();
 	})(jQuery);
-
-	function toggle(showHideDiv) {
-		var ele = document.getElementById(showHideDiv);
-		if (ele.style.display == "block") {
-			ele.style.display = "none"
-		} else {
-			ele.style.display = "block";
-		}
-	}
 </script>

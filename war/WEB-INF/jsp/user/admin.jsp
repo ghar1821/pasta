@@ -147,7 +147,7 @@ either expressed or implied, of the PASTA Project.
 		<button id="studentUpdate" onclick="popup(false, false);">Update</button>
 		<button id="studentReplace" onclick="popup(false, true);">Replace</button>
 		
-		<div id="comfirmPopup">
+		<div id="confirmPopup" class='popup'>
 			<span class="button bClose"> <span><b>X</b></span>
 			</span>
 			<h1 id="popupText">Are you sure you want to do that?</h1>
@@ -190,7 +190,7 @@ either expressed or implied, of the PASTA Project.
 				document.getElementById('popupText').innerHTML = content;
 
 				// Triggering bPopup when click event is fired
-				$('#comfirmPopup').bPopup();
+				$('#confirmPopup').bPopup();
 			}
 			
 			function cloneRowAbove(){

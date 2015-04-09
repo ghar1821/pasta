@@ -33,33 +33,14 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<h1 style="margin-bottom:0.5em;">${competition.name}</h1>
+<h1 style="margin-bottom:0.5em;"><c:out value='${competition.calculated ? "Calculated" : "Arena"}' /> Competition</h1>
 
-<ul class="list">
-<jsp:include page="../../recursive/fileWriter.jsp"/>
-</ul>
-
-<button id="newPopup">Update competition Code</button>
-
-<form:form commandName="competition" enctype="multipart/form-data" method="POST">
+<form:form commandName="updateCompetitionForm" enctype="multipart/form-data" method="POST">
 	<table>
-		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${competition.tested}">${competition.tested}</td></tr>
-		<tr><td>Is live:</td><td class="pastaTF pastaTF${competition.live}">${competition.live}</td></tr>
-		<c:choose>
-			<c:when test="${competition.calculated}">
-				<tr><td>Competition Type:</td><td>Calculated</td></tr>
-			</c:when>
-			<c:otherwise>
-				<tr><td>Competition Type:</td><td>Arena</td></tr>
-				<!-- can tutors make repeatable arenas -->
-				<tr><td>Tutors can create repeatable arenas:</td><td><form:checkbox path="tutorCreatableRepeatableArena"/></td></tr>
-				<!-- can students make arenas -->
-				<tr><td>Students can create arenas:</td><td><form:checkbox path="studentCreatableArena"/></td></tr>
-				<!-- can students make repeatable arenas -->
-				<tr><td>Students can create repeatable arenas:</td><td><form:checkbox path="studentCreatableRepeatableArena"/></td></tr>
-			</c:otherwise>
-		</c:choose>
-		<tr><td>Hidden competition:</td><td><form:checkbox path="hidden"/></td></tr>
+		<tr><td>Competition Name:</td><td><form:input path="name"/></td></tr>
+		<tr><td>Is live:</td><td class="pastaTF pastaTF${liveAssessmentCount gt 0}">${liveAssessmentCount gt 0}</td></tr>
+		<tr><td colspan='2'><label><form:checkbox path="hidden" />Hidden competition</label></td></tr>
+		
 		<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
 		<tr>
 			<td>Frequency:</td>
@@ -71,16 +52,80 @@ either expressed or implied, of the PASTA Project.
 				<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
 			</td>
 		</tr>
-		<c:choose>
-			<c:when test="${empty competition.nextRunDate }">
-				Never
-			</c:when>
-			<c:otherwise>
-				<tr><td>Next Run:</td><td>${competition.nextRunDate}</td></tr>
-			</c:otherwise>
-		</c:choose>
+		<tr><td>Next Run:</td>
+			<c:choose>
+				<c:when test="${empty competition.nextRunDate }">
+					<td>Never</td>
+				</c:when>
+				<c:otherwise>
+					<td>${competition.nextRunDate}</td>
+				</c:otherwise>
+			</c:choose>
+		</tr>
+		
+		<c:if test="${not competition.calculated}">
+			<!-- can tutors make repeatable arenas -->
+			<tr><td>Tutor arena permissions:</td>
+			<td><form:select path="tutorPermissions"><form:options /></form:select></td></tr>
+			<!-- can students make arenas -->
+			<tr><td>Student arena permissions:</td>
+			<td><form:select path="studentPermissions"><form:options /></form:select></td></tr>
+		</c:if>
 	</table> 
 	
+	<div>
+		<table>
+			<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
+			<c:if test="${competition.hasCode}">
+			<tr>
+				<td>Current Code:</td>
+				<td>
+					<ul class="list">
+					<jsp:include page="../../recursive/fileWriter.jsp"/>
+					</ul>
+				</td>
+			</tr>
+			</c:if>
+			<tr><td>Has been tested:</td><td class="pastaTF pastaTF${competition.tested}">${competition.tested}</td></tr>
+		</table>
+		
+		<c:if test="${competition.hasCode}">
+		Run Options:
+		<c:choose>
+			<c:when test="${competition.calculated}">
+				<div id='calculatedOptions'>
+					<label><form:checkbox path="hasBuild" />Custom build script</label><br/>
+					<div class='hiddenToStart optionset BuildOptionSet'>
+						<table>
+							<tr><td>Main script:</td><td><form:select path="buildOptions.scriptFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Timeout:</td><td><form:input path="buildOptions.timeout"/></td></tr>
+							<tr><td>Input file:</td><td><form:select path="buildOptions.inputFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Output file:</td><td><form:select path="buildOptions.outputFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Error file:</td><td><form:select path="buildOptions.errorFilename" items="${codeFiles}"/></td></tr>
+						</table>
+					</div>
+					<label><form:checkbox path="hasRun" />Custom execute script</label><br/>
+					<div class='hiddenToStart optionset RunOptionSet'>
+						<table>
+							<tr><td>Main script:</td><td><form:select path="runOptions.scriptFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Timeout:</td><td><form:input path="runOptions.timeout"/></td></tr>
+							<tr><td>Input file:</td><td><form:select path="runOptions.inputFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Output file:</td><td><form:select path="runOptions.outputFilename" items="${codeFiles}"/></td></tr>
+							<tr><td>Error file:</td><td><form:select path="runOptions.errorFilename" items="${codeFiles}"/></td></tr>
+						</table>
+					</div>
+				</div>
+			</c:when>
+			<c:otherwise>
+				<div id='arenaOptions'>
+					No special options.
+				</div>
+			</c:otherwise>
+		</c:choose>
+		</c:if>
+	</div>
+	
+	<form:input type="hidden" path="id"/>
 	<input type="submit" value="Save Competition" id="submit" style="margin-top:1em;"/>
 </form:form>
 
@@ -166,19 +211,6 @@ either expressed or implied, of the PASTA Project.
 	</table>
 </c:if>
 
-<div id="newCompetition" >
-	<span class="button bClose">
-		<span><b>X</b></span>
-	</span>
-	<h1> Update competition code </h1>
-	<form:form commandName="newCompetitionModel" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Competition Code:</td><td><form:input type="file" path="file"/></td></tr>
-		</table>
-    	<input type="submit" value="Update" id="submit"/>
-	</form:form>
-</div>
-
 	
 <script>
 	;(function($) {
@@ -187,20 +219,31 @@ either expressed or implied, of the PASTA Project.
         $(function() {
         	
         	$('#firstStartDateStr').datetimepicker({ dateFormat: 'dd/mm/yy', timeFormat: 'hh:mm' });
-        
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#newPopup').bind('click', function(e) {
 
-                // Prevents the default action to be triggered. 
-                e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('#newCompetition').bPopup();
-
-            });
-            
+        	<c:if test="${competition.calculated}">
+			$('[id^=hasBuild]').on('change', function() {
+				toggleEnabledOptions("Build");
+			});
+			$('[id^=hasRun]').on('change', function() {
+				toggleEnabledOptions("Run");
+			});
+			
+			toggleEnabledOptions("Build");
+			toggleEnabledOptions("Run");
+			</c:if>
         });
 
     })(jQuery);
+	
+	<c:if test="${competition.calculated}">
+	function toggleEnabledOptions(types) {
+		$('.' + types + 'OptionSet input').prop('disabled', !$('[id^=has' + types + ']').is(':checked'));
+		if($('[id^=has' + types + ']').is(':checked')) {
+			$('.' + types + 'OptionSet').show(300);
+			$('.' + types + 'OptionSet').removeClass('hidden');
+		} else {
+			$('.' + types + 'OptionSet').hide(300);
+		}
+	}
+	</c:if>
 </script>

@@ -35,64 +35,41 @@ either expressed or implied, of the PASTA Project.
 
 <h1> Unit Test - ${unitTest.name}</h1>
 
-<ul class="list">
-<jsp:include page="../../recursive/fileWriter.jsp"/>
-</ul>
-
-<form:form commandName="unitTest" enctype="multipart/form-data" method="POST">
-	<form:input path="id" type="hidden" />
+<form:form commandName="updateUnitTest" enctype="multipart/form-data" method="POST">
 	<table>
 		<tr><td>Name:</td><td><form:input path="name" /></td></tr>
 		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
-		<tr>
-			<td>Main class:</td>
-			<td>
-				<form:select path="mainClassName">
-					<form:option value="" label="--- Select ---"/>
-					<form:options items="${candidateMainFiles}" />
-				</form:select>
-			</td>
-		</tr>
+		
+		<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
+		<c:if test="${unitTest.hasCode}">
+			<tr>
+				<td>Current Code</td>
+				<td>
+					<ul class="list">
+					<jsp:include page="../../recursive/fileWriter.jsp"/>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td>Main class:</td>
+				<td>
+					<form:select path="mainClassName">
+						<form:option value="" label="--- Select ---"/>
+						<form:options items="${candidateMainFiles}" />
+					</form:select>
+				</td>
+			</tr>
+		</c:if>
 		<tr><td></td><td><input type="submit" value="Save Changes" id="submit" /></td></tr>
 	</table> 
 </form:form>
 
-<button id="newPopup"> Test Unit Test </button>
-<button id="updateTest"> Update Test </button>
-<a href="./download/"><button id="downloadTest"> Download Test </button></a>
-
-<div id="testUnitTest" style="display:none;">
-<span class="button bClose">
-	<span><b>X</b></span>
-</span>
-	<h1> Test Unit Test </h1>
-	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
-		</table>
-		<form:input type="hidden" path="submittingUsername" value="${submittingUsername}"/>
-		<form:input type="hidden" path="submittingForUsername" value="${submittingForUsername}"/>
-		<form:input type="hidden" path="assessment" value="${unitTest.id}"/>
-    	<input type="submit" value="Upload" id="submit"/>
-	</form:form>
-</div>
-
-<div id="updateUnitTestCode" style="display:none;">
-<span class="button bClose">
-	<span><b>X</b></span>
-</span>
-	<span class="button bClose">
-		<span><b>X</b></span>
-	</span>
-	<h1> Update Unit Test Code </h1>
-	<form:form commandName="newUnitTestModel" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
-		</table>
-		<form:input type="hidden" path="testId" value="${unitTest.id}"/>
-    	<input type="submit" value="Update" id="submit"/>
-	</form:form>
-</div>
+<c:if test="${not empty unitTest.mainClassName}">
+	<button id="testPopup"> Test Unit Test </button>
+</c:if>
+<c:if test="${unitTest.hasCode}">
+	<a href="./download/"><button id="downloadTest"> Download Test </button></a>
+</c:if>
 
 <c:if test="${not empty latestResult}">
 	<h2>Latest Test results
@@ -114,12 +91,13 @@ either expressed or implied, of the PASTA Project.
 		</div>
 	</c:if>
 	<c:if test="${not empty latestResult.testCases}">
+		<div>
 		<c:forEach var="testCase" items="${latestResult.testCases}">
 				<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
 		</c:forEach>
+		</div>
 		<br />
-		<br />
-		<button id="acceptUnitTest" onclick="document.getElementById('comfirmButton').onclick = function(){ location.href='../tested/${unitTest.id}/'};$('#comfirmPopup').bPopup();">Working as intended</button></td>
+		<button id="acceptUnitTest">Working as intended</button>
 		<table class="pastaTable">
 			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 			<c:forEach var="testCase" items="${latestResult.testCases}">
@@ -136,12 +114,25 @@ either expressed or implied, of the PASTA Project.
 	</c:if>
 </c:if>
 
-<div id="comfirmPopup" >
+<div id="testUnitTestDiv" class='popup'>
+	<span class="button bClose">
+		<span><b>X</b></span>
+	</span>
+	<h1> Test Unit Test </h1>
+	<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
+		<table>
+			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
+		</table>
+    	<input type="submit" value="Upload" id="submit"/>
+	</form:form>
+</div>
+
+<div id="confirmPopup" class='popup' >
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
 	<h1>Are you sure you want to do that?</h1>
-	<button id="comfirmButton" onclick="">Confirm</button>
+	<a href="../tested/${unitTest.id}/"><button id="confirmButton">Confirm</button></a>
 </div>
 
 <script>
@@ -150,29 +141,21 @@ either expressed or implied, of the PASTA Project.
          // DOM Ready
         $(function() {
 
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#newPopup').bind('click', function(e) {
-
+            $('#testPopup').on('click', function(e) {
                 // Prevents the default action to be triggered. 
                 e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('#testUnitTest').bPopup();
-
+                $('#testUnitTestDiv').bPopup();
             });
             
-
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#updateTest').bind('click', function(e) {
-
+            $('#acceptUnitTest').on('click', function(e) {
                 // Prevents the default action to be triggered. 
                 e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('#updateUnitTestCode').bPopup();
-
+                $('#confirmPopup').bPopup();
+            });
+            
+            <%-- Disable test code button when main class not selected --%>
+            $('#mainClassName').on('change', function() {
+            	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
             });
 
         });

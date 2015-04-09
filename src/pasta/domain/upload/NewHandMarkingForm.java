@@ -27,38 +27,24 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-package pasta.domain.form;
+package pasta.domain.upload;
 
 /**
- * Container for for the special release form
- * 
- * Only has getters and setters.
+ * Form object for a new hand marking assessment module.
  * 
  * @author Alex Radu
  * @version 2.0
- * @since 2013-02-28
+ * @since 2012-12-13
+ *
  */
-public class ReleaseForm {
-	private long assessmentId;
-	private String list;
-	private String specialRelease;
-	
-	public long getAssessmentId() {
-		return assessmentId;
+public class NewHandMarkingForm {
+	private String name;
+
+	public String getName() {
+		return name;
 	}
-	public void setAssessmentId(long assessmentId) {
-		this.assessmentId = assessmentId;
-	}
-	public String getList() {
-		return list;
-	}
-	public void setList(String list) {
-		this.list = list;
-	}
-	public String getSpecialRelease() {
-		return specialRelease;
-	}
-	public void setSpecialRelease(String specialRelease) {
-		this.specialRelease = specialRelease;
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

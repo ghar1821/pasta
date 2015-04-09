@@ -104,10 +104,51 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 	
 	@Override
 	public int compareTo(WeightedHandMarking other) {
-		int diff = this.handMarking.compareTo(other.handMarking);
+		if(other == null) {
+			return 1;
+		}
+		int diff;
+		if(this.getHandMarking() != null) {
+			diff = this.getHandMarking().compareTo(other.getHandMarking());
+			if(diff != 0) {
+				return diff;
+			}
+		}
+		diff = (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
 		if(diff != 0) {
 			return diff;
 		}
-		return (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
+		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
+		result = prime * result + (int) (id ^ (id >>> 32));
+		long temp;
+		temp = Double.doubleToLongBits(weight);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WeightedHandMarking other = (WeightedHandMarking) obj;
+		if (handMarking == null) {
+			if (other.handMarking != null)
+				return false;
+		} else if (!handMarking.equals(other.handMarking))
+			return false;
+		if (id != other.id)
+			return false;
+		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
+			return false;
+		return true;
 	}
 }

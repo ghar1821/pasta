@@ -31,6 +31,8 @@ package pasta.domain.template;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -40,11 +42,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.list.LazyList;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -84,31 +85,28 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	
 	private String name;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinTable(name="hand_marking_columns",
 			joinColumns=@JoinColumn(name = "hand_marking_id"),
 			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
-    @OrderColumn(name = "col_index")
+    @OrderBy("weight")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedField> columnHeader = LazyList.decorate(new ArrayList<WeightedField>(),
-			FactoryUtils.instantiateFactory(WeightedField.class));
+	private List<WeightedField> columnHeader = new ArrayList<WeightedField>();
 	
-	@OneToMany (cascade = CascadeType.ALL)
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinTable(name="hand_marking_rows",
 			joinColumns=@JoinColumn(name = "hand_marking_id"),
 			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
     @OrderColumn(name = "row_index")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedField> rowHeader = LazyList.decorate(new ArrayList<WeightedField>(),
-			FactoryUtils.instantiateFactory(WeightedField.class));
+	private List<WeightedField> rowHeader = new ArrayList<WeightedField>();
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinTable (name="hand_marking_data_joins", 
 		joinColumns=@JoinColumn(name = "hand_marking_id"),
 		inverseJoinColumns=@JoinColumn(name = "hand_marking_data_id"))
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<HandMarkData> data = LazyList.decorate(new ArrayList<HandMarkData>(),
-			FactoryUtils.instantiateFactory(HandMarkData.class));
+	private List<HandMarkData> data = new ArrayList<HandMarkData>();
 	
 	
 	public String getName() {
@@ -116,7 +114,7 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	}
 	
 	public String getFileAppropriateName() {
-		return name.replace("[^\\w]+", "");
+		return name.replaceAll("[^\\w]+", "");
 	}
 
 	public void setName(String name) {
@@ -129,9 +127,7 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	
 	public void setColumnHeader(List<WeightedField> columnHeader) {
 		this.columnHeader.clear();
-		for(WeightedField column: columnHeader){
-			this.columnHeader.add(column);
-		}
+		this.columnHeader.addAll(columnHeader);
 	}
 
 	public List<WeightedField> getRowHeader() {
@@ -199,21 +195,26 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	}
 
 	public void addData(HandMarkData handMarkData) {
-		//handMarkData.setHandMarking(this);
 		getData().add(handMarkData);
 	}
 	
+	public void addData(Collection<HandMarkData> handMarkData) {
+		getData().addAll(handMarkData);
+	}
+	
 	public boolean removeData(HandMarkData handMarkData) {
-		//handMarkData.setHandMarking(null);
 		return getData().remove(handMarkData);
 	}
 	
+	public boolean removeData(Collection<HandMarkData> handMarkData) {
+		boolean success = true;
+		for(HandMarkData data : handMarkData) {
+			success &= removeData(data);
+		}
+		return success;
+	}
+	
 	public void removeAllData() {
-//		Iterator<HandMarkData> it = getData().iterator();
-//		while(it.hasNext()) {
-//			it.next().setHandMarking(null);
-//			it.remove();
-//		}
 		getData().clear();
 	}
 
@@ -221,20 +222,90 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 		getColumnHeader().add(column);
 	}
 	
+	public void addColumns(Collection<WeightedField> columns) {
+		for(WeightedField column : columns) {
+			addColumn(column);
+		}
+	}
+	
 	public boolean removeColumn(WeightedField column) {
-		return getColumnHeader().remove(column);
+		List<HandMarkData> toRemove = new LinkedList<>();
+		for(HandMarkData data : getData()) {
+			if(data.getColumn() == column) {
+				toRemove.add(data);
+			}
+		}
+		boolean success = true;
+		for(HandMarkData data : toRemove) {
+			success &= removeData(data);
+		}
+		return success && getColumnHeader().remove(column);
+	}
+	
+	public boolean removeColumns(Collection<WeightedField> columns) {
+		boolean success = true;
+		for(WeightedField column : columns) {
+			success &= removeColumn(column);
+		}
+		return success;
 	}
 	
 	public void addRow(WeightedField row) {
 		getRowHeader().add(row);
 	}
 	
+	public void addRows(Collection<WeightedField> rows) {
+		for(WeightedField row : rows) {
+			addRow(row);
+		}
+	}
+	
 	public boolean removeRow(WeightedField row) {
-		return getRowHeader().remove(row);
+		List<HandMarkData> toRemove = new LinkedList<>();
+		for(HandMarkData data : getData()) {
+			if(data.getRow() == row) {
+				toRemove.add(data);
+			}
+		}
+		boolean success = true;
+		for(HandMarkData data : toRemove) {
+			success &= removeData(data);
+		}
+		return success && getRowHeader().remove(row);
+	}
+	
+	public boolean removeRows(Collection<WeightedField> rows) {
+		boolean success = true;
+		for(WeightedField row : rows) {
+			success &= removeRow(row);
+		}
+		return success;
 	}
 
 	@Override
 	public int compareTo(HandMarking other) {
 		return this.name.compareTo(other.name);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		HandMarking other = (HandMarking) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

@@ -67,17 +67,14 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.mysql.jdbc.ResultSet;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
-import pasta.domain.template.HandMarking;
-import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.upload.NewCompetition;
-import pasta.domain.upload.NewUnitTest;
+import pasta.domain.upload.NewCompetitionForm;
+import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
 import pasta.service.AssessmentManager;
 import pasta.service.HandMarkingManager;
@@ -162,13 +159,13 @@ public class SubmissionController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	@ModelAttribute("newUnitTestModel")
-	public NewUnitTest returnNewUnitTestModel() {
-		return new NewUnitTest();
+	public NewUnitTestForm returnNewUnitTestModel() {
+		return new NewUnitTestForm();
 	}
 
 	@ModelAttribute("newCompetitionModel")
-	public NewCompetition returnNewCompetitionModel() {
-		return new NewCompetition();
+	public NewCompetitionForm returnNewCompetitionModel() {
+		return new NewCompetitionForm();
 	}
 
 	@ModelAttribute("submission")
@@ -716,10 +713,18 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
+		String fileEnding = location.substring(location.lastIndexOf(".") + 1);
+//		if(fileEnding.equalsIgnoreCase("pdf")) {
+			//TODO: figure out a way to redirect to pdfs
+//			logger.warn("Redirecting to: redirect:" + location);
+//			return "redirect:" + location;
+//		}
+		
 		model.addAttribute("unikey", user);
 		model.addAttribute("location", location);
 		model.addAttribute("codeStyle", codeStyle);
-		model.addAttribute("fileEnding", location.substring(location.lastIndexOf(".") + 1));
+		model.addAttribute("fileEnding", fileEnding.toLowerCase());
+		
 
 		if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))) {
 			model.addAttribute("fileContents",
@@ -1628,7 +1633,12 @@ public class SubmissionController {
 			// stream
 			userData += "      \"stream\": \"" + user.getStream() + "\",\r\n";
 			// class
-			userData += "      \"class\": \"" + user.getTutorial() + "\",\r\n";
+			userData += "      \"class\": \"" + user.getTutorial() + "\"";
+					
+			if(allAssessments.length > 0) {
+				userData += ",";
+			}
+			userData += "\r\n";
 
 			// marks
 			for (int j = 0; j < allAssessments.length; j++) {

@@ -29,17 +29,14 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -47,20 +44,21 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.form.ReleaseForm;
+import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.NewAssessmentForm;
+import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.Job;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -138,14 +136,21 @@ public class AssessmentManager {
 	
 	/**
 	 * Helper method.
+	 * @param assessment 
 	 * 
-	 * @see pasta.repository.AssessmentDAO#releaseAssessment(long, ReleaseForm)
-	 * @param assessmentId the id of the assessment
-	 * @param releaseForm {@link pasta.domain.form.ReleaseForm} 
+	 * @see pasta.repository.AssessmentDAO#releaseAssessment(long, AssessmentReleaseForm)
+	 * @param releaseForm {@link pasta.domain.form.AssessmentReleaseForm} 
 	 */
-	public void releaseAssessment(long assessmentId, ReleaseForm releaseForm)
+	public void releaseAssessment(Assessment assessment, AssessmentReleaseForm releaseForm)
 	{
-		assDao.releaseAssessment(assessmentId,releaseForm);
+		assessment.setReleasedClasses(releaseForm.getList());
+		if (releaseForm.getSpecialRelease() != null
+				&& !releaseForm.getSpecialRelease().isEmpty()) {
+			assessment.setSpecialRelease(releaseForm.getSpecialRelease());
+		}
+		
+		// Update in database
+		assDao.saveOrUpdate(assessment);
 	}
 	
 	/**
@@ -168,18 +173,19 @@ public class AssessmentManager {
 	 * connected with them. Adds the arenas to the execution queue.
 	 * 
 	 * @param assessmentToAdd the assessment to add.
+	 * @deprecated use updateAssessment(assessment, form) instead
 	 */
+	@Deprecated
 	public void addAssessment(Assessment assessmentToAdd) {
 		
-		// unlink any unnecessary unit test and hand marking templates
+		// unlink any unnecessary unit tests, hand marking templates or competitions
 		Assessment previousAssessment = ProjectProperties.getInstance().getAssessmentDAO()
 				.getAssessment(assessmentToAdd.getId());
 		boolean removed = false;
 		if(previousAssessment != null) {
-			List<WeightedUnitTest> newTests = assessmentToAdd.getAllUnitTests();
 			for(WeightedUnitTest test : previousAssessment.getAllUnitTests()) {
 				boolean keep = false;
-				for(WeightedUnitTest newTest : newTests) {
+				for(WeightedUnitTest newTest : assessmentToAdd.getAllUnitTests()) {
 					if(newTest.getId() == test.getId()) {
 						keep = true;
 						break;
@@ -205,7 +211,22 @@ public class AssessmentManager {
 					removed = true;
 				}
 			}
+			for(WeightedCompetition competition : previousAssessment.getCompetitions()) {
+				boolean keep = false;
+				for(WeightedCompetition newCompetition : assessmentToAdd.getCompetitions()) {
+					if(newCompetition.getId() == competition.getId()) {
+						keep = true;
+						break;
+					}
+				}
+				if(!keep) {
+					competition.setAssessment(null);
+					competition.setCompetition(null);
+					removed = true;
+				}
+			}
 			
+			//TODO is this merge necessary?
 			if(removed) {
 				ProjectProperties.getInstance().getAssessmentDAO().merge(previousAssessment);
 			}
@@ -225,76 +246,28 @@ public class AssessmentManager {
 			handMarking.setAssessment(assessmentToAdd);
 		}
 		
-		ProjectProperties.getInstance().getAssessmentDAO().merge(assessmentToAdd);
-		
-//		if(assessmentToAdd.getId() == 0) {
-//			ProjectProperties.getInstance().getAssessmentDAO().save(assessmentToAdd);
-//		} else {
-//		}
+		// competitions
+		for (WeightedCompetition competition : assessmentToAdd.getCompetitions()) {
+			Competition realComp = ProjectProperties.getInstance().getCompetitionDAO()
+					.getCompetition(competition.getCompetition().getId());
 			
-//			// competitions
-//			for (WeightedCompetition compeition : assessmentToAdd.getCompetitions()) {
-//				if (assDao.getCompetition(compeition.getCompName().replace(" ", "")) != null) {
-//					compeition.setTest(assDao.getCompetition(compeition.getCompName().replace(
-//							" ", "")));
-//					
-//					// if the competition is not already live, add comp/arenas to the scheduler
-//					if(!assDao.getCompetition(compeition.getCompName().replace(" ", "")).isLive()){
-//						if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).isCalculated()){
-//							// add competition 
-//							scheduler.save(new Job("PASTACompetitionRunner", 
-//									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName(), 
-//									assDao.getCompetition(compeition.getCompName().replace(" ", "")).getNextRunDate()));
-//						}
-//						else{
-//							// add arenas
-//							// official
-//							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena() != null){
-//								Arena arena = assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOfficialArena();
-//								scheduler.save(new Job("PASTACompetitionRunner", 
-//										assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
-//										arena.getNextRunDate()));
-//							}
-//							// outstanding
-//							if(assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas() != null){
-//								for(Arena arena : assDao.getCompetition(compeition.getCompName().replace(" ", "")).getOutstandingArenas()){
-//									scheduler.save(new Job("PASTACompetitionRunner", 
-//											assDao.getCompetition(compeition.getCompName().replace(" ", "")).getShortName()+"#PASTAArena#"+arena.getName(), 
-//											arena.getNextRunDate()));
-//								}
-//							}
-//						}
-//					}
-//					if (assDao.getAssessment(assessmentToAdd.getId()) == null) {
-//						assDao.getCompetition(
-//								compeition.getCompName().replace(" ", ""))
-//								.addAssessment(assessmentToAdd);
-//					} else {
-//						assDao.getCompetition(
-//								compeition.getCompName().replace(" ", ""))
-//								.addAssessment(
-//										assDao.getAssessment(assessmentToAdd
-//												.getId()));
-//					}
-//				}
-//			}
-
-//			// add it to the directory structure
-//			File location = new File(ProjectProperties.getInstance()
-//					.getProjectLocation()
-//					+ "/template/assessment/"
-//					+ assessmentToAdd.getName().replace(" ", ""));
-//			location.mkdirs();
-//
-//			PrintStream out = new PrintStream(location.getAbsolutePath()
-//					+ "/assessmentProperties.xml");
-//			out.print(assessmentToAdd);
-//			out.close();
-//
-//			PrintStream descriptionOut = new PrintStream(
-//					location.getAbsolutePath() + "/description.html");
-//			descriptionOut.print(assessmentToAdd.getDescription());
-//			descriptionOut.close();
+			competition.setCompetition(realComp);
+			competition.setAssessment(assessmentToAdd);
+			
+			if(ProjectProperties.getInstance().getCompetitionDAO().isRunning(realComp)) {
+				if(realComp.isCalculated()) {
+					scheduler.scheduleJob(realComp, realComp.getNextRunDate());
+				} else {
+					Arena arena = realComp.getOfficialArena();
+					scheduler.scheduleJob(realComp, arena, arena.getNextRunDate());
+					for(Arena outstanding : realComp.getOutstandingArenas()) {
+						scheduler.scheduleJob(realComp, outstanding, outstanding.getNextRunDate());
+					}
+				}
+			}
+		}
+		
+		ProjectProperties.getInstance().getAssessmentDAO().merge(assessmentToAdd);
 	}
 
 	/**
@@ -380,5 +353,95 @@ public class AssessmentManager {
 			return null;
 		}
 		return allResults.get(0);
+	}
+
+	public Assessment addAssessment(NewAssessmentForm form) {
+		Assessment assessment = new Assessment();
+		assessment.setName(form.getName());
+		assessment.setMarks(form.getMarks());
+		assessment.setNumSubmissionsAllowed(form.getMaxSubmissions());
+		assessment.setDueDate(form.getDueDate());
+		
+		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+		return assessment;
+	}
+	
+	public void updateAssessment(Assessment assessment, UpdateAssessmentForm form) {
+		assessment.setName(form.getName());
+		assessment.setCategory(form.getCategory());
+		assessment.setDueDate(form.getDueDate());
+		assessment.setMarks(form.getMarks());
+		assessment.setNumSubmissionsAllowed(form.getNumSubmissionsAllowed());
+		assessment.setCountUncompilable(form.isCountUncompilable());
+		assessment.setDescription(form.getDescription());
+		
+		for(WeightedUnitTest test : form.getNewUnitTests()) {
+			test.setSecret(false);
+		}
+		for(WeightedUnitTest test : form.getNewSecretUnitTests()) {
+			test.setSecret(true);
+		}
+		
+		// unlink any unnecessary unit tests
+		{
+			Collection<WeightedUnitTest> toRemove = CollectionUtils.subtract(assessment.getAllUnitTests(), form.getAllUnitTests());
+			Collection<WeightedUnitTest> toAdd = CollectionUtils.subtract(form.getAllUnitTests(), assessment.getAllUnitTests());	
+			assessment.removeUnitTests(toRemove);
+			assessment.addUnitTests(toAdd);
+		}
+		
+		// unlink any unnecessary hand marking templates
+		{
+			Collection<WeightedHandMarking> toRemove = CollectionUtils.subtract(assessment.getHandMarking(), form.getNewHandMarking());	
+			Collection<WeightedHandMarking> toAdd = CollectionUtils.subtract(form.getNewHandMarking(), assessment.getHandMarking());
+			assessment.removeHandMarkings(toRemove);
+			assessment.addHandMarkings(toAdd);
+		}
+		
+		// unlink any unnecessary competitions
+		{
+			Collection<WeightedCompetition> toRemove = CollectionUtils.subtract(assessment.getCompetitions(), form.getNewCompetitions());	
+			Collection<WeightedCompetition> toAdd = CollectionUtils.subtract(form.getNewCompetitions(), assessment.getCompetitions());
+			assessment.removeCompetitions(toRemove);
+			assessment.addCompetitions(toAdd);
+		}
+		
+		// link weighted unit tests to unit test and assessment
+		for (WeightedUnitTest test : assessment.getAllUnitTests()) {
+			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
+			test.setAssessment(assessment);
+		}
+	
+		// link weighted hand marking to hand marking template and assessment
+		for (WeightedHandMarking handMarking : assessment.getHandMarking()) {
+			HandMarking realTemplate = ProjectProperties.getInstance().getHandMarkingDAO()
+					.getHandMarking(handMarking.getHandMarking().getId());
+			handMarking.setHandMarking(realTemplate);
+			handMarking.setAssessment(assessment);
+		}
+		
+		// link weighted competitions to competition and assessment
+		for (WeightedCompetition competition : assessment.getCompetitions()) {
+			Competition realComp = ProjectProperties.getInstance().getCompetitionDAO()
+					.getCompetition(competition.getCompetition().getId());
+			
+			competition.setCompetition(realComp);
+			competition.setAssessment(assessment);
+			
+			// schedule new jobs if necessary
+			if(ProjectProperties.getInstance().getCompetitionDAO().isRunning(realComp)) {
+				if(realComp.isCalculated()) {
+					scheduler.scheduleJob(realComp, realComp.getNextRunDate());
+				} else {
+					Arena arena = realComp.getOfficialArena();
+					scheduler.scheduleJob(realComp, arena, arena.getNextRunDate());
+					for(Arena outstanding : realComp.getOutstandingArenas()) {
+						scheduler.scheduleJob(realComp, outstanding, outstanding.getNextRunDate());
+					}
+				}
+			}
+		}
+		
+		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
 	}
 }

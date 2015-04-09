@@ -33,7 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -59,9 +58,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import pasta.domain.FileTreeNode;
 import pasta.domain.PASTAUser;
 import pasta.domain.template.UnitTest;
-import pasta.domain.upload.NewUnitTest;
+import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
-import pasta.service.SubmissionManager;
+import pasta.domain.upload.TestUnitTestForm;
+import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
@@ -109,38 +109,30 @@ public class UnitTestController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private SubmissionManager manager;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
 	private UnitTestManager unitTestManager;
+	
 	private Map<String, String> codeStyle;
-
-	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.manager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(UnitTestManager myService) {
-		this.unitTestManager = myService;
-	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
-
-	@ModelAttribute("newUnitTestModel")
-	public NewUnitTest returnNewUnitTestModel() {
-		return new NewUnitTest();
+	
+	@ModelAttribute("updateUnitTest")
+	public UpdateUnitTestForm loadUpdateForm(@PathVariable("testId") long testId) {
+		return new UpdateUnitTestForm(unitTestManager.getUnitTest(testId));
 	}
 	
-	@ModelAttribute("submission")
-	public Submission returnSubmissionModel() {
-		return new Submission();
+	@ModelAttribute("testUnitTest")
+	public TestUnitTestForm loadTestForm(@PathVariable("testId") long testId) {
+		return new TestUnitTestForm(unitTestManager.getUnitTest(testId));
+	}
+	
+	@ModelAttribute("unitTest")
+	public UnitTest loadUnitTest(@PathVariable("testId") long testId) {
+		return unitTestManager.getUnitTest(testId);
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -227,6 +219,7 @@ public class UnitTestController {
 	 */
 	@RequestMapping(value = "{testId}/")
 	public String viewUnitTest(@PathVariable("testId") long testId,
+			@ModelAttribute("unitTest") UnitTest test,
 			Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -237,7 +230,6 @@ public class UnitTestController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("unitTest", unitTestManager.getUnitTest(testId));
 		model.addAttribute(
 				"latestResult",
 				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testId)
@@ -246,24 +238,26 @@ public class UnitTestController {
 		FileTreeNode node = PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testId).getFileLocation() + "/code");
 		model.addAttribute("node", node);
 		
-		Map<String, String> candidateFiles = new HashMap<String, String>();
-		Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
-		toExpand.push(node);
-		int dirStart = node.getLocation().length();
-		
-		while(!toExpand.isEmpty()) {
-			FileTreeNode expandNode = toExpand.pop();
-			String location = expandNode.getLocation().substring(dirStart);
-			if(location.endsWith(".java")) {
-				candidateFiles.put(location.substring(0, location.length()-5), location);
-			}
-			if(!expandNode.isLeaf()) {
-				for(FileTreeNode child : expandNode.getChildren()) {
-					toExpand.push(child);
+		if(test.hasCode()) {
+			Map<String, String> candidateFiles = new HashMap<String, String>();
+			Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
+			toExpand.push(node);
+			int dirStart = node.getLocation().length();
+			
+			while(!toExpand.isEmpty()) {
+				FileTreeNode expandNode = toExpand.pop();
+				String location = expandNode.getLocation().substring(dirStart);
+				if(location.endsWith(".java")) {
+					candidateFiles.put(location.substring(0, location.length()-5), location);
+				}
+				if(!expandNode.isLeaf()) {
+					for(FileTreeNode child : expandNode.getChildren()) {
+						toExpand.push(child);
+					}
 				}
 			}
+			model.addAttribute("candidateMainFiles", candidateFiles);
 		}
-		model.addAttribute("candidateMainFiles", candidateFiles);
 		
 		return "assessment/view/unitTest";
 	}
@@ -314,7 +308,6 @@ public class UnitTestController {
 			response.flushBuffer();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -332,7 +325,7 @@ public class UnitTestController {
 	 * 
 	 * If the user is an instructor:
 	 * <ul>
-	 * 	<li><b>updating code</b> - done using {@link pasta.service.UnitTestManager#updateUnitTestCode(NewUnitTest)}</li>
+	 * 	<li><b>updating code</b> - done using {@link pasta.service.UnitTestManager#updateUnitTestCode(NewUnitTestForm)}</li>
 	 * 	<li><b>testing test code</b> - done using {@link pasta.service.UnitTestManager#testUnitTest(Submission, String)}</li> 
 	 * </ul>
 	 * 
@@ -345,9 +338,8 @@ public class UnitTestController {
 	 */
 	@RequestMapping(value = "{testId}/", method = RequestMethod.POST)
 	public String updateTestCode(@PathVariable("testId") long testId,
-			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
-			@ModelAttribute(value = "submission") Submission subForm,
-			@ModelAttribute(value = "unitTest") UnitTest updatedTest,
+			@ModelAttribute(value = "updateUnitTest") UpdateUnitTestForm updateForm,
+			@ModelAttribute(value = "unitTest") UnitTest test,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -356,69 +348,23 @@ public class UnitTestController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-
-		if (updatedTest != null && updatedTest.getId() > 0 && updatedTest.getName() != null
-				&& getUser().isInstructor()) {
-			unitTestManager.copyAndUpdateUnitTest(updatedTest);
-		}
 		
-		// if submission exists
-		if (form != null && form.getTestName() != null && form.getFile() != null && 
-				!form.getFile().isEmpty() && getUser().isInstructor()) {
-			// upload submission
-			unitTestManager.updateUnitTestCode(form);
-		}
-		
-		// if submission exists
-		if (subForm != null && subForm.getAssessment() != null
-				&& subForm.getFile() != null && 
-				!subForm.getFile().isEmpty() && getUser().isInstructor()) {
-			// upload submission
-			unitTestManager.testUnitTest(subForm, testId);
+		if(updateForm != null && getUser().isInstructor()) {
+			unitTestManager.updateUnitTest(test, updateForm);
+			
+			if(updateForm.getFile() != null && !updateForm.getFile().isEmpty()) {
+				unitTestManager.updateUnitTestCode(test, updateForm);
+			}
 		}
 
 		return "redirect:/mirror/";
 	}
-
-	/**
-	 * $PASTAUrl$/unitTest/
-	 * <p>
-	 * List all unit tests on the system.
-	 * 
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * If the user is not a tutor: redirect to home.
-	 * 
-	 * ATTRIBUTES:
-	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} for the currently logged in user.</td></tr>
-	 * 	<tr><td>allUnitTests</td><td>A collection of all {@link pasta.domain.template.UnitTest} of all unit tests on the system.</td></tr>
-	 * </table>
-	 * 
-	 * JSP: <ul><li>assessment/viewAll/unitTest</li></ul>
-	 * 
-	 * @param model the model being used.
-	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/unitTest"
-	 */
-	@RequestMapping(value = "")
-	public String viewUnitTest(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-
-		model.addAttribute("allUnitTests", unitTestManager.getUnitTestList());
-		model.addAttribute("unikey", user);
-		return "assessment/viewAll/unitTest";
-	}
 	
 	/**
-	 * $PASTAUrl$/unitTest/ - POST
+	 * $PASTAUrl$/unitTest/{testId}/test/ - POST
 	 * <p>
-	 * Add a new unit test to the system.
+	 * Upload some code to test the unit test on the production machine or
+	 * to update the unit tests on the system.
 	 * 
 	 * If the user has not authenticated: redirect to login.
 	 * 
@@ -426,19 +372,20 @@ public class UnitTestController {
 	 * 
 	 * If the user is an instructor:
 	 * <ul>
-	 * 	<li>Check if the name is unique, if it's not reject with UnitTest.New.NameNotUnique</li>
-	 * 	<li>Otherwise, add using {@link pasta.service.UnitTestManager#addUnitTest(NewUnitTest)}</li>
-	 * 	<li>Redirect back using $PASTAUrl$/mirror/</li>
+	 * 	<li><b>testing test code</b> - done using {@link pasta.service.UnitTestManager#testUnitTest(Submission, String)}</li> 
 	 * </ul>
 	 * 
-	 * @param form the new unit test form
-	 * @param result the binding result used for feedback
-	 * @param model the model being used
+	 * @param testId the id of the test
+	 * @param testForm used for testing the unit test code
+	 * @param test the test itself
+	 * @param result binding results used for feedback.
+	 * @param model the model being used.
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
-	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String home(
-			@ModelAttribute(value = "newUnitTestModel") NewUnitTest form,
+	@RequestMapping(value = "{testId}/test/", method = RequestMethod.POST)
+	public String updateTestCode(@PathVariable("testId") long testId,
+			@ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm,
+			@ModelAttribute(value = "unitTest") UnitTest test,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -447,25 +394,11 @@ public class UnitTestController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-
-		if (getUser().isInstructor()) {
-
-			// check if the name is unique
-			Collection<UnitTest> allUnitTests = unitTestManager.getUnitTestList();
-
-			for (UnitTest test : allUnitTests) {
-				if (test.getName().toLowerCase()
-						.equals(form.getTestName().toLowerCase())) {
-					result.reject("UnitTest.New.NameNotUnique");
-				}
-			}
-
-			// add it.
-			if (!result.hasErrors()) {
-				unitTestManager.addUnitTest(form);
-			}
+		
+		if(testForm != null && testForm.getFile() != null && getUser().isInstructor()) {
+			unitTestManager.testUnitTest(test, testForm);
 		}
-
+		
 		return "redirect:/mirror/";
 	}
 
@@ -534,7 +467,4 @@ public class UnitTestController {
 		}
 		return "redirect:../../" + testId + "/";
 	}
-
-	
-
 }

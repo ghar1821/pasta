@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
@@ -121,7 +122,7 @@ public class UserManager {
 	 * @return a map with the key as the tutorial and value as the collection of students
 	 * in that tutorial
 	 */
-	public Map<String, Collection<String>> getTutorialByStream(){
+	public Map<String, Set<String>> getTutorialByStream(){
 		return userDao.getTutorialByStream();
 	}
 	

@@ -2,6 +2,14 @@
 	height:2em;
 }
 
+.hidden {
+	visibility: hidden;
+}
+
+div.optionset {
+	background-color:#DDF;
+}
+
 td.selectedMark {
 	background-color:#DDF;
 }
@@ -170,12 +178,17 @@ button,smallbutton,#submit,.button {
 	background-color: #CE1126;
 	color: white;
 }
+button:disabled,smallbutton:disabled,#submit:disabled,.button:disabled {
+	border-color: gray;
+	background-color: lightgray;
+	color: gray;
+}
 /* button size */
 button,#submit,.button {
 line-height: 2em;
 padding: 3px 20px;
 }
-button:hover,#submit:hover,.button:hover,smallbutton:hover {
+button:hover:enabled,#submit:hover:enabled,.button:hover:enabled,smallbutton:hover:enabled {
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
@@ -187,7 +200,7 @@ smallbutton{
 	position:relative; 
 	top:-.7em;
 }
-.popup, #newUnitTest, #newHandMarking, #comfirmPopup,#newAssessment,#testUnitTest,#updateUnitTestCode,#released, #newCompetition, #newArena
+.popup, #released, #newArena
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;

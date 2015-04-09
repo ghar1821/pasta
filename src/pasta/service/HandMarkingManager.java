@@ -29,31 +29,32 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.upload.NewHandMarking;
+import pasta.domain.upload.NewHandMarkingForm;
+import pasta.domain.upload.UpdateHandMarkingForm;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.ResultDAO;
 import pasta.util.ProjectProperties;
 
 
@@ -75,11 +76,10 @@ import pasta.util.ProjectProperties;
 public class HandMarkingManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
 	@Autowired
 	private ApplicationContext context;
-
+	
 	// Validator for the submission
 
 	public static final Logger logger = Logger
@@ -92,9 +92,8 @@ public class HandMarkingManager {
 	 * @return collection of all of the hand marking templates
 	 */
 	public Collection<HandMarking> getHandMarkingList() {
-		return assDao.getHandMarkingList();
+		return ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings();
 	}
-	
 
 	/**
 	 * Helper method
@@ -107,21 +106,62 @@ public class HandMarkingManager {
 		return ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId);
 	}
 	
+	public WeightedHandMarking getWeightedHandMarking(long id) {
+		return ProjectProperties.getInstance().getHandMarkingDAO().getWeightedHandMarking(id);
+	}
+
 	/**
-	 * Update the hand marking. The incoming hand marking object may have rows
-	 * or columns with unique negative indices. If this is the case, this method
-	 * will create new database objects for the new rows and columns.
+	 * Remove a hand marking template
 	 * 
-	 * @param marking the hand marking template that will be updated
-	 * @see pasta.repository.AssessmentDAO#updateHandMarking(HandMarking)
+	 * @param handMarkingId the id of the hand marking template
 	 */
-	public void updateHandMarking(HandMarking marking){
+	public void removeHandMarking(long handMarkingId) {
+		assDao.unlinkHandMarking(handMarkingId);
+		ProjectProperties.getInstance().getHandMarkingDAO().delete(
+				ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId));
+	}
+
+	/**
+	 * New hand marking template
+	 * 
+	 * @param form the new hand marking form
+	 * @return 
+	 * @see pasta.repository.AssessmentDAO#newHandMarking(NewHandMarkingForm)
+	 */
+	public HandMarking newHandMarking(NewHandMarkingForm form){
+		HandMarking newTemplate = new HandMarking();
+		newTemplate.setName(form.getName());
+
+		newTemplate.addColumn(new WeightedField("Poor", 0));
+		newTemplate.addColumn(new WeightedField("Acceptable", 0.5));
+		newTemplate.addColumn(new WeightedField("Excellent", 1));
+
+		newTemplate.addRow(new WeightedField("Formatting", 0.2));
+		newTemplate.addRow(new WeightedField("Code Reuse", 0.4));
+		newTemplate.addRow(new WeightedField("Variable Naming", 0.4));
+
+		for (WeightedField column : newTemplate.getColumnHeader()) {
+			for (WeightedField row : newTemplate.getRowHeader()) {
+				newTemplate.addData(new HandMarkData(column, row, ""));
+			}
+		}
+
+		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(newTemplate);
+		return newTemplate;
+	}
+
+	/**
+	 * Update the hand marking. The incoming hand marking form object may have rows
+	 * or columns with unique negative ID's. If this is the case, this method
+	 * will create new database objects for the new rows and columns.
+	 */
+	public void updateHandMarking(HandMarking template, UpdateHandMarkingForm form) {
 		Map<Long, WeightedField> replacements = new TreeMap<Long, WeightedField>();
 		
 		// Replace negative id rows and columns with new ones from database
-		for(ListIterator<WeightedField> iter : new ListIterator[] {
-				marking.getColumnHeader().listIterator(), marking.getRowHeader().listIterator()
-			}) {
+		for(ListIterator<WeightedField> iter : Arrays.asList(
+				form.getNewColumnHeader().listIterator(), form.getNewRowHeader().listIterator()
+			)) {
 			while(iter.hasNext()) {
 				WeightedField oldField = iter.next();
 				if(oldField.getId() < 0) {
@@ -134,13 +174,16 @@ public class HandMarkingManager {
 			}
 		}
 		
-		Iterator<HandMarkData> it = marking.getData().iterator();
+		
+		// Update data objects in form according to replacements
+		Iterator<HandMarkData> it = form.getNewData().iterator();
 		while(it.hasNext()) {
 			HandMarkData datum = it.next();
 			if(datum == null || (datum.getColumn() == null && datum.getRow() == null)) {
 				it.remove();
 				continue;
-			} 
+			}
+			
 			if(replacements.containsKey(datum.getColumn().getId())) {
 				datum.setColumn(replacements.get(datum.getColumn().getId()));
 			}
@@ -149,85 +192,118 @@ public class HandMarkingManager {
 			}
 		}
 		
-//		Map<Long, Map<Long, String>> newData = new TreeMap<Long, Map<Long, String>>();
-//		for(Entry<Long, Map<Long, String>> columnEntry : marking.getData().entrySet()) {
-//			Long columnId = columnEntry.getKey();
-//			if(columnId < 0) {
-//				columnId = replacements.get(columnId);
-//			}
-//			Map<Long, String> newEntry = new TreeMap<Long, String>();
-//			newData.put(columnId, newEntry);
-//			for(Entry<Long, String> rowEntry : columnEntry.getValue().entrySet()) {
-//				Long rowId = rowEntry.getKey();
-//				if(rowId < 0) {
-//					rowId = replacements.get(rowId);
-//				}
-//				newEntry.put(rowId, rowEntry.getValue());
-//			}
-//		}
-//		
-//		marking.setData(newData);
+		// Update real template headers from form
+		Map<Long, WeightedField> updateableColumns = new HashMap<>();
+		Map<Long, WeightedField> updateableRows = new HashMap<>();
+		{
+			Collection<WeightedField> toAdd = CollectionUtils.subtract(form.getNewColumnHeader(), template.getColumnHeader());	
+			Collection<WeightedField> toRemove = new LinkedList<>();
+			
+			// Determine which columns were deleted, and update the ones that are staying
+			for(WeightedField oldCol : template.getColumnHeader()) {
+				boolean found = false;
+				for(WeightedField newCol : form.getNewColumnHeader()) {
+					if(oldCol.getId() == newCol.getId()) {
+						oldCol.setName(newCol.getName());
+						oldCol.setWeight(newCol.getWeight());
+						found = true;
+						break;
+					}
+				}
+				if(found) {
+					updateableColumns.put(oldCol.getId(), oldCol);
+				} else {
+					toRemove.add(oldCol);
+				}
+			}
+			
+			// Remove deleted columns and add newly added ones
+			template.removeColumns(toRemove);
+			template.addColumns(toAdd);
+
+			toAdd = CollectionUtils.subtract(form.getNewRowHeader(), template.getRowHeader());	
+			toRemove = new LinkedList<>();
+			
+			for(WeightedField oldRow : template.getRowHeader()) {
+				boolean found = false;
+				for(WeightedField newRow : form.getNewRowHeader()) {
+					if(oldRow.getId() == newRow.getId()) {
+						oldRow.setName(newRow.getName());
+						oldRow.setWeight(newRow.getWeight());
+						found = true;
+						break;
+					}
+				}
+				if(found) {
+					updateableRows.put(oldRow.getId(), oldRow);
+				} else {
+					toRemove.add(oldRow);
+				}
+			}
+			
+			template.removeRows(toRemove);
+			template.addRows(toAdd);
+			Collections.sort(template.getRowHeader(), new SortByCustomIDList(form.getNewRowHeader()));
+		}
 		
-		assDao.updateHandMarking(marking);
+		// Update real template data from form
+		{
+			Collection<HandMarkData> toAdd = CollectionUtils.subtract(form.getNewData(), template.getData());
+			Collection<HandMarkData> toRemove = new LinkedList<>();
+			
+			for(HandMarkData oldData : template.getData()) {
+				boolean found = false;
+				for(HandMarkData newData : form.getNewData()) {
+					if(oldData.getId() == newData.getId()) {
+						oldData.setColumn(updateableColumns.get(newData.getColumn().getId()));
+						oldData.setRow(updateableRows.get(newData.getRow().getId()));
+						oldData.setData(newData.getData());
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					toRemove.add(oldData);
+				}
+			}
+			
+			template.removeData(toRemove);
+			template.addData(toAdd);
+		}
+		
+		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(template);
 	}
 
 	/**
-	 * New hand marking template
-	 * 
-	 * @param newMarking the new hand marking form
-	 * @see pasta.repository.AssessmentDAO#newHandMarking(NewHandMarking)
+	 * This Comparator is used to sort a list of WeightedField objects according
+	 * to ID such that their order mimics the order of a second list.
 	 */
-	public void newHandMarking(NewHandMarking newMarking){
-		assDao.newHandMarking(newMarking);
-	}
-	
-	/**
-	 * Save hand marking results.
-	 * 
-	 * @param username the name of the user
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
-	 * @param handMarkingResults the list of hand marking results to save
-	 */
-	@Deprecated public void saveHandMarkingResults(String username, long assessmentId,
-			String assessmentDate, List<HandMarkingResult> handMarkingResults) {
+	private class SortByCustomIDList implements Comparator<WeightedField> {
+
+		private HashMap<Long, Integer> idPositions;
 		
-		AssessmentResult result = resultDAO.getAsssessmentResult(username, assDao.getAssessment(assessmentId), assessmentDate);
-		// save to memory
-		if(result != null){
-			result.setHandMarkingResults(handMarkingResults);
-			// save to file
-			resultDAO.saveHandMarkingToFile(username, assessmentId, assessmentDate, handMarkingResults);
+		/**
+		 * Create a comparator that sorts WeightedFields according to where they
+		 * appear in the provided list.
+		 * 
+		 * @param listToCopy
+		 *            the list to copy the order of
+		 */
+		public SortByCustomIDList(List<WeightedField> listToCopy) {
+			idPositions = new HashMap<Long, Integer>();
+			for(int i = 0; i < listToCopy.size(); i++) {
+				idPositions.put(listToCopy.get(i).getId(), i);
+			}
+		}
+		
+		@Override
+		public int compare(WeightedField o1, WeightedField o2) {
+			Integer pos1 = idPositions.get(o1.getId());
+			Integer pos2 = idPositions.get(o2.getId());
+			if(pos1 == null) {
+				return pos2 == null ? 0 : -1;
+			}
+			return pos1.compareTo(pos2);
 		}
 	}
-	
-	/**
-	 * Remove a hand marking template
-	 * 
-	 * @param handMarkingId the id of the hand marking template
-	 */
-	public void removeHandMarking(long handMarkingId) {
-		ProjectProperties.getInstance().getHandMarkingDAO().delete(
-				ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId));
-	}
-	
-	/**
-	 * Save the comment
-	 * 
-	 * @param username the name of the user
-	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date of assessment submission (format yyyy-MM-dd'T'HH-mm-ss)
-	 * @param comments the comments that will be saved
-	 */
-	@Deprecated public void saveComment(String username, long assessmentId,
-			String assessmentDate, String comments) {
-		// make that better
-		resultDAO.saveHandMarkingComments(username, assessmentId, assessmentDate, comments);
-	}
-
-
-	public WeightedHandMarking getWeightedHandMarking(long id) {
-		return resultDAO.getWeightedHandMarking(id);
-	}
-
 }

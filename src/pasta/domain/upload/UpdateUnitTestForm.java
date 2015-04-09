@@ -29,88 +29,56 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.util.Date;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import pasta.domain.PASTATime;
-import pasta.domain.template.Competition;
+import pasta.domain.template.UnitTest;
 
 /**
- * Form object for a new competition.
+ * Form object to update a unit test assessment module.
  * 
- * @author Alex Radu
- * @version 2.0
- * @since 2013-01-21
+ * @author Joshua Stretton
+ * @version 1.0
+ * @since 2015-04-02
  *
  */
-public class NewCompetition {
+public class UpdateUnitTestForm {
+	
+	private long id;
 	private String name;
-	private String type;
-	private PASTATime frequency = new PASTATime();
-	private Date firstStartDate = new Date();
+	private String mainClassName;
+	
 	private CommonsMultipartFile file;
-	private boolean hidden;
 	
-	protected final Log logger = LogFactory.getLog(getClass());
+	public UpdateUnitTestForm(UnitTest base) {
+		this.id = base.getId();
+		this.name = base.getName();
+		this.mainClassName = base.getMainClassName();
+		
+		this.file = null;
+	}
 	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	public String getMainClassName() {
+		return mainClassName;
+	}
+	public void setMainClassName(String mainClassName) {
+		this.mainClassName = mainClassName;
+	}
 	public CommonsMultipartFile getFile() {
 		return file;
 	}
 	public void setFile(CommonsMultipartFile file) {
 		this.file = file;
-	}
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
-	public PASTATime getFrequency() {
-		return frequency;
-	}
-	public void setFrequency(PASTATime frequency) {
-		this.frequency = frequency;
-	}
-	public Date getFirstStartDate() {
-		return firstStartDate;
-	}
-	public void setFirstStartDate(Date firstStartDate) {
-		this.firstStartDate = firstStartDate;
-	}
-	
-	// calculated methods
-	public void setFirstRunDateStr(String firstStartDateStr){
-		try {
-			firstStartDate = Competition.dateParser.parse(firstStartDateStr);
-		} catch (ParseException e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			logger.error("Could not parse " + firstStartDateStr
-					+ "\r\n" + sw.toString());
-		}
-	}
-	
-	public String getFirstStartDateStr(){
-		firstStartDate.setTime(firstStartDate.getTime()+31536000000l);
-		return Competition.dateParser.format(firstStartDate);
-	}
-	public boolean isHidden() {
-		return hidden;
-	}
-	public void setHidden(boolean hidden) {
-		this.hidden = hidden;
 	}
 }

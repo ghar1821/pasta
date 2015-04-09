@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -48,8 +47,8 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.map.LazyMap;
+import org.apache.commons.collections4.FactoryUtils;
+import org.apache.commons.collections4.map.LazyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -78,7 +77,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
     @MapKeyColumn(name="row_id")
     @Column(name="column_id")
     @CollectionTable(name="hand_marking_map_results", joinColumns=@JoinColumn(name="hand_marking_result_id"))
-	private Map<Long, Long> result = LazyMap.decorate(new TreeMap<Long, Long>(), FactoryUtils.constantFactory(0l));
+	private Map<Long, Long> result = LazyMap.lazyMap(new TreeMap<Long, Long>(), FactoryUtils.constantFactory(0l));
 	
     @Transient
 	protected final Log logger = LogFactory.getLog(getClass());

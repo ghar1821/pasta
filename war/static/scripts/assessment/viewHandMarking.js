@@ -9,29 +9,29 @@ function fillCell(cell, weight, index, dataId, column, row, data) {
 	cell.appendChild(document.createElement("br"));
 	
 	var dataBox = document.createElement("textarea");
-	dataBox.setAttribute("name", "data[" + index + "].data");
-	dataBox.setAttribute("id", "data" + index + ".data");
+	dataBox.setAttribute("name", "newData[" + index + "].data");
+	dataBox.setAttribute("id", "newData" + index + ".data");
 	dataBox.setAttribute("style", "height:90%; width:95%");
 	dataBox.appendChild(document.createTextNode(data));
 	cell.appendChild(dataBox);
 	
 	var dataIdVal = document.createElement("input");
-	dataIdVal.setAttribute("name", "data[" + index + "].id");
-	dataIdVal.setAttribute("id", "data" + index + ".id");
+	dataIdVal.setAttribute("name", "newData[" + index + "].id");
+	dataIdVal.setAttribute("id", "newData" + index + ".id");
 	dataIdVal.setAttribute("value", dataId);
 	dataIdVal.setAttribute("type", "hidden");
 	cell.appendChild(dataIdVal);
 	
 	var colVal = document.createElement("input");
-	colVal.setAttribute("name", "data[" + index + "].column");
-	colVal.setAttribute("id", "data" + index + ".column");
+	colVal.setAttribute("name", "newData[" + index + "].column");
+	colVal.setAttribute("id", "newData" + index + ".column");
 	colVal.setAttribute("value", column);
 	colVal.setAttribute("type", "hidden");
 	cell.appendChild(colVal);
 	
 	var rowVal = document.createElement("input");
-	rowVal.setAttribute("name", "data[" + index + "].row");
-	rowVal.setAttribute("id", "data" + index + ".row");
+	rowVal.setAttribute("name", "newData[" + index + "].row");
+	rowVal.setAttribute("id", "newData" + index + ".row");
 	rowVal.setAttribute("value", row);
 	rowVal.setAttribute("type", "hidden");
 	cell.appendChild(rowVal);
@@ -60,27 +60,27 @@ function fillEmptyCell(cell) {
 	cell.appendChild(newButton);
 }
 
-function fillHeaderCell(cell, newIndex, lowerType, upperType) {
+function fillHeaderCell(cell, newIndex, upperType) {
 	$(cell).empty();
 	
 	var txtName = document.createElement("input");
-	txtName.setAttribute("name", lowerType + "Header[" + newIndex + "].name")
-	txtName.setAttribute("id", lowerType + "Header" + newIndex + ".name")
+	txtName.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].name")
+	txtName.setAttribute("id", "new" + upperType + "Header" + newIndex + ".name")
 	txtName.setAttribute("type", "text");
 	txtName.setAttribute("value", "New " + upperType);
 	cell.appendChild(txtName);
 	cell.appendChild(document.createElement("br"));
 	
 	var txtWeight = document.createElement("input");
-	txtWeight.setAttribute("name", lowerType + "Header[" + newIndex + "].weight")
-	txtWeight.setAttribute("id", lowerType + "Header" + newIndex + ".weight")
+	txtWeight.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].weight")
+	txtWeight.setAttribute("id", "new" + upperType + "Header" + newIndex + ".weight")
 	txtWeight.setAttribute("type", "text");
 	txtWeight.setAttribute("value", "0.0");
 	cell.appendChild(txtWeight);
 	
 	var valId = document.createElement("input");
-	valId.setAttribute("name", lowerType + "Header[" + newIndex + "].id")
-	valId.setAttribute("id", lowerType + "Header" + newIndex + ".id")
+	valId.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].id")
+	valId.setAttribute("id", "new" + upperType + "Header" + newIndex + ".id")
 	valId.setAttribute("type", "hidden");
 	valId.setAttribute("value", --newHeaderCount);
 	cell.appendChild(valId);
@@ -99,11 +99,11 @@ function fillHeaderCell(cell, newIndex, lowerType, upperType) {
 }
 
 function fillRowHeaderCell(cell, newIndex) {
-	fillHeaderCell(cell, newIndex, "row", "Row");
+	fillHeaderCell(cell, newIndex, "Row");
 }
 
 function fillColumnHeaderCell(cell, newIndex) {
-	fillHeaderCell(cell, newIndex, "column", "Column");
+	fillHeaderCell(cell, newIndex, "Column");
 }
 
 function registerEvents() {
@@ -146,11 +146,11 @@ function registerEvents() {
 }
 
 function rowIdAt(index) {
-	return document.getElementById("rowHeader" + index + ".id").value;
+	return document.getElementById("newRowHeader" + index + ".id").value;
 }
 
 function columnIdAt(index) {
-	return document.getElementById("columnHeader" + index + ".id").value;
+	return document.getElementById("newColumnHeader" + index + ".id").value;
 }
 
 var newHeaderCount = 0;
@@ -186,14 +186,14 @@ function updateColumns(){
 	
 		var currHeader = table.rows[0].cells[i].getElementsByTagName("input");
 		
-		currHeader[0].id="columnHeader"+(i-1)+".name";
-		currHeader[0].name="columnHeader["+(i-1)+"].name";
+		currHeader[0].id="newColumnHeader"+(i-1)+".name";
+		currHeader[0].name="newColumnHeader["+(i-1)+"].name";
 		
-		currHeader[1].id="columnHeader"+(i-1)+".weight";
-		currHeader[1].name="columnHeader["+(i-1)+"].weight";
+		currHeader[1].id="newColumnHeader"+(i-1)+".weight";
+		currHeader[1].name="newColumnHeader["+(i-1)+"].weight";
 		
-		currHeader[2].id="columnHeader"+(i-1)+".id";
-		currHeader[2].name="columnHeader["+(i-1)+"].id";
+		currHeader[2].id="newColumnHeader"+(i-1)+".id";
+		currHeader[2].name="newColumnHeader["+(i-1)+"].id";
 	}
 }
 
@@ -225,14 +225,14 @@ function updateRows(){
 	for (var i=1; i<table.rows.length; i++) {
 		var currHeader = table.rows[i].cells[0].getElementsByTagName("input");
 		
-		currHeader[0].id="rowHeader"+(i-1)+".name";
-		currHeader[0].name="rowHeader["+(i-1)+"].name";
+		currHeader[0].id="newRowHeader"+(i-1)+".name";
+		currHeader[0].name="newRowHeader["+(i-1)+"].name";
 		
-		currHeader[1].id="rowHeader"+(i-1)+".weight";
-		currHeader[1].name="rowHeader["+(i-1)+"].weight";
+		currHeader[1].id="newRowHeader"+(i-1)+".weight";
+		currHeader[1].name="newRowHeader["+(i-1)+"].weight";
 		
-		currHeader[2].id="rowHeader"+(i-1)+".id";
-		currHeader[2].name="rowHeader["+(i-1)+"].id";
+		currHeader[2].id="newRowHeader"+(i-1)+".id";
+		currHeader[2].name="newRowHeader["+(i-1)+"].id";
 	}
 }
 

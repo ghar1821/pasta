@@ -27,42 +27,46 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-package pasta.domain.template;
+package pasta.domain.upload;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.apache.commons.collections4.FactoryUtils;
+import org.apache.commons.collections4.list.LazyList;
+
+import pasta.domain.template.HandMarkData;
+import pasta.domain.template.HandMarking;
+import pasta.domain.template.WeightedField;
 
 /**
- * Container class for a pairing of String and double, commonly used in
- * the hand marking assessment module template.
+ * Form object to update a hand marking template.
  * 
- * @author Alex Radu
- * @version 2.0
- * @since 2012-11-20
+ * @author Joshua Stretton
+ * @version 1.0
+ * @since 2015-04-02
  *
  */
-@Entity
-@Table (name = "weighted_fields")
-public class WeightedField implements Serializable, Comparable<WeightedField> {
+public class UpdateHandMarkingForm {
 	
-	private static final long serialVersionUID = -5647759434783526021L;
-
-	@Id 
-	@GeneratedValue
 	private long id;
-	
 	private String name;
-	private double weight;
 	
-	public WeightedField(){}
+	private List<WeightedField> newColumnHeader;
+	private List<WeightedField> newRowHeader;
+	private List<HandMarkData> newData;
 	
-	public WeightedField(String name, double weight){
-		this.name = name;
-		this.weight = weight;
+	public UpdateHandMarkingForm(HandMarking base) {
+		this.id = base.getId();
+		this.name = base.getName();
+		
+		this.newColumnHeader = LazyList.lazyList(new ArrayList<WeightedField>(),
+				FactoryUtils.instantiateFactory(WeightedField.class));
+		this.newRowHeader = LazyList.lazyList(new ArrayList<WeightedField>(),
+				FactoryUtils.instantiateFactory(WeightedField.class));
+		this.newData = LazyList.lazyList(new ArrayList<HandMarkData>(),
+				FactoryUtils.instantiateFactory(HandMarkData.class));
 	}
 	
 	public long getId() {
@@ -71,58 +75,32 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 	public void setId(long id) {
 		this.id = id;
 	}
-
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	public List<WeightedField> getNewColumnHeader() {
+		return newColumnHeader;
+	}
+	public void setNewColumnHeader(Collection<WeightedField> columnHeader) {
+		this.newColumnHeader.clear();
+		this.newColumnHeader.addAll(columnHeader);
+	}
+	public List<WeightedField> getNewRowHeader() {
+		return newRowHeader;
+	}
+	public void setNewRowHeader(Collection<WeightedField> rowHeader) {
+		this.newRowHeader.clear();
+		this.newRowHeader.addAll(rowHeader);
+	}
+	public List<HandMarkData> getNewData() {
+		return newData;
+	}
+	public void setNewData(Collection<HandMarkData> data) {
+		this.newData.clear();
+		this.newData.addAll(data);
+	}
 	
-	public double getWeight() {
-		return weight;
-	}
-	public void setWeight(double weight) {
-		this.weight = weight;
-	}
-
-	@Override
-	public int compareTo(WeightedField other) {
-		int diff = this.name.compareTo(other.name);
-		if(diff != 0) {
-			return diff;
-		}
-		diff = (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
-		if(diff != 0) {
-			return diff;
-		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedField other = (WeightedField) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "(" + id + ": " + name + ", " + weight + ")";
-	}
 }

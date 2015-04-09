@@ -10,6 +10,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 
 @Repository("unitTestDAO")
 public class UnitTestDAO extends HibernateDaoSupport {
@@ -41,18 +42,12 @@ public class UnitTestDAO extends HibernateDaoSupport {
 	public List<UnitTest> getAllUnitTests() {
 		return getHibernateTemplate().find("FROM UnitTest");
 	}
-	
-	@Deprecated
-	public UnitTest getUnitTest(String name) {
-		@SuppressWarnings("unchecked")
-		List<UnitTest> results = getHibernateTemplate().find("FROM UnitTest WHERE name = ?", name);
-		if(results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
 
 	public UnitTest getUnitTest(long id) {
 		return getHibernateTemplate().get(UnitTest.class, id);
+	}
+	
+	public WeightedUnitTest getWeightedUnitTest(long id) {
+		return getHibernateTemplate().get(WeightedUnitTest.class, id);
 	}
 }

@@ -42,7 +42,7 @@ th, td{
 }
 </style>
 
-<form:form commandName="handMarking" enctype="multipart/form-data" method="POST">
+<form:form commandName="updateHandMarkingForm" enctype="multipart/form-data" method="POST">
 	<form:input type ="hidden" path="name" value="${handMarking.name}"/>
 	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
 <div style="width:100%; overflow:auto">
@@ -50,11 +50,11 @@ th, td{
 		<thead>
 			<tr>
 				<th class="notdraggable"></th> <!-- empty on purpose -->
-				<c:forEach items="${handMarking.columnHeader}" varStatus="columnStatus">
+				<c:forEach var="column" items="${handMarking.columnHeader}" varStatus="columnStatus">
 					<th>
-						<form:input type="text" path="columnHeader[${columnStatus.index}].name"/><br />
-						<form:input type="text" path="columnHeader[${columnStatus.index}].weight"/>
-						<form:input type="hidden" path="columnHeader[${columnStatus.index}].id"/>
+						<form:input type="text" path="newColumnHeader[${columnStatus.index}].name" value="${column.name}"/><br />
+						<form:input type="text" path="newColumnHeader[${columnStatus.index}].weight" value="${column.weight}"/>
+						<form:input type="hidden" path="newColumnHeader[${columnStatus.index}].id" value="${column.id}"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Column</div>
 						<div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
 					</th>
@@ -65,9 +65,9 @@ th, td{
 			<c:forEach var="row" items="${handMarking.rowHeader}" varStatus="rowStatus">
 				<tr>
 					<th>
-						<form:input type="text" path="rowHeader[${rowStatus.index}].name"/><br />
-						<form:input type="text" path="rowHeader[${rowStatus.index}].weight"/>
-						<form:input type="hidden" path="rowHeader[${rowStatus.index}].id"/>
+						<form:input type="text" path="newRowHeader[${rowStatus.index}].name" value="${row.name}"/><br />
+						<form:input type="text" path="newRowHeader[${rowStatus.index}].weight" value="${row.weight}"/>
+						<form:input type="hidden" path="newRowHeader[${rowStatus.index}].id" value="${row.id}"/>
 						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Row</div>
 						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
 					</th>

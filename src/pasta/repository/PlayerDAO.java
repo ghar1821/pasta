@@ -35,13 +35,19 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.players.PlayerHistory;
@@ -61,42 +67,17 @@ import pasta.util.ProjectProperties;
  */
 @Repository("playerDAO")
 @DependsOn("projectProperties")
-public class PlayerDAO {
+public class PlayerDAO extends HibernateDaoSupport {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	// username, competition, player
-	Map<String, Map<String, Map<String, PlayerHistory>>> players;
-
-	public PlayerDAO() {
+	// Default required by hibernate
+	@Autowired
+	public void setMySession(SessionFactory sessionFactory) {
+		setSessionFactory(sessionFactory);
 	}
 	
-	/**
-	 * Loads all player histories (statistics) into cache
-	 */
-	public void init() {
-		// load all players.
-		players = new TreeMap<String, Map<String, Map<String, PlayerHistory>>>();
-
-		// list of all students
-		String[] allStudents = (new File(ProjectProperties.getInstance().getSubmissionsLocation())).list();
-
-		// list of all compeittions
-		String[] allCompetitions = (new File(ProjectProperties.getInstance().getCompetitionsLocation())).list();
-
-		if (allStudents != null && allCompetitions != null) {
-			for (String student : allStudents) {
-				if (new File(ProjectProperties.getInstance().getSubmissionsLocation() + student + "/competitions/")
-						.exists()) {
-					if (!players.containsKey(student)) {
-						players.put(student, new TreeMap<String, Map<String, PlayerHistory>>());
-					}
-					for (String competition : allCompetitions) {
-						players.get(student).put(competition, loadPlayerHistory(student, competition));
-					}
-				}
-			}
-		}
+	public PlayerDAO() {
 	}
 
 	/**
@@ -104,19 +85,15 @@ public class PlayerDAO {
 	 * specific competition from cache
 	 * 
 	 * @param username name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return collection of the player histories (statistics)
 	 */
-	public Collection<PlayerHistory> getPlayerHistory(String username, String competitionName) {
-
-		if (!players.containsKey(username)) {
-			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
-		}
-		if (!players.get(username).containsKey(competitionName)) {
-			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
-		}
-
-		return players.get(username).get(competitionName).values();
+	@SuppressWarnings("unchecked")
+	public List<PlayerHistory> getAllPlayerHistories(String username, long competitionId) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
+		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("competitionId", competitionId));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 
 	/**
@@ -124,105 +101,45 @@ public class PlayerDAO {
 	 * specific competition from cache
 	 * 
 	 * @param username name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param playerName the name of the player being queried
 	 * @return the player history (statistics)
 	 */
-	public PlayerHistory getPlayerHistory(String username, String competitionName, String playerName) {
-
-		if (!players.containsKey(username)) {
-			players.put(username, new TreeMap<String, Map<String, PlayerHistory>>());
+	public PlayerHistory getPlayerHistory(String username, long competitionId, String playerName) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
+		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("competitionId", competitionId));
+		cr.add(Restrictions.eq("playerName", playerName));
+		@SuppressWarnings("unchecked")
+		List<PlayerHistory> results = getHibernateTemplate().findByCriteria(cr);
+		if(results == null || results.isEmpty()) {
+			return null;
 		}
-		if (!players.get(username).containsKey(competitionName)) {
-			players.get(username).put(competitionName, new TreeMap<String, PlayerHistory>());
-		}
-		if (!players.get(username).get(competitionName).containsKey(playerName)) {
-			players.get(username).get(competitionName).put(playerName, new PlayerHistory(playerName));
-		}
-		return players.get(username).get(competitionName).get(playerName);
+		return results.get(0);
 	}
 
 	/**
 	 * Get the history (statistics) of all players a user has submitted to a
 	 * specific competition from disk.
-	 * <p>
-	 * Performs multiple calls to
-	 * {@link #loadPlayerHistory(String, String, String)}.
 	 * 
 	 * @param username name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return map of the player histories (statistics) with the key being the
 	 *         player name
 	 */
-	public Map<String, PlayerHistory> loadPlayerHistory(String username, String competitionName) {
+	public Map<String, PlayerHistory> loadPlayerHistories(String username, long competitionId) {
 		Map<String, PlayerHistory> playerHistory = new TreeMap<String, PlayerHistory>();
-
-		String[] allPlayers = (new File(ProjectProperties.getInstance().getSubmissionsLocation() + username
-				+ "/competitions/" + competitionName + "/")).list();
-
-		if (allPlayers != null) {
-			for (String player : allPlayers) {
-				PlayerHistory currentPlayer = loadPlayerHistory(username, competitionName, player);
-				if (currentPlayer != null) {
-					playerHistory.put(player, currentPlayer);
-				}
-			}
+		List<PlayerHistory> results = getAllPlayerHistories(username, competitionId);
+		if(results == null || results.isEmpty()) {
+			return playerHistory;
 		}
-
+		for(PlayerHistory history : results) {
+			playerHistory.put(history.getPlayerName(), history);
+		}
 		return playerHistory;
 	}
 
-	/**
-	 * Get the history (statistics) of a specific player a user has submitted to a
-	 * specific competition from disk.
-	 * <p>
-	 * Calls {@link #loadPlayerFromDirectory(String)} to aggregate the history of
-	 * all players with the same name
-	 * 
-	 * @param username name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @param playerName the name of the player being queried
-	 * @return the player histories (statistics)
-	 */
-	private PlayerHistory loadPlayerHistory(String username, String competitionName, String playerName) {
-
-		PlayerHistory player = null;
-
-		String playerFolder = ProjectProperties.getInstance().getSubmissionsLocation() + username
-				+ "/competitions/" + competitionName + "/" + playerName + "/";
-
-		if ((new File(playerFolder)).exists()) {
-			// there is at least 1 active player
-			player = new PlayerHistory(playerName);
-			// get active player
-			player.activatePlayer(loadPlayerFromDirectory(playerFolder + "active/"));
-			// get retired player
-			LinkedList<PlayerResult> retiredPlayerList = new LinkedList<PlayerResult>();
-			if (new File(playerFolder + "retired/").exists()) {
-				String[] retiredPlayers = (new File(playerFolder + "retired/")).list();
-
-				if (retiredPlayers != null) {
-					for (String retiredPlayer : retiredPlayers) {
-						if ((new File(playerFolder + "retired/" + retiredPlayer)).isDirectory()) {
-							PlayerResult currentPlayer = loadPlayerFromDirectory(playerFolder + "retired/" + retiredPlayer
-									+ "/");
-							if (currentPlayer != null) {
-								if (currentPlayer.getName() == null || currentPlayer.getName().isEmpty()) {
-									currentPlayer.setName(playerName);
-								}
-
-								retiredPlayerList.add(currentPlayer);
-							}
-						}
-					}
-				}
-			}
-			player.setRetiredPlayers(retiredPlayerList);
-
-		}
-		return player;
-	}
-
+	// TODO: write equivalent
 	/**
 	 * Load the results of a single player from a directory.
 	 * 
@@ -321,5 +238,9 @@ public class PlayerDAO {
 			}
 		}
 		return player;
+	}
+
+	public void saveOrUpdate(PlayerHistory history) {
+		getHibernateTemplate().saveOrUpdate(history);
 	}
 }

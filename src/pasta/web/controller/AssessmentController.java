@@ -39,8 +39,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.ZipOutputStream;
 import java.util.TreeMap;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,7 +60,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.form.ReleaseForm;
+import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -69,6 +69,7 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;
 import pasta.service.HandMarkingManager;
@@ -92,13 +93,13 @@ import pasta.util.ProjectProperties;
  */
 @Controller
 @RequestMapping("assessments/")
-public class AssessmentsController {
+public class AssessmentController {
 
 	/**
 	 * Initializes the codeStyle tag mapping of file endings to 
 	 * javascript tag requirements for syntax highlighting.
 	 */
-	public AssessmentsController() {
+	public AssessmentController() {
 		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
 		codeStyle.put("cpp", "cppcode");
@@ -120,64 +121,40 @@ public class AssessmentsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
 	private UserManager userManager;
+	@Autowired
 	private AssessmentManager assessmentManager;
+	@Autowired
 	private UnitTestManager unitTestManager;
+	@Autowired
 	private HandMarkingManager handMarkingManager;
+	@Autowired
 	private CompetitionManager competitionManager;
+	@Autowired
 	private SubmissionManager submissionManager;
 
 	private Map<String, String> codeStyle;
 
-	@Autowired
-	public void setMyService(CompetitionManager myService) {
-		this.competitionManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(SubmissionManager myService) {
-		this.submissionManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(AssessmentManager myService) {
-		this.assessmentManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(UnitTestManager myService) {
-		this.unitTestManager = myService;
-	}
-	
-	@Autowired
-	public void setMyService(HandMarkingManager myService) {
-		this.handMarkingManager = myService;
-	}
-
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
-
-
+	
 	@ModelAttribute("assessment")
-	public Assessment returnAssessmentModel() {
-		return new Assessment();
+	public Assessment loadAssessment(@PathVariable("assessmentId") long assessmentId) {
+		return assessmentManager.getAssessment(assessmentId);
+	}
+	
+	@ModelAttribute("updateAssessmentForm")
+	public UpdateAssessmentForm loadUpdateForm(@PathVariable("assessmentId") long assessmentId) {
+		return new UpdateAssessmentForm(assessmentManager.getAssessment(assessmentId));
+	}
+	
+	@ModelAttribute("assessmentReleaseForm")
+	public AssessmentReleaseForm loadAssessmentReleaseForm(@PathVariable("assessmentId") long assessmentId) {
+		return new AssessmentReleaseForm(assessmentManager.getAssessment(assessmentId));
 	}
 
-	@ModelAttribute("assessmentRelease")
-	public ReleaseForm returnAssessmentReleaseModel() {
-		return new ReleaseForm();
-	}
-
-	@ModelAttribute("assessmentResult")
-	public AssessmentResult returnAssessmentResultModel() {
-		return new AssessmentResult();
-	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
@@ -252,7 +229,8 @@ public class AssessmentsController {
 	 */
 	@RequestMapping(value = "{assessmentId}/")
 	public String viewAssessment(
-			@PathVariable("assessmentId") long assessmentId, Model model) {
+			@PathVariable("assessmentId") long assessmentId,
+			@ModelAttribute("updateAssessmentForm") UpdateAssessmentForm updateForm, Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -263,26 +241,18 @@ public class AssessmentsController {
 		}
 
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
-		model.addAttribute("assessment", currAssessment);
 
+		List<WeightedUnitTest> secretUnitTests = new LinkedList<WeightedUnitTest>();
+		List<WeightedUnitTest> nonSecretUnitTests = new LinkedList<WeightedUnitTest>();
 		List<WeightedUnitTest> otherUnitTests = new LinkedList<WeightedUnitTest>();
 
 		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
-			for (WeightedUnitTest weightedTest : currAssessment.getUnitTests()) {
+			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
 				if (weightedTest.getTest().getId() == test.getId()) {
 					contains = true;
+					(weightedTest.isSecret() ? secretUnitTests : nonSecretUnitTests).add(weightedTest);
 					break;
-				}
-			}
-
-			if (!contains) {
-				for (WeightedUnitTest weightedTest : currAssessment
-						.getSecretUnitTests()) {
-					if (weightedTest.getTest().getId() == test.getId()) {
-						contains = true;
-						break;
-					}
 				}
 			}
 
@@ -290,9 +260,13 @@ public class AssessmentsController {
 				WeightedUnitTest weightedTest = new WeightedUnitTest();
 				weightedTest.setTest(test);
 				weightedTest.setWeight(0);
+				weightedTest.setSecret(false);
 				otherUnitTests.add(weightedTest);
 			}
 		}
+		model.addAttribute("secretUnitTests", secretUnitTests);
+		model.addAttribute("nonSecretUnitTests", nonSecretUnitTests);
+		model.addAttribute("otherUnitTests", otherUnitTests);
 
 		List<WeightedHandMarking> otherHandMarking = new LinkedList<WeightedHandMarking>();
 
@@ -316,11 +290,11 @@ public class AssessmentsController {
 
 		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
 
-		for (Competition test : competitionManager.getCompetitionList()) {
+		for (Competition comp : competitionManager.getCompetitionList()) {
 			boolean contains = false;
 			for (WeightedCompetition weightedComp : currAssessment
 					.getCompetitions()) {
-				if (weightedComp.getCompetition() == test) {
+				if (weightedComp.getCompetition().getId() == comp.getId()) {
 					contains = true;
 					break;
 				}
@@ -328,14 +302,13 @@ public class AssessmentsController {
 
 			if (!contains) {
 				WeightedCompetition weightedComp = new WeightedCompetition();
-				weightedComp.setCompetition(test);
+				weightedComp.setCompetition(comp);
 				weightedComp.setWeight(0);
 				otherCompetitions.add(weightedComp);
 			}
 		}
-
+		
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("otherUnitTests", otherUnitTests);
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
 		model.addAttribute("unikey", user);
@@ -366,7 +339,8 @@ public class AssessmentsController {
 	@RequestMapping(value = "{assessmentId}/", method = RequestMethod.POST)
 	public String updateAssessment(
 			@PathVariable("assessmentId") long assessmentId,
-			@ModelAttribute(value = "assessment") Assessment form,
+			@ModelAttribute(value = "assessment") Assessment assessment,
+			@ModelAttribute(value = "updateAssessmentForm") UpdateAssessmentForm form,
 			BindingResult result, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -376,8 +350,7 @@ public class AssessmentsController {
 			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
-			form.setName(assessmentManager.getAssessment(assessmentId).getName());
-			assessmentManager.addAssessment(form);
+			assessmentManager.updateAssessment(assessment, form);
 		}
 		return "redirect:.";
 	}
@@ -419,86 +392,6 @@ public class AssessmentsController {
 	}
 
 	/**
-	 * $PASTAUrl$/assessments/
-	 * <p>
-	 * View the list of all assessments.
-	 * <p>
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * If the user is not a tutor: redirect to home
-	 * <p>
-	 * Attributes:
-	 * <table>
-	 * 	<tr><td>tutorialByStream</td><td>All tutorials by stream, used for releases from this page</td></tr>
-	 * 	<tr><td>allAssessments</td><td>All assessments</td></tr>
-	 * 	<tr><td>unikey</td><td>the user viewing this page.</td></tr>
-	 * </table>
-	 * 
-	 * JSP:
-	 * <ul><li>assessment/viewAll/assessment</li></ul>
-	 * @param model the model used
-	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/assessment" 
-	 */
-	@RequestMapping(value = "")
-	public String viewAllAssessment(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("allAssessments", assessmentManager.getAssessmentList());
-		model.addAttribute("unikey", user);
-		return "assessment/viewAll/assessment";
-	}
-
-	/**
-	 * $PASTAUrl$/assessments/ - POST
-	 * <p>
-	 * Add a new assessment
-	 * <p>
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * If the user is not a tutor: redirect to home
-	 * 
-	 * If the user is an instructor: 
-	 * <ol>
-	 * 	<li>Check if the assessment has a name given, if it does reject the form with the reason "Assessment.new.noname".</li>
-	 * 	<li>If the assessment has a name, add one using {@link pasta.service.AssessmentManager#addAssessment(Assessment)}</li>
-	 * </ol>
-	 * redirect to the non post version of this page.
-	 *
-	 * 
-	 * @param form the new assessment form
-	 * @param result the result used for giving feedback
-	 * @param model the model used
-	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
-	 */
-	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newAssessmentAssessment(
-			@ModelAttribute(value = "assessment") Assessment form,
-			BindingResult result, Model model) {
-
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
-		if (getUser().isInstructor()) {
-			if (form.getName() == null || form.getName().isEmpty()) {
-				result.reject("Assessment.new.noname");
-			} else {
-				assessmentManager.addAssessment(form);
-			}
-		}
-		return "redirect:.";
-	}
-
-	/**
 	 * $PASTAUrl$/assessments/release/{assessmentId}/ - POST
 	 * <p>
 	 * Release the assessment to some students.
@@ -508,7 +401,7 @@ public class AssessmentsController {
 	 * If the user is not a tutor: redirect to home
 	 * 
 	 * If the user is an instructor: release assessment using 
-	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, ReleaseForm)}.
+	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, AssessmentReleaseForm)}.
 	 * redirect to $PASTAUrl$/assessments/
 	 * 
 	 * @param assessmentId the id of the assessment
@@ -519,7 +412,8 @@ public class AssessmentsController {
 	@RequestMapping(value = "release/{assessmentId}/", method = RequestMethod.POST)
 	public String releaseAssessment(
 			@PathVariable("assessmentId") long assessmentId,
-			@ModelAttribute(value = "assessmentRelease") ReleaseForm form,
+			@ModelAttribute(value = "assessment") Assessment assessment,
+			@ModelAttribute(value = "assessmentReleaseForm") AssessmentReleaseForm form,
 			Model model) {
 
 		PASTAUser user = getUser();
@@ -532,8 +426,7 @@ public class AssessmentsController {
 		if (getUser().isInstructor()) {
 
 			if (assessmentManager.getAssessment(assessmentId) != null) {
-				assessmentManager.releaseAssessment(form.getAssessmentId(),
-						form);
+				assessmentManager.releaseAssessment(assessment, form);
 			}
 		}
 		return "redirect:../../";
@@ -714,8 +607,6 @@ public class AssessmentsController {
 					submissionDistribution.get(numSubmissionsMade) + 1);
 		}
 
-		model.addAttribute("assessment",
-				assessmentManager.getAssessment(assessmentId));
 		model.addAttribute("maxBreaks", maxBreaks);
 		model.addAttribute("markDistribution", markDistribution);
 		model.addAttribute("submissionDistribution", submissionDistribution);

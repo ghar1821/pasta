@@ -30,20 +30,14 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
@@ -53,11 +47,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.UnitTest;
-import pasta.domain.upload.NewUnitTest;
-import pasta.domain.upload.Submission;
+import pasta.domain.upload.NewUnitTestForm;
+import pasta.domain.upload.TestUnitTestForm;
+import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
@@ -115,7 +111,6 @@ public class UnitTestManager {
 	 */
 	public Collection<UnitTest> getUnitTestList() {
 		return unitTestDAO.getAllUnitTests();
-		//return assDao.getAllUnitTests().values();
 	}
 	
 	public UnitTest getUnitTest(long id) {
@@ -128,21 +123,6 @@ public class UnitTestManager {
 	 * @param thisTest the unit test to save
 	 */
 	public void updateUnitTest(UnitTest thisTest) {
-		try {
-
-			// create space on the file system.
-			(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
-
-			// generate unitTestProperties
-      saveUnitTestXML(thisTest);
-
-		} catch (Exception e) {
-			(new File(thisTest.getFileLocation())).delete();
-			logger.error("TEST " + thisTest.getName()
-					+ " could not be saved successfully!"
-					+ System.getProperty("line.separator") + e);
-		}
-		
 		// Save unit test to database
 		try {
 			unitTestDAO.update(thisTest);
@@ -153,90 +133,26 @@ public class UnitTestManager {
 
 	/**
 	 * Add a new unit test
-	 * <p>
-	 * Assume the unit test name is unique. This must be enforced in another
-	 * class for now (thought this should probably be moved here at a later date).
 	 * 
-	 * The unit test properties xml will be created in the correct folder and any
-	 * zip file that was uploaded will be unpacked using {@link pasta.util.PASTAUtil#extractFolder(String)}.
-	 *  
 	 * @param newTest the new unit test form used to create a new unit test template
 	 */
-	public void addUnitTest(NewUnitTest newTest) {
-		UnitTest thisTest = new UnitTest(newTest.getTestName(), false);
+	public UnitTest addUnitTest(NewUnitTestForm newTest) {
+		UnitTest thisTest = new UnitTest(newTest.getName(), false);
 
 		// Save unit test to database
 		try {
 			unitTestDAO.save(thisTest);
+			return thisTest;
 		} catch (Exception e) {
 			logger.error("Could not save unit test " + thisTest.getName(), e);
+			return null;
 		}
-		
-		try {
-
-			// create space on the file system.
-			(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
-
-			// generate unitTestProperties
-      saveUnitTestXML(thisTest);
-
-			// unzip the uploaded code into the code folder. (if exists)
-			if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
-				// unpack
-				newTest.getFile().getInputStream().close();
-        if (!newTest.getFile().getOriginalFilename().endsWith(".java")) {
-          newTest.getFile().transferTo(
-						new File(thisTest.getFileLocation() + "/code/"
-								+ newTest.getFile().getOriginalFilename()));
-  				PASTAUtil.extractFolder(thisTest.getFileLocation()
-  						+ "/code/" + newTest.getFile().getOriginalFilename());
-  				try{
-  					FileUtils.forceDelete(new File(thisTest.getFileLocation()
-  							+ "/code/" + newTest.getFile().getOriginalFilename()));
-  				} catch (Exception e) {
-  					logger.error("Could not delete the zip for "
-  							+ thisTest.getName());
-  				}
-				} else {
-		      (new File(thisTest.getFileLocation() + "/code/test/")).mkdirs();
-		      String newTestPath = thisTest.getFileLocation() + "/code/test/"
-              + newTest.getFile().getOriginalFilename();
-          newTest.getFile().transferTo(
-              new File(newTestPath));
-          generateBuildXML(newTest.getFile().getOriginalFilename(),
-              thisTest.getFileLocation() + "/code/build.xml");
-				}
-			}
-
-			FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
-					+ "/test/")));
-		} catch (Exception e) {
-			(new File(thisTest.getFileLocation())).delete();
-			logger.error("TEST " + thisTest.getName()
-					+ " could not be created successfully!"
-					+ System.getProperty("line.separator") + e);
-		}
-	}
-	
-	private void generateBuildXML(String newTestFileName, String newTestFileXML) throws IOException {
-	  int startPos = newTestFileName.lastIndexOf('/');
-	  startPos = 0 > startPos ? 0 : startPos;
-    String testName = newTestFileName.substring(startPos,
-        newTestFileName.lastIndexOf(".java"));
-    String newXML = getDefaultBuildXML().replaceAll("\\$\\$TESTNAME\\$\\$", testName);
-    Files.write(Paths.get(newTestFileXML), newXML.getBytes());
-  }
-	
-	private String getDefaultBuildXML() throws IOException {
-    File templateBuildXML = new File(ProjectProperties.getInstance()
-        .getUnitTestsLocation() + "build.xml");
-    Charset charset = StandardCharsets.UTF_8;
-    return new String(Files.readAllBytes(templateBuildXML.toPath()), charset);
 	}
 	
 	public void removeUnitTest(long id) {
 		// Delete unit test from database
 		try {
+			assDao.unlinkUnitTest(id);
 			unitTestDAO.delete(unitTestDAO.getUnitTest(id));
 		} catch (Exception e) {
 			logger.error("Could not delete unit test " + id, e);
@@ -266,42 +182,41 @@ public class UnitTestManager {
 	 * @param submission the submission form (containing the zip)
 	 * @param testId the id of the test
 	 */
-	public void testUnitTest(Submission submission, long testId) {
+	public void testUnitTest(UnitTest test, TestUnitTestForm testForm) {
+		//TODO redo with AntJob
 		PrintStream compileErrors = null;
 		PrintStream runErrors = null;
 		try {
-			UnitTest thisTest = getUnitTest(testId);
 			// delete old submission if exists
-			FileUtils.deleteDirectory(new File(thisTest.getFileLocation()
-					+ "/test/"));
+			FileUtils.deleteDirectory(new File(test.getFileLocation() + "/test/"));
 			
 			// create folder
-			(new File(thisTest.getFileLocation() + "/test/")).mkdirs();
+			(new File(test.getFileLocation() + "/test/")).mkdirs();
 			// extract submission
-			submission.getFile().transferTo(
-					new File(thisTest.getFileLocation() + "/test/"
-							+ submission.getFile().getOriginalFilename()));
-			PASTAUtil.extractFolder(thisTest.getFileLocation()
-					+ "/test/" + submission.getFile().getOriginalFilename());
-			FileUtils.forceDelete(new File(thisTest.getFileLocation()
-					+ "/test/" + submission.getFile().getOriginalFilename()));
+			testForm.getFile().transferTo(
+					new File(test.getFileLocation() + "/test/"
+							+ testForm.getFile().getOriginalFilename()));
+			PASTAUtil.extractFolder(test.getFileLocation()
+					+ "/test/" + testForm.getFile().getOriginalFilename());
+			FileUtils.forceDelete(new File(test.getFileLocation()
+					+ "/test/" + testForm.getFile().getOriginalFilename()));
 			
 			// copy over unit test
-			FileUtils.copyDirectory(new File(thisTest.getFileLocation()
+			FileUtils.copyDirectory(new File(test.getFileLocation()
 					+ "/code/"),
-					new File(thisTest.getFileLocation() + "/test/"));
+					new File(test.getFileLocation() + "/test/"));
 			
 			// compile
-			File buildFile = new File(thisTest.getFileLocation()
+			File buildFile = new File(test.getFileLocation()
 					+ "/test/build.xml");
 			
 			ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
 			Project project = new Project();
 			
 			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-			project.setBasedir(thisTest.getFileLocation() + "/test");
+			project.setBasedir(test.getFileLocation() + "/test");
 			DefaultLogger consoleLogger = new DefaultLogger();
-			runErrors = new PrintStream(thisTest.getFileLocation()
+			runErrors = new PrintStream(test.getFileLocation()
 					+ "/test/run.errors");
 			consoleLogger.setOutputPrintStream(runErrors);
 			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
@@ -324,7 +239,7 @@ public class UnitTestManager {
 			
 			// scrape compiler errors from run.errors
 			try{
-				Scanner in = new Scanner (new File(thisTest.getFileLocation() + "/test/" + "/run.errors"));
+				Scanner in = new Scanner (new File(test.getFileLocation() + "/test/" + "/run.errors"));
 				boolean containsError = false;
 				boolean importantData = false;
 				String output = "";
@@ -344,10 +259,9 @@ public class UnitTestManager {
 				
 				if(containsError){
 					compileErrors = new PrintStream(
-							thisTest.getFileLocation() + "/test/" + "/compile.errors");
+							test.getFileLocation() + "/test/" + "/compile.errors");
 					compileErrors.print(output);
 					compileErrors.close();
-					
 				}
 			}
 			catch (Exception e){
@@ -358,9 +272,7 @@ public class UnitTestManager {
 			}
 			
 		} catch (IOException e) {
-			logger.error("Unable to test unit test "
-					+ getUnitTest(testId).getName()
-					+ System.getProperty("line.separator") + e);
+			logger.error("Unable to test unit test " + test.getName(), e);
 		} catch (Exception e){
 			logger.error("Unknown error while testing unit test: ", e);
 		}
@@ -374,82 +286,45 @@ public class UnitTestManager {
 		}
 	}
 
-	/**
-	 * Update the unit test with new code.
-	 * <p>
-	 * @param newTest the form containing the new unit test form.
-	 */
-	public void updateUnitTestCode(NewUnitTest newTest) {
-		UnitTest thisTest;
-		
-		if(newTest.getTestId() == null || 
-				(thisTest = getUnitTest(newTest.getTestId())) == null) {
-			addUnitTest(newTest);
-		} else {
-			try {
-	
-				// force delete old location
-				FileUtils.deleteDirectory((new File(thisTest.getFileLocation()
-						+ "/code/")));
-				
-				// create space on the file system.
-				(new File(thisTest.getFileLocation() + "/code/")).mkdirs();
-	
-				// generate unitTestProperties
-				saveUnitTestXML(thisTest);
-				
-				// unzip the uploaded code into the code folder. (if exists)
-				if (newTest.getFile() != null && !newTest.getFile().isEmpty()) {
-					// unpack
-					newTest.getFile().getInputStream().close();
-					newTest.getFile().transferTo(
-							new File(thisTest.getFileLocation() + "/code/"
-									+ newTest.getFile().getOriginalFilename()));
-					PASTAUtil.extractFolder(thisTest.getFileLocation()
-							+ "/code/" + newTest.getFile().getOriginalFilename());
-					try{
-						FileUtils.forceDelete(new File(thisTest.getFileLocation()
-								+ "/code/" + newTest.getFile().getOriginalFilename()));
-					} catch (Exception e) {
-						logger.error("Could not delete the zip for "
-								+ thisTest.getName());
-					}
-				}
-	
-				// set it as not tested
-				thisTest.setTested(false);
-				updateUnitTest(thisTest);
-			} catch (Exception e) {
-				(new File(thisTest.getFileLocation())).delete();
-				logger.error("TEST " + thisTest.getName()
-						+ " could not be updated successfully!"
-						+ System.getProperty("line.separator") + e);
-			}
-		}
-	}
-	
-	protected void saveUnitTestXML(UnitTest test) throws FileNotFoundException {
-    PrintStream out = new PrintStream(test.getFileLocation()
-        + "/unitTestProperties.xml");
-    out.print(test);
-    out.close();
+	public void updateUnitTest(UnitTest test, UpdateUnitTestForm updateForm) {
+		test.setName(updateForm.getName());
+		test.setMainClassName(updateForm.getMainClassName());
+		updateUnitTest(test);
 	}
 
-	/**
-	 * Updates an existing unit test with the details found in
-	 * <tt>updatedTest</tt>.
-	 * 
-	 * @param updatedTest
-	 *            the new details of the unit test, with the original ID
-	 */
-	public void copyAndUpdateUnitTest(UnitTest updatedTest) {
-		UnitTest original = ProjectProperties.getInstance().getUnitTestDAO().getUnitTest(updatedTest.getId());
-		if (original == null) {
-			updateUnitTest(updatedTest);
+	public void updateUnitTestCode(UnitTest test, UpdateUnitTestForm updateForm) {
+		try {
+			File codeLocation = test.getCodeLocation();
+			
+			// force delete old location
+			FileUtils.deleteDirectory(codeLocation);
+			
+			// create space on the file system.
+			codeLocation.mkdirs();
+
+			CommonsMultipartFile submission = updateForm.getFile();
+			// unzip the uploaded code into the code folder. (if exists)
+			if (submission != null && !submission.isEmpty()) {
+				// unpack
+				submission.getInputStream().close();
+				File newLocation = new File(codeLocation, updateForm.getFile().getOriginalFilename());
+				submission.transferTo(newLocation);
+				PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+				try{
+					FileUtils.forceDelete(newLocation);
+				} catch (Exception e) {
+					logger.error("Could not delete the zip for "
+							+ test.getName());
+				}
+			}
+
+			// set it as not tested
+			test.setTested(false);
+			updateUnitTest(test);
+		} catch (Exception e) {
+			(new File(test.getFileLocation())).delete();
+			logger.error("Unit test code for " + test.getName()
+					+ " could not be updated successfully!", e);
 		}
-		original.setName(updatedTest.getName());
-		original.setMainClassName(updatedTest.getMainClassName());
-		updateUnitTest(original);
 	}
-	
 }

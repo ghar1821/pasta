@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.File;
 import java.io.Serializable;
 
 import javax.persistence.Column;
@@ -99,6 +100,17 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public String getFileLocation() {
 		return ProjectProperties.getInstance().getUnitTestsLocation() + getId();
 	}
+	
+	public File getCodeLocation() {
+		return new File(getFileLocation(), "code");
+	}
+	
+	public boolean hasCode() {
+		return getCodeLocation().exists();
+	}
+	public boolean isHasCode() {
+		return hasCode();
+	}
 
 	public boolean isTested() {
 		return tested;
@@ -115,6 +127,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.id = id;
 	}
 
+	@Override
 	public String toString(){
 		String output = "<unitTestProperties>" + System.getProperty("line.separator");
 		output += "\t<id>"+id+"</id>" + System.lineSeparator();
@@ -126,6 +139,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	@Override
 	public int compareTo(UnitTest other) {
+		if(other == null) {
+			return 1;
+		}
 		return this.name.compareTo(other.name);
 	}
 
@@ -139,5 +155,27 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UnitTest other = (UnitTest) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

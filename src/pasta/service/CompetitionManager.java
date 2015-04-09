@@ -32,39 +32,40 @@ package pasta.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
-import pasta.domain.result.ArenaResult;
 import pasta.domain.result.CompetitionResult;
+import pasta.domain.result.CompetitionMarks;
 import pasta.domain.template.Arena;
+import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetition;
+import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewPlayer;
-import pasta.repository.AssessmentDAO;
+import pasta.domain.upload.UpdateCompetitionForm;
 import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.Job;
+import pasta.testing.AntJob;
+import pasta.testing.AntResults;
+import pasta.testing.PlayerValidationRunner;
+import pasta.testing.options.CalculatedCompetitionOptions;
+import pasta.testing.task.DirectoryCopyTask;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -85,7 +86,6 @@ import pasta.util.ProjectProperties;
 @Repository
 public class CompetitionManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	private PlayerDAO playerDAO = ProjectProperties.getInstance().getPlayerDAO();
 	
@@ -104,190 +104,92 @@ public class CompetitionManager {
 	
 
 	/**
-	 * Add a new competition from {@link pasta.domain.upload.NewCompetition}
+	 * Add a new competition from {@link pasta.domain.upload.NewCompetitionForm}
 	 * 
 	 * @param form the new competition form
 	 */
-	public void addCompetition(NewCompetition form) {
-		Competition thisComp = new Competition();
-		thisComp.setName(form.getName());
-		thisComp.setTested(false);
-		thisComp.setFirstStartDate(form.getFirstStartDate());
-		thisComp.setFrequency(form.getFrequency());
-		if(form.getType().equalsIgnoreCase("arena")){
-			thisComp.setOutstandingArenas(new LinkedList<Arena>());
-			thisComp.setCompletedArenas(new LinkedList<Arena>());
+	public Competition addCompetition(NewCompetitionForm form) {
+		Competition newComp = new Competition();
+		newComp.setName(form.getName());
+		newComp.setCalculated(form.getType().equalsIgnoreCase("calculated"));
+		
+		if(!newComp.isCalculated()){
+			newComp.setOutstandingArenas(new LinkedList<Arena>());
+			newComp.setCompletedArenas(new LinkedList<Arena>());
 			Arena officialArena = new Arena();
 			officialArena.setName("Official Arena");
-			officialArena.setFirstStartDate(form.getFirstStartDate());
-			officialArena.setFrequency(form.getFrequency());
-			thisComp.setOfficialArena(officialArena);
+			officialArena.setFirstStartDate(null);
+			officialArena.setFrequency(null);
+			newComp.setOfficialArena(officialArena);
 		}
-
-		try {
-
-			// create space on the file system.
-			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
-
-			// generate competitionProperties
-			PrintStream out = new PrintStream(thisComp.getFileLocation()
-					+ "/competitionProperties.xml");
-			out.print(thisComp);
-			out.close();
-
-			// unzip the uploaded code into the code folder. (if exists)
-			if (form.getFile() != null && !form.getFile().isEmpty()) {
-				// unpack
-				form.getFile().getInputStream().close();
-				form.getFile().transferTo(
-						new File(thisComp.getFileLocation() + "/code/"
-								+ form.getFile().getOriginalFilename()));
-				PASTAUtil.extractFolder(thisComp.getFileLocation()
-						+ "/code/" + form.getFile().getOriginalFilename());
-				FileUtils.forceDelete(new File(thisComp.getFileLocation()
-						+ "/code/" + form.getFile().getOriginalFilename()));
-			}
-
-			FileUtils.deleteDirectory((new File(thisComp.getFileLocation()
-					+ "/test/")));
-
-			assDao.addCompetition(thisComp);
-		} catch (Exception e) {
-			(new File(thisComp.getFileLocation())).delete();
-			logger.error("Competition " + thisComp.getName()
-					+ " could not be created successfully!"
-					+ System.getProperty("line.separator") + e);
-		}
+		
+		return ProjectProperties.getInstance().getCompetitionDAO().saveOrUpdate(newComp);
 	}
 	
-	/**
-	 * Update a competition from a {@link pasta.domain.template.Competition}
-	 * 
-	 * @param comp the competition that will be updated
-	 */
-	public void updateCompetition(Competition comp) {
-		Competition thisComp = getCompetition(comp.getName().replace(" ", ""));
+	public Competition updateCompetition(Competition existingComp, UpdateCompetitionForm form) {
+
+		existingComp.setName(form.getName());
+		existingComp.setFrequency(form.getFrequency());
+		existingComp.setFirstStartDate(form.getFirstStartDate());
+		existingComp.setHidden(form.isHidden());
+		existingComp.setStudentPermissions(form.getStudentPermissions());
+		existingComp.setTutorPermissions(form.getTutorPermissions());
 		
-		thisComp.setTutorCreatableRepeatableArena(comp.isTutorCreatableRepeatableArena());
-		thisComp.setStudentCreatableArena(comp.isStudentCreatableArena());
-		thisComp.setStudentCreatableRepeatableArena(comp.isStudentCreatableRepeatableArena());
-		
-		thisComp.setFrequency(comp.getFrequency());
-		thisComp.setFirstStartDate(comp.getFirstStartDate());
-		
-		thisComp.setHidden(comp.isHidden());
-		
-		if(!thisComp.isCalculated()){
-			thisComp.getOfficialArena().setFirstStartDate(comp.getFirstStartDate());
-			thisComp.getOfficialArena().setFrequency(comp.getFrequency());
+		if(existingComp.isCalculated()) {
+			CalculatedCompetitionOptions options = new CalculatedCompetitionOptions();
+			if(form.isHasRun()) {
+				options.setRunOptions(form.getRunOptions());
+			}
+			if(form.isHasBuild()) {
+				options.setBuildOptions(form.getBuildOptions());
+			}
+			existingComp.setOptions(options);
+		} else {
+			existingComp.getOfficialArena().setFirstStartDate(existingComp.getFirstStartDate());
+			existingComp.getOfficialArena().setFrequency(existingComp.getFrequency());
 		}
-		
-		assDao.addCompetition(thisComp);
+
+		return ProjectProperties.getInstance().getCompetitionDAO().saveOrUpdate(existingComp);
 	}
 	
-	/**
-	 * Update a competition from a {@link pasta.domain.upload.NewCompetition}
-	 * 
-	 * @param form new competition form
-	 */
-	public void updateCompetition(NewCompetition form) {
-		Competition thisComp = getCompetition(form.getName().replace(" ", ""));
-		boolean newComp = false;
-		if (thisComp == null){
-			thisComp = new Competition();
-			newComp = true;
-		}
-		if(newComp){
-			thisComp.setName(form.getName());
-			if(!thisComp.isCalculated()){
-				thisComp.getOfficialArena().setFrequency(form.getFrequency());
-			}
-			thisComp.setFirstStartDate(form.getFirstStartDate());
-			thisComp.setFrequency(form.getFrequency());
-		}
+	public void updateCode(Competition comp, UpdateCompetitionForm form) {
 		try {
-			thisComp.setHidden(form.isHidden());
-			if((new File(thisComp.getFileLocation() + "/code/")).exists()){
-				FileUtils.deleteDirectory((new File(thisComp.getFileLocation() + "/code/")));
-			}
-			
-			// create space on the file system.
-			(new File(thisComp.getFileLocation() + "/code/")).mkdirs();
-
-			// generate competitionProperties
-			if(newComp){
-				PrintStream out = new PrintStream(thisComp.getFileLocation()
-						+ "/competitionProperties.xml");
-				out.print(thisComp);
-				out.close();
-			}
-
-			// unzip the uploaded code into the code folder. (if exists)
-			if (form.getFile() != null && !form.getFile().isEmpty()) {
-				// unpack
-				form.getFile().getInputStream().close();
-				form.getFile().transferTo(
-						new File(thisComp.getFileLocation() + "/code/"
-								+ form.getFile().getOriginalFilename()));
-				PASTAUtil.extractFolder(thisComp.getFileLocation()
-						+ "/code/" + form.getFile().getOriginalFilename());
-				FileUtils.forceDelete(new File(thisComp.getFileLocation()
-						+ "/code/" + form.getFile().getOriginalFilename()));
-			}
-
-			FileUtils.deleteDirectory((new File(thisComp.getFileLocation()
-					+ "/test/")));
-
-			getCompetition(thisComp.getShortName()).setTested(false);
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			(new File(thisComp.getFileLocation())).delete();
-			logger.error("Competition " + thisComp.getName()
-					+ " could not be created successfully!"
-					+ System.getProperty("line.separator") + sw.toString());
-		}
-	}
-	
-	/**
-	 * Add a competition
-	 * 
-	 * @param comp the competition to add
-	 */
-	public void addCompetition(Competition comp) {
-		try {
-
 			// create space on the file system.
 			(new File(comp.getFileLocation() + "/code/")).mkdirs();
 
-			assDao.addCompetition(comp);
-
-			// generate unitTestProperties
-			PrintStream out = new PrintStream(comp.getFileLocation()
-					+ "/competitionProperties.xml");
-			out.print(getCompetition(comp.getShortName()));
-			out.close();
-			
+			// unzip the uploaded code into the code folder. (if exists)
+			if (form.getFile() != null && !form.getFile().isEmpty()) {
+				// unpack
+				form.getFile().getInputStream().close();
+				form.getFile().transferTo(
+						new File(comp.getFileLocation() + "/code/"
+								+ form.getFile().getOriginalFilename()));
+				PASTAUtil.extractFolder(comp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename());
+				FileUtils.forceDelete(new File(comp.getFileLocation()
+						+ "/code/" + form.getFile().getOriginalFilename()));
+			}
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
 			(new File(comp.getFileLocation())).delete();
-			logger.error("Competition " + comp.getName()
-					+ " could not be updated successfully!"
-					+ System.getProperty("line.separator") + pw);
+			logger.error("Competition code for " + comp.getName()
+					+ " was not loaded successfully.", e);
 		}
 	}
 
 	/**
 	 * Helper method
 	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @see pasta.repository.AssessmentDAO#removeCompetition(String)
+	 * @param id the id of the competition
+	 * @see pasta.repository.AssessmentDAO#unlinkCompetition(long)
 	 */
-	public void removeCompetition(String competitionName) {
-		assDao.removeCompetition(competitionName);
+	public void removeCompetition(long id) {
+		Competition comp = ProjectProperties.getInstance().getCompetitionDAO().getCompetition(id);
+		if(comp == null) {
+			logger.error("Could not delete competition with ID " + id);
+		} else {
+			ProjectProperties.getInstance().getAssessmentDAO().unlinkCompetition(id);
+			ProjectProperties.getInstance().getCompetitionDAO().delete(comp);
+		}
 	}
 
 	/**
@@ -296,41 +198,41 @@ public class CompetitionManager {
 	 * @return a collection of {@link pasta.domain.template.Competition}
 	 * @see pasta.repository.AssessmentDAO#getCompetitionList()
 	 */
-	public Collection<Competition> getCompetitionList() {
-		return assDao.getCompetitionList();
+	public List<Competition> getCompetitionList() {
+		return ProjectProperties.getInstance().getCompetitionDAO().getAllCompetitions();
 	}
 
 	/**
 	 * Helper method
 	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param id the id of the competition
 	 * @return the {@link pasta.domain.template.Competition} or null
-	 * @see pasta.repository.AssessmentDAO#getCompetition(String)
+	 * @see pasta.repository.AssessmentDAO#getCompetition(id)
 	 */
-	public Competition getCompetition(String competitionName) {
-		return assDao.getCompetition(competitionName);
-	}
-
-	/**
-	 * Helper method
-	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @return the {@link pasta.domain.result.CompetitionResult} or null
-	 * @see pasta.repository.ResultDAO#getCompetitionResult(String)
-	 */
-	public CompetitionResult getCompetitionResult(String competitionName) {
-		return resultDAO.getCompetitionResult(competitionName);
+	public Competition getCompetition(long id) {
+		return ProjectProperties.getInstance().getCompetitionDAO().getCompetition(id);
 	}
 	
 	/**
 	 * Helper method
 	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @return the {@link pasta.domain.result.ArenaResult} or null
-	 * @see pasta.repository.ResultDAO#getCalculatedCompetitionResult(String)
+	 * @param competitionId the id of the competition
+	 * @return the {@link pasta.domain.result.CompetitionMarks} or null
+	 * @see pasta.repository.ResultDAO#getLatestCompetitionMarks(String)
 	 */
-	public ArenaResult getCalculatedCompetitionResult(String competitionName){
-		return resultDAO.getCalculatedCompetitionResult(competitionName);
+	public CompetitionMarks getLatestCompetitionMarks(long competitionId) {
+		return resultDAO.getLatestCompetitionMarks(competitionId);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @param competitionId the short name (no whitespace) of the competition
+	 * @return the {@link pasta.domain.result.CompetitionResult} or null
+	 * @see pasta.repository.ResultDAO#getLatestCalculatedCompetitionResult(long)
+	 */
+	public CompetitionResult getLatestCalculatedCompetitionResult(long competitionId){
+		return resultDAO.getLatestCalculatedCompetitionResult(competitionId);
 	}
 
 	/**
@@ -341,12 +243,10 @@ public class CompetitionManager {
 	 * @param currComp the competition
 	 */
 	public void addArena(Arena arena, Competition currComp) {
-		if(currComp.getArena(arena.getName()) == null){
+		if(currComp.getArena(arena.getId()) == null){
 			currComp.addNewArena(arena);
-			scheduler.save(new Job("PASTACompetitionRunner", 
-					currComp.getShortName()+"#PASTAArena#"+arena.getName(), 
-					arena.getNextRunDate()));
-			assDao.writeArenaToDisk(arena, currComp);
+			ProjectProperties.getInstance().getCompetitionDAO().saveOrUpdate(currComp);
+			scheduler.scheduleJob(currComp, arena, arena.getNextRunDate());
 		}
 	}
 
@@ -355,40 +255,44 @@ public class CompetitionManager {
 	 * 
 	 * @param playerForm the new player form. See {@link pasta.domain.upload.NewPlayer}
 	 * @param username the name of the user
-	 * @param competitionShortName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param result the BindingResult which can be user to give the user feedback and reject the {@link pasta.domain.upload.NewPlayer}
 	 */
 	public void addPlayer(NewPlayer playerForm, String username, 
-			String competitionShortName, BindingResult result) {
+			long competitionId, BindingResult result) {
 		// copy player to temp location
 		
-		String compLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/competitions/"
-				+ competitionShortName;
+		Competition comp = ProjectProperties.getInstance().getCompetitionDAO().getCompetition(competitionId);
+		if(comp == null) {
+			result.rejectValue("competition", "Competition.doesNotExist");
+		}
 		
+		String submitLocation = comp.getFileLocation() + File.separator + "players" + File.separator + username;
+		File submitDir = new File(submitLocation);
+		File tempDir = new File(submitDir, "temp");
+		File codeDir = new File(tempDir, "code");
 		
 		if (playerForm.getFile() != null && !playerForm.getFile().isEmpty()) {
 			
-			if(new File(compLocation + "/temp/").exists()){
+			if(tempDir.exists()){
 				try {
-					FileUtils.deleteDirectory(new File(compLocation + "/temp/"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+					FileUtils.deleteDirectory(tempDir);
+				} catch (IOException e) { }
 			}
 			
-			(new File( compLocation + "/temp/code")).mkdirs();
+			codeDir.mkdirs();
 
-			// unpack if necessary
 			try {
 				playerForm.getFile().getInputStream().close();
-				playerForm.getFile().transferTo(
-						new File( compLocation + "/temp/code/"
-								+ playerForm.getFile().getOriginalFilename()));
-				// TODO fix allowing people to submit zips
-//				if(playerForm.getFile().getOriginalFilename().endsWith("zip")){
-//					PASTAUtil.extractFolder(compLocation + "/temp/code/"
-//							+ playerForm.getFile().getOriginalFilename());
-//				}
+				
+				File playerLocation = new File(codeDir, playerForm.getFile().getOriginalFilename());
+				playerForm.getFile().transferTo(playerLocation);
+				
+				// unpack if necessary
+				if(playerLocation.getName().endsWith(".zip")) {
+					PASTAUtil.extractFolder(playerLocation.getAbsolutePath());
+					FileUtils.forceDelete(playerLocation);
+				}
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -400,140 +304,118 @@ public class CompetitionManager {
 			return;
 		}
 		
-		// validate player
-		try {
-			// copy over competition
-			FileUtils.copyDirectory(new File(ProjectProperties.getInstance().getCompetitionsLocation() + competitionShortName + "/code/"),
-					new File(compLocation + "/temp/test/"));
-			
-			// copy over player
-			FileUtils.copyDirectory(new File(compLocation + "/temp/code"),
-					new File(compLocation + "/temp/test/"));
-			
-			// compile
-			File buildFile = new File(compLocation + "/temp/test/build.xml");
-
-			ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-			Project project = new Project();
-
-			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-			project.setBasedir(compLocation + "/temp/test/");
-			DefaultLogger consoleLogger = new DefaultLogger();
-			PrintStream runErrors = new PrintStream(compLocation + "/temp/run.errors");
-			consoleLogger.setOutputPrintStream(runErrors);
-			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-			project.addBuildListener(consoleLogger);
-			project.init();
-
-			project.addReference("ant.projectHelper", projectHelper);
-			projectHelper.parse(project, buildFile);
-			
-			// run validate target
-			try {
-				project.executeTarget("build");
-				project.executeTarget("validate");
-			} catch (BuildException e) {
-//				logger.error("Could not validate player for user: " + username + "\r\n" + e);
-//				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
-//				compileErrors.print(e.toString().replaceAll(".*/temp/test/" , "folder "));
-//				compileErrors.close();
+		File testDir = new File(tempDir, "test");
+		String validateCodeSubmittedLocation = "validate";
+		String validateCodeLocation = "src";
+		String playerCodeLocation = "player";
+		
+		//TODO: make this generic, not just "Validator"
+		PlayerValidationRunner runner = new PlayerValidationRunner(username, "Validator", validateCodeLocation);
+		runner.setMaxRunTime(30000);
+		runner.setPlayerDirectory(playerCodeLocation);
+		
+		AntJob antJob = new AntJob(testDir, runner, "build", "validate");
+		antJob.addDependency("validate", "build");
+		
+		// copy over competition
+		antJob.addSetupTask(new DirectoryCopyTask(
+				new File(new File(comp.getFileLocation(), "code"), validateCodeSubmittedLocation), 
+				new File(testDir, validateCodeLocation)));
+		// copy over player
+		antJob.addSetupTask(new DirectoryCopyTask(
+				new File(tempDir, "code"), 
+				new File(testDir, playerCodeLocation)));
+		
+		antJob.run();
+		
+		AntResults results = antJob.getResults();
+		//TODO save full output
+//		logger.warn(results.getFullOutput());
+		
+		String playerName = null;
+		String validationError = null;
+		
+		if(!results.isSuccess("build")) {
+			Scanner scn = new Scanner(results.getOutput("build"));
+			StringBuilder compErrors = new StringBuilder();
+			String line = "";
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("error")) {
+					compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+					break;
+				}
+			}
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+			}
+			if(compErrors.length() > 0) {
+				compErrors.replace(compErrors.length()-1, compErrors.length(), "");
+			}
+			scn.close();
+			//TODO maybe store and display properly?
+			result.rejectValue("file", "Player.errors", compErrors.toString());
+		} else {
+			if(results.isSuccess("validate")) {
+				try {
+					Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.playerNameFilename));
+					if(scn.hasNext()) {
+						playerName = scn.next();
+					}
+					scn.close();
+				} catch (FileNotFoundException e) {
+					logger.error("Could not get player name from validator.");
+				}
+				try {
+					Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.validationErrorFilename));
+					StringBuilder sb = new StringBuilder();
+					while(scn.hasNextLine()) {
+						sb.append(scn.nextLine()).append(System.lineSeparator());
+					}
+					scn.close();
+					validationError = sb.toString();
+				} catch (FileNotFoundException e) {
+				}
 			}
 			
-			runErrors.flush();
-			runErrors.close();
-		} catch (IOException e) {
-			logger.error("Could not validate player for user: " + username + "\r\n" + e);
+			if(validationError != null) {
+				//TODO maybe store and display properly?
+				result.rejectValue("file", "Player.errors", validationError);
+			}
 		}
 		
-		// if validation.errors exist, read then report them
-		// scrape compiler errors from run.errors
-		try{
-			Scanner in = new Scanner (new File(compLocation + "/temp/run.errors"));
-			boolean containsError = false;
-			boolean importantData = false;
-			String output = "";
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				if(line.contains(": error:")){
-					containsError = true;
-				}
-				if(line.contains("[javac] Files to be compiled:")){
-					importantData = true;
-				}
-				if(importantData){
-					output += line.replace("[javac]", "").replaceAll(".*temp\\\\test\\\\","") + System.getProperty("line.separator");
-				}
-			}
-			in.close();
-			
-			if(new File(compLocation + "/temp/validation.errors").exists()){
-				if(!containsError){
-					output = "";
-				}
-				Scanner valIn = new Scanner(new File(compLocation + "/temp/validation.errors"));
-				while(valIn.hasNextLine()){
-					output += valIn.nextLine() + System.getProperty("line.separator");;
-				}
-				valIn.close();
-				containsError=true;
-			}
-			
-			if(containsError){
-				PrintStream compileErrors = new PrintStream(compLocation + "/temp/validation.errors");
-				compileErrors.print(output);
-				compileErrors.close();
-				result.rejectValue("file", "Player.errors", output);
-			}
-		}
-		catch (Exception e){
-			// do nothing
-		}
 		if(!result.hasErrors()){
 			PlayerResult newPlayer = new PlayerResult();
+			newPlayer.setFirstUploaded(new Date());
+			newPlayer.setName(playerName);
 			
-			try {
-				Scanner in = new Scanner(new File(compLocation + "/temp/player.info"));
-				while(in.hasNextLine()){
-					String line = in.nextLine();
-					if(line.startsWith("name=")){
-						newPlayer.setName(line.replaceFirst("name=", ""));
-					}
-					else if(line.startsWith("uploadDate=")){
-						try {
-							newPlayer.setFirstUploaded(PASTAUtil.parseDate(line.replaceFirst("uploadDate=", "")));
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				in.close();
-			} catch (FileNotFoundException e) {
-				logger.error("player.info was not created for user " + username);
-				return;
-			}
-			
-			PlayerHistory history = playerDAO.getPlayerHistory(username, competitionShortName, newPlayer.getName());
+			PlayerHistory history = playerDAO.getPlayerHistory(username, competitionId, newPlayer.getName());
 			if(history == null){
 				history = new PlayerHistory(newPlayer.getName());
+				history.setUsername(username);
+				history.setCompetitionId(competitionId);
 			}
 			
 			// if no errors and the player has the same name as an existing player
 			// retire the old player.
-			retirePlayer(username, competitionShortName, newPlayer.getName());
+			retirePlayer(username, competitionId, newPlayer.getName());
 			history.setActivePlayer(newPlayer);
-			(new File(compLocation+"/"+newPlayer.getName()+"/active/")).mkdirs();
+			playerDAO.saveOrUpdate(history);
+			
+			File playerDir = new File(submitDir, newPlayer.getName());
+			playerDir.mkdirs();
+			
 			try {
-				FileUtils.copyDirectory(new File(compLocation + "/temp/code/"),
-						new File(compLocation+"/"+newPlayer.getName()+"/active/code/"));
-				FileUtils.copyFile(new File(compLocation+"/temp/player.info"), 
-						new File(compLocation+"/"+newPlayer.getName()+"/active/player.info"));
+				FileUtils.copyDirectory(new File(tempDir, "code"),
+						new File(new File(playerDir, "active"), "code"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		try {
-			FileUtils.deleteDirectory(new File(compLocation + "/temp/"));
+			FileUtils.deleteDirectory(tempDir);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -543,131 +425,147 @@ public class CompetitionManager {
 	 * Retire a player
 	 * 
 	 * @param username the name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param playerName the name of the player
 	 */
-	public void retirePlayer(String username, 
-			String competitionName, String playerName){
-		if(playerDAO.getPlayerHistory(username, competitionName, playerName) != null){
-			PlayerResult oldPlayer = playerDAO.getPlayerHistory(username, competitionName, playerName).getActivePlayer();
-			if(oldPlayer != null){
-				playerDAO.getPlayerHistory(username, competitionName, playerName).retireActivePlayer();
-				
-				String compLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/competitions/"
-						+ competitionName;
-				
-				try {
-					// archive the old player
-					FileUtils.moveDirectory(
-							new File(compLocation + "/" + playerName
-									+ "/active"),
-							new File(compLocation
-									+ "/"
-									+ playerName
-									+ "/retired/"
-									+ PASTAUtil.formatDate(oldPlayer
-											.getFirstUploaded())));
-				} catch (IOException e) {
-					logger.error("Could not retire player " + playerName 
-							+ " of user " + username 
-							+ " for competition " + competitionName 
-							+ ". Reason : " + e);
-				}
-			}
+	public void retirePlayer(String username, long competitionId, String playerName){
+		Competition comp = ProjectProperties.getInstance().getCompetitionDAO().getCompetition(competitionId);
+		PlayerHistory history = playerDAO.getPlayerHistory(username, competitionId, playerName);
+		if(history == null) {
+			return;
+		}
+		
+		PlayerResult oldPlayer = history.getActivePlayer();
+		if(oldPlayer == null) {
+			return;
+		}
+		
+		history.retireActivePlayer();
+		playerDAO.saveOrUpdate(history);
+		
+		//TODO move to DAO
+		try {
+			// archive the old player
+			String playerLocation = comp.getFileLocation() + File.separator + "players" + File.separator + username + File.separator + playerName;
+			File oldLoc = new File(playerLocation, "active");
+			File newLoc = new File(playerLocation, "retired");
+			newLoc.mkdirs();
+			FileUtils.moveDirectory(oldLoc, new File(newLoc, PASTAUtil.formatDate(oldPlayer.getFirstUploaded())));
+		} catch (IOException e) {
+			logger.error("Could not retire player " + playerName 
+					+ " of user " + username 
+					+ " for competition " + comp.getName(), e);
 		}
 	}
 
 	/**
 	 * Get the player history for a user in a competition
 	 * 
-	 * @see pasta.repository.PlayerDAO#getPlayerHistory(String, String)
+	 * @see pasta.repository.PlayerDAO#getAllPlayerHistories(String, String)
 	 * @param username the name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
 	 */
-	public Collection<PlayerHistory> getPlayers(String username, String competitionName) {
-		return playerDAO.getPlayerHistory(username, competitionName);
+	public List<PlayerHistory> getPlayers(String username, long competitionId) {
+		return playerDAO.getAllPlayerHistories(username, competitionId);
 	}
 	
 	/**
 	 * Get the latest history of the player for a user in a competition
 	 * 
-	 * @see pasta.repository.PlayerDAO#loadPlayerHistory(String, String)
+	 * @see pasta.repository.PlayerDAO#loadPlayerHistories(String, String)
 	 * @param username the name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
 	 */
-	public Collection<PlayerHistory> getLatestPlayers(String username, String competitionName) {
-		return playerDAO.loadPlayerHistory(username, competitionName).values();
+	@Deprecated public List<PlayerHistory> getLatestPlayers(String username, long competitionId) {
+		return getPlayers(username, competitionId);
 	}
 
 	/**
 	 * Add a player to an arena
 	 * 
 	 * @param username the name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @param arenaName the short name (no whitespace) of the arena
+	 * @param competitionId the id of the competition
+	 * @param arenaId the id of the arena
 	 * @param playerName the name of the player.
 	 */
-	public void addPlayerToArena(String username, String competitionName,
-			String arenaName, String playerName) {
-		// make sure player is legitimate
-		if(playerDAO.getPlayerHistory(username, competitionName, playerName) != null &&
-				assDao.getCompetition(competitionName)!= null &&
-				assDao.getCompetition(competitionName).getArena(arenaName) != null){
-			// add player to arena if arena exists
-			assDao.getCompetition(competitionName).getArena(arenaName).addPlayer(username, playerName);
-			
-			// write to disk
-			assDao.updatePlayerInArena(assDao.getCompetition(competitionName)
-					, assDao.getCompetition(competitionName).getArena(arenaName)
-					, username
-					, assDao.getCompetition(competitionName).getArena(arenaName).getPlayers().get(username));
+	public void addPlayerToArena(String username, long competitionId,
+			long arenaId, String playerName) {
+		if(!playerExists(username, competitionId, playerName)) {
+			return;
 		}
+		Competition comp = getCompetition(competitionId);
+		Arena arena;
+		if(comp == null || (arena = comp.getArena(arenaId)) == null) {
+			return;
+		}
+		arena.addPlayer(username, playerName);
+		ProjectProperties.getInstance().getCompetitionDAO().update(arena);
 	}
 	
 	/**
 	 * Remove a player form an arena
 	 * 
 	 * @param username the name of the user
-	 * @param competitionName the short name (no whitespace) of the competition
-	 * @param arenaName the short name (no whitespace) of the arena
+	 * @param competitionId the id of the competition
+	 * @param arenaId the id of the arena
 	 * @param playerName the name of the player.
 	 */
-	public void removePlayerFromArena(String username, String competitionName,
-			String arenaName, String playerName) {
-		// make sure player is legitimate
-		if(playerDAO.getPlayerHistory(username, competitionName, playerName) != null &&
-				assDao.getCompetition(competitionName)!= null &&
-				assDao.getCompetition(competitionName).getArena(arenaName) != null){
-			// remove player to arena if arena exists
-			assDao.getCompetition(competitionName).getArena(arenaName).removePlayer(username, playerName);
-			
-			// if no player
-			if(assDao.getCompetition(competitionName).getArena(arenaName).getPlayers() == null ||
-					assDao.getCompetition(competitionName).getArena(arenaName).getPlayers().get(username) == null ||
-					assDao.getCompetition(competitionName).getArena(arenaName).getPlayers().get(username).isEmpty()){
-				// delete file
-				new File(assDao.getCompetition(competitionName).getFileLocation() 
-						+ "/arenas/" + assDao.getCompetition(competitionName).getArena(arenaName).getName()
-						+ "/players/"+ username + ".players").delete();
-			}
+	public void removePlayerFromArena(String username, long competitionId,
+			long arenaId, String playerName) {
+		if(!playerExists(username, competitionId, playerName)) {
+			return;
 		}
+		Competition comp = getCompetition(competitionId);
+		Arena arena;
+		if(comp == null || (arena = comp.getArena(arenaId)) == null) {
+			return;
+		}
+		arena.removePlayer(username, playerName);
+		ProjectProperties.getInstance().getCompetitionDAO().update(arena);
 	}
 
 	/**
-	 * Get the latest results of an arena execution
+	 * Get the latest results of a competition execution
 	 * 
 	 * @param currComp the competition
-	 * @param arena the arena
-	 * @see pasta.repository.ResultDAO#loadArenaResult(String)
-	 * @return the {@link pasta.domain.result.ArenaResult} or null.
+	 * @param arena 
+	 * @see pasta.repository.ResultDAO#getLatestCalculatedCompetitionResult(long)
+	 * @return the {@link pasta.domain.result.CompetitionResult} or null.
 	 */
-	public ArenaResult getArenaResults(Competition currComp, Arena arena) {
-		if(currComp != null && arena != null){
-			return resultDAO.loadArenaResult(currComp.getFileLocation()+"/arenas/"+arena.getName());
+	public CompetitionResult getLatestArenaResults(Competition currComp, Arena arena) {
+		if(currComp != null){
+			return resultDAO.getLatestArenaResult(currComp.getId(), arena.getId());
 		}
 		return null;
+	}
+	
+	public boolean playerExists(String username, long competitionId, String playerName) {
+		return playerDAO.getPlayerHistory(username, competitionId, playerName) != null;
+	}
+
+	public Map<Long, Integer> getLiveAssessmentCounts(PASTAUser user) {
+		Map<Long, Integer> liveCompetitions = new HashMap<Long, Integer>();
+		for(Competition comp : getCompetitionList()) {
+			liveCompetitions.put(comp.getId(), getLiveAssessmentCount(user, comp));
+		}
+		return liveCompetitions;
+	}
+	
+	public int getLiveAssessmentCount(PASTAUser user, Competition comp) {
+		List<Assessment> assessments = getAssessmentsUsingCompetition(comp);
+		int count = 0;
+		for(Assessment assessment : assessments) {
+			if(assessment.isReleasedTo(user)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	private List<Assessment> getAssessmentsUsingCompetition(Competition comp) {
+		return ProjectProperties.getInstance().getCompetitionDAO().getAssessmentsUsingCompetition(comp);
 	}
 	
 }

@@ -66,6 +66,8 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	
 	private double weight;
 	
+	private boolean secret;
+	
 	@ManyToOne
 	@JoinColumn(name = "unit_test_id")
 	private UnitTest test;
@@ -87,6 +89,13 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		this.weight = weight;
 	}
 	
+	public boolean isSecret() {
+		return secret;
+	}
+	public void setSecret(boolean secret) {
+		this.secret = secret;
+	}
+	
 	public UnitTest getTest() {
 		return test;
 	}
@@ -103,13 +112,66 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	
 	@Override
 	public int compareTo(WeightedUnitTest other) {
-		int diff = this.test.compareTo(other.test);
+		if(other == null) {
+			return 1;
+		}
+		if(other.secret && !this.secret) {
+			return 1;
+		}
+		if(this.secret && !other.secret) {
+			return -1;
+		}
+		int diff;
+		if(this.getTest() != null) {
+			diff = this.getTest().compareTo(other.getTest());
+			if(diff != 0) {
+				return diff;
+			}
+		}
+		diff = (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
 		if(diff != 0) {
 			return diff;
 		}
-		else {
-			return (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
-		}
+		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
 	
+	@Override
+	public String toString() {
+		return  "{ID:" + this.getId() + " for " + (this.test == null ? "null" : this.test.getId()) + (secret ? " (secret)" : "") + "}";
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + (secret ? 1231 : 1237);
+		result = prime * result + ((test == null) ? 0 : test.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(weight);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WeightedUnitTest other = (WeightedUnitTest) obj;
+		if (id != other.id)
+			return false;
+		if (secret != other.secret)
+			return false;
+		if (test == null) {
+			if (other.test != null)
+				return false;
+		} else if (!test.equals(other.test))
+			return false;
+		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
+			return false;
+		return true;
+	}
 }

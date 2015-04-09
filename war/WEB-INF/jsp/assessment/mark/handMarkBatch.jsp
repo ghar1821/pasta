@@ -185,7 +185,7 @@ th, td{
 	</c:otherwise>
 </c:choose>
 
-<div class="popup" id="comfirmPopup">
+<div class="popup" id="confirmPopup">
 	<span class="button bClose"> <span><b>X</b></span>
 	</span>
 	<h1>Would you like to save your changes?</h1>

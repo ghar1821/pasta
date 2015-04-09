@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
+import pasta.domain.template.WeightedHandMarking;
 
 @Repository("handMarkingDAO")
 public class HandMarkingDAO extends HibernateDaoSupport {
@@ -40,16 +41,6 @@ public class HandMarkingDAO extends HibernateDaoSupport {
 	public List<HandMarking> getAllHandMarkings() {
 		return getHibernateTemplate().find("FROM HandMarking");
 	}
-	
-	@Deprecated
-	public HandMarking getHandMarking(String name) {
-		@SuppressWarnings("unchecked")
-		List<HandMarking> results = getHibernateTemplate().find("FROM HandMarking WHERE name = ?", name);
-		if(results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
 
 	public HandMarking getHandMarking(long id) {
 		return getHibernateTemplate().get(HandMarking.class, id);
@@ -57,6 +48,10 @@ public class HandMarkingDAO extends HibernateDaoSupport {
 	
 	public WeightedField getWeightedField(long id) {
 		return getHibernateTemplate().get(WeightedField.class, id);
+	}
+	
+	public WeightedHandMarking getWeightedHandMarking(long id) {
+		return getHibernateTemplate().get(WeightedHandMarking.class, id);
 	}
 	
 	/**

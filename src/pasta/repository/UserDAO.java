@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,11 +45,14 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
+import pasta.domain.UserPermissionLevel;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -68,116 +72,12 @@ import pasta.util.ProjectProperties;
 @Repository("userDAO")
 public class UserDAO extends HibernateDaoSupport{
 	
-	Map<String, PASTAUser> allUsers = null;
-	Map<String, Set<String>> usersByTutorial = null;
-	Map<String, Set<String>> usersByStream = null;
-	Map<String, Collection<String>> tutorialByStream = null;
-	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
 	// Default required by hibernate
 	@Autowired
 	public void setMySession(SessionFactory sessionFactory) {
 		setSessionFactory(sessionFactory);
-	}
-	
-	/**
-	 * Update the cached user.
-	 * <p>
-	 * Add them to the correct maps, handle stream or tutorial changing.
-	 * @param user the user to be updated
-	 */
-	public void updateCachedUser(PASTAUser user){
-		if (user != null) {
-			PASTAUser oldUser = allUsers.get(user.getUsername());
-			
-			if(user.isTutor()){
-				// TUTOR
-				if(oldUser == null){
-					// add like normal
-					allUsers.put(user.getUsername(), user);
-				}
-				else{
-					// update
-					oldUser.setTutorial(user.getTutorial());
-					oldUser.setStream(user.getStream());
-				}
-			}
-			else{
-				// STUDENT
-				if(oldUser == null){
-					// add new
-					allUsers.put(user.getUsername(), user);
-					// tutorial cache
-					if(!usersByStream.containsKey(user.getStream())){
-						usersByStream.put(user.getStream(), new TreeSet<String>());
-					}
-					usersByStream.get(user.getStream()).add(user.getUsername());
-					// stream cache
-					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
-					}
-					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
-				}
-				else{
-					// update
-
-					// check if tutorial has changed
-					if(!user.getTutorial().equals(oldUser.getTutorial())){
-						// update caching
-						if(usersByTutorial.containsKey(oldUser.getTutorial())){
-							usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
-						}
-						if(usersByTutorial.get(oldUser.getTutorial()).isEmpty()){
-							usersByTutorial.remove(oldUser.getTutorial());
-						}
-						oldUser.setTutorial(user.getTutorial());
-						if(!usersByTutorial.containsKey(user.getTutorial())){
-							usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
-						}
-						usersByTutorial.get(user.getTutorial()).add(oldUser.getUsername());
-					}
-					// check if stream has changed
-					if(!user.getStream().equals(oldUser.getStream())){
-						// remove from caching
-						if(usersByStream.containsKey(oldUser.getStream())){
-							usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
-						}
-						if(usersByStream.get(oldUser.getStream()).isEmpty()){
-							usersByStream.remove(oldUser.getStream());
-						}
-						oldUser.setStream(user.getStream());
-						if(!usersByStream.containsKey(user.getStream())){
-							usersByStream.put(user.getStream(), new TreeSet<String>());
-						}
-						usersByStream.get(user.getStream()).add(oldUser.getUsername());
-					}
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Delete the a user from the cache.
-	 * <p>
-	 * Remove them from all of the maps, but do not change any information on the disk
-	 * @param user the user getting removed
-	 */
-	public void deleteCachedUser(PASTAUser user){
-		if (user != null) {
-			PASTAUser oldUser = allUsers.get(user.getUsername());
-			if(!user.isTutor()){
-				// clean up after the old user
-				if (oldUser.getTutorial() != null && 
-						usersByTutorial.containsKey(oldUser.getTutorial())) {
-					usersByTutorial.get(oldUser.getTutorial()).remove(oldUser.getUsername());
-				}
-				if (oldUser.getStream() != null && 
-						usersByStream.containsKey(oldUser.getStream())) {
-					usersByStream.get(oldUser.getStream()).remove(oldUser.getUsername());
-				}
-			}
-		}
 	}
 
 	/**
@@ -186,7 +86,6 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being saved
 	 */
 	public void save(PASTAUser user) {
-		updateCachedUser(user);
 		getHibernateTemplate().save(user);
 	}
 
@@ -196,7 +95,6 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being updated
 	 */
 	public void update(PASTAUser user) {
-		updateCachedUser(user);
 		getHibernateTemplate().update(user);
 	}
 	
@@ -206,7 +104,6 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being deleted
 	 */
 	public void delete(PASTAUser user) {
-		deleteCachedUser(user);
 		getHibernateTemplate().delete(user);
 	}
 	
@@ -216,17 +113,14 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param users the list of users which will replace the current list
 	 */
 	public void replaceStudents(List<PASTAUser> users){
-		for(PASTAUser user: allUsers.values()){
+		for(PASTAUser user: getUserList()){
 			if(!user.isTutor()){
 				delete(user);
 			}
 		}
-		
 		for(PASTAUser user: users){
 			save(user);
 		}
-		
-		loadUsers();
 	}
 	
 	/**
@@ -235,16 +129,19 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param users the list of users which will be updated
 	 */
 	public void updateStudents(List<PASTAUser> users){
+		Map<String, PASTAUser> currentUsers = getUserMap();
 		for(PASTAUser user: users){
-			if(allUsers.containsKey(user.getUsername())){
-				update(user);
+			if(currentUsers.containsKey(user.getUsername())){
+				PASTAUser toUpdate = currentUsers.get(user.getUsername());
+				toUpdate.setPermissionLevel(user.getPermissionLevel());
+				toUpdate.setStream(user.getStream());
+				toUpdate.setTutorial(user.getTutorial());
+				update(toUpdate);
 			}
 			else{
 				save(user);
 			}
 		}
-
-		loadUsers();
 	}
 	
 	/**
@@ -253,17 +150,14 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param users the list of users which will replace the current list
 	 */
 	public void replaceTutors(List<PASTAUser> users){
-		for(PASTAUser user: allUsers.values()){
+		for(PASTAUser user : getUserList()){
 			if(user.isTutor()){
 				delete(user);
 			}
 		}
-		
 		for(PASTAUser user: users){
 			save(user);
 		}
-		
-		loadUsers();
 	}
 	
 	/**
@@ -272,16 +166,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param users the list of teaching staff which will be updated
 	 */
 	public void updateTutors(List<PASTAUser> users){
-		for(PASTAUser user: users){
-			if(allUsers.containsKey(user.getUsername())){
-				update(user);
-			}
-			else{
-				save(user);
-			}
-		}
-		
-		loadUsers();
+		updateStudents(users);
 	}
 	
 	// calculated methods
@@ -296,10 +181,18 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the user or null if the user does not exist
 	 */
 	public PASTAUser getUser(String username){
-		if(allUsers == null){
-			loadUsers();
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("username", username));
+		@SuppressWarnings("unchecked")
+		List<PASTAUser> results = getHibernateTemplate().findByCriteria(cr);
+		if(results.isEmpty()) {
+			return null;
 		}
-		return allUsers.get(username.toLowerCase());
+		return results.get(0);
+	}
+	
+	public PASTAUser getUser(long id){
+		return getHibernateTemplate().get(PASTAUser.class, id);
 	}
 	
 	/**
@@ -308,8 +201,17 @@ public class UserDAO extends HibernateDaoSupport{
 	 * This list includes students, tutors and instructors.
 	 * @return the collection of all users registered in the system
 	 */
-	public Collection<PASTAUser> getUserList(){
-		return allUsers.values();
+	public List<PASTAUser> getUserList(){
+		return getHibernateTemplate().loadAll(PASTAUser.class);
+	}
+	
+	public Map<String, PASTAUser> getUserMap(){
+		Map<String, PASTAUser> userMap = new HashMap<String, PASTAUser>();
+		List<PASTAUser> users = getUserList();
+		for(PASTAUser user : users) {
+			userMap.put(user.getUsername(), user);
+		}
+		return userMap;
 	}
 	
 	/**
@@ -317,14 +219,11 @@ public class UserDAO extends HibernateDaoSupport{
 	 * 
 	 * @return the collection of all students registered in the system
 	 */
-	public Collection<PASTAUser> getStudentList(){
-		Collection<PASTAUser> users = new LinkedList<PASTAUser>();
-		for(PASTAUser user: allUsers.values()){
-			if(!user.isTutor()){
-				users.add(user);
-			}
-		}
-		return users;
+	@SuppressWarnings("unchecked")
+	public List<PASTAUser> getStudentList(){
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
 	/**
@@ -334,14 +233,12 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param tutorialName the name of the tutorial	
 	 * @return the collection of students in a given tutorial
 	 */
-	public Collection<PASTAUser> getUserListByTutorial(String tutorialName){
-		Set<PASTAUser> users = new TreeSet<PASTAUser>();
-		if(usersByTutorial.get(tutorialName) != null){
-			for(String user: usersByTutorial.get(tutorialName)){
-				users.add(allUsers.get(user));
-			}
-		}
-		return users;
+	@SuppressWarnings("unchecked")
+	public List<PASTAUser> getUserListByTutorial(String tutorialName){
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		cr.add(Restrictions.eq("tutorial", tutorialName));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
 	/**
@@ -351,14 +248,12 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param streamName the name of the stream
 	 * @return the collection of users in a given stream
 	 */
-	public Collection<PASTAUser> getUserListByStream(String streamName){
-		Set<PASTAUser> users = new TreeSet<PASTAUser>();
-		if(usersByStream.get(streamName) != null){
-			for(String user: usersByStream.get(streamName)){
-				users.add(allUsers.get(user));
-			}
-		}
-		return users;
+	@SuppressWarnings("unchecked")
+	public List<PASTAUser> getUserListByStream(String streamName){
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		cr.add(Restrictions.eq("stream", streamName));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
 	/**
@@ -366,8 +261,23 @@ public class UserDAO extends HibernateDaoSupport{
 	 * 
 	 * @return a map with key as the stream name and value as the collection of tutorial names
 	 */
-	public Map<String, Collection<String>> getTutorialByStream(){
-		return tutorialByStream;
+	public Map<String, Set<String>> getTutorialByStream(){
+		Map<String, Set<String>> results = new HashMap<String, Set<String>>();
+		
+		for(PASTAUser user : getUserList()) {
+			if(user.isTutor()) {
+				continue;
+			}
+			String stream = user.getStream();
+			Set<String> tutorials = results.get(stream);
+			if(tutorials == null) {
+				tutorials = new TreeSet<String>();
+				results.put(stream, tutorials);
+			}
+			tutorials.add(user.getTutorial());
+		}
+		
+		return results;
 	}
 	
 	/**
@@ -376,67 +286,8 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user to be added.
 	 */
 	public void add(PASTAUser user){
-		allUsers.put(user.getUsername().toLowerCase(), user);
+		user.setUsername(user.getUsername().toLowerCase().trim());
 		save(user);
-	}
-	
-	/**
-	 * Load all of the users into cache.
-	 * <p>
-	 * <ol>
-	 * 	<li>Load the users from the database</li>
-	 * 	<li>Load any extensions the students may have</li>
-	 * 	<li>Put them in the correct caching maps</li>
-	 * </ol>
-	 */
-	private void loadUsers(){
-		List<PASTAUser> users = getHibernateTemplate().loadAll(PASTAUser.class);
-		allUsers = new TreeMap<String, PASTAUser>();
-		usersByTutorial = new TreeMap<String, Set<String>>();
-		usersByStream = new TreeMap<String, Set<String>>();
-		tutorialByStream = new TreeMap<String, Collection<String>>();
-		if(users != null){
-			for(PASTAUser user: users){
-				allUsers.put(user.getUsername().toLowerCase(), user);
-				
-				if(!usersByStream.containsKey(user.getStream())){
-					usersByStream.put(user.getStream(), new TreeSet<String>());
-					tutorialByStream.put(user.getStream(), new TreeSet<String>());
-				}
-				usersByStream.get(user.getStream()).add(user.getUsername());
-				// ensure you don't get grouping of tutorials (e.g. tutors have multiple tutorials
-				if(!user.isTutor()){
-					if(!user.getTutorial().contains(",")){
-						tutorialByStream.get(user.getStream()).add(user.getTutorial());
-					}
-					if(!usersByTutorial.containsKey(user.getTutorial())){
-						usersByTutorial.put(user.getTutorial(), new TreeSet<String>());
-					}
-					usersByTutorial.get(user.getTutorial()).add(user.getUsername());
-				}
-				
-				
-				// load extension file
-				Scanner in;
-				try {
-					in = new Scanner(new File(ProjectProperties.getInstance().getSubmissionsLocation() +
-							user.getUsername() + "/user.extensions"));
-					while(in.hasNextLine()){
-						String[] line = in.nextLine().split(">");
-						if(line.length == 2){
-							try {
-								user.getExtensions().put(Long.parseLong(line[0]), PASTAUtil.parseDate(line[1]));
-							} catch (ParseException e) {
-								// ignore
-							}
-						}
-					}
-					in.close();
-				} catch (FileNotFoundException e) {
-					// no extensions given
-				}
-			}
-		}
 	}
 
 	/**
@@ -448,15 +299,5 @@ public class UserDAO extends HibernateDaoSupport{
 	 */
 	public void deleteSingleUser(PASTAUser toDelete) {
 		delete(toDelete);
-		PASTAUser fullUser = allUsers.get(toDelete.getUsername());
-		if(fullUser != null){
-			if(usersByTutorial.containsKey(fullUser.getTutorial())){
-				usersByTutorial.get(fullUser.getTutorial()).remove(fullUser.getUsername());
-			}
-			if(usersByStream.containsKey(fullUser.getStream())){
-				usersByStream.get(fullUser.getStream()).remove(fullUser.getUsername());
-			}
-			allUsers.remove(toDelete.getUsername());
-		}
 	}
 }

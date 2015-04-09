@@ -32,10 +32,10 @@ package pasta.domain.template;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -49,12 +49,12 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import pasta.domain.PASTAUser;
 
 /**
  * Container class for the assessment.
@@ -154,36 +154,22 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@Column (name = "count_uncompilable")
 	private boolean countUncompilable = true;
 	
-	/*
-	 * The assessment modules have to be in a lazy list for the drag and drop
-	 * Functionality on the web front end. Without this, there would be errors
-	 * when adding assessment modules.
-	 */
-	@OneToMany (cascade = CascadeType.ALL)
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
 	@JoinTable(name="assessment_unit_tests",
 	joinColumns=@JoinColumn(name = "assessment_id"),
 	inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-	
-	@OneToMany (cascade = CascadeType.ALL)
-	@JoinTable(name="assessment_secret_unit_tests",
-			joinColumns=@JoinColumn(name = "assessment_id"),
-			inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
+	private Set<WeightedUnitTest> unitTests = new TreeSet<WeightedUnitTest>();
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
 	@JoinColumn(name="assessment_id")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
-			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
+	private Set<WeightedHandMarking> handMarking = new TreeSet<WeightedHandMarking>();
 	
-	@Transient
-	private List<WeightedCompetition> competitions = LazyList.decorate(new ArrayList<WeightedCompetition>(),
-			FactoryUtils.instantiateFactory(WeightedCompetition.class));
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
+	@JoinColumn(name="assessment_id")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Set<WeightedCompetition> competitions = new TreeSet<WeightedCompetition>();
 	
 	
 	public long getId() {
@@ -259,26 +245,34 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.countUncompilable = countUncompilable;
 	}
 
-	public List<WeightedUnitTest> getUnitTests() {
+	public Set<WeightedUnitTest> getUnitTests() {
+		Set<WeightedUnitTest> unitTests = new TreeSet<>();
+		for(WeightedUnitTest test : getAllUnitTests()) {
+			if(!test.isSecret()) {
+				unitTests.add(test);
+			}
+		}
 		return unitTests;
 	}
-	public void setUnitTests(List<WeightedUnitTest> unitTests) {
+	public void setUnitTests(Collection<WeightedUnitTest> unitTests) {
 		this.unitTests.clear();
 		this.unitTests.addAll(unitTests);
 	}
 	
-	public List<WeightedUnitTest> getSecretUnitTests() {
-		return secretUnitTests;
-	}
-	public void setSecretUnitTests(List<WeightedUnitTest> secretUnitTests) {
-		this.secretUnitTests.clear();
-		this.secretUnitTests.addAll(secretUnitTests);
+	public Set<WeightedUnitTest> getSecretUnitTests() {
+		Set<WeightedUnitTest> unitTests = new TreeSet<>();
+		for(WeightedUnitTest test : getAllUnitTests()) {
+			if(test.isSecret()) {
+				unitTests.add(test);
+			}
+		}
+		return unitTests;
 	}
 	
-	public List<WeightedHandMarking> getHandMarking() {
+	public Set<WeightedHandMarking> getHandMarking() {
 		return handMarking;
 	}
-	public void setHandMarking(List<WeightedHandMarking> handMarking) {
+	public void setHandMarking(Collection<WeightedHandMarking> handMarking) {
 		for(WeightedHandMarking template : this.handMarking) {
 			template.setAssessment(null);
 		}
@@ -288,19 +282,21 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		}
 	}
 	
-	public List<WeightedCompetition> getCompetitions() {
+	public Set<WeightedCompetition> getCompetitions() {
 		return competitions;
 	}
-	public void setCompetitions(List<WeightedCompetition> competitions) {
+	public void setCompetitions(Collection<WeightedCompetition> competitions) {
+		for(WeightedCompetition comp : this.competitions) {
+			comp.setAssessment(null);
+		}
 		this.competitions.clear();
-		this.competitions.addAll(competitions);
+		for(WeightedCompetition comp : competitions) {
+			addCompetition(comp);
+		}
 	}
 	
-	public List<WeightedUnitTest> getAllUnitTests() {
-		List<WeightedUnitTest> allUnitTests = new LinkedList<WeightedUnitTest>();
-		allUnitTests.addAll(getUnitTests());
-		allUnitTests.addAll(getSecretUnitTests());
-		return allUnitTests;
+	public Set<WeightedUnitTest> getAllUnitTests() {
+		return unitTests;
 	}
 	
 	public boolean isReleased() {
@@ -309,41 +305,79 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	
 	public String getFileAppropriateName() {
-		return name.replace("[^\\w]+", "");
+		return name.replaceAll("[^\\w]+", "");
 	}
 	
 	public void addUnitTest(WeightedUnitTest test) {
-		getAllUnitTests().add(test);
+		if(getAllUnitTests().add(test)) {
+			test.setAssessment(this);
+		}
+	}
+	
+	public void addUnitTests(Collection<WeightedUnitTest> tests) {
+		for(WeightedUnitTest test : tests) {
+			addUnitTest(test);
+		}
 	}
 	
 	public void removeUnitTest(WeightedUnitTest test) {
-		getAllUnitTests().remove(test);
-	}
-
-	public void addSecretUnitTest(WeightedUnitTest test) {
-		getSecretUnitTests().add(test);
+		if(getAllUnitTests().remove(test)) {
+			test.setAssessment(null);
+		}
 	}
 	
-	public void removeSecretUnitTest(WeightedUnitTest test) {
-		getSecretUnitTests().remove(test);
+	public void removeUnitTests(Collection<WeightedUnitTest> weightedUnitTests) {
+		for(WeightedUnitTest test : weightedUnitTests) {
+			removeUnitTest(test);
+		}
 	}
 	
 	public void addHandMarking(WeightedHandMarking test) {
-		test.setAssessment(this);
-		getHandMarking().add(test);
+		if(getHandMarking().add(test)) {
+			test.setAssessment(this);
+		}
+	}
+	
+	public void addHandMarkings(Collection<WeightedHandMarking> handMarkings) {
+		for(WeightedHandMarking handMarking : handMarkings) {
+			addHandMarking(handMarking);
+		}
 	}
 	
 	public void removeHandMarking(WeightedHandMarking test) {
-		test.setAssessment(null);
-		getHandMarking().remove(test);
+		if(getHandMarking().remove(test)) {
+			test.setAssessment(null);
+		}
+	}
+	
+	public void removeHandMarkings(Collection<WeightedHandMarking> weightedHandMarkings) {
+		for(WeightedHandMarking handMarking : weightedHandMarkings) {
+			removeHandMarking(handMarking);
+		}
 	}
 
 	public void addCompetition(WeightedCompetition weightedComp) {
-		getCompetitions().add(weightedComp);
+		if(getCompetitions().add(weightedComp)) {
+			weightedComp.setAssessment(this);
+		}
+	}
+	
+	public void addCompetitions(Collection<WeightedCompetition> competitions) {
+		for(WeightedCompetition comp : competitions) {
+			addCompetition(comp);
+		}
 	}
 	
 	public void removeCompetition(WeightedCompetition weightedComp) {
-		getCompetitions().remove(weightedComp);
+		if(getCompetitions().remove(weightedComp)) {
+			weightedComp.setAssessment(null);
+		}
+	}
+	
+	public void removeCompetitions(Collection<WeightedCompetition> weightedComps) {
+		for(WeightedCompetition comp : weightedComps) {
+			removeCompetition(comp);
+		}
 	}
 
 	public String getSimpleDueDate() {
@@ -366,11 +400,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 				return false;
 			}
 		}
-		for (WeightedUnitTest test : secretUnitTests) {
-			if (!test.getTest().isTested()) {
-				return false;
-			}
-		}
 		return true;
 	}
 
@@ -380,11 +409,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	public double getWeighting(UnitTest test){
 		for(WeightedUnitTest myTest: unitTests){
-			if(test == myTest.getTest()){
-				return myTest.getWeight();
-			}
-		}
-		for(WeightedUnitTest myTest: secretUnitTests){
 			if(test == myTest.getTest()){
 				return myTest.getWeight();
 			}
@@ -400,124 +424,76 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		}
 		return 0;
 	}
-	
-	public void setGarbage(List<WeightedUnitTest> unitTests) {
-	}
 
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 * @return returns empty list
-	 */
-	public List<WeightedUnitTest> getGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-	}
-	
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public void setCompGarbage(List<WeightedCompetition> comps) {
-	}
-
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 * @return returns empty list
-	 */
-	public List<WeightedCompetition> getCompGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedCompetition>(),
-				FactoryUtils.instantiateFactory(WeightedCompetition.class));
-	}
-	
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
-	}
-
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public List<WeightedHandMarking> getHandGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedHandMarking>(),
-				FactoryUtils.instantiateFactory(WeightedHandMarking.class));
-	}
-
-	/**
-	 * See string representation in class description.
-	 */
-	public String toString() {
-		String output = "";
-		output += "<assessment>" + System.getProperty("line.separator");
-		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
-		output += "\t<category>" + getCategory() + "</category>" + System.getProperty("line.separator");
-		if(getReleasedClasses() != null){
-			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
-		}
-		if(getSpecialRelease() != null){
-			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
-		}
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
-		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
-		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
-		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
-				+ System.getProperty("line.separator");
-		output += "\t<countUncompilable>" + isCountUncompilable() + "</countUncompilable>" + System.getProperty("line.separator");
-		if (unitTests.size() + secretUnitTests.size() > 0) {
-			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
-			for (WeightedUnitTest unitTest : unitTests) {
-				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
-			}
-			for (WeightedUnitTest unitTest : secretUnitTests) {
-				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
-			}
-			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
-		}
-		// handMarks
-		if (handMarking.size() > 0) {
-			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
-			for (WeightedHandMarking handMarks : handMarking) {
-				output += "\t\t<handMarks id=\"" + handMarks.getHandMarking().getId() + "\" weight=\""
-						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
-			}
-			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
-		}
-		// all competitions
-		if (competitions.size() > 0) {
-			output += "\t<competitionSuite>" + System.getProperty("line.separator");
-			for (WeightedCompetition comp : competitions) {
-				output += "\t\t<competition name=\"" + comp.getCompetition().getShortName() + "\" weight=\""
-						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
-			}
-			output += "\t</competitionSuite>" + System.getProperty("line.separator");
-		}
-		output += "</assessment>" + System.getProperty("line.separator");
-		return output;
-	}
-	
+//	/**
+//	 * See string representation in class description.
+//	 */
+//	@Override
+//	public String toString() {
+//		String output = "";
+//		output += "<assessment>" + System.getProperty("line.separator");
+//		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
+//		output += "\t<category>" + getCategory() + "</category>" + System.getProperty("line.separator");
+//		if(getReleasedClasses() != null){
+//			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
+//		}
+//		if(getSpecialRelease() != null){
+//			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
+//		}
+//		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
+//		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
+//		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
+//		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
+//				+ System.getProperty("line.separator");
+//		output += "\t<countUncompilable>" + isCountUncompilable() + "</countUncompilable>" + System.getProperty("line.separator");
+//		if (unitTests.size() + secretUnitTests.size() > 0) {
+//			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
+//			for (WeightedUnitTest unitTest : unitTests) {
+//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
+//						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
+//			}
+//			for (WeightedUnitTest unitTest : secretUnitTests) {
+//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
+//						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
+//			}
+//			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
+//		}
+//		// handMarks
+//		if (handMarking.size() > 0) {
+//			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
+//			for (WeightedHandMarking handMarks : handMarking) {
+//				output += "\t\t<handMarks id=\"" + handMarks.getHandMarking().getId() + "\" weight=\""
+//						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
+//			}
+//			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
+//		}
+//		// all competitions
+//		if (competitions.size() > 0) {
+//			output += "\t<competitionSuite>" + System.getProperty("line.separator");
+//			for (WeightedCompetition comp : competitions) {
+//				output += "\t\t<competition name=\"" + comp.getCompetition().getFileAppropriateName() + "\" weight=\""
+//						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
+//			}
+//			output += "\t</competitionSuite>" + System.getProperty("line.separator");
+//		}
+//		output += "</assessment>" + System.getProperty("line.separator");
+//		return output;
+//	}
+//	
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
+	}
+	
+	public boolean isReleasedTo(PASTAUser user) {
+		return  user.isTutor() 
+				||
+				(getReleasedClasses() != null && 
+					!getReleasedClasses().isEmpty() &&
+					getReleasedClasses().contains(user.getStream() + "." + user.getTutorial())) 
+				||
+				(getSpecialRelease() != null && 
+					!getSpecialRelease().isEmpty() &&
+					getSpecialRelease().contains(user.getStream() + "." + user.getTutorial()));
 	}
 }
