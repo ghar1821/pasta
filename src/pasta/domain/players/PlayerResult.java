@@ -29,7 +29,13 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.players;
 
+import java.io.Serializable;
 import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Contains the player statistics for competitions.
@@ -48,22 +54,36 @@ import java.util.Date;
  * @since 2014-05-01
  *
  */
-public class PlayerResult {
+@Entity
+@Table (name = "player_results")
+public class PlayerResult implements Serializable, Comparable<PlayerResult> {
+	private static final long serialVersionUID = 5828653060251210355L;
 
-	String name;
-	Date firstUploaded;
+	@Id
+	@GeneratedValue
+	private long id;
 	
-	double officialRating;
-	int officialRanking;
+	private String name;
+	//TODO: refactor to "uploaded_date"
+	private Date firstUploaded;
 	
-	int officialWin;
-	int officialDraw;
-	int officialLoss;
+	private double officialRating;
+	private int officialRanking;
 	
-	int unofficialWin;
-	int unofficialDraw;
-	int unofficialLoss;
+	private int officialWin;
+	private int officialDraw;
+	private int officialLoss;
 	
+	private int unofficialWin;
+	private int unofficialDraw;
+	private int unofficialLoss;
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 	public String getName() {
 		return name;
 	}
@@ -123,6 +143,12 @@ public class PlayerResult {
 	}
 	public void setUnofficialLoss(int unofficialLoss) {
 		this.unofficialLoss = unofficialLoss;
+	}
+	
+	@Override
+	public int compareTo(PlayerResult o) {
+		return this.getOfficialRating() < o.getOfficialRating() ? -1 : this.getOfficialRating() > o
+				.getOfficialRating() ? 1 : 0;
 	}
 	
 }

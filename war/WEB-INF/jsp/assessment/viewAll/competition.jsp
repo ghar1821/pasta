@@ -51,11 +51,9 @@ either expressed or implied, of the PASTA Project.
 <table class="pastaTable">
 	<c:forEach var="competition" items="${allCompetitions}">
 		<c:set var="liveAssessment" value="false"/>
-		<c:forEach var="assessment" items="${competition.linkedAssessments}" >
-				<c:if test="${unikey.tutor or ((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, releaseUsername)))}">
-					<c:set var="liveAssessment" value="true"/>
-				</c:if>
-		</c:forEach>
+		<c:if test="${not empty liveAssessmentCounts[competition.id] and liveAssessmentCounts[competition.id] gt 0}">
+			<c:set var="liveAssessment" value="true"/>
+		</c:if>
 		<c:if test="${(liveAssessment and not competition.hidden) or unikey.tutor}" >
 			<tr>		
 			<!-- 
@@ -93,27 +91,27 @@ either expressed or implied, of the PASTA Project.
 						</c:otherwise>
 					</c:choose>
 					<br/>
-					Used in ${fn:length(competition.linkedAssessments)} Assessment<c:if test="${fn:length(competition.linkedAssessments) != 1}">s</c:if>
+					Used in ${liveAssessmentCounts[competition.id]} Assessment<c:if test="${liveAssessmentCounts[competition.id] != 1}">s</c:if>
 				</td>
 				<td>
 					<!-- buttons -->
 					<c:if test="${unikey.tutor}">
 						<div style="float:left">
-							<button style="float:left; text-align: center; " onclick="location.href='./${competition.shortName}/'">Details</button>
+							<button style="float:left; text-align: center; " onclick="location.href='./${competition.id}/'">Details</button>
 						</div>
 					</c:if>
 					<c:if test="${not competition.calculated}">
 						<div style="float:left">
-							<button style="float:left; text-align: center; " onclick="location.href='./${competition.shortName}/myPlayers/'">My Players</button>
+							<button style="float:left; text-align: center; " onclick="location.href='./${competition.id}/myPlayers/'">My Players</button>
 						</div>
 					</c:if>
 					<div style="float:left">
-						<button style="float:left; text-align: center; " onclick="location.href='./view/${competition.shortName}/'">Competition Page</button>
+						<button style="float:left; text-align: center; " onclick="location.href='./view/${competition.id}/'">Competition Page</button>
 					</div>
 					<c:if test="${unikey.tutor}">
 						<div style="float:left">
 							<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-							<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${competition.shortName}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+							<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${competition.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
 						</div>
 					</c:if>
 				</td>
@@ -142,19 +140,6 @@ either expressed or implied, of the PASTA Project.
 						</form:select>
 					</td>
 				</tr>
-				<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
-				<tr>
-					<td>Frequency:</td>
-					<td>
-						<form:input type="number" path="frequency.years" style="width:3em;"/> years
-						<form:input type="number" path="frequency.days" style="width:3em;"/> days
-						<form:input type="number" path="frequency.hours" style="width:3em;"/> hours
-						<form:input type="number" path="frequency.minutes" style="width:3em;"/> minutes
-						<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
-					</td>
-				</tr>
-				<tr><td>Hidden competition:</td><td><form:checkbox path="hidden"/></td></tr>
-				<tr><td>Competition Code:</td><td><form:input type="file" path="file"/></td></tr>
 			</table>
 	    	<input type="submit" value="Create" id="submit"/>
 		</form:form>
@@ -166,12 +151,7 @@ either expressed or implied, of the PASTA Project.
 	
 	         // DOM Ready
 	        $(function() {
-	        	
-	        	$("#firstStartDateStr").datetimepicker({
-					timeformat : 'hh:mm',
-					dateFormat : 'dd/mm/yy'
-				});// TODO
-	        
+
 	            // Binding a click event
 	            // From jQuery v.1.7.0 use .on() instead of .bind()
 	            $('#newPopup').bind('click', function(e) {
@@ -183,7 +163,6 @@ either expressed or implied, of the PASTA Project.
 	                $('.popup').bPopup();
 	
 	            });
-	            
 	        });
 	
 	    })(jQuery);

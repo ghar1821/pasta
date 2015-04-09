@@ -29,6 +29,16 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.Serializable;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * Container class for a weighted competition.
  * <p>
@@ -43,19 +53,43 @@ package pasta.domain.template;
  * @since 2013-01-22
  *
  */
-public class WeightedCompetition {
-	private Competition comp = new Competition();
-	private double weight;
-	private String compName;
+@Entity
+@Table (name = "weighted_competitions")
+public class WeightedCompetition implements Serializable, Comparable<WeightedCompetition> {
+
+	private static final long serialVersionUID = -1720735664578767235L;
 	
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	private double weight;
+	
+	@ManyToOne
+	@JoinColumn(name = "competition_id")
+	private Competition competition;
+	
+	@ManyToOne (cascade = CascadeType.ALL)
+	private Assessment assessment;
+	
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public Assessment getAssessment() {
+		return assessment;
+	}
+	public void setAssessment(Assessment assessment) {
+		this.assessment = assessment;
+	}
 	public Competition getCompetition() {
-		return comp;
+		return competition;
 	}
 	public void setCompetition(Competition comp) {
-		this.comp = comp;
-		if(!comp.getName().trim().equals("nullgarbagetemptestihopenobodynamestheirtestthis")){
-			compName = comp.getName();
-		}
+		this.competition = comp;
 	}
 	public double getWeight() {
 		return weight;
@@ -63,11 +97,55 @@ public class WeightedCompetition {
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
-	public String getCompName() {
-		return compName;
-	}
-	public void setCompName(String compName) {
-		this.compName = compName;
+
+	@Override
+	public int compareTo(WeightedCompetition other) {
+		if(other == null) {
+			return 1;
+		}
+		int diff;
+		if(this.getCompetition() != null) {
+			diff = this.getCompetition().compareTo(other.getCompetition());
+			if(diff != 0) {
+				return diff;
+			}
+		}
+		diff = (this.weight < other.weight ? -1 : (this.weight > other.weight ? 1 : 0));
+		if(diff != 0) {
+			return diff;
+		}
+		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((competition == null) ? 0 : competition.hashCode());
+		result = prime * result + (int) (id ^ (id >>> 32));
+		long temp;
+		temp = Double.doubleToLongBits(weight);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WeightedCompetition other = (WeightedCompetition) obj;
+		if (competition == null) {
+			if (other.competition != null)
+				return false;
+		} else if (!competition.equals(other.competition))
+			return false;
+		if (id != other.id)
+			return false;
+		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
+			return false;
+		return true;
+	}
 }

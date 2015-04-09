@@ -29,22 +29,36 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.File;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.Lob;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTATime;
 import pasta.domain.PASTAUser;
-import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 /**
@@ -74,28 +88,63 @@ import pasta.util.ProjectProperties;
  * @version 2.0
  * @since 2012-11-13
  */
-public class Competition {
+@Entity
+@Table (name = "competitions")
+public class Competition implements Serializable, Comparable<Competition> {
+
+	private static final long serialVersionUID = 296084853850209418L;
 
 	public final static SimpleDateFormat dateParser = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
+	@Transient
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Id
+	@GeneratedValue
+	private long id;
+	
 	private String name;
+	
+	private boolean calculated;
+	
 	/** if null - calculated competition **/
+	@OneToOne (mappedBy = "competition", cascade = CascadeType.ALL)
+	@JoinColumn (name = "official_arena")
 	private Arena officialArena = null;
-	private Map<String, Arena> outstandingArenas = new TreeMap<String, Arena>();
-	private Map<String, Arena> completedArenas = new TreeMap<String, Arena>();
-	private boolean studentCreatableArena;
-	private boolean studentCreatableRepeatableArena;
-	private boolean tutorCreatableRepeatableArena;
-	private boolean tested;
-	private boolean hidden;
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="competition_outstanding_arenas",
+		joinColumns=@JoinColumn(name = "competition_id"),
+		inverseJoinColumns=@JoinColumn(name = "arena_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<Arena> outstandingArenas = new ArrayList<Arena>();
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="competition_completed_arenas",
+		joinColumns=@JoinColumn(name = "competition_id"),
+		inverseJoinColumns=@JoinColumn(name = "arena_id"))
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<Arena> completedArenas = new ArrayList<Arena>();
+	
+	@Enumerated(EnumType.STRING)
+	@Column (name = "student_permissions")
+	private CompetitionPermissionLevel studentPermissions = CompetitionPermissionLevel.NONE;
+	
+	@Enumerated(EnumType.STRING)
+	@Column (name = "tutor_permissions")
+	private CompetitionPermissionLevel tutorPermissions = CompetitionPermissionLevel.CREATE;
+	
+	private boolean tested = false;
+	private boolean hidden = false;
 
-	/** list of all linked assessments **/
-	private Collection<Assessment> linkedAssessments = new TreeSet<Assessment>();
-
+	@Column (name = "frequency")
 	private PASTATime frequency = null;
+	
+	@Column (name = "first_start_date")
 	private Date firstStartDate;
+	
+	@Lob
+	private Serializable options;
 
 	// getters and setters
 	public String getName() {
@@ -106,55 +155,99 @@ public class Competition {
 		this.name = name;
 	}
 
-	public Collection<Arena> getOutstandingArenas() {
-		return outstandingArenas.values();
+	public long getId() {
+		return id;
 	}
 
-	public void setOutstandingArenas(Map<String, Arena> arenas) {
-		this.outstandingArenas = arenas;
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public Serializable getOptions() {
+		return options;
+	}
+	public void setOptions(Serializable options) {
+		this.options = options;
 	}
 
-	public void setOutstandingArenas(Collection<Arena> arenas) {
+	public CompetitionPermissionLevel getStudentPermissions() {
+		return studentPermissions;
+	}
+
+	public CompetitionPermissionLevel getTutorPermissions() {
+		return tutorPermissions;
+	}
+
+	public void setCalculated(boolean calculated) {
+		this.calculated = calculated;
+	}
+
+	public List<Arena> getOutstandingArenas() {
+		return outstandingArenas;
+	}
+
+	public void setOutstandingArenas(List<Arena> outstandingArenas) {
 		this.outstandingArenas.clear();
-		for (Arena arena : arenas) {
-			this.outstandingArenas.put(arena.getShortName(), arena);
-		}
+		this.outstandingArenas.addAll(outstandingArenas);
 	}
 
-	public Collection<Arena> getCompletedArenas() {
-		return completedArenas.values();
+	public List<Arena> getCompletedArenas() {
+		return completedArenas;
 	}
 
-	public void setCompletedArenas(Map<String, Arena> arenas) {
-		this.completedArenas = arenas;
-	}
-
-	public void setCompletedArenas(Collection<Arena> arenas) {
+	public void setCompletedArenas(List<Arena> completedArenas) {
 		this.completedArenas.clear();
-		for (Arena arena : arenas) {
-			this.completedArenas.put(arena.getShortName(), arena);
-		}
+		this.completedArenas.addAll(completedArenas);
 	}
 
-	public Arena getArena(String name) {
+	@Deprecated public Arena getArena(String name) {
 		if (name.replace(" ", "").toLowerCase().equals("officialarena")) {
 			return officialArena;
 		}
-		if (completedArenas.containsKey(name.replace(" ", ""))) {
-			return completedArenas.get(name.replace(" ", ""));
+		for(Arena arena : completedArenas) {
+			if(arena.getName().replace(" ", "").equals(name.replace(" ", ""))) {
+				return arena;
+			}
 		}
-		if (outstandingArenas.containsKey(name.replace(" ", ""))) {
-			return outstandingArenas.get(name.replace(" ", ""));
+		for(Arena arena : outstandingArenas) {
+			if(arena.getName().replace(" ", "").equals(name.replace(" ", ""))) {
+				return arena;
+			}
+		}
+		return null;
+	}
+	
+	public Arena getArena(Long id) {
+		if(officialArena.getId() == id) {
+			return officialArena;
+		}
+		for(Arena arena : completedArenas) {
+			if(arena.getId() == id) {
+				return arena;
+			}
+		}
+		for(Arena arena : outstandingArenas) {
+			if(arena.getId() == id) {
+				return arena;
+			}
 		}
 		return null;
 	}
 
-	public boolean isStudentCreatableArena() {
-		return studentCreatableArena;
+	public boolean isStudentCanCreateArena() {
+		return studentPermissions != CompetitionPermissionLevel.NONE;
 	}
-
-	public void setStudentCreatableArena(boolean studentCreatableArena) {
-		this.studentCreatableArena = studentCreatableArena;
+	
+	public boolean isTutorCanCreateArena() {
+		return tutorPermissions != CompetitionPermissionLevel.NONE;
+	}
+	
+	public boolean isStudentCanCreateRepeatableArena() {
+		return studentPermissions == CompetitionPermissionLevel.CREATE_REPEATABLE;
+	}
+	
+	public boolean isTutorCanCreateRepeatableArena() {
+		return tutorPermissions == CompetitionPermissionLevel.CREATE_REPEATABLE;
 	}
 
 	public boolean isTested() {
@@ -165,20 +258,12 @@ public class Competition {
 		this.tested = tested;
 	}
 
-	public boolean isStudentCreatableRepeatableArena() {
-		return studentCreatableRepeatableArena;
+	public void setStudentPermissions(CompetitionPermissionLevel studentPermissions) {
+		this.studentPermissions = studentPermissions;
 	}
 
-	public void setStudentCreatableRepeatableArena(boolean studentCreatableRepeatableArena) {
-		this.studentCreatableRepeatableArena = studentCreatableRepeatableArena;
-	}
-
-	public boolean isTutorCreatableRepeatableArena() {
-		return tutorCreatableRepeatableArena;
-	}
-
-	public void setTutorCreatableRepeatableArena(boolean tutorCreatableRepeatableArena) {
-		this.tutorCreatableRepeatableArena = tutorCreatableRepeatableArena;
+	public void setTutorPermissions(CompetitionPermissionLevel tutorPermissions) {
+		this.tutorPermissions = tutorPermissions;
 	}
 
 	public PASTATime getFrequency() {
@@ -197,15 +282,6 @@ public class Competition {
 		this.firstStartDate = firstStartDate;
 	}
 
-	public Collection<Assessment> getLinkedAssessments() {
-		return linkedAssessments;
-	}
-
-	public void setLinkedAssessments(Collection<Assessment> linkedAssessments) {
-		this.linkedAssessments.clear();
-		this.linkedAssessments.addAll(linkedAssessments);
-	}
-
 	// calculated methods
 	public String getFirstStartDateStr() {
 		return dateParser.format(firstStartDate);
@@ -215,41 +291,25 @@ public class Competition {
 		try {
 			firstStartDate = dateParser.parse(firstStartDateStr);
 		} catch (ParseException e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			logger.error("Could not parse " + firstStartDateStr + "\r\n" + sw.toString());
+			logger.error("Could not parse " + firstStartDateStr, e);
 		}
 	}
 
 	public boolean isCalculated() {
-		return (outstandingArenas == null || outstandingArenas.size() == 0 || (outstandingArenas.size() == 0
-				&& completedArenas != null && completedArenas.size() == 0));
+		return calculated;
 	}
 
-	public boolean isLive() {
-		return linkedAssessments != null && !linkedAssessments.isEmpty();
-	}
-
-	public void addAssessment(Assessment assessment) {
-		linkedAssessments.add(assessment);
-	}
-
-	public void removeAssessment(Assessment assessment) {
-		linkedAssessments.remove(assessment);
-	}
-
-	public String getShortName() {
-		return name.replace(" ", "");
+	public String getFileAppropriateName() {
+		return name.replaceAll("[^\\w]", "");
 	}
 
 	public boolean isCreateArena(PASTAUser user) {
-		return user.isTutor() || studentCreatableArena;
+		return user.isTutor() || isStudentCanCreateArena();
 	}
 
 	public boolean isCreateRepeatingArena(PASTAUser user) {
-		return user.isInstructor() || (user.isTutor() && tutorCreatableRepeatableArena)
-				|| (!user.isTutor() && studentCreatableRepeatableArena);
+		return user.isInstructor() || (user.isTutor() && isTutorCanCreateRepeatableArena())
+				|| (!user.isTutor() && isStudentCanCreateRepeatableArena());
 	}
 
 	public Date getNextRunDate() {
@@ -265,52 +325,52 @@ public class Competition {
 
 	public void setOfficialArena(Arena arena) {
 		officialArena = arena;
+		officialArena.setCompetition(this);
 	}
 
 	public void completeArena(Arena arena) {
-		outstandingArenas.remove(arena.getName());
-		completedArenas.put(arena.getName(), arena);
+		outstandingArenas.remove(arena);
+		completedArenas.add(arena);
 	}
 
 	public void addNewArena(Arena arena) {
-		outstandingArenas.put(arena.getName().replace(" ", ""), arena);
+		outstandingArenas.add(arena);
+		arena.setCompetition(this);
+	}
+	
+	public boolean isFinished() {
+		return outstandingArenas.isEmpty();
 	}
 
-	public boolean isCompleted(String arenaName) {
-		return completedArenas.containsKey(arenaName);
+	public boolean isCompleted(Arena arena) {
+		return completedArenas.contains(arena);
 	}
-
-	public String toString() {
-		String output = "<competitionProperties>" + System.getProperty("line.separator");
-		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
-		output += "\t<studentCreatableArena>" + studentCreatableArena + "</studentCreatableArena>"
-				+ System.getProperty("line.separator");
-		output += "\t<studentCreatableRepeatableArena>" + studentCreatableRepeatableArena
-				+ "</studentCreatableRepeatableArena>" + System.getProperty("line.separator");
-		output += "\t<tutorCreatableRepeatableArena>" + tutorCreatableRepeatableArena
-				+ "</tutorCreatableRepeatableArena>" + System.getProperty("line.separator");
-		output += "\t<tested>" + tested + "</tested>" + System.getProperty("line.separator");
-		output += "\t<hidden>" + hidden + "</hidden>" + System.getProperty("line.separator");
-		if (firstStartDate == null) {
-			firstStartDate = new Date();
-			// make it next year (realistically afte the semester ended)
-			firstStartDate.setTime(firstStartDate.getTime() + 31536000000l);
+	
+	public boolean isCompleted(long arenaId) {
+		for(Arena arena : completedArenas) {
+			if(arena.getId() == arenaId) {
+				return true;
+			}
 		}
-		output += "\t<firstStartDate>" + PASTAUtil.formatDate(firstStartDate) + "</firstStartDate>"
-				+ System.getProperty("line.separator");
-
-		output += "\t<frequency>";
-		if (frequency != null) {
-			output += frequency;
-		} else {
-			output += "0s";
-		}
-		output += "</frequency>" + System.getProperty("line.separator") + "</competitionProperties>";
-		return output;
+		return false;
 	}
 
 	public String getFileLocation() {
-		return ProjectProperties.getInstance().getCompetitionsLocation() + getShortName();
+		return ProjectProperties.getInstance().getCompetitionsLocation() + getFileAppropriateName();
+	}
+	
+	public File getCodeLocation() {
+		return new File(getFileLocation(), "code");
+	}
+	
+	public boolean hasCode() {
+		return getCodeLocation().exists();
+	}
+	/**
+	 * Renaming of hasCode() for Spring
+	 */
+	public boolean isHasCode() {
+		return hasCode();
 	}
 
 	public boolean isHidden() {
@@ -319,5 +379,32 @@ public class Competition {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+	@Override
+	public int compareTo(Competition o) {
+		return this.getName().compareTo(o.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Competition other = (Competition) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

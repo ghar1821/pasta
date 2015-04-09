@@ -30,7 +30,16 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain;
 
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
+
+import org.hibernate.HibernateException;
+import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.usertype.UserType;
 /**
  * 
  * I could have called it something better, but this sounded amusing
@@ -43,7 +52,11 @@ import java.util.Date;
  * @since 2013-01-21
  *
  */
-public class PASTATime {
+
+public class PASTATime implements Serializable, UserType, Comparable<PASTATime> {
+	
+	private static final long serialVersionUID = -3594044912301999423L;
+	
 	private int years = 0;
 	private int days = 0;
 	private int hours = 0;
@@ -79,7 +92,7 @@ public class PASTATime {
 			stringRepresentation = stringRepresentation.replace(miliseconds+"ms", "");
 		}catch (Exception e){}
 	}
-	
+
 	public int getYears() {
 		return years;
 	}
@@ -130,6 +143,10 @@ public class PASTATime {
 	
 	public long getTime(){
 		return (((((years*365+days)*24+hours)*60+minutes)*60+seconds)*1000 + miliseconds);
+	}
+	
+	public boolean tooOften() {
+		return getTime() < 1000;
 	}
 
 	/**
@@ -188,5 +205,80 @@ public class PASTATime {
 		}
 		return rep;
 	}
-	
+
+	@Override
+	public int compareTo(PASTATime o) {
+		int diff = this.getYears() - o.getYears();
+		if(diff != 0) return diff;
+		diff = this.getDays() - o.getDays();
+		if(diff != 0) return diff;
+		diff = this.getHours() - o.getHours();
+		if(diff != 0) return diff;
+		diff = this.getMinutes() - o.getMinutes();
+		if(diff != 0) return diff;
+		diff = this.getSeconds() - o.getSeconds();
+		if(diff != 0) return diff;
+		return this.getMiliseconds() - o.getMiliseconds();
+	}
+
+	@Override
+	public int[] sqlTypes() {
+		return new int[] {Types.VARCHAR};
+	}
+
+	@Override
+	public Class returnedClass() {
+		return PASTATime.class;
+	}
+
+	@Override
+	public boolean equals(Object x, Object y) throws HibernateException {
+		if(!(x instanceof PASTATime && y instanceof PASTATime)) {
+			return false;
+		}
+		return ((PASTATime)x).compareTo((PASTATime)y) == 0;
+	}
+
+	@Override
+	public int hashCode(Object x) throws HibernateException {
+		return x.hashCode();
+	}
+
+	@Override
+	public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws HibernateException,
+			SQLException {
+		String value = (String) StandardBasicTypes.STRING.nullSafeGet(rs, names[0]);
+        return ((value != null) ? new PASTATime(value) : null);
+	}
+
+	@Override
+	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException,
+			SQLException {
+		StandardBasicTypes.STRING.nullSafeSet(st, (value != null) ? value.toString() : null, index);
+	}
+
+	@Override
+	public Object deepCopy(Object value) throws HibernateException {
+		return value == null ? null : new PASTATime(((PASTATime)value).toString());
+	}
+
+	@Override
+	public boolean isMutable() {
+		return true;
+	}
+
+	@Override
+	public Serializable disassemble(Object value) throws HibernateException {
+		return (Serializable) deepCopy(value);
+	}
+
+	@Override
+	public Object assemble(Serializable cached, Object owner) throws HibernateException {
+		return deepCopy(cached);
+	}
+
+	@Override
+	public Object replace(Object original, Object target, Object owner) throws HibernateException {
+		return deepCopy(original);
+	}
 }

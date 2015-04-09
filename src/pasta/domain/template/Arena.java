@@ -34,16 +34,28 @@ import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.PASTAPlayer;
 import pasta.domain.PASTATime;
-import pasta.util.PASTAUtil;
 /**
  * Container class for the Arena information.
  * <p>
@@ -65,41 +77,70 @@ import pasta.util.PASTAUtil;
  * @since 2013-01-21
  * 
  */
+@Entity
+@Table (name = "arenas")
 public class Arena {
+	
+	public final static SimpleDateFormat dateParser = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	
+	@Id
+	@GeneratedValue
+	private long id;
+	
 	private String name;
 	private String password = null;
-	// if null, only run once
-	private PASTATime frequency = null;
-	private Date firstStartDate;
-	private Map<String, Set<String>> players = new TreeMap<String, Set<String>>();
 	
-	public final static SimpleDateFormat dateParser 
-	= new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	// if null, only run once
+	@Column (name = "frequency")
+	private PASTATime frequency = null;
+	
+	@Column (name = "first_start_date")
+	private Date firstStartDate;
+	
+	@OneToMany (cascade = CascadeType.ALL)
+	@JoinColumn (name = "arena_id")
+	@LazyCollection (LazyCollectionOption.FALSE)
+	private Set<PASTAPlayer> players = new HashSet<PASTAPlayer>();
+	
+	@OneToOne (cascade = CascadeType.ALL)
+	private Competition competition;
+	
+	@Transient
 	protected final Log logger = LogFactory.getLog(getClass());
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 	
 	// getters and setters
 	public String getName() {
 		return name;
 	}
-	// getters and setters
-	public String getShortName() {
-		return name.replace(" ", "");
-	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public String getFileAppropriateName() {
+		return name.replaceAll("[\\w+]", "");
+	}
+	
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
 	public PASTATime getFrequency() {
 		return frequency;
 	}
 	public void setFrequency(PASTATime frequency) {
 		this.frequency = frequency;
 	}
+	
 	public Date getFirstStartDate() {
 		return firstStartDate;
 	}
@@ -107,9 +148,23 @@ public class Arena {
 		this.firstStartDate = firstStartDate;
 	}
 	
+	public Competition getCompetition() {
+		return competition;
+	}
+	public void setCompetition(Competition competition) {
+		this.competition = competition;
+	}
+	
+	public Set<PASTAPlayer> getPlayers() {
+		return players;
+	}
+	public void setPlayers(Set<PASTAPlayer> players) {
+		this.players = players;
+	}
+	
 	// calculated methods
 	public boolean isRepeatable(){
-		return (frequency != null && frequency.getTime() > 1000);
+		return (frequency != null && !frequency.tooOften());
 	}
 	
 	public boolean isPasswordProtected(){
@@ -121,33 +176,6 @@ public class Arena {
 			return this.password.equals(password);
 		}
 		return false;
-	}
-	
-	public Map<String, Set<String>> getPlayers() {
-		return players;
-	}
-	
-	public void setPlayers(Map<String, Set<String>> players) {
-		this.players = players;
-	}
-	
-	public String toString(){
-		String output = "<arena>" + System.getProperty("line.separator");
-		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
-		output += "\t<firstStartDate>" + PASTAUtil.formatDate(firstStartDate)
-					+ "</firstStartDate>" + System.getProperty("line.separator");
-		
-		if(isPasswordProtected()){
-			output += "\t<password>" + password + "</password>" + System.getProperty("line.separator");
-		}
-		
-		if(isRepeatable()){
-			output += "\t<repeats>" + frequency + "</repeats>" + System.getProperty("line.separator");
-		}
-		
-		output += "</arena>";
-		
-		return output;
 	}
 	
 	// calculated methods
@@ -173,21 +201,11 @@ public class Arena {
 	/**
 	 * Check if the arena has a valid name.
 	 * <p>
-	 * A valid arena name does not contain: / \ ? % * : | " < > .
+	 * A valid arena name only contains whitespace and word characters
 	 * @return whether the name of the arena is valid.
 	 */
 	public boolean isInvalidName(){
-		return getName().contains("/") 
-				|| getName().contains("\\")
-				|| getName().contains("?")
-				|| getName().contains("%")
-				|| getName().contains("*")
-				|| getName().contains(":")
-				|| getName().contains("|")
-				|| getName().contains("\"")
-				|| getName().contains("<")
-				|| getName().contains(">")
-				|| getName().contains(".");
+		return !getName().matches("[\\s\\w]+");
 	}
 	
 	public Date getNextRunDate(){
@@ -213,35 +231,49 @@ public class Arena {
 	 * @param playerName the name of the player the user is adding to the arena
 	 */
 	public void addPlayer(String user, String playerName){
-		logger.info("adding " + user + "-" + playerName);
-		if(!players.containsKey(user)){
-			logger.info("user not there, adding set");
-			players.put(user, new TreeSet<String>());
-		}
-		// if the official arena
-		if(name.replace(" ", "").toLowerCase().equals("officialarena")){
-			logger.info("official arena");
-			players.get(user).clear();
-		}
-		players.get(user).add(playerName);
-		logger.info(players.get(user).size());
-	}
-	
-	public void removePlayer(String user, String playerName){
-		if(players.containsKey(user)){
-			players.get(user).remove(playerName);
-		}
-	}
-	
-	public int getNumPlayers(){
-		int numPlayers = 0;
-		if(players != null){
-			for(Set<String> playerSet: players.values()){
-				if(playerSet != null){
-					numPlayers += playerSet.size();
+		if(this.isOfficialArena()) {
+			for(Iterator<PASTAPlayer> it = players.iterator(); it.hasNext();) {
+				PASTAPlayer player = it.next();
+				if(player.getUsername().equals(user)) {
+					it.remove();
 				}
 			}
 		}
-		return numPlayers;
+		
+		players.add(new PASTAPlayer(user, playerName));
+	}
+	
+	public void removePlayer(String user, String playerName){
+		players.remove(new PASTAPlayer(user, playerName));
+	}
+	
+	public boolean isOfficialArena() {
+		if(competition == null) {
+			return this.getFileAppropriateName().toLowerCase().equals("officialarena");
+		}
+		return competition.getOfficialArena() != null 
+				&& competition.getOfficialArena() == this;
+	}
+	
+	public boolean hasPlayers(String user) {
+		for(PASTAPlayer player : players) {
+			if(player.getUsername().equals(user)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getNumPlayers(){
+		return players.size();
+	}
+	
+	public boolean hasUser(String username) {
+		for(PASTAPlayer player : getPlayers()) {
+			if(player.getUsername().equals(username)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

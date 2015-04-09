@@ -29,57 +29,117 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.result;
 
-import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import pasta.domain.template.Arena;
+import pasta.domain.template.Competition;
+
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
- * Container class for the results of a competition.
+ * Container for the results of an arena execution.
  * 
  * @author Alex Radu
  * @version 2.0
- * @since 2012-11-13
- * 
+ * @since 2013-01-23
+ *
  */
+@Entity
+@Table (name = "competition_results")
 public class CompetitionResult {
-	Map<Integer, List<PASTACompUserResult>> positions;
-
-	public Map<Integer, List<PASTACompUserResult>> getPositions() {
-		return positions;
+	
+	public static final String RESULT_FILENAME = "results.csv";
+	
+	@Id
+	@GeneratedValue
+	private long id;
+	
+	@ManyToOne
+	@JoinColumn (name = "competition")
+	private Competition competition;
+	
+	@ManyToOne
+	@JoinColumn (name = "arena_id")
+	private Arena arena;
+	
+	@Column (name = "run_date")
+	private Date runDate;
+	
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn (name = "competition_result_id")
+	private Set<CompetitionResultData> data = new TreeSet<CompetitionResultData>();
+	
+	@ElementCollection
+	@CollectionTable(name="result_categories", joinColumns=@JoinColumn(name="competition_result_id"))
+	@Column(name="category")
+	private List<ResultCategory> categories = new LinkedList<ResultCategory>();
+	
+	public long getId() {
+		return id;
 	}
-
-	public void setPositions(Map<Integer, List<PASTACompUserResult>> positions) {
-		this.positions = positions;
+	public void setId(long id) {
+		this.id = id;
 	}
 	
-	public void updatePositions(List<PASTACompUserResult> users){
-		if(!users.isEmpty()){
-			// clear
-			if(positions == null){
-				positions = new TreeMap<Integer, List<PASTACompUserResult>>();
-			}
-			positions.clear();
-			
-			// sort
-			Collections.sort(users);
-			
-			// array up
-			Double bestSoFar = users.get(0).getPercentage();
-			int currPos = 1;
-			for(int i=0; i<users.size(); ++i){
-				if(bestSoFar.compareTo(users.get(i).getPercentage()) != 0){
-					++currPos;
-					bestSoFar = users.get(i).getPercentage();
-				}
-				
-				if(!positions.containsKey(currPos)){
-					positions.put(currPos, new LinkedList<PASTACompUserResult>());
-				}
-				
-				positions.get(currPos).add(users.get(i));
+	public Competition getCompetition() {
+		return competition;
+	}
+	public void setCompetition(Competition competition) {
+		this.competition = competition;
+	}
+	
+	public Arena getArena() {
+		return arena;
+	}
+	public void setArena(Arena arena) {
+		this.arena = arena;
+	}
+	
+	public Date getRunDate() {
+		return runDate;
+	}
+	public void setRunDate(Date runDate) {
+		this.runDate = runDate;
+	}
+	
+	public Set<CompetitionResultData> getData() {
+		return data;
+	}
+	public void setData(Set<CompetitionResultData> data) {
+		this.data.clear();
+		this.data.addAll(data);
+	}
+	
+	public List<ResultCategory> getCategories() {
+		return categories;
+	}
+	public void setCategories(List<ResultCategory> categories) {
+		this.categories.clear();
+		this.categories.addAll(categories);
+	}
+	
+	public List<ResultCategory> getStudentVisibleCategories() {
+		List<ResultCategory> results = new LinkedList<ResultCategory>();
+		for(ResultCategory category : categories) {
+			if(category.isStudentVisible()) {
+				results.add(category);
 			}
 		}
+		return results;
 	}
 }

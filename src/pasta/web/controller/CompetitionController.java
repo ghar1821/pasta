@@ -46,11 +46,13 @@ import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetition;
+import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewPlayer;
+import pasta.domain.upload.UpdateCompetitionForm;
 import pasta.service.CompetitionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 /**
  * Controller class for Competition functions. 
@@ -87,11 +89,6 @@ public class CompetitionController {
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
-
-	@ModelAttribute("newCompetitionModel")
-	public NewCompetition returnNewCompetitionModel() {
-		return new NewCompetition();
-	}
 	
 	@ModelAttribute("newArenaModel")
 	public Arena returnArenaModel() {
@@ -104,8 +101,14 @@ public class CompetitionController {
 	}
 
 	@ModelAttribute("competition")
-	public Competition returnCompetitionModel() {
-		return new Competition();
+	public Competition returnCompetitionModel(@PathVariable("competitionId") long competitionId) {
+		return competitionManager.getCompetition(competitionId);
+	}
+	
+	@ModelAttribute("updateCompetitionForm")
+	public UpdateCompetitionForm returnUpdateForm(@PathVariable("competitionId") long competitionId) {
+		return new UpdateCompetitionForm(
+				competitionManager.getCompetition(competitionId));
 	}
 
 	@ModelAttribute("assessmentResult")
@@ -148,74 +151,7 @@ public class CompetitionController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * $PASTAUrl$/competition/
-	 * <p>
-	 * The landing page for competitions.
-	 * Lists all competitions and shows how the user can interact with them.
-	 * 
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * ATTRIBUTES:
-	 * <table>
-	 * 	<tr><td>unikey</td><td>The user object</td></tr>
-	 * 	<tr><td>allCompetitions</td><td>The collection of all competitions</td></tr>
-	 * </table>
-	 * 
-	 * JSP:<ul><li>assessment/viewAll/competition</li></ul>
-	 * 
-	 * @param model the model being used
-	 * @return "redirect:/login/" or "assessment/viewAll/competition"
-	 */
-	@RequestMapping(value = "")
-	public String viewAllCompetitions(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		
-		model.addAttribute("unikey", user);
-		model.addAttribute("allCompetitions", competitionManager.getCompetitionList());
-
-		return "assessment/viewAll/competition";
-	}
-
-	/**
-	 * $PASTAUrl$/competition/ - POST
-	 * <p>
-	 * Add a new competition
-	 * 
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * If the user is not a tutor: redirect to home
-	 * 
-	 * If the user is an Instructor: add the competition using 
-	 * {@link pasta.service.CompetitionManager#addCompetition(NewCompetition)}
-	 * 
-	 * redirect to mirror
-	 * 
-	 * @param model the model being used
-	 * @param form the new competition form
-	 * @return "redirect:/login" or "redirect:/home/" or "redirect:/mirror/"
-	 */
-	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newCompetition(Model model,
-			@ModelAttribute(value = "newCompetitionModel") NewCompetition form) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if(user.isInstructor()){
-			competitionManager.addCompetition(form);
-		}
-
-		return "redirect:/mirror/";
-	}
-
-	/**
-	 * $PASTAUrl$/competition/delete/{competitionName}/
+	 * $PASTAUrl$/competition/delete/{competitionId}/
 	 * <p>
 	 * Delete a competition from the system.
 	 * 
@@ -224,17 +160,17 @@ public class CompetitionController {
 	 * If the user is not a tutor: redirect to home
 	 * 
 	 * If the user is an Instructor: delete the competition using
-	 * {@link pasta.service.CompetitionManager#removeCompetition(String)}
+	 * {@link pasta.service.CompetitionManager#removeCompetition(long)}
 	 * 
 	 * redirect to mirror
 	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
-	@RequestMapping(value = "delete/{competitionName}/")
+	@RequestMapping(value = "delete/{competitionId}/")
 	public String deleteCompetition(
-			@PathVariable("competitionName") String competitionName, Model model) {
+			@PathVariable("competitionId") long competitionId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -243,13 +179,13 @@ public class CompetitionController {
 			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
-			competitionManager.removeCompetition(competitionName);
+			competitionManager.removeCompetition(competitionId);
 		}
 		return "redirect:../../";
 	}
 
 	/**
-	 * $PASTAUrl$/competition/{competitionName}/
+	 * $PASTAUrl$/competition/{competitionId}/
 	 * <p>
 	 * View the details of a competition.
 	 * 
@@ -266,13 +202,13 @@ public class CompetitionController {
 	 * 
 	 * JSP:<ul><li>assessment/view/competition</li></ul>
 	 * 
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/competition"
 	 */
-	@RequestMapping(value = "{competitionName}/")
+	@RequestMapping(value = "{competitionId}/")
 	public String viewCompetition(
-			@PathVariable("competitionName") String competitionName, Model model) {
+			@PathVariable("competitionId") long competitionId, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -282,16 +218,21 @@ public class CompetitionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("competition",
-				competitionManager.getCompetition(competitionName));
+		//model.addAttribute("competition", competitionManager.getCompetition(competitionId));
 		model.addAttribute("node", PASTAUtil.generateFileTree(competitionManager
-				.getCompetition(competitionName).getFileLocation() + "/code"));
+				.getCompetition(competitionId).getFileLocation() + "/code"));
+		model.addAttribute("liveAssessmentCount", competitionManager.getLiveAssessmentCount(user, competitionManager.getCompetition(competitionId)));
+		
+		Competition comp = competitionManager.getCompetition(competitionId);
+		if(comp.hasCode()) {
+			model.addAttribute("codeFiles", PASTAUtil.generateFileMap(comp.getCodeLocation()));
+		}
 
 		return "assessment/view/competition";
 	}
 
 	/**
-	 * $PASTAUrl$/competition/{competitionName}/ - POST
+	 * $PASTAUrl$/competition/{competitionId}/ - POST
 	 * <p>
 	 * Update a competition
 	 * 
@@ -301,18 +242,18 @@ public class CompetitionController {
 	 * 
 	 * If the user is an instructor: Update the competition based on which form was submitted
 	 * using either {@link pasta.service.CompetitionManager#updateCompetition(Competition)} or
-	 * {@link pasta.service.CompetitionManager#updateCompetition(NewCompetition)}
+	 * {@link pasta.service.CompetitionManager#updateCompetition(NewCompetitionForm)}
 	 * 
 	 * @param form the new competition form (used when changing code)
 	 * @param compForm the competition to be updated (used when changing competition information and not code)
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param model the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
-	@RequestMapping(value = "{competitionName}/", method = RequestMethod.POST)
-	public String updateCompetition(@ModelAttribute(value = "newCompetitionModel") NewCompetition form,
-			@ModelAttribute(value = "competition") Competition compForm,
-			@PathVariable("competitionName") String competitionName, Model model){
+	@RequestMapping(value = "{competitionId}/", method = RequestMethod.POST)
+	public String updateCompetition(@ModelAttribute(value = "updateCompetitionForm") UpdateCompetitionForm form,
+			@ModelAttribute(value = "competition") Competition comp,
+			@PathVariable("competitionId") long competitionId, Model model){
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -322,15 +263,12 @@ public class CompetitionController {
 		}
 
 		if(user.isInstructor()){
+			// update competition
+			competitionManager.updateCompetition(comp, form);
+			
 			if(form.getFile() != null && !form.getFile().isEmpty()){
 				// update contents
-				form.setName(competitionName);
-				competitionManager.updateCompetition(form);
-			}
-			else{
-				// update competition
-				compForm.setName(competitionName);
-				competitionManager.updateCompetition(compForm);
+				competitionManager.updateCode(comp, form);
 			}
 		}
 		
@@ -338,7 +276,7 @@ public class CompetitionController {
 	}
 
 	/**
-	 * $PASTAUrl/competition/view/{competitionName}/
+	 * $PASTAUrl/competition/view/{competitionId}/
 	 * <p>
 	 * View the competition page. Differs based on if the competition is 
 	 * calculated or arena based.
@@ -362,29 +300,30 @@ public class CompetitionController {
 	 * </ul>
 	 * 
 	 * @param model the model being used
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/calculated" or "assessment/competition/arena"
 	 */
-	@RequestMapping(value = "view/{competitionName}/")
+	@RequestMapping(value = "view/{competitionId}/")
 	public String viewCompetitionPage(Model model,
-			@PathVariable("competitionName") String competitionName) {
+			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		Competition currComp = competitionManager.getCompetition(competitionName);
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		Competition currComp = competitionManager.getCompetition(competitionId);
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/.";
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("competition", currComp);
+		//model.addAttribute("competition", currComp);
 
 		if (currComp.isCalculated()) {
+			// TODO user ids for results
 			model.addAttribute("arenaResult",
-					competitionManager.getCalculatedCompetitionResult(competitionName));
+					competitionManager.getLatestCalculatedCompetitionResult(currComp.getId()));
 			model.addAttribute("marks",
-					competitionManager.getCompetitionResult(competitionName));
+					competitionManager.getLatestCompetitionMarks(currComp.getId()));
 			return "assessment/competition/calculated";
 		} else {
 			return "assessment/competition/arena";
@@ -392,7 +331,7 @@ public class CompetitionController {
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/view/{competitionName}/ - POST
+	 * $PASTAUrl$/competition/view/{competitionId}/ - POST
 	 * <p>
 	 * Add an arena to a competition
 	 * 
@@ -407,30 +346,30 @@ public class CompetitionController {
 	 * 
 	 * @param model the model being used
 	 * @param arena the arena being added
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
-	@RequestMapping(value = "view/{competitionName}/", method = RequestMethod.POST)
+	@RequestMapping(value = "view/{competitionId}/", method = RequestMethod.POST)
 	public String addArena(Model model,
 			@ModelAttribute(value = "newArenaModel") Arena arena,
-			@PathVariable("competitionName") String competitionName) {
+			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
 		
 		if(!arena.isInvalidName()){
 			if(!currComp.isCalculated()){
-				if(currComp != null && (user.isTutor() || currComp.isStudentCreatableArena())){
+				if(currComp != null && (user.isTutor() || currComp.isStudentCanCreateArena())){
 					if(!arena.isRepeatable() || user.isInstructor() || 
-							(currComp.isTutorCreatableRepeatableArena() && user.isTutor() && currComp.isTutorCreatableRepeatableArena())
-							|| (currComp.isTutorCreatableRepeatableArena() && currComp.isStudentCreatableRepeatableArena())
-							&& currComp.getArena(arena.getName()) == null){
+							(currComp.isTutorCanCreateRepeatableArena() && user.isTutor() && currComp.isTutorCanCreateRepeatableArena())
+							|| (currComp.isTutorCanCreateRepeatableArena() && currComp.isStudentCanCreateRepeatableArena())
+							&& currComp.getArena(arena.getId()) == null){
 						// accept arena
 						competitionManager.addArena(arena, currComp);
 					}
@@ -442,7 +381,7 @@ public class CompetitionController {
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/view/{competitionName}/{arenaName}/
+	 * $PASTAUrl$/competition/view/{competitionId}/{arenaId}/
 	 * <p>
 	 * View the details on an arena.
 	 * 
@@ -460,44 +399,39 @@ public class CompetitionController {
 	 * 	<tr><td>players</td><td>A list of players the currently logged in user has uploaded and are not retired</td></tr>
 	 * 	<tr><td>arena</td><td>the arena object</td></tr>
 	 * 	<tr><td>completed</td><td>a flag for whether the arena has finished executing and will not execute again</td></tr>
-	 * 	<tr><td>results</td><td>the results object ({@link pasta.domain.result.ArenaResult})</td></tr>
+	 * 	<tr><td>results</td><td>the results object ({@link pasta.domain.result.CompetitionResult})</td></tr>
 	 * 	<tr><td>official</td><td>a flag for whether the arena is the official arena or not</td></tr>
 	 * </table>
 	 * 
 	 * JSP:<ul><li>assessment/competition/arenaDetails</li></ul>
 	 * 
 	 * @param model the model being used
-	 * @param arenaName the name of the arena.
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param arenaId the id of the arena.
+	 * @param competitionId the id of the competition
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../" or "assessment/competition/arenaDetails"
 	 */
-	@RequestMapping(value = "view/{competitionName}/{arenaName}/")
+	@RequestMapping(value = "view/{competitionId}/{arenaId}/")
 	public String viewArenaPage(Model model,
-			@PathVariable("arenaName") String arenaName,
-			@PathVariable("competitionName") String competitionName) {
+			@PathVariable("arenaId") long arenaId,
+			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
 		
 		if(!currComp.isCalculated()){
-			// check if official
 			model.addAttribute("unikey", user);
-			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
-			model.addAttribute("arena", currComp.getArena(arenaName));
-			model.addAttribute("completed", currComp.isCompleted(arenaName));
-			model.addAttribute("results", competitionManager.getArenaResults(currComp, currComp.getArena(arenaName)));
-			if(arenaName.replace(" ", "").toLowerCase().equals("officialarena")){
-				model.addAttribute("official", true);
-			}
-			else{
-				model.addAttribute("official", false);
-			}
+			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
+			model.addAttribute("arena", currComp.getArena(arenaId));
+			model.addAttribute("completed", currComp.isCompleted(arenaId));
+			model.addAttribute("results", competitionManager.getLatestArenaResults(currComp, currComp.getArena(arenaId)));
+			// check if official
+			model.addAttribute("official", currComp.getOfficialArena().getId() == arenaId);
 			return "assessment/competition/arenaDetails";	
 		}
 		
@@ -505,7 +439,7 @@ public class CompetitionController {
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/view/{competitionName}/{arenaName}/add/{playerName}/
+	 * $PASTAUrl$/competition/view/{competitionId}/{arenaId}/add/{playerName}/
 	 * <p>
 	 * Add a player to the arena.
 	 * 
@@ -515,35 +449,35 @@ public class CompetitionController {
 	 * 
 	 * Add the player to the arena using 
 	 * {@link pasta.service.CompetitionManager#addPlayerToArena(String, String, String, String)}
-	 * and redirects back to $PASTAUrl$/competition/view/{competitionName}/{arenaName}/
+	 * and redirects back to $PASTAUrl$/competition/view/{competitionId}/{arenaId}/
 	 * 
 	 * @param model the model being used
-	 * @param arenaName the arena name
-	 * @param competitionName the short name (no whitespace) for the competition
+	 * @param arenaId the arena id
+	 * @param competitionId the id for the competition
 	 * @param playername the player name
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
-	@RequestMapping(value = "view/{competitionName}/{arenaName}/add/{playerName}/")
+	@RequestMapping(value = "view/{competitionId}/{arenaId}/add/{playerName}/")
 	public String addPlayerToArena(Model model,
-			@PathVariable("arenaName") String arenaName,
-			@PathVariable("competitionName") String competitionName,
+			@PathVariable("arenaId") long arenaId,
+			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playername) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
-		competitionManager.addPlayerToArena(user.getUsername(), competitionName, arenaName, playername);
+		competitionManager.addPlayerToArena(user.getUsername(), competitionId, arenaId, playername);
 		
 		return "redirect:../..";
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/view/{competitionName}/{arenaName}/remove/{playerName}/
+	 * $PASTAUrl$/competition/view/{competitionId}/{arenaId}/remove/{playerName}/
 	 * <p>
 	 * Remove a player from the arena.
 	 * 
@@ -553,35 +487,35 @@ public class CompetitionController {
 	 * 
 	 * Remove the player from the arena using 
 	 * {@link pasta.service.CompetitionManager#removePlayerFromArena(String, String, String, String)}
-	 * and redirects back to $PASTAUrl$/competition/view/{competitionName}/{arenaName}/
+	 * and redirects back to $PASTAUrl$/competition/view/{competitionId}/{arenaId}/
 	 * 
 	 * @param model the model being used
-	 * @param arenaName the arena name
-	 * @param competitionName the short name (no whitespace) for the competition
+	 * @param arenaId the arena id
+	 * @param competitionId the id for the competition
 	 * @param playername the player name
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
-	@RequestMapping(value = "view/{competitionName}/{arenaName}/remove/{playerName}/")
+	@RequestMapping(value = "view/{competitionId}/{arenaId}/remove/{playerName}/")
 	public String removePlayerFromArena(Model model,
-			@PathVariable("arenaName") String arenaName,
-			@PathVariable("competitionName") String competitionName,
+			@PathVariable("arenaId") long arenaId,
+			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playername) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
-		competitionManager.removePlayerFromArena(user.getUsername(), competitionName, arenaName, playername);
+		competitionManager.removePlayerFromArena(user.getUsername(), competitionId, arenaId, playername);
 		
 		return "redirect:../..";
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/{competitionName}/myPlayers/retire/{playerName}/
+	 * $PASTAUrl$/competition/{competitionId}/myPlayers/retire/{playerName}/
 	 * <p>
 	 * Retire a player from the competition
 	 * 
@@ -592,31 +526,31 @@ public class CompetitionController {
 	 * Retire the player using {@link pasta.service.CompetitionManager#retirePlayer(String, String, String)}
 	 * 
 	 * @param model the model being used
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param playerName the player name
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
-	@RequestMapping(value = "{competitionName}/myPlayers/retire/{playerName}/")
+	@RequestMapping(value = "{competitionId}/myPlayers/retire/{playerName}/")
 	public String retirePlayer(Model model,
-			@PathVariable("competitionName") String competitionName,
+			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playerName) {
 		
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/.";
 		}	
-		competitionManager.retirePlayer(user.getUsername(), competitionName, playerName);
+		competitionManager.retirePlayer(user.getUsername(), competitionId, playerName);
 		
 		return "redirect:../..";
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/{competitionName}/myPlayers/
+	 * $PASTAUrl$/competition/{competitionId}/myPlayers/
 	 * <p>
 	 * Manage my players.
 	 * 
@@ -635,33 +569,34 @@ public class CompetitionController {
 	 * JSP:<ul><li>assessment/competition/players</li></ul>
 	 * 
 	 * @param model the model being used
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/players"
 	 */
-	@RequestMapping(value = "{competitionName}/myPlayers/")
+	@RequestMapping(value = "{competitionId}/myPlayers/")
 	public String manageMyPlayers(Model model,
-			@PathVariable("competitionName") String competitionName) {
+			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
 		
 		model.addAttribute("unikey", user);
-		model.addAttribute("competition", currComp);
-		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(), 
-				competitionName, competitionManager.getPlayers(user.getUsername(), competitionName)));
-		model.addAttribute("players", competitionManager.getLatestPlayers(user.getUsername(), competitionName));
+		//model.addAttribute("competition", currComp);
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(), competitionManager
+				.getCompetition(competitionId), competitionManager.getPlayers(
+				user.getUsername(), competitionId)));
+		model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
 		
 		return "assessment/competition/players";
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/{competitionName}/myPlayers/" - POST
+	 * $PASTAUrl$/competition/{competitionId}/myPlayers/" - POST
 	 * <p>
 	 * Submit a player.
 	 * 
@@ -683,35 +618,36 @@ public class CompetitionController {
 	 * JSP:<ul><li>assessment/competition/players</li></ul>
 	 * 
 	 * @param model the model being used
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @param playerForm the new player form containing the code
 	 * @param result the binding result used for feedback.
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/" or "assessment/competition/players"
 	 */
-	@RequestMapping(value = "{competitionName}/myPlayers/", method = RequestMethod.POST)
+	@RequestMapping(value = "{competitionId}/myPlayers/", method = RequestMethod.POST)
 	public String submitNewPlayer(Model model,
-			@PathVariable("competitionName") String competitionName,
+			@PathVariable("competitionId") long competitionId,
 			@ModelAttribute(value = "newPlayerModel") NewPlayer playerForm,
 			BindingResult result) {
 		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
 		
 		// validate player
-		competitionManager.addPlayer(playerForm, user.getUsername(), currComp.getShortName(), result);
+		competitionManager.addPlayer(playerForm, user.getUsername(), currComp.getId(), result);
 		
 		if(result.hasErrors()){
 			model.addAttribute("unikey", user);
-			model.addAttribute("competition", currComp);
-			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionName));
-			model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(), 
-					competitionName, competitionManager.getPlayers(user.getUsername(), competitionName)));
+			//model.addAttribute("competition", currComp);
+			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
+			model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(),
+					competitionManager.getCompetition(competitionId),
+					competitionManager.getPlayers(user.getUsername(), competitionId)));
 			return "assessment/competition/players";
 		}
 		
@@ -719,7 +655,7 @@ public class CompetitionController {
 	}
 	
 	/**
-	 * $PASTAUrl$/competition/view/{competitionName}/{unikey}/players/
+	 * $PASTAUrl$/competition/view/{competitionId}/{unikey}/players/
 	 * <p>
 	 * View another user's list of players.
 	 * 
@@ -740,30 +676,31 @@ public class CompetitionController {
 	 * 
 	 * @param model the model being used
 	 * @param unikey the username for the user you are viewing
-	 * @param competitionName the short name (no whitespace) of the competition
+	 * @param competitionId the id of the competition
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/players"
 	 */
-	@RequestMapping(value = "view/{competitionName}/{unikey}/players/")
+	@RequestMapping(value = "view/{competitionId}/{unikey}/players/")
 	public String viewOthersPlayers(Model model,
 			@PathVariable("unikey") String unikey,
-			@PathVariable("competitionName") String competitionName) {
+			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
 		PASTAUser viewedUser = getUser(unikey);
-		Competition currComp = competitionManager.getCompetition(competitionName);
+		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		if (viewedUser == null || currComp == null || (!user.isTutor() && !currComp.isLive())) {
+		if (viewedUser == null || currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
 		
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser.getUsername(), 
-				competitionName, competitionManager.getPlayers(viewedUser.getUsername(), competitionName)));
-		model.addAttribute("competition", currComp);
-		model.addAttribute("players", competitionManager.getLatestPlayers(viewedUser.getUsername(), competitionName));
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser.getUsername(),
+				competitionManager.getCompetition(competitionId),
+				competitionManager.getPlayers(viewedUser.getUsername(), competitionId)));
+		//model.addAttribute("competition", currComp);
+		model.addAttribute("players", competitionManager.getPlayers(viewedUser.getUsername(), competitionId));
 		
 		return "assessment/competition/players";
 	}

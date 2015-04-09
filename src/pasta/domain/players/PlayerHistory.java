@@ -29,8 +29,27 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.players;
 
+import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
 /**
+import pasta.domain.template.Competition;
  * Class to contain the player history of a competition.
  * <p>
  * The data that is held is the player name, current active player, list of retired players.
@@ -41,23 +60,69 @@ import java.util.LinkedList;
  * @since 2014-05-01
  *
  */
-public class PlayerHistory {
+@Entity
+@Table (name = "player_histories")
+public class PlayerHistory implements Serializable, Comparable<PlayerHistory> {
+	private static final long serialVersionUID = 745002463058416366L;
+
+	@Id
+	@GeneratedValue
+	private long id;
 	
-	String playerName;
-	PlayerResult activePlayer = null;
-	LinkedList<PlayerResult> retiredPlayers = new LinkedList<PlayerResult>();
+	private String username;
+	
+	@Column (name = "competition_id")
+	private long competitionId;
+	
+	@Column (name = "player_name")
+	private String playerName;
+	
+	@ManyToOne (cascade = CascadeType.ALL)
+	@JoinColumn (name = "active_player_result_id")
+	private PlayerResult activePlayer = null;
+	
+	@ManyToMany (cascade = CascadeType.ALL)
+	@JoinTable(name="player_history_retired_players",
+			joinColumns=@JoinColumn(name = "player_history_id"),
+			inverseJoinColumns=@JoinColumn(name = "player_result_id"))
+    @OrderColumn(name = "retired_index")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<PlayerResult> retiredPlayers = new LinkedList<PlayerResult>();
+	
+	public PlayerHistory() { }
 	
 	public PlayerHistory(String playerName){
 		this.playerName = playerName;
 	}
 	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public long getCompetitionId() {
+		return competitionId;
+	}
+	public void setCompetitionId(long competitionId) {
+		this.competitionId = competitionId;
+	}
+
 	public PlayerResult getActivePlayer() {
 		return activePlayer;
 	}
 	public void setActivePlayer(PlayerResult activePlayer) {
 		this.activePlayer = activePlayer;
 	}
-	public LinkedList<PlayerResult> getRetiredPlayers() {
+	public List<PlayerResult> getRetiredPlayers() {
 		return retiredPlayers;
 	}
 	public void setRetiredPlayers(LinkedList<PlayerResult> retiredPlayers) {
@@ -82,5 +147,10 @@ public class PlayerHistory {
 			retireActivePlayer();
 		}
 		activePlayer = player;
+	}
+
+	@Override
+	public int compareTo(PlayerHistory o) {
+		return this.getPlayerName().compareTo(o.getPlayerName());
 	}
 }
