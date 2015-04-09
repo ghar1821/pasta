@@ -30,9 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.login;
 
 import java.util.List;
-import java.util.Properties;
-
-import javax.mail.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

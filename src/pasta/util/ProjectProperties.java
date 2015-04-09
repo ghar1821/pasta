@@ -37,12 +37,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,11 +53,13 @@ import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.CompetitionDAO;
 import pasta.repository.HandMarkingDAO;
 import pasta.repository.LoginDAO;
 import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
+import pasta.repository.UserDAO;
 
 /**
  * The project properties.
@@ -75,8 +74,6 @@ import pasta.repository.UnitTestDAO;
 @Component
 public class ProjectProperties {
 	protected final Log logger = LogFactory.getLog(getClass());
-
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
 	private static ProjectProperties properties;
 
@@ -113,6 +110,10 @@ public class ProjectProperties {
 	private HandMarkingDAO handMarkingDAO;
 	@Autowired
 	private PlayerDAO playerDAO;
+	@Autowired
+	private CompetitionDAO compDAO;
+	@Autowired
+	private UserDAO userDAO;
 
 	private ProjectProperties(Map<String, String> settings) {
 		projectLocation = settings.get("location");
@@ -170,13 +171,6 @@ public class ProjectProperties {
 		logger.info("Sandbox Location set to: " + sandboxLocation);
 		
 		ProjectProperties.properties = this;
-	}
-	
-	@PostConstruct
-	public void initDAOs() {
-		this.assessmentDAO.init();
-		this.resultDAO.init(assessmentDAO);
-		this.playerDAO.init();
 	}
 	
 	/**
@@ -366,5 +360,13 @@ public class ProjectProperties {
 
 	public HandMarkingDAO getHandMarkingDAO() {
 		return handMarkingDAO;
+	}
+	
+	public CompetitionDAO getCompetitionDAO() {
+		return compDAO;
+	}
+	
+	public UserDAO getUserDAO() {
+		return userDAO;
 	}
 }
