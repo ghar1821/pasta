@@ -80,6 +80,7 @@
 				<value>pasta.domain.PASTAUser</value>
 				<value>pasta.domain.players.PlayerHistory</value>
 				<value>pasta.domain.players.PlayerResult</value>
+				<value>pasta.domain.ratings.AssessmentRating</value>
 				<value>pasta.domain.result.AssessmentResult</value>
 				<value>pasta.domain.result.CompetitionMarks</value>
 				<value>pasta.domain.result.CompetitionPosition</value>

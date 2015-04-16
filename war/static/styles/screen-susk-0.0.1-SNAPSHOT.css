@@ -27,6 +27,67 @@ td.selectedMark {
 	font-weight:bold;
 }
 
+a:not([href]) {
+	cursor:pointer;
+}
+
+.largeOutputBox {
+	width: 60vw;
+	height: 50vh;
+	overflow: auto;
+}
+
+.vertical-block {
+	display: block;
+}
+.horizontal-block {
+	display: inline-block;
+}
+.horizontal-block:not(.float-right) + .horizontal-block:not(.float-right) {
+	margin-left: 1em;
+}
+.horizontal-block.float-right + .horizontal-block.floatright {
+	margin-right: 1em;
+}
+.vertical-block+.vertical-block {
+	margin-top: 1em;
+}
+.float-right {
+	float:right;
+}
+.float-left {
+	float:left;
+}
+.float-clear {
+	clear:both;
+}
+.float-container {
+	overflow:hidden;
+}
+
+img.star-medal {
+	width: 42px;
+	height: 42px;
+	padding: 0px;
+}
+
+div.fullStar, div.emptyStar {
+	background-repeat: no-repeat;
+	cursor: pointer;
+	display: inline-block;
+	height: 22px;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	padding: 0 !important;
+	width: 26px;
+}
+div.fullStar {
+	background-image: url("../images/rating_star_full.png");
+}
+div.emptyStar {
+	background-image: url("../images/rating_star_empty.png");
+}
+
 .handMarkingStudent.didnotsubmit{
 	background-color: lightgray;
 	cursor: default;
@@ -207,7 +268,6 @@ smallbutton{
 	box-shadow: 0 0 25px 5px #999;
 	color: #111;
 	display: none;
-	min-width: 450px;
 	padding: 25px;
 }
 

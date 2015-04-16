@@ -40,6 +40,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -67,8 +68,9 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-
 import pasta.domain.PASTAUser;
+import pasta.domain.ratings.AssessmentRating;
+import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
@@ -78,6 +80,7 @@ import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
 import pasta.service.AssessmentManager;
 import pasta.service.HandMarkingManager;
+import pasta.service.RatingManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
@@ -133,6 +136,9 @@ public class SubmissionController {
 	private AssessmentManager assessmentManager;
 	private HandMarkingManager handMarkingManager;
 	private Map<String, String> codeStyle;
+	
+	@Autowired
+	private RatingManager ratingManager;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
@@ -181,6 +187,32 @@ public class SubmissionController {
 	@ModelAttribute("assessmentResult")
 	public AssessmentResult returnAssessmentResultModel() {
 		return new AssessmentResult();
+	}
+	
+	@ModelAttribute("ratingForms")
+	public Map<Long, RatingForm> loadRatingForms() {
+		Map<Long, RatingForm> forms = new HashMap<Long, RatingForm>();
+		
+		PASTAUser user = getUser();
+		if(user == null) {
+			return null;
+		}
+		
+		String username = user.getUsername();
+		for(Assessment assessment : assessmentManager.getAssessmentList()) {
+			AssessmentRating rating = ratingManager.getRating(assessment, username);
+			if(rating == null) {
+				rating = new AssessmentRating(assessment, username);
+			}
+			forms.put(assessment.getId(), new RatingForm(rating));
+		}
+		
+		return forms;
+	}
+	
+	@ModelAttribute("ratingForm")
+	public RatingForm loadRatingForm() {
+		return new RatingForm();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -729,7 +761,6 @@ public class SubmissionController {
 		if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))) {
 			model.addAttribute("fileContents",
 					PASTAUtil.scrapeFile(location).replace(">", "&gt;").replace("<", "&lt;"));
-
 		}
 		return "assessment/mark/viewFile";
 	}
