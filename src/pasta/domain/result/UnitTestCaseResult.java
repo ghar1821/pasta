@@ -36,6 +36,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 /**
  * Container class to hold the result of a single unit test.
@@ -72,7 +73,8 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	@Column(name = "message")
 	private String testMessage;
 	
-	@Column(name = "extended_message")
+	@Column(name = "extended_message", length = 64000)
+	@Size (max = 64000)
 	private String extendedMessage = "";
 	
 	private String type;

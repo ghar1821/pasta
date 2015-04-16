@@ -34,8 +34,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Entity;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -190,4 +190,11 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		return test.getName().compareTo(target.getTest().getName());
 	}
 	
+	public boolean isTestCrashed() {
+		if(testCases == null || testCases.size() != 1) {
+			return false;
+		}
+		return testCases.get(0).getTestName().equals("BeforeFirstTest") &&
+				testCases.get(0).getTestResult().equalsIgnoreCase("error");
+	}
 }

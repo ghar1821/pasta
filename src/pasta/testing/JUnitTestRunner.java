@@ -15,12 +15,17 @@ public class JUnitTestRunner extends Runner {
 		addOption("testName", "TestName");
 		addOption("submissionDirectory", "src");
 		addOption("testDirectory", "test");
+		addOption("filterStackTraces", "yes");
 	}
 	
 	public void setMaxRunTime(long milliseconds) {
 		if(milliseconds >= 0) {
 			addOption("maxTimeAllowed", String.valueOf(milliseconds));
 		}
+	}
+	
+	public void setFilterStackTraces(boolean filter) {
+		addOption("filterStackTraces", filter ? "yes" : "no");
 	}
 	
 	public void setOutputFilename(String filename) {

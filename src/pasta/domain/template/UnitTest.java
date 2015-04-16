@@ -32,12 +32,16 @@ package pasta.domain.template;
 import java.io.File;
 import java.io.Serializable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import pasta.domain.result.UnitTestResult;
 import pasta.util.ProjectProperties;
 
 /**
@@ -73,6 +77,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	@Column (name = "main_class_name")
 	private String mainClassName;
+	
+	@OneToOne (cascade=CascadeType.ALL)
+	@JoinColumn (name="test_result_id")
+	private UnitTestResult testResult;
 
 	/**
 	 * Default constructor
@@ -155,6 +163,14 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public UnitTestResult getTestResult() {
+		return testResult;
+	}
+
+	public void setTestResult(UnitTestResult testResult) {
+		this.testResult = testResult;
 	}
 
 	@Override

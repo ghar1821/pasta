@@ -230,10 +230,7 @@ public class UnitTestController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute(
-				"latestResult",
-				unitTestManager.getUnitTestResult(unitTestManager.getUnitTest(testId)
-						.getFileLocation() + "/test"));
+		model.addAttribute("latestResult", test.getTestResult());
 		
 		FileTreeNode node = PASTAUtil.generateFileTree(unitTestManager.getUnitTest(testId).getFileLocation() + "/code");
 		model.addAttribute("node", node);
@@ -337,7 +334,7 @@ public class UnitTestController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "{testId}/", method = RequestMethod.POST)
-	public String updateTestCode(@PathVariable("testId") long testId,
+	public String updateUnitTest(@PathVariable("testId") long testId,
 			@ModelAttribute(value = "updateUnitTest") UpdateUnitTestForm updateForm,
 			@ModelAttribute(value = "unitTest") UnitTest test,
 			BindingResult result, Model model) {
@@ -383,7 +380,7 @@ public class UnitTestController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "{testId}/test/", method = RequestMethod.POST)
-	public String updateTestCode(@PathVariable("testId") long testId,
+	public String testUnitTest(@PathVariable("testId") long testId,
 			@ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm,
 			@ModelAttribute(value = "unitTest") UnitTest test,
 			BindingResult result, Model model) {

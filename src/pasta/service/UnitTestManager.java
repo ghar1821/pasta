@@ -31,24 +31,20 @@ package pasta.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Scanner;
+import java.util.Stack;
+import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.domain.FileTreeNode;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTestForm;
@@ -57,6 +53,11 @@ import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
+import pasta.testing.AntJob;
+import pasta.testing.AntResults;
+import pasta.testing.JUnitTestRunner;
+import pasta.testing.task.DirectoryCopyTask;
+import pasta.testing.task.UnzipTask;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -183,106 +184,106 @@ public class UnitTestManager {
 	 * @param testId the id of the test
 	 */
 	public void testUnitTest(UnitTest test, TestUnitTestForm testForm) {
-		//TODO redo with AntJob
-		PrintStream compileErrors = null;
-		PrintStream runErrors = null;
+		logger.info("Testing unit test " + test.getName());
+		
+		File testLoc = test.getCodeLocation();
+		File sandboxLoc = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
+		
 		try {
-			// delete old submission if exists
-			FileUtils.deleteDirectory(new File(test.getFileLocation() + "/test/"));
-			
-			// create folder
-			(new File(test.getFileLocation() + "/test/")).mkdirs();
-			// extract submission
-			testForm.getFile().transferTo(
-					new File(test.getFileLocation() + "/test/"
-							+ testForm.getFile().getOriginalFilename()));
-			PASTAUtil.extractFolder(test.getFileLocation()
-					+ "/test/" + testForm.getFile().getOriginalFilename());
-			FileUtils.forceDelete(new File(test.getFileLocation()
-					+ "/test/" + testForm.getFile().getOriginalFilename()));
-			
-			// copy over unit test
-			FileUtils.copyDirectory(new File(test.getFileLocation()
-					+ "/code/"),
-					new File(test.getFileLocation() + "/test/"));
-			
-			// compile
-			File buildFile = new File(test.getFileLocation()
-					+ "/test/build.xml");
-			
-			ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-			Project project = new Project();
-			
-			project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-			project.setBasedir(test.getFileLocation() + "/test");
-			DefaultLogger consoleLogger = new DefaultLogger();
-			runErrors = new PrintStream(test.getFileLocation()
-					+ "/test/run.errors");
-			consoleLogger.setOutputPrintStream(runErrors);
-			consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-			project.addBuildListener(consoleLogger);
-			project.init();
-			
-			project.addReference("ant.projectHelper", projectHelper);
-			projectHelper.parse(project, buildFile);
-			try {
-				project.executeTarget("build");
-				project.executeTarget("test");
-				project.executeTarget("clean");
-			} catch (BuildException e) {
-				throw new RuntimeException(String.format(
-						"Run %s [%s] failed: %s", buildFile, "everything",
-						e.getMessage()), e);
+			if (sandboxLoc.exists()) {
+				FileUtils.deleteDirectory(sandboxLoc);
 			}
-			
-			runErrors.close();
-			
-			// scrape compiler errors from run.errors
-			try{
-				Scanner in = new Scanner (new File(test.getFileLocation() + "/test/" + "/run.errors"));
-				boolean containsError = false;
-				boolean importantData = false;
-				String output = "";
-				while(in.hasNextLine()){
-					String line = in.nextLine();
-					if(line.contains(": error:")){
-						containsError = true;
-					}
-					if(line.contains("[javac] Files to be compiled:")){
-						importantData = true;
-					}
-					if(importantData){
-						output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
-					}
-				}
-				in.close();
-				
-				if(containsError){
-					compileErrors = new PrintStream(
-							test.getFileLocation() + "/test/" + "/compile.errors");
-					compileErrors.print(output);
-					compileErrors.close();
-				}
-			}
-			catch (Exception e){
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				logger.error("Something went wrong: " + sw.toString());
-			}
-			
 		} catch (IOException e) {
-			logger.error("Unable to test unit test " + test.getName(), e);
-		} catch (Exception e){
-			logger.error("Unknown error while testing unit test: ", e);
+			logger.error("Could not delete existing test.", e);
+			return;
 		}
 		
-		// ensure everything is closed
-		if(runErrors != null){
-			runErrors.close();
+		String mainClass = test.getMainClassName();
+		if(mainClass == null || mainClass.isEmpty()) {
+			logger.error("No main test class for test " + test.getName());
+			return;
 		}
-		if(compileErrors != null){
-			compileErrors.close();
+		
+		sandboxLoc.mkdirs();
+		
+		JUnitTestRunner runner = new JUnitTestRunner();
+		runner.setMainTestClassname(mainClass);
+		runner.setFilterStackTraces(false);
+		
+		//TODO make generic
+		runner.setTestDirectory("test");
+		runner.setSubmissionDirectory("src");
+		
+		AntJob antJob = new AntJob(sandboxLoc, runner, "build", "test", "clean");
+		antJob.addDependency("test", "build");
+		
+		antJob.addSetupTask(new DirectoryCopyTask(testLoc, sandboxLoc));
+		antJob.addSetupTask(new UnzipTask(testForm.getFile(), sandboxLoc));
+		
+		antJob.run();
+		
+		AntResults results = antJob.getResults();
+		
+		Scanner scn = new Scanner(results.getOutput("build"));
+		StringBuilder files = new StringBuilder();
+		StringBuilder compErrors = new StringBuilder();
+		String line = "";
+		if(scn.hasNext()) {
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("Files to be compiled")) {
+					break;
+				}
+			}
+		}
+		if(scn.hasNextLine()) {
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("error")) {
+					break;
+				}
+				files.append(line.replaceFirst("\\s*\\[javac\\]", "").trim()).append('\n');
+			}
+			// Chop off the trailing "\n"
+			files.replace(files.length()-1, files.length(), "");
+		}
+		if(scn.hasNextLine()) {
+			compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+			}
+			// Chop off the trailing "\n"
+			compErrors.replace(compErrors.length()-1, compErrors.length(), "");
+		}
+		scn.close();
+		
+		// Get results from ant output
+		UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
+				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath());
+		if(utResults == null) {
+			utResults = new UnitTestResult();
+		}
+		utResults.setTest(test);
+		
+		utResults.setFilesCompiled(files.toString());
+		if(!results.isSuccess("build")) {
+			utResults.setCompileErrors(compErrors.toString().replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
+		}
+		
+		utResults.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
+		utResults.setCleanError(!results.isSuccess("clean"));
+		utResults.setRuntimeOutput(results.getFullOutput());
+		
+		test.setTestResult(utResults);
+		
+		ProjectProperties.getInstance().getResultDAO().save(utResults);
+		ProjectProperties.getInstance().getUnitTestDAO().update(test);
+		
+		try {
+			FileUtils.deleteDirectory(sandboxLoc);
+		} catch (IOException e) {
+			logger.error("Error deleting sandbox test at " + sandboxLoc);
 		}
 	}
 
@@ -301,7 +302,8 @@ public class UnitTestManager {
 			
 			// create space on the file system.
 			codeLocation.mkdirs();
-
+			test.setMainClassName(null);
+			
 			CommonsMultipartFile submission = updateForm.getFile();
 			// unzip the uploaded code into the code folder. (if exists)
 			if (submission != null && !submission.isEmpty()) {
@@ -316,10 +318,32 @@ public class UnitTestManager {
 					logger.error("Could not delete the zip for "
 							+ test.getName());
 				}
+				
+				// Automatically set the main class name according to any *Test.java files.
+				FileTreeNode node = PASTAUtil.generateFileTree(codeLocation.getAbsolutePath());
+				Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
+				toExpand.push(node);
+				int dirStart = node.getLocation().length();
+				
+				while(!toExpand.isEmpty()) {
+					FileTreeNode expandNode = toExpand.pop();
+					String location = expandNode.getLocation().substring(dirStart);
+					if(location.endsWith(".java")) {
+						if(location.endsWith("Test.java")) {
+							test.setMainClassName(location.substring(0, location.length()-5));
+						}
+					}
+					if(!expandNode.isLeaf()) {
+						for(FileTreeNode child : expandNode.getChildren()) {
+							toExpand.push(child);
+						}
+					}
+				}
 			}
 
 			// set it as not tested
 			test.setTested(false);
+			test.setTestResult(null);
 			updateUnitTest(test);
 		} catch (Exception e) {
 			(new File(test.getFileLocation())).delete();

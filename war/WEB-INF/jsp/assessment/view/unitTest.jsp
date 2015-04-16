@@ -73,44 +73,83 @@ either expressed or implied, of the PASTA Project.
 
 <c:if test="${not empty latestResult}">
 	<h2>Latest Test results
-		<c:if test="${not empty latestResult.compileErrors}">
-			- Compilation Errors Detected
-		</c:if>
-		<c:if test="${not empty latestResult.testCases}">
-			- Execution Successful
-		</c:if>
+		<c:choose>
+			<c:when test="${latestResult.testCrashed}">
+				- Unit Test Crashed
+			</c:when>
+			<c:when test="${not empty latestResult.compileErrors}">
+				- Compilation Errors Detected
+			</c:when>
+			<c:otherwise>
+				- Execution Successful
+			</c:otherwise>
+		</c:choose>
 	</h2>
+	
+	<c:if test="${not empty latestResult.filesCompiled}">
+		<div class='vertical-block'>
+			<h3>Files Compiled:</h3>
+			<div class="ui-state-highlight">
+				<pre>${latestResult.filesCompiled}</pre>
+			</div>
+		</div>
+	</c:if>
 	<c:if test="${not empty latestResult.compileErrors}">
-		<div class="ui-state-error">
-			<pre>${latestResult.compileErrors}</pre>
+		<div class='vertical-block'>
+			<h3>Compile Errors:</h3>
+			<div class="ui-state-error">
+				<pre>${latestResult.compileErrors}</pre>
+			</div>
 		</div>
 	</c:if>
-	<c:if test="${not empty latestResult.runtimeOutput}">
-		<div class="ui-state-error">
-			<pre>${latestResult.runtimeOutput}</pre>
-		</div>
-	</c:if>
+	<c:choose>
+		<c:when test="${latestResult.testCrashed}">
+			<div class='vertical-block'>
+				<h3>Full Output:</h3>
+				<div class="ui-state-error">
+					<pre>${latestResult.runtimeOutput}</pre>
+				</div>
+			</div>
+		</c:when>
+		<c:otherwise>
+			<div class='vertical-block'>
+				<button id="showFullOutput">Show full output</button>
+			</div>
+			<div id='fullOutputPopup' class='popup'>
+				<h3>Full Output:</h3>
+				<div class="ui-state-highlight largeOutputBox">
+					<pre>${latestResult.runtimeOutput}</pre>
+				</div>
+			</div>
+		</c:otherwise>
+	</c:choose>
 	<c:if test="${not empty latestResult.testCases}">
-		<div>
-		<c:forEach var="testCase" items="${latestResult.testCases}">
-				<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
-		</c:forEach>
+		<div class='vertical-block'>
+			<h3>Test Results</h3>
+			<div class='vertical-block'>
+				<c:forEach var="testCase" items="${latestResult.testCases}">
+					<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
+				</c:forEach>
+			</div>
+			<div class='vertical-block' style='clear:both;'>
+				<button id="acceptUnitTest">Working as intended</button>
+			</div>
+			<div class='vertical-block' style='overflow:hidden;'>
+				<table class="pastaTable">
+					<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+					<c:forEach var="testCase" items="${latestResult.testCases}">
+						<tr>
+							<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+							<td style="text-align:left;">${testCase.testName}</td>
+							<td>${testCase.time}</td>
+							<td>
+								<pre>${testCase.type} - ${testCase.testMessage}</pre>
+							</td>
+						</tr>
+					</c:forEach>
+				</table>
+			</div>
 		</div>
-		<br />
-		<button id="acceptUnitTest">Working as intended</button>
-		<table class="pastaTable">
-			<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-			<c:forEach var="testCase" items="${latestResult.testCases}">
-				<tr>
-					<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-					<td style="text-align:left;">${testCase.testName}</td>
-					<td>${testCase.time}</td>
-					<td>
-						<pre>${testCase.type} - ${testCase.testMessage}</pre>
-					</td>
-				</tr>
-			</c:forEach>
-		</table>
 	</c:if>
 </c:if>
 
@@ -145,6 +184,12 @@ either expressed or implied, of the PASTA Project.
                 // Prevents the default action to be triggered. 
                 e.preventDefault();
                 $('#testUnitTestDiv').bPopup();
+            });
+            
+            $('#showFullOutput').on('click', function(e) {
+                // Prevents the default action to be triggered. 
+                e.preventDefault();
+                $('#fullOutputPopup').bPopup();
             });
             
             $('#acceptUnitTest').on('click', function(e) {
