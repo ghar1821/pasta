@@ -126,9 +126,9 @@ either expressed or implied, of the PASTA Project.
 	<c:if test="${not empty latestResult.testCases}">
 		<div class='vertical-block'>
 			<h3>Test Results</h3>
-			<div class='vertical-block'>
-				<c:forEach var="testCase" items="${latestResult.testCases}">
-					<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${testCase.testResult}" title="${testCase.testName}">&nbsp;</div>
+			<div class='vertical-block float-container'>
+				<c:forEach var="unitTestCase" items="${latestResult.testCases}">
+					<div class="unitTestResult ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
 				</c:forEach>
 			</div>
 			<div class='vertical-block' style='clear:both;'>

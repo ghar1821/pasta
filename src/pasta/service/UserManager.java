@@ -48,9 +48,9 @@ import org.springframework.stereotype.Service;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.template.Assessment;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;
-import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 /**
@@ -189,10 +189,6 @@ public class UserManager {
 	
 	/**
 	 * Give a student an extension to a given date.
-	 * <p>
-	 * Updates the extensions in the cahced user and writes them to disk
-	 * in the folder $ProjectLocation$/submissions/$username$/user.extensions
-	 *  using the following format: "$assessmentId$>yyyy-MM-dd'T'HH-mm-ss"
 	 * 
 	 * @param user the user of the student getting an extension
 	 * @param assessmentId the id of the assessment
@@ -200,17 +196,20 @@ public class UserManager {
 	 */
 	public void giveExtension(PASTAUser user, long assessmentId, Date extension) {
 		user.getExtensions().put(assessmentId, extension);
-		
-		// update the files
-		try {
-			PrintWriter out = new PrintWriter(new File(ProjectProperties.getInstance().getSubmissionsLocation() +
-					user.getUsername() + "/user.extensions"));
-			for (Entry<Long, Date> ex : user.getExtensions().entrySet()) {
-				out.println(ex.getKey() + ">" + PASTAUtil.formatDate(ex.getValue()));
-			}
-			out.close();
-		} catch (FileNotFoundException e) {
-			logger.error("Could not save extension information for " + user.getUsername());
+		userDao.save(user);
+	}
+	
+	public static Date getDueDate(PASTAUser user, long assessmentId) {
+		return getDueDate(user, ProjectProperties.getInstance().getAssessmentDAO().getAssessment(assessmentId));
+	}
+	
+	public static Date getDueDate(PASTAUser user, Assessment assessment) {
+		Date extDate = user.getExtensions().get(assessment.getId());
+		Date normal = assessment.getDueDate();
+		if(extDate != null && extDate.after(normal)) {
+			return extDate;
+		} else {
+			return normal;
 		}
 	}
 

@@ -46,11 +46,20 @@ a:not([href]) {
 .horizontal-block:not(.float-right) + .horizontal-block:not(.float-right) {
 	margin-left: 1em;
 }
-.horizontal-block.float-right + .horizontal-block.floatright {
+.horizontal-block.float-right + .horizontal-block.float-right {
 	margin-right: 1em;
 }
 .vertical-block+.vertical-block {
 	margin-top: 1em;
+}
+.horizontal-block:not(.float-right) + .horizontal-block:not(.float-right).small-gap {
+	margin-left: 0.5em;
+}
+.horizontal-block.float-right + .horizontal-block.float-right.small-gap {
+	margin-right: 0.5em;
+}
+.vertical-block+.vertical-block.small-gap {
+	margin-top: 0.5em;
 }
 .float-right {
 	float:right;
@@ -64,11 +73,29 @@ a:not([href]) {
 .float-container {
 	overflow:hidden;
 }
+.padded {
+	padding:0.5em;
+}
 
-img.star-medal {
-	width: 42px;
-	height: 42px;
-	padding: 0px;
+div.boxCard, .box-shadow, div.unitTestResult {
+	box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.1),
+				0px 2px 10px 0px rgba(0, 0, 0, 0.1);
+}
+div.boxCard {
+	padding: 0.6em;
+}
+
+div.star-medal {
+	height: 1px;
+	width: 44px;
+}
+div.star-medal img {
+	height: 44px;
+	padding: 0px !important;
+	width: 100%;
+}
+div.star-medal + div.float-left {
+	max-width:85%;
 }
 
 div.fullStar, div.emptyStar {
@@ -86,6 +113,18 @@ div.fullStar {
 }
 div.emptyStar {
 	background-image: url("../images/rating_star_empty.png");
+}
+
+div.tooHardDiv {
+	background-repeat: no-repeat;
+	background-image: url("../images/too-hard.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 32px;
+	width: 48px;
+}
+div.tooHardDiv.selected, div.tooHardDiv:hover {
+	background-image: url("../images/too-hard-selected.png");
 }
 
 .handMarkingStudent.didnotsubmit{
@@ -134,7 +173,7 @@ pre {
 }
 
 .pastaQuickFeedback {
-	width: 90%;
+	font-size:1.1em;
 }
 
 #ui-datepicker-div {
@@ -198,34 +237,36 @@ pre {
     visibility: hidden; 
 }
 
-div.pastaUnitTestBoxResult {
+div.unitTestResult {
 	width: 1em;
 	height: 2em;
 	float: left;
 	margin: 1px;
+	border-style: outset;
+	border-width: 3px;
 	cursor: pointer;
 }
 
-div.pastaUnitTestBoxResultpass {
-	background-color: #0C0;
-}
 
-div.pastaUnitTestBoxResultfailure ,div.pastaUnitTestBoxResulterror{
+div.unitTestResult.pass {
+	background-color: #0C0;
+	border-color: #0C0;
+}
+div.unitTestResult.failure, div.unitTestResult.error {
 	background-color: red;
-	border-style: outset;
 	border-color: red;
 }
-
-div.pastaUnitTestBoxResultSecretpass {
-	background-color: #CCC;
-	border-style: outset;
-	border-color: lightgray;
+div.unitTestResult.secret:not(.revealed) {
+	background-color: lightgrey;
 }
-
-div.pastaUnitTestBoxResultSecretfailure ,div.pastaUnitTestBoxResultSecreterror{
-	background-color: red;
-	border-style: outset;
-	border-color: lightgray;
+div.unitTestResult.secret, div.unitTestResult.revealed {
+	border-color: lightgrey;
+}
+div.unitTestResult.revealed.pass {
+	background: linear-gradient(to top left, lightgrey 30%, #0C0 50%);
+}
+div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
+	background: linear-gradient(to top left, lightgrey 30%, red 50%);
 }
 
 /* Buttons */

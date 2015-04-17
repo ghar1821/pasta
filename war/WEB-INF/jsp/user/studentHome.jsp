@@ -53,186 +53,172 @@ either expressed or implied, of the PASTA Project.
 	</form:form>
 </spring:hasBindErrors>
 
-<h6>Submission Instructions</h6>
-<p>
-To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.<br />
-Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br />
 <div class="ui-state-error" style="font-size:1.5em">
 <i><b>NOTE: These marks are provisional, your final marks will appear on eLearning and may differ from these marks.</b></i>
 </div>
+
 <br/><br/>
 
-<c:forEach var="assessmentCategory" items="${assessments}">
-	<c:if test="${not empty assessmentCategory.key}">
-		<h2>${assessmentCategory.key}</h2>
-	</c:if>
-	<div class='pastaQuickFeedback' style='font-size:1.1em;'>
-		<c:forEach var="assessment" items="${assessmentCategory.value}">
-			<c:if test="${((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, username)))}">
-				<c:out value="${viewedUser.extensions[assessment.id]}"/>
-				<c:set var="closedAssessment" value="false"/>
-				<div class='vertical-block float-container' <c:choose>
-						<c:when test="${not empty viewedUser.extensions[assessment.id]}">
-							<c:if test="${viewedUser.extensions[assessment.id] lt now}">
-								class="closedAssessment"
-								<c:set var="closedAssessment" value="true"/>
-							</c:if>
-						</c:when>
-						<c:when test="${not empty unikey.extensions[assessment.id]}">
-							<c:if test="${unikey.extensions[assessment.id] lt now}">
-								class="closedAssessment"
-								<c:set var="closedAssessment" value="true"/>
-							</c:if>
-						</c:when>
-						<c:otherwise>
-							<c:if test="${assessment.dueDate lt now}">
-								class="closedAssessment"
-								<c:set var="closedAssessment" value="true"/>
-							</c:if>
-						</c:otherwise>
-					</c:choose> >
-					
-					<div class='float-container'>
+<div class="padded"> 
+	<c:forEach var="assessmentCategory" items="${assessments}">
+		<c:if test="${not empty assessmentCategory.key}">
+			<h2>${assessmentCategory.key}</h2>
+		</c:if>
+		<div class='pastaQuickFeedback'>
+			<div class='boxCard'>
+				<c:forEach var="assessment" items="${assessmentCategory.value}">
+					<c:if test="${((not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))) or ((not empty assessment.specialRelease) and ( fn:contains(assessment.specialRelease, username)))}">
+						<c:set var="closedAssessment" value="false"/>
+						<c:choose>
+							<c:when test="${not empty viewedUser.extensions[assessment.id]}">
+								<c:if test="${viewedUser.extensions[assessment.id] lt now}">
+									<c:set var="closedAssessment" value="true"/>
+								</c:if>
+							</c:when>
+							<c:when test="${not empty unikey.extensions[assessment.id]}">
+								<c:if test="${unikey.extensions[assessment.id] lt now}">
+									<c:set var="closedAssessment" value="true"/>
+								</c:if>
+							</c:when>
+							<c:otherwise>
+								<c:if test="${assessment.dueDate lt now}">
+									<c:set var="closedAssessment" value="true"/>
+								</c:if>
+							</c:otherwise>
+						</c:choose>
 						
-						<div class='horizontal-block float-left'>
-							<a href="../info/${assessment.id}/">${assessment.name}</a> - 
-							<c:choose>
-								<c:when test="${empty results[assessment.id]}">
-									0
-								</c:when>
-								<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
-									???
-								</c:when>
-								<c:otherwise>
-									<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.id].marks}" />
-								</c:otherwise>
-							</c:choose>
-							/ ${assessment.marks}
-							<br />
-							<c:choose>
-								<c:when test="${not empty viewedUser.extensions[assessment.id]}">
-									${viewedUser.extensions[assessment.id]}
-								</c:when>
-								<c:otherwise>
-									${assessment.dueDate}
-								</c:otherwise>
-							</c:choose>
-							<br />
-							<c:choose>
-								<c:when test="${assessment.numSubmissionsAllowed == 0}">
-									&infin; submissions allowed <br />
-								</c:when>
-								<c:otherwise>
-									<c:if test="${empty results[assessment.id]}">
-										0
-									</c:if>
-									${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
-								</c:otherwise>
-							</c:choose>
-						</div>
-						
-						<div class='horizontal-block float-right'>
-							<c:if test="${ not empty viewedUser}">
-								<!-- tutor is viewing a user and they may give out an extension -->
-								<button type="button" onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
-							</c:if>
-							<button type="button" onclick="submitAssessment('${assessment.id}');">Submit</button>
-						</div>
-						
-						<c:if test="${empty viewedUser && results[assessment.id].submissionsMade > 0}">
-							<div class='horizontal-block float-right'>
-								<form:form commandName="ratingForm" cssClass="ratingForm" action='../rating/saveRating/${username}/${assessment.id}/'>
-									<div class='ratingStars'>
-										<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
-									</div>
-									<div id='extraComments${assessment.id}' class='popup'>
-										<form:textarea path="comment" value="${ratingForms[assessment.id].comment}"/><br/>
-										
-										<c:if test="${ratingForms[assessment.id].tooHard}">checked="checked"</c:if>
-										<label>Too Hard? <form:checkbox path="tooHard" checked='checked' /></label><br/>
-										<input id='submitRating' type='submit' />
-									</div>
-									<div>
-										<div style='float:left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
-										<div style='float:right' id='confirmRating'></div>
-									</div>
-								</form:form>
-							</div>
-						</c:if>
-					</div>
-					
-					<div class='float-clear float-container'>
-						<div class='horizontal-block float-left'>
-							<c:if test="${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
-								<img class='star-medal' alt="Good Job"
+						<div class='boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+							<div class='float-container vertical-block'>
+								<div class='horizontal-block float-left'>
+									<a href="../info/${assessment.id}/">${assessment.name}</a> - 
 									<c:choose>
-										<c:when test = "${results[assessment.id].percentage == 1 and results[assessment.id].submissionsMade == 1}">
-											src="<c:url value='/static/images/Diamond_Star.png'/>"
+										<c:when test="${empty results[assessment.id]}">
+											0
 										</c:when>
-										<c:when test = "${results[assessment.id].percentage == 1}">
-											src="<c:url value='/static/images/Gold_Star.png'/>"
-										</c:when>
-										<c:when test = "${results[assessment.id].percentage >= 0.85}">
-											src="<c:url value='/static/images/Silver_Star.png'/>"
+										<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
+											???
 										</c:when>
 										<c:otherwise>
-											src="<c:url value='/static/images/Bronze_Star.png'/>"
+											<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
 										</c:otherwise>
 									</c:choose>
-								 />
-							</c:if>
-						</div>
-						<div class='horizontal-block float-left'>
-							<c:choose>
-								<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
-									No attempts on record.
-								</c:when>
-								<c:when test="${results[assessment.id].compileError}">
-									<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
-										<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-										<b>Compilation errors</b>
+									/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
+									<br />
+									Due: ${dueDates[assessment.id]}
+									<c:if test="${(not empty viewedUser and not empty viewedUser.extensions[assessment.id]) or not empty unikey.extensions[assessment.id]}">
+										(with extension)
+									</c:if>
+									<br />
+									<c:choose>
+										<c:when test="${assessment.numSubmissionsAllowed == 0}">
+											&infin; submissions allowed <br />
+										</c:when>
+										<c:otherwise>
+											<c:if test="${empty results[assessment.id]}">
+												0
+											</c:if>
+											${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+										</c:otherwise>
+									</c:choose>
+								</div>
+								
+								<div class='horizontal-block float-right'>
+									<c:if test="${ not empty viewedUser}">
+										<!-- tutor is viewing a user and they may give out an extension -->
+										<button onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
+									</c:if>
+									<c:if test="${unikey.tutor or not closedAssessment}">
+										<button onclick="submitAssessment('${assessment.id}');">Submit</button>
+									</c:if>
+								</div>
+								
+								<c:if test="${empty viewedUser && results[assessment.id].submissionsMade > 0}">
+									<div class='horizontal-block float-right'>
+										<form:form commandName="ratingForm" cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
+											<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
+											<form:hidden path="tooHard" />
+											<div class='ratingControls float-container'>
+												<div class='ratingStars horizontal-block float-left'>
+													<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
+												</div>
+												<div class='tooHardDiv horizontal-block float-left <c:if test="${ratingForms[assessment.id].tooHard}">selected</c:if>'><input type="checkbox" class="hidden ratingTooHard" <c:if test="${ratingForms[assessment.id].tooHard}">checked="checked"</c:if>/></div>
+											</div>
+											<div class='float-container'>
+												<div class='float-left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
+												<div class='float-right' id='confirmRating'></div>
+											</div>
+											<div id='extraComments${assessment.id}' class='popup'>
+												<p><strong>Tell us what you think about this assessment:</strong><br/>
+												<textarea class="ratingComment">${ratingForms[assessment.id].comment}</textarea><br/>
+												<p><button class='ratingSubmit' assessment='${assessment.id}'>Submit</button>
+											</div>
+										</form:form>
 									</div>
-								</c:when>
-								<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
-									<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
-										<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-										<b>Code is queued for testing.</b>
-									</div>
-								</c:when>
-								<c:otherwise>
-									<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
-										<c:choose>
-											<c:when test="${allUnitTests.secret}">
-												<c:choose>
-													<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}">
-														<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-															<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-														</c:forEach>
-													</c:when>
-													<c:otherwise>
-														<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-															<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret" title="???">&nbsp;</div>
-														</c:forEach>
-													</c:otherwise>
-												</c:choose>
-											</c:when>
-											<c:otherwise>
-												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-													<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
+								</c:if>
+							</div>
+							
+							<div class='float-clear float-container vertical-block small-gap'>
+								<div class='horizontal-block float-left star-medal'>
+									<c:if test="${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
+										<img  alt="Good Job"
+											<c:choose>
+												<c:when test = "${results[assessment.id].percentage == 1 and results[assessment.id].submissionsMade == 1}">
+													src="<c:url value='/static/images/Diamond_Star.png'/>"
+												</c:when>
+												<c:when test = "${results[assessment.id].percentage == 1}">
+													src="<c:url value='/static/images/Gold_Star.png'/>"
+												</c:when>
+												<c:when test = "${results[assessment.id].percentage >= 0.85}">
+													src="<c:url value='/static/images/Silver_Star.png'/>"
+												</c:when>
+												<c:otherwise>
+													src="<c:url value='/static/images/Bronze_Star.png'/>"
+												</c:otherwise>
+											</c:choose>
+										 />
+									</c:if>
+								</div>
+								<div class='horizontal-block float-left'>
+									<c:choose>
+										<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
+											No attempts on record.
+										</c:when>
+										<c:when test="${results[assessment.id].compileError}">
+											<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
+												<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+												<b>Compilation errors - <a href="../info/${assessment.id}/">More details </a></b>
+											</div>
+										</c:when>
+										<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
+											<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
+												<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+												<b><span class='queueInfo' assessment='${assessment.id}'>Submission is queued for testing.</span></b>
+											</div>
+										</c:when>
+										<c:otherwise>
+											<strong>Latest results:</strong><br />
+											<div class='float-container'>
+												<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
+													<c:set var="secret" value="${allUnitTests.secret}"/>
+													<c:set var="revealed" value="${secret and (unikey.tutor or closedAssessment)}" />
+													<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+														<div class="unitTestResult <c:if test="${not secret or revealed}">${unitTestCase.testResult}</c:if>
+														<c:if test="${revealed}">revealed</c:if> <c:if test="${secret}">secret</c:if>" 
+														title="<c:choose><c:when test="${revealed or not secret}">${unitTestCase.testName}</c:when><c:otherwise>???</c:otherwise></c:choose>">&nbsp;</div>
+													</c:forEach>
 												</c:forEach>
-											</c:otherwise>
-										</c:choose>
-									</c:forEach>
-								</c:otherwise>
-							</c:choose>
+											</div>
+										</c:otherwise>
+									</c:choose>
+								</div>
+							</div>
 						</div>
-						
-					</div>
-				</div>
-			</c:if>
-		</c:forEach>
-	</div>
-</c:forEach>
+					</c:if>
+				</c:forEach>
+			</div>
+		</div>
+	</c:forEach>
+</div>
 
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
@@ -247,84 +233,35 @@ Your zip file should contain the src folder. If you are unsure, please email you
 </div>
 
 <script>
-	
-		function submitAssessment(assessment){
-			document.getElementById('assessment').value=assessment;
-			$('#submitPopup').bPopup();
-		}
-		
-		function setStars($starDiv, rating) {
-			$starDiv.children("div").each(function() {
-				if($(this).attr('rating') <= rating) {
-					$(this).removeClass("emptyStar");
-					$(this).addClass("fullStar");
-				} else {
-					$(this).removeClass("fullStar");
-					$(this).addClass("emptyStar");
-				}
-			});
-		}
-		
-		function resetStars($starDiv) {
-			var $ratingInput = $starDiv.children("input");
-			var rating = $ratingInput.val();
-			rating = Math.max(0, Math.min(rating, 5));
-			setStars($starDiv, rating)
-		}
-		
-		$(document).ready(function() {
-			$(".ratingForm").each(function() {
-				var $form = $(this);
-				var $starDiv = $form.children(".ratingStars");
-				var $ratingInput = $starDiv.children("input");
-				for(var i = 1; i <= 5; i++) {
-					var $newDiv = 
-						jQuery('<div/>', {
-						    class: "emptyStar",
-						    rating: i
-						});
-					$newDiv.on('click', function() {
-						$ratingInput.val($(this).attr('rating'));
-						$form.submit();
-					});
-					$newDiv.on('mouseover', function() {
-						setStars($starDiv, $(this).attr('rating'));
-					});
-					$newDiv.on('mouseout', function() {
-						resetStars($starDiv);
-					});
-					$starDiv.append($newDiv);
-				}
-				resetStars($starDiv);
-			});
-			
-			$(".ratingForm").on('submit', function() {
-				var $form = $(this);
-				$form.find("#submitRating").prop('disabled', true);
+	function submitAssessment(assessment){
+		document.getElementById('assessment').value=assessment;
+		$('#submitPopup').bPopup();
+	}
+
+	$(document).ready(function() {
+		$(".queueInfo").each(function() {
+			var $span = $(this);
+			(function checkQueue() {
+				var done = false;
 				$.ajax({
-					headers : {
-						'Accept' : 'application/json',
-					},
-					url : $form.attr("action"),
-					data : $form.serialize(),
-					type : "POST",
-					statusCode : {
-						500 : function() {
-							alert("Failed to send rating. Please try again later.");
+					url : '../checkJobQueue/' + $span.attr("assessment") + '/',
+					success : function(data) {
+						if (data) {
+							$span.html(data);
+						} else {
+							$span.html("Refresh for results.");
+							done = true;
 						}
-					},
-					success : function() {
-						$form.find("#confirmRating").html("<span style='color:green;'><strong>Sent!</strong></span>");
 					}
 				});
-				return false;
-			});
-			
-			$(".showComments").on('click', function() {
-				$('#extraComments' + $(this).attr('assessment')).bPopup();
-			});
+				if(!done) {
+					setTimeout(checkQueue, 3000);
+				}
+			})();
 		});
+	});
 </script>
+<script src='<c:url value="/static/scripts/home/assessmentRatings.js"/>'></script>
 
 <c:if test="${ not empty viewedUser}">
 	<div id="extensionPopup" class="popup">

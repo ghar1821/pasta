@@ -129,29 +129,17 @@ ${assessment.description}
 				</c:when>
 				<c:otherwise>
 					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-						<c:forEach var="allUnitTests" items="${result.unitTests}">
-							<c:choose>
-								<c:when test="${allUnitTests.secret}">
-									<c:choose>
-										<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}">
-											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult secret ${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-											</c:forEach>
-										</c:when>
-										<c:otherwise>
-											<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-												<div class="pastaUnitTestBoxResult secret" title="???">&nbsp;</div>
-											</c:forEach>
-										</c:otherwise>
-									</c:choose>
-								</c:when>
-								<c:otherwise>
-									<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-										<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-									</c:forEach>
-								</c:otherwise>
-							</c:choose>
-						</c:forEach>
+						<div class='float-container'>
+							<c:forEach var="allUnitTests" items="${result.unitTests}">
+								<c:set var="secret" value="${allUnitTests.secret}"/>
+								<c:set var="revealed" value="${secret and (unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now)))}" />
+								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+									<div class="unitTestResult <c:if test="${not secret or revealed}">${unitTestCase.testResult}</c:if>
+									<c:if test="${revealed}">revealed</c:if> <c:if test="${secret}">secret</c:if>" 
+									title="<c:choose><c:when test="${revealed or not secret}">${unitTestCase.testName}</c:when><c:otherwise>???</c:otherwise></c:choose>">&nbsp;</div>
+								</c:forEach>
+							</c:forEach>
+						</div>
 					</c:if>
 					<div id="${resultStatus.index}" style="display:none; clear:left;">
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">

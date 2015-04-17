@@ -78,6 +78,8 @@ import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
+import pasta.scheduler.AssessmentJob;
+import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
 import pasta.service.HandMarkingManager;
 import pasta.service.RatingManager;
@@ -139,6 +141,8 @@ public class SubmissionController {
 	
 	@Autowired
 	private RatingManager ratingManager;
+	@Autowired
+	private ExecutionScheduler scheduler;
 
 	@Autowired
 	public void setMyService(SubmissionManager myService) {
@@ -342,6 +346,14 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 		model.addAttribute("results", manager.getLatestResultsForUser(user.getUsername()));
+		
+		Map<Long, String> dueDates = new HashMap<Long, String>();
+		for(Assessment assessment : assessmentManager.getAssessmentList()) {
+			Date due = UserManager.getDueDate(user, assessment);
+			String formatted = PASTAUtil.formatDateReadable(due);
+			dueDates.put(assessment.getId(), formatted);
+		}
+		model.addAttribute("dueDates", dueDates);
 
 		if (session.getAttribute("binding") != null) {
 			model.addAttribute("org.springframework.validation.BindingResult.submission",
@@ -440,6 +452,44 @@ public class SubmissionController {
 		}
 		session.setAttribute("binding", result);
 		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping("checkJobQueue/{assessmentId}/") 
+	@ResponseBody
+	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId) {
+		
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "";
+		}
+		
+		List<AssessmentJob> jobs = scheduler.getAssessmentQueue();
+		if(jobs == null || jobs.isEmpty()) {
+			return "";
+		}
+		
+		StringBuilder positions = new StringBuilder();
+		int subCount = 0;
+		for(int i = 0; i < jobs.size(); i++) {
+			AssessmentJob job = jobs.get(i);
+			if(job.getUsername().equals(user.getUsername()) && job.getAssessmentId() == assessmentId) {
+				if(subCount > 0) {
+					positions.append(", ");
+				}
+				positions.append(i+1);
+				subCount++;
+			}
+		}
+		
+		if(subCount == 0) {
+			return "";
+		} else if(subCount == 1) {
+			return "Your submission is currently at position " + positions.toString() + " in the testing queue.";
+		} else {
+			int pos = positions.lastIndexOf(",");
+			positions.replace(pos, pos+1, " and");
+			return "Your submissions are currently at positions " + positions.toString() + " in the testing queue.";
+		}
 	}
 
 	/**
@@ -822,6 +872,15 @@ public class SubmissionController {
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 		model.addAttribute("results", manager.getLatestResultsForUser(viewedUser.getUsername()));
+		
+		Map<Long, String> dueDates = new HashMap<Long, String>();
+		for(Assessment assessment : assessmentManager.getAssessmentList()) {
+			Date due = UserManager.getDueDate(viewedUser, assessment);
+			String formatted = PASTAUtil.formatDateReadable(due);
+			dueDates.put(assessment.getId(), formatted);
+		}
+		model.addAttribute("dueDates", dueDates);
+		
 		return "user/studentHome";
 	}
 

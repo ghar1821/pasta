@@ -537,6 +537,8 @@ public class ExecutionManager {
 						currentResult.getTestCases().addAll(utResults.getTestCases());
 					}
 					
+					currentResult.setSecret(test.isSecret());
+					
 					currentResult.setFilesCompiled(files.toString());
 					if(!results.isSuccess("build")) {
 						currentResult.setCompileErrors(compErrors.toString().replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
@@ -581,6 +583,7 @@ public class ExecutionManager {
 			for (AssessmentJob job : outstandingJobs) {
 				executeNormalJob(job);
 			}
+			scheduler.clearJobCache();
 			outstandingJobs = scheduler.getOutstandingAssessmentJobs();
 		}
 	}

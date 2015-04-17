@@ -44,108 +44,90 @@ either expressed or implied, of the PASTA Project.
 	</form:form>
 </spring:hasBindErrors>
 
-<h6>Submission Instructions</h6>
-<p>
-To submit, <b>zip</b> your <i>src</i> folder and submit that zipped file.<br />
-Your zip file should contain the src folder. If you are unsure, please email your tutor for an example.<br/>
-
-<c:forEach var="assessmentCategory" items="${assessments}">
-	<c:if test="${not empty assessmentCategory.key}">
-		<h2>${assessmentCategory.key}</h2>
-	</c:if>
-	<table class="pastaQuickFeedback">
-		<c:forEach var="assessment" items="${assessmentCategory.value}">
-			<tr
-				<c:if test="${assessment.dueDate lt now}">
-					class="closedAssessment"
-				</c:if>
-					>
-				<td>
-					<a href="../info/${assessment.id}/">${assessment.name}</a> - 
-					<fmt:formatNumber type="number" maxIntegerDigits="3" value="${results[assessment.id].marks}" />
-					<c:if test="${empty results[assessment.id]}">
-						0
+<div class="padded"> 
+	<c:forEach var="assessmentCategory" items="${assessments}">
+		<c:if test="${not empty assessmentCategory.key}">
+			<h2>${assessmentCategory.key}</h2>
+		</c:if>
+		<div class="pastaQuickFeedback">
+			<div class='boxCard'>
+				<c:forEach var="assessment" items="${assessmentCategory.value}">
+					<c:set var="closedAssessment" value="false"/>
+					<c:if test="${assessment.dueDate lt now}">
+						<c:set var="closedAssessment" value="true"/>
 					</c:if>
-					/ ${assessment.marks}<br />
-				<c:choose>
-					<c:when test="${not empty viewedUser.extensions[assessment.id]}">
-						${viewedUser.extensions[assessment.id]}
-					</c:when>
-					<c:otherwise>
-						${assessment.dueDate}
-					</c:otherwise>
-				</c:choose>
-				<br />
-				<c:choose>
-					<c:when test="${assessment.numSubmissionsAllowed == 0}">
-						&infin; submissions allowed <br />
-					</c:when>
-					<c:otherwise>
-						<c:if test="${empty results[assessment.id]}">
-							0
-						</c:if>
-						${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
-					</c:otherwise>
-				</c:choose>
-				<c:choose>
-					<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
-						No attempts on record.
-					</c:when>
-					<c:when test="${results[assessment.id].compileError}">
-						<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
-							<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-							<b>Compilation errors</b>
-						</div>
-					</c:when>
-					<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
-						<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
-							<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-							<b>Code is queued for testing.</b>
-						</div>
-					</c:when>
-					<c:otherwise>
-						<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
+					<div class='boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+						<div class='float-container vertical-block'>
+							<div class='horizontal-block float-left'>
+								<a href="../info/${assessment.id}/">${assessment.name}</a> - 
+								<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+								<c:if test="${empty results[assessment.id]}">
+									0.0
+								</c:if>
+								/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
+								<br />
+								Due: ${dueDates[assessment.id]}
+								<br />
 								<c:choose>
-									<c:when test="${allUnitTests.secret}">
-										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-										</c:forEach>
+									<c:when test="${assessment.numSubmissionsAllowed == 0}">
+										&infin; submissions allowed <br />
 									</c:when>
 									<c:otherwise>
-										<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-											<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-										</c:forEach>
+										<c:if test="${empty results[assessment.id]}">
+											0
+										</c:if>
+										${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
 									</c:otherwise>
 								</c:choose>
-							</c:forEach>
-					</c:otherwise>
-				</c:choose>
-				</td>
-				<td style="width:40px;">
-					<button type="button" style="float: left; text-align: center;"
-							onclick="submitAssessment('${assessment.id}');">Submit</button>
-				</td>
-				<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
-					<td style="width:15em;">
-                          <div style="float: left; width:100%">
-                                  <button type="button" style="float: left; text-align: center;"
-                                          onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
-                          </div>
-                     </td>
-				</c:if>
-				<c:if test="${ not empty viewedUser}">
-					<!-- tutor is viewing a user and they may give out an extension -->
-					<td style="width:40px;">
-						<div style="float: left; width:100%">
-						<button type="button" style="float: left; text-align: center;"
-							onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
+							</div>
+							
+							<div class='horizontal-block float-right'>
+								<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
+									<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
+								</c:if>
+								<button onclick="submitAssessment('${assessment.id}');">Submit</button>
+							</div>
 						</div>
-					</td>
-				</c:if>
-			</tr>
-		</c:forEach>
-	</table>
-</c:forEach>
+						
+						<div class='float-clear float-container vertical-block small-gap'>
+							<div class='horizontal-block float-left'>
+								<c:choose>
+									<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
+										No attempts on record.
+									</c:when>
+									<c:when test="${results[assessment.id].compileError}">
+										<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
+											<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+											<b>Compilation errors - <a href="../info/${assessment.id}/">More details </a></b>
+										</div>
+									</c:when>
+									<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
+										<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
+											<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+											<b><span class='queueInfo' assessment='${assessment.id}'>Submission is queued for testing.</span></b>
+										</div>
+									</c:when>
+									<c:otherwise>
+										<strong>Latest results:</strong><br />
+										<div class='float-container'>
+											<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
+												<c:set var="secret" value="${allUnitTests.secret}"/>
+												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+													<div class="unitTestResult ${unitTestCase.testResult} <c:if test="${secret}">revealed</c:if>"
+													 title="${unitTestCase.testName}">&nbsp;</div>
+												</c:forEach>
+											</c:forEach>
+										</div>
+									</c:otherwise>
+								</c:choose>
+							</div>
+						</div>
+					</div>
+				</c:forEach>
+			</div>
+		</div>
+	</c:forEach>
+</div>
 
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
@@ -172,4 +154,27 @@ Your zip file should contain the src folder. If you are unsure, please email you
 		document.getElementById('assessment').value=assessment;
 		$('#submitPopup').bPopup();
 	}
+	
+	$(document).ready(function() {
+		$(".queueInfo").each(function() {
+			var $span = $(this);
+			(function checkQueue() {
+				var done = false;
+				$.ajax({
+					url : '../checkJobQueue/' + $span.attr("assessment") + '/',
+					success : function(data) {
+						if (data) {
+							$span.html(data);
+						} else {
+							$span.html("Refresh for results.");
+							done = true;
+						}
+					}
+				});
+				if(!done) {
+					setTimeout(checkQueue, 3000);
+				}
+			})();
+		});
+	});
 </script>

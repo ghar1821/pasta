@@ -8,7 +8,7 @@
 <html lang="en-AU">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<meta name="Author" content="Alex Radu" />
+		<meta name="Author" content="Alex Radu, Joshua Stretton" />
 		<title><spring:message code="UOS" /> </title>
 		
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />

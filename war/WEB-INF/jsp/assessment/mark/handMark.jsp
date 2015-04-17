@@ -61,20 +61,15 @@ th, td{
 		<c:otherwise>
 			<h3>Automatic Marking Results</h3>
 			<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
-				<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
-					<c:choose>
-						<c:when test="${allUnitTests.secret}">
-							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResultSecret${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-							</c:forEach>
-						</c:when>
-						<c:otherwise>
-							<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-								<div class="pastaUnitTestBoxResult pastaUnitTestBoxResult${unitTestCase.testResult}" title="${unitTestCase.testName}">&nbsp;</div>
-							</c:forEach>
-						</c:otherwise>
-					</c:choose>
-				</c:forEach>
+				<div class='float-container'>
+					<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
+						<c:set var="secret" value="${allUnitTests.secret}"/>
+						<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
+							<div class="unitTestResult ${unitTestCase.testResult} <c:if test="${secret}">revealed</c:if>"
+							 title="${unitTestCase.testName}">&nbsp;</div>
+						</c:forEach>
+					</c:forEach>
+				</div>
 			</c:if>
 			<div style="width:100%; text-align:right;">
 				<button type=button onclick='$("#details").slideToggle("slow")'>Details</button>

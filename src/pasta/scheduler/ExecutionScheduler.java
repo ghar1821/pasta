@@ -29,7 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.scheduler;
 
-import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -45,8 +45,8 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.template.Arena;
-import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
+import pasta.util.PASTAUtil;
 
 /**
  * Class that handles the execution of jobs.
@@ -62,6 +62,9 @@ import pasta.domain.template.Competition;
 @Repository("executionScheduler")
 public class ExecutionScheduler extends HibernateDaoSupport {
 
+	private List<AssessmentJob> jobQueueCache;
+	private Date lastQueueUpdate;
+	
 	@Autowired
 	public void setMySession(SessionFactory sessionFactory) {
 		setSessionFactory(sessionFactory);
@@ -152,5 +155,29 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 		cr.add(Restrictions.isNotNull("arena"));
 		cr.addOrder(Order.asc("runDate"));
 		return getHibernateTemplate().findByCriteria(cr);
+	}
+	
+	/**
+	 * Gets the outstanding list of assessment jobs, with a cache that dirties
+	 * every 3 seconds. Cache designed to cope with many async requests.
+	 * 
+	 * @return the cached list of outstanding assessment jobs
+	 */
+	public List<AssessmentJob> getAssessmentQueue() {
+		boolean dirtyCache = 
+				jobQueueCache == null ||
+				lastQueueUpdate == null ||
+				PASTAUtil.elapseTime(lastQueueUpdate, Calendar.SECOND, 3).before(new Date());
+		
+		if(dirtyCache) {
+			jobQueueCache = getOutstandingAssessmentJobs();
+			lastQueueUpdate = new Date();
+		}
+		
+		return jobQueueCache;
+	}
+	public void clearJobCache() {
+		jobQueueCache = null;
+		lastQueueUpdate = null;
 	}
 }

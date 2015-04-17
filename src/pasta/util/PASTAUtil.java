@@ -36,9 +36,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -76,6 +76,7 @@ public class PASTAUtil {
 	protected static final Log logger = LogFactory.getLog(PASTAUtil.class);
 	
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+	private static SimpleDateFormat readableSdf = new SimpleDateFormat("EEE dd MMMM yyyy 'at' HH:mm");
 
 	/**
 	 * Code used to extract a zip file.
@@ -146,6 +147,16 @@ public class PASTAUtil {
 	 */
 	public static String formatDate(Date toFormat){
 		return sdf.format(toFormat);
+	}
+	
+	/**
+	 * Format date using the format EEE dd MMMM yyyy 'at' HH:mm
+	 * 
+	 * @param toFormat the date to format
+	 * @return the string representation of the date e.g. Thu 30 April 2015 at 09:51
+	 */
+	public static String formatDateReadable(Date toFormat){
+		return readableSdf.format(toFormat);
 	}
 	
 	/**
@@ -332,5 +343,12 @@ public class PASTAUtil {
 				listFilesRecursive(root, child, filenames);
 			}
 		}
+	}
+
+	public static Date elapseTime(Date date, int calendarField, int amount) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(calendarField, amount);
+		return cal.getTime();
 	}
 }
