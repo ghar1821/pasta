@@ -20,6 +20,8 @@
 		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
@@ -34,6 +36,8 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tristate.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jqplot/jquery.jqplot.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
 		<decorator:head />
 		
 		
@@ -144,7 +148,7 @@
 					<!-- start mid -->
 					<div class="clearfix" id="mid"></div>
 					<!-- start content -->
-					<div class="nomenu nofeature" id="content">
+					<div class="nomenu nofeature pageContent">
 						<div id="w4">
 							<decorator:body />
 						</div>

@@ -49,13 +49,26 @@ either expressed or implied, of the PASTA Project.
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
 	
 	<table>
+		<tr><td>Category:</td><td><form:input type="text" path="category"/></td></tr>
 		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
 		<tr><td>Assessment DueDate:</td><td><form:input type="text" path="strDate" /></td></tr>
 		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/></td></tr>
 		<tr><td>Count submissions that have failed to compile:</td><td><form:checkbox path="countUncompilable"/></td></tr>
 	</table>
 	
-	The assessment has <c:if test="${not assessment.released}"> not </c:if> been released
+	<h2>Release Rule</h2>
+	<div>
+		<div class="vertical-block">
+			<p><strong>Current release rule:</strong>
+			<p>${assessment.releaseDescription}
+		</div>
+		<div class="vertical-block">
+			<c:set var="buttonText" value="Set" />
+			<c:if test="${assessment.released}"><c:set var="buttonText" value="Modify" /></c:if>
+			<a href="../release/${assessment.id}/"><c:out value="${buttonText}" /> Release Rule</a>
+		</div>		
+	</div>
+	
 	
 	<h2>Description</h2>
 	<div>
@@ -63,7 +76,7 @@ either expressed or implied, of the PASTA Project.
 	</div>
 	<button type="button" id="modifyDescription">Modify Description</button>
 	<form:textarea path="description" cols="110" rows="10" style="display:none"/><br/>
-	Category: <form:input type="text" path="category"/>
+	
 	
 	<table style="margin-bottom:2em;width:90%">
 		<tr>
@@ -227,50 +240,22 @@ either expressed or implied, of the PASTA Project.
 		</tr>
 	</table>
 	
-	<h2> Release </h2>
-	
-	<ul class="tristate list">
-		<li class="list"><input type="checkbox"> All
-			<ul>
-				<c:forEach var="stream" items="${tutorialByStream}">
-					<c:if test="${!empty stream.key }">
-						<li class="list">
-							<form:checkbox path="releasedClasses" value="" />${stream.key}
-							<ul>
-								<c:forEach var="tutorial" items="${stream.value}">
-									<c:if test="${not empty tutorial}">
-									<!-- TODO -> command for contains in a string -->
-									<li class="list">
-										<c:set var="classes" value="${stream.key }.${tutorial}"/>
-										<c:choose>
-											<c:when test="${(not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))}">
-												<form:checkbox path="releasedClasses" checked="checked" value="${stream.key }.${tutorial}" />
-												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-											</c:when>
-											<c:otherwise>
-												<form:checkbox path="releasedClasses" value="${stream.key }.${tutorial}" />
-												${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-											</c:otherwise>
-										</c:choose>
-									</li>
-									</c:if>
-								</c:forEach>
-							</ul>
-						</li>
-					</c:if>
-				</c:forEach>
-			</ul>
-		</li>
-	</ul>
-	Special release to usernames: <br/>
-	<form:textarea path="specialRelease" cols="110" rows="10" />
-	
 	<input type="submit" value="Save Assessment" id="submit"/>
 </form:form>
 
 <script>
     $(function() {
     	$( "#strDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
+    	
+    	$( "input:text" ).each(function() {
+    		$textBox = $(this);
+    		$textBox.tipsy({trigger: 'focus', gravity: 'w', title: function() {
+    			if($(this).is("[id^='unused']")) {
+    				return "Drag this item to the table on the left to select it.";
+    			}
+    			return "";
+    		}});
+    	});
     	
         $( "#unitTest.sortable" ).sortable({
             connectWith: "tbody",
@@ -300,6 +285,7 @@ either expressed or implied, of the PASTA Project.
 						}
             		}
             	}
+            	refreshDragBuffers();
             }
         });
         
@@ -331,7 +317,9 @@ either expressed or implied, of the PASTA Project.
 						}
             		}
             	}
+            	refreshDragBuffers();
             }
+        
         });
         
         $( "#competitions.sortable" ).sortable({
@@ -362,6 +350,7 @@ either expressed or implied, of the PASTA Project.
             			}
             		}
             	}
+            	refreshDragBuffers();
             }
         });
         
@@ -376,5 +365,14 @@ either expressed or implied, of the PASTA Project.
         $("#description").on('keyup', function() {
             $("#descriptionHTML").html(document.getElementById("description").value);
         });
+        
+        refreshDragBuffers();
     });
+    
+    function refreshDragBuffers() {
+    	$(".dragBuffer").each(function() {
+    		var visible = $(this).siblings().length == 0;
+    		$(this).toggle(visible);
+    	});
+    }
 </script>

@@ -38,7 +38,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,16 +83,16 @@ public class RatingController {
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
-	@ModelAttribute("ratingForm")
-	public RatingForm loadRatingForm() {
-		Assessment ass = assessmentManager.getAssessment(3);
-		String username = "josh";
-		AssessmentRating rating = ratingManager.getRating(ass, username);
-		if(rating == null) {
-			rating = new AssessmentRating(ass, username);
-		}
-		return new RatingForm(rating);
-	}
+//	@ModelAttribute("ratingForm")
+//	public RatingForm loadRatingForm() {
+//		Assessment ass = assessmentManager.getAssessment(3);
+//		String username = "josh";
+//		AssessmentRating rating = ratingManager.getRating(ass, username);
+//		if(rating == null) {
+//			rating = new AssessmentRating(ass, username);
+//		}
+//		return new RatingForm(rating);
+//	}
 	
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -129,15 +128,6 @@ public class RatingController {
 	// ///////////////////////////////////////////////////////////////////////////
 	// RATINGS //
 	// ///////////////////////////////////////////////////////////////////////////
-
-	@RequestMapping("")
-	public String doTest(Model model, HttpSession session) {
-		Assessment ass = assessmentManager.getAssessment(3);
-		String username = "josh";
-		model.addAttribute("assessment", ass);
-		model.addAttribute("username", username);
-		return "test";
-	}
 	
 	@RequestMapping("/ratingStatus")  
 	@ResponseBody  
@@ -166,11 +156,6 @@ public class RatingController {
 			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute("ratingForm") RatingForm form,
 			HttpSession session) {
-		logger.warn("Running saveRating controller");
-		logger.warn("\tform " + form);
-		logger.warn("\tform rating: " + form.getRating());
-		logger.warn("\tform comment: " + form.getComment());
-		logger.warn("\tform toohard: " + form.isTooHard());
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		Future<AssessmentRating> rating = ratingManager.saveRating(assessment, username, form);
 		session.setAttribute("rating", rating);
