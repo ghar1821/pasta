@@ -143,11 +143,13 @@ public class AssessmentManager {
 	 */
 	public void releaseAssessment(Assessment assessment, AssessmentReleaseForm releaseForm)
 	{
-		assessment.setReleasedClasses(releaseForm.getList());
-		if (releaseForm.getSpecialRelease() != null
-				&& !releaseForm.getSpecialRelease().isEmpty()) {
-			assessment.setSpecialRelease(releaseForm.getSpecialRelease());
-		}
+		//TODO rework completely
+		
+//		assessment.setReleasedClasses(releaseForm.getList());
+//		if (releaseForm.getSpecialRelease() != null
+//				&& !releaseForm.getSpecialRelease().isEmpty()) {
+//			assessment.setSpecialRelease(releaseForm.getSpecialRelease());
+//		}
 		
 		// Update in database
 		assDao.saveOrUpdate(assessment);
@@ -226,7 +228,6 @@ public class AssessmentManager {
 				}
 			}
 			
-			//TODO is this merge necessary?
 			if(removed) {
 				ProjectProperties.getInstance().getAssessmentDAO().merge(previousAssessment);
 			}

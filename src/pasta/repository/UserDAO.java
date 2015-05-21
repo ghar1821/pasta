@@ -29,23 +29,17 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.repository;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.text.ParseException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -53,8 +47,6 @@ import org.springframework.stereotype.Repository;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
-import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 
 /**
  * The Data access object for the User class.
@@ -299,5 +291,26 @@ public class UserDAO extends HibernateDaoSupport{
 	 */
 	public void deleteSingleUser(PASTAUser toDelete) {
 		delete(toDelete);
+	}
+
+	public List<String> getAllStudentTutorials() {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		cr.setProjection(Projections.distinct(Projections.property("tutorial")));
+		return getHibernateTemplate().findByCriteria(cr);
+	}
+	
+	public List<String> getAllStudentStreams() {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		cr.setProjection(Projections.distinct(Projections.property("stream")));
+		return getHibernateTemplate().findByCriteria(cr);
+	}
+	
+	public List<String> getAllStudentUsernames() {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
+		cr.setProjection(Projections.distinct(Projections.property("username")));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 }

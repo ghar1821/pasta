@@ -52,53 +52,6 @@ either expressed or implied, of the PASTA Project.
 				<c:if test="${not assessment.released}">
 					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
 				</c:if>
-				<div style="clear: both;"></div>
-				<div id="release${assessment.id}" class="popup">
-					<form:form action="release/${assessment.id}/"
-						commandName="assessmentReleaseForm" method="POST">
-						<h2>${assessment.name}</h2>
-						Select which classes to release this assessment to.
-						<ul class="tristate list">
-							<li class="list"><input type="checkbox"> All
-								<ul>
-									<form:input type="hidden" path="assessmentId" value="${assessment.id }" />
-									<c:forEach var="stream" items="${tutorialByStream}">
-										<c:if test="${!empty stream.key }">
-											<li class="list"><form:checkbox 
-													path="list" name="list" value="" />${stream.key}
-												<ul>
-													<c:forEach var="tutorial" items="${stream.value}">
-														<!-- TODO -> command for contains in a string -->
-														<c:if test="${not empty tutorial}">
-														<li class="list">
-															<c:set var="classes" value="${stream.key }.${tutorial}"/>
-															<c:choose>
-																<c:when test="${(not empty assessment.releasedClasses) and ( fn:contains(assessment.releasedClasses, classes))}">
-																	<form:checkbox path="list" name="list"
-																	 checked="checked" value="${stream.key }.${tutorial}" />
-																${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-																</c:when>
-																<c:otherwise>
-																	<form:checkbox path="list" name="list"
-																	value="${stream.key }.${tutorial}" />
-																${ tutorial} <!--value="${stream.key}.${tutorial}"  -->
-																</c:otherwise>
-															</c:choose>
-															
-														</li>
-														</c:if>
-													</c:forEach>
-												</ul></li>
-										</c:if>
-									</c:forEach>
-								</ul>
-							</li>
-						</ul>
-						Special release to usernames: <br/>
-						<form:textarea path="specialRelease" cols="110" rows="10" />
-						<button style="float: right; text-align: center;">Release</button>
-					</form:form>
-				</div>
 					</td>
 			<!-- Data -->
 			<td><b>${assessment.name}</b> - <c:choose>
@@ -139,10 +92,6 @@ ${fn:length(assessment.competitions)} Competitions <br />
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
 						onclick="location.href='./${assessment.id}/'">Details</button>
-				</div>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
-						onclick="$('#release${assessment.id}').bPopup()">Release</button>
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
@@ -206,35 +155,6 @@ ${fn:length(assessment.competitions)} Competitions <br />
 		<input type="submit" value="Create" id="submit" />
 	</form:form>
 </div>
-<%--
-<div id="released" class='popup'>
-	<span class="button bClose"> <span><b>X</b></span>
-	</span>
-	<h1>Release</h1>
-	<form:form commandName="assessmentReleaseForm" enctype="multipart/form-data"
-		method="POST">
-		<c:set var="rel" value="1" />
-		<table>
-			<tr>
-				<td>Assessment Name:</td>
-				<td>${assessment.name}</td>
-				<!--<form:input autocomplete="off" type="text" path="name" value=""/></td>-->
-			</tr>
-			<tr>
-				<td>
-					<ul class="tristate">
-
-					</ul>
-				</td>
-
-			</tr>
-
-
-		</table>
-		<input type="submit" value="Release" id="submit" />
-	</form:form>
-</div>
- --%>
 
 <div id="confirmPopup" class="popup">
 	<span class="button bClose"> <span><b>X</b></span>

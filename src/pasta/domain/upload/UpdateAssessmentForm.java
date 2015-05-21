@@ -41,6 +41,7 @@ import org.apache.commons.collections4.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
@@ -70,8 +71,8 @@ public class UpdateAssessmentForm {
 	private List<WeightedHandMarking> newHandMarking;
 	private List<WeightedCompetition> newCompetitions;
 	
-	private String releasedClasses;
-	private String specialRelease;
+	// TODO: check if 0.5 or 50% -- only allow one
+	private ReleaseRule releaseRule;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
@@ -156,6 +157,13 @@ public class UpdateAssessmentForm {
 		this.description = description;
 	}
 
+	public ReleaseRule getReleaseRule() {
+		return releaseRule;
+	}
+	public void setReleaseRule(ReleaseRule releaseRule) {
+		this.releaseRule = releaseRule;
+	}
+
 	public List<WeightedUnitTest> getNewUnitTests() {
 		return newUnitTests;
 	}
@@ -186,20 +194,6 @@ public class UpdateAssessmentForm {
 	public void setNewCompetitions(Collection<WeightedCompetition> competitions) {
 		this.newCompetitions.clear();
 		this.newCompetitions.addAll(competitions);
-	}
-	
-	public String getReleasedClasses() {
-		return releasedClasses;
-	}
-	public void setReleasedClasses(String releasedClasses) {
-		this.releasedClasses = releasedClasses;
-	}
-
-	public String getSpecialRelease() {
-		return specialRelease;
-	}
-	public void setSpecialRelease(String specialRelease) {
-		this.specialRelease = specialRelease;
 	}
 
 	public String getStrDate() {

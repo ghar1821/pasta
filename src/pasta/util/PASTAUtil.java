@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -55,10 +56,14 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
+import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Competition;
 
 /**
@@ -350,5 +355,19 @@ public class PASTAUtil {
 		cal.setTime(date);
 		cal.add(calendarField, amount);
 		return cal.getTime();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> List<Class<? extends T>> getSubclasses(Class<T> clazz, String packageToSearch) {
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.addIncludeFilter(new AssignableTypeFilter(ReleaseRule.class));
+		Set<BeanDefinition> components = provider.findCandidateComponents(packageToSearch);
+		List<Class<? extends T>> subclasses = new LinkedList<>();
+		for (BeanDefinition component : components) {
+		    try {
+				subclasses.add((Class<? extends T>) Class.forName(component.getBeanClassName()));
+			} catch (ClassNotFoundException e) { }
+		}
+		return subclasses;
 	}
 }

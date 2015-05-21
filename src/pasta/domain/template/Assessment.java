@@ -45,6 +45,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
@@ -55,6 +56,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTAUser;
+import pasta.domain.release.ReleaseRule;
 
 /**
  * Container class for the assessment.
@@ -145,11 +147,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	private String category;
 	
-	@Column (name = "released_classes")
-	private String releasedClasses;
-	
-	@Column (name = "special_release")
-	private String specialRelease;
+	@OneToOne (cascade = CascadeType.ALL)
+	@JoinColumn (name = "release_rule_id")
+	private ReleaseRule releaseRule;
 	
 	@Column (name = "count_uncompilable")
 	private boolean countUncompilable = true;
@@ -224,20 +224,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.category = category;
 	}
 	
-	public String getReleasedClasses() {
-		return releasedClasses;
-	}
-	public void setReleasedClasses(String released) {
-		this.releasedClasses = released;
-	}
-	
-	public String getSpecialRelease() {
-		return specialRelease;
-	}
-	public void setSpecialRelease(String specialRelease) {
-		this.specialRelease = specialRelease;
-	}
-	
 	public boolean isCountUncompilable() {
 		return countUncompilable;
 	}
@@ -245,6 +231,13 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.countUncompilable = countUncompilable;
 	}
 
+	public ReleaseRule getReleaseRule() {
+		return releaseRule;
+	}
+	public void setReleaseRule(ReleaseRule releaseRule) {
+		this.releaseRule = releaseRule;
+	}
+	
 	public Set<WeightedUnitTest> getUnitTests() {
 		Set<WeightedUnitTest> unitTests = new TreeSet<>();
 		for(WeightedUnitTest test : getAllUnitTests()) {
@@ -300,8 +293,35 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	
 	public boolean isReleased() {
-		return (releasedClasses != null && !releasedClasses.isEmpty()) || 
-				(specialRelease != null && !specialRelease.isEmpty());
+		return (releaseRule != null);
+	}
+	
+	public boolean isReleasedTo(PASTAUser user) {
+		return user.isTutor() || (isReleased() && releaseRule.isReleased(user, this));
+	}
+	
+	public String getReleaseDescription() {
+		if(isReleased()) {
+			return releaseRule.toString();
+		}
+		return "None";
+	}
+	
+	public boolean isClosedFor(PASTAUser user) {
+		if(!isReleasedTo(user)) {
+			return true;
+		}
+		Date dueDate = getDueDate();
+		if(dueDate == null) {
+			return false;
+		}
+		Date extension = user.getExtensions().get(getId());
+		if(extension != null) {
+			if(extension.after(dueDate)) {
+				dueDate = extension;
+			}
+		}
+		return new Date().after(dueDate);
 	}
 	
 	public String getFileAppropriateName() {
@@ -484,16 +504,24 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
 	}
-	
-	public boolean isReleasedTo(PASTAUser user) {
-		return  user.isTutor() 
-				||
-				(getReleasedClasses() != null && 
-					!getReleasedClasses().isEmpty() &&
-					getReleasedClasses().contains(user.getStream() + "." + user.getTutorial())) 
-				||
-				(getSpecialRelease() != null && 
-					!getSpecialRelease().isEmpty() &&
-					getSpecialRelease().contains(user.getStream() + "." + user.getTutorial()));
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Assessment other = (Assessment) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

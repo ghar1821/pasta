@@ -41,9 +41,11 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipOutputStream;
 
@@ -344,16 +346,36 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 		model.addAttribute("results", manager.getLatestResultsForUser(user.getUsername()));
 		
+		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
+		Iterator<String> itCategories = allAssessments.keySet().iterator();
+		while(itCategories.hasNext()) {
+			String category = itCategories.next();
+			Iterator<Assessment> itAssessments = allAssessments.get(category).iterator();
+			while(itAssessments.hasNext()) {
+				Assessment a = itAssessments.next();
+				if(!a.isReleasedTo(user)) {
+					itAssessments.remove();
+				}
+			}
+			if(allAssessments.get(category).isEmpty()) {
+				itCategories.remove();
+			}
+		}
+		model.addAttribute("assessments", allAssessments);
+		
+		
 		Map<Long, String> dueDates = new HashMap<Long, String>();
+		Map<Long, Boolean> closed = new HashMap<>();
 		for(Assessment assessment : assessmentManager.getAssessmentList()) {
 			Date due = UserManager.getDueDate(user, assessment);
 			String formatted = PASTAUtil.formatDateReadable(due);
 			dueDates.put(assessment.getId(), formatted);
+			closed.put(assessment.getId(), assessment.isClosedFor(user));
 		}
 		model.addAttribute("dueDates", dueDates);
+		model.addAttribute("closed", closed);
 
 		if (session.getAttribute("binding") != null) {
 			model.addAttribute("org.springframework.validation.BindingResult.submission",
@@ -870,16 +892,38 @@ public class SubmissionController {
 		PASTAUser viewedUser = getOrCreateUser(username);
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("assessments", assessmentManager.getAllAssessmentsByCategory());
 		model.addAttribute("results", manager.getLatestResultsForUser(viewedUser.getUsername()));
 		
+		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
+		Iterator<String> itCategories = allAssessments.keySet().iterator();
+		while(itCategories.hasNext()) {
+			String category = itCategories.next();
+			Iterator<Assessment> itAssessments = allAssessments.get(category).iterator();
+			while(itAssessments.hasNext()) {
+				Assessment a = itAssessments.next();
+				if(!a.isReleasedTo(viewedUser)) {
+					itAssessments.remove();
+				}
+			}
+			if(allAssessments.get(category).isEmpty()) {
+				itCategories.remove();
+			}
+		}
+		model.addAttribute("assessments", allAssessments);
+		
 		Map<Long, String> dueDates = new HashMap<Long, String>();
+		Map<Long, Boolean> released = new HashMap<>();
+		Map<Long, Boolean> closed = new HashMap<>();
 		for(Assessment assessment : assessmentManager.getAssessmentList()) {
 			Date due = UserManager.getDueDate(viewedUser, assessment);
 			String formatted = PASTAUtil.formatDateReadable(due);
 			dueDates.put(assessment.getId(), formatted);
+			released.put(assessment.getId(), assessment.isReleasedTo(viewedUser));
+			closed.put(assessment.getId(), assessment.isClosedFor(viewedUser));
 		}
 		model.addAttribute("dueDates", dueDates);
+		model.addAttribute("released", released);
+		model.addAttribute("closed", closed);
 		
 		return "user/studentHome";
 	}

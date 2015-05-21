@@ -81,6 +81,16 @@
 				<value>pasta.domain.players.PlayerHistory</value>
 				<value>pasta.domain.players.PlayerResult</value>
 				<value>pasta.domain.ratings.AssessmentRating</value>
+				<value>pasta.domain.release.ClassRule</value>
+				<value>pasta.domain.release.DateRule</value>
+				<value>pasta.domain.release.HasSubmittedRule</value>
+				<value>pasta.domain.release.MarkCompareRule</value>
+				<value>pasta.domain.release.ReleaseAndRule</value>
+				<value>pasta.domain.release.ReleaseOrRule</value>
+				<value>pasta.domain.release.ReleaseResultsRule</value>
+				<value>pasta.domain.release.ReleaseRule</value>
+				<value>pasta.domain.release.StreamRule</value>
+				<value>pasta.domain.release.UsernameRule</value>
 				<value>pasta.domain.result.AssessmentResult</value>
 				<value>pasta.domain.result.CompetitionMarks</value>
 				<value>pasta.domain.result.CompetitionPosition</value>

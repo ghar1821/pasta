@@ -118,6 +118,11 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	}
 	
 	@Transient
+	public String getFullTutorial() {
+		return this.getStream() + "." + this.getTutorial();
+	}
+	
+	@Transient
 	public boolean isTutor(){
 		return (permissionLevel == UserPermissionLevel.TUTOR) 
 				|| permissionLevel == UserPermissionLevel.INSTRUCTOR; 

@@ -240,7 +240,11 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	public double getAutoMarks(){
-		return getAutoPercentage() * assessment.getMarks();
+		return getAutoMarkAsPercentageOfTotal() * assessment.getMarks();
+	}
+	
+	public double getHandMarks(){
+		return getHandMarkAsPercentageOfTotal() * assessment.getMarks();
 	}
 	
 	public double getPercentage(){
@@ -276,13 +280,19 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		return (marks / maxWeight);
 	}
 	
-	public double getAutoPercentage(){
-		double marks = 0;
-		double maxWeight = getAssessmentHandMarkingWeight() 
+	private double getTotalMaxWeight() {
+		return getAssessmentHandMarkingWeight() 
 				+ getAssessmentUnitTestsWeight()
 				+ getAssessmentCompetitionWeight();
-		// unit tests
-		// regular
+	}
+	public double getAutoMarkAsPercentageOfTotal(){
+		return getPercentage(getRawAutoMarks(), getTotalMaxWeight());
+	}
+	public double getAutoMarkPercentage(){
+		return getPercentage(getRawAutoMarks(), getAssessmentUnitTestsWeight());
+	}
+	private double getRawAutoMarks() {
+		double marks = 0;
 		for(UnitTestResult result : unitTests){
 			try{
 				marks += result.getPercentage()*assessment.getWeighting(result.getTest());
@@ -291,12 +301,35 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 				// ignore anything that throws exceptions
 			}
 		}
-		
-		if(maxWeight == 0){
+		return marks;
+	}
+	
+	public double getHandMarkAsPercentageOfTotal(){
+		return getPercentage(getRawHandMarks(), getTotalMaxWeight());
+	}
+	public double getHandMarkPercentage(){
+		return getPercentage(getRawAutoMarks(), getAssessmentHandMarkingWeight());
+	}
+	private double getRawHandMarks() {
+		double marks = 0;
+		for(HandMarkingResult result : handMarkingResults){
+			try{
+				marks += result.getPercentage()*assessment.getWeighting(result.getHandMarking());
+			}
+			catch(Exception e){
+				// ignore anything that throws exceptions
+			}
+		}
+		return marks;
+	}
+	
+	private double getPercentage(double mark, double maxMark) {
+		if(maxMark == 0) {
 			return 0;
 		}
-		return (marks / maxWeight);
+		return mark / maxMark;
 	}
+	
 	
 	private double getAssessmentHandMarkingWeight(){
 		double weight = 0;

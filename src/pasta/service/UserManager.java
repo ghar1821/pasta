@@ -29,14 +29,10 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -283,6 +279,16 @@ public class UserManager {
 	public void updatePassword(String username, String newPassword) {
 		loginDao.updatePassword(username, DigestUtils.md5Hex(newPassword));
 	}
+
+	public List<String> getTutorialList() {
+		return userDao.getAllStudentTutorials();
+	}
 	
+	public List<String> getStreamList() {
+		return userDao.getAllStudentStreams();
+	}
 	
+	public List<String> getStudentUsernameList() {
+		return userDao.getAllStudentUsernames();
+	}
 }

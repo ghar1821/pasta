@@ -53,7 +53,7 @@ either expressed or implied, of the PASTA Project.
 			<div class='boxCard'>
 				<c:forEach var="assessment" items="${assessmentCategory.value}">
 					<c:set var="closedAssessment" value="false"/>
-					<c:if test="${assessment.dueDate lt now}">
+					<c:if test="${closed[assessment.id]}">
 						<c:set var="closedAssessment" value="true"/>
 					</c:if>
 					<div class='boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >

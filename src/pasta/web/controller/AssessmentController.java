@@ -73,6 +73,7 @@ import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;
 import pasta.service.HandMarkingManager;
+import pasta.service.ReleaseManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
@@ -133,6 +134,8 @@ public class AssessmentController {
 	private CompetitionManager competitionManager;
 	@Autowired
 	private SubmissionManager submissionManager;
+	@Autowired
+	private ReleaseManager releaseManager;
 
 	private Map<String, String> codeStyle;
 
@@ -391,46 +394,46 @@ public class AssessmentController {
 		return "redirect:" + request.getHeader("Referer");
 	}
 
-	/**
-	 * $PASTAUrl$/assessments/release/{assessmentId}/ - POST
-	 * <p>
-	 * Release the assessment to some students.
-	 * <p>
-	 * If the user has not authenticated: redirect to login.
-	 * 
-	 * If the user is not a tutor: redirect to home
-	 * 
-	 * If the user is an instructor: release assessment using 
-	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, AssessmentReleaseForm)}.
-	 * redirect to $PASTAUrl$/assessments/
-	 * 
-	 * @param assessmentId the id of the assessment
-	 * @param form the release form
-	 * @param model the model used
-	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
-	 */
-	@RequestMapping(value = "release/{assessmentId}/", method = RequestMethod.POST)
-	public String releaseAssessment(
-			@PathVariable("assessmentId") long assessmentId,
-			@ModelAttribute(value = "assessment") Assessment assessment,
-			@ModelAttribute(value = "assessmentReleaseForm") AssessmentReleaseForm form,
-			Model model) {
-
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (getUser().isInstructor()) {
-
-			if (assessmentManager.getAssessment(assessmentId) != null) {
-				assessmentManager.releaseAssessment(assessment, form);
-			}
-		}
-		return "redirect:../../";
-	}
+//	/**
+//	 * $PASTAUrl$/assessments/release/{assessmentId}/ - POST
+//	 * <p>
+//	 * Release the assessment to some students.
+//	 * <p>
+//	 * If the user has not authenticated: redirect to login.
+//	 * 
+//	 * If the user is not a tutor: redirect to home
+//	 * 
+//	 * If the user is an instructor: release assessment using 
+//	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, AssessmentReleaseForm)}.
+//	 * redirect to $PASTAUrl$/assessments/
+//	 * 
+//	 * @param assessmentId the id of the assessment
+//	 * @param form the release form
+//	 * @param model the model used
+//	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
+//	 */
+//	@RequestMapping(value = "release/{assessmentId}/", method = RequestMethod.POST)
+//	public String releaseAssessment(
+//			@PathVariable("assessmentId") long assessmentId,
+//			@ModelAttribute(value = "assessment") Assessment assessment,
+//			@ModelAttribute(value = "assessmentReleaseForm") AssessmentReleaseForm form,
+//			Model model) {
+//
+//		PASTAUser user = getUser();
+//		if (user == null) {
+//			return "redirect:/login/";
+//		}
+//		if (!user.isTutor()) {
+//			return "redirect:/home/";
+//		}
+//		if (getUser().isInstructor()) {
+//
+//			if (assessmentManager.getAssessment(assessmentId) != null) {
+//				assessmentManager.releaseAssessment(assessment, form);
+//			}
+//		}
+//		return "redirect:../../";
+//	}
 
 	/**
 	 * $PASTAUrl$/assessments/delete/{assessmentId}/
