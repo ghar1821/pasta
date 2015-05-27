@@ -308,7 +308,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		return getPercentage(getRawHandMarks(), getTotalMaxWeight());
 	}
 	public double getHandMarkPercentage(){
-		return getPercentage(getRawAutoMarks(), getAssessmentHandMarkingWeight());
+		return getPercentage(getRawHandMarks(), getAssessmentHandMarkingWeight());
 	}
 	private double getRawHandMarks() {
 		double marks = 0;
