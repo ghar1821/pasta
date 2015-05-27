@@ -8,7 +8,7 @@
 
 <h1>Release Rule - ${assessment.name}</h1>
 <div style='font-size: 1.1em; padding-bottom:20em'>
-	<form:form commandName="releaseRuleForm" onsubmit="return doSubmit(this)">
+	<form:form commandName="releaseRuleForm">
 		<div>
 			<div class='boxCard vertical-block ruleParent first' pathPrefix='releaseRuleForm'>
 				<tag:releaseRule rule="${releaseRuleForm}" pathPrefix="releaseRuleForm" />

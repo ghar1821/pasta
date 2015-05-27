@@ -1,5 +1,6 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -12,8 +13,8 @@ import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 
 /**
- * A rule that is met if the user has submitted the given assessment at least
- * once, regardless of outcome.
+ * A rule that is met if the user has submitted the given assessment as many times 
+ * as is necessary to follow the count rule.
  * 
  * @author Joshua Stretton
  * @version 1.0
@@ -21,8 +22,9 @@ import pasta.domain.result.AssessmentResult;
  */
 @Entity
 @Table (name = "rules_submission_count")
-public class SubmissionCountRule extends ReleaseAllResultsRule {
-	
+public class SubmissionCountRule extends ReleaseAllResultsRule implements Serializable {
+	private static final long serialVersionUID = 1082260230827086028L;
+
 	@Column(name = "submission_count")
 	private int submissionCount;
 	
@@ -42,7 +44,7 @@ public class SubmissionCountRule extends ReleaseAllResultsRule {
 			return count == submissionCount;
 		case GREATER_THAN:
 			return count > submissionCount;
-		case GREEATER_THAN_OR_EQUAL:
+		case GREATER_THAN_OR_EQUAL:
 			return count >= submissionCount;
 		case LESS_THAN:
 			return count < submissionCount;
@@ -69,7 +71,7 @@ public class SubmissionCountRule extends ReleaseAllResultsRule {
 
 	@Override
 	public String getShortDescription() {
-		return "Release by submission count.";
+		return "Release by submission count";
 	}
 	@Override
 	public String getDescription() {

@@ -85,11 +85,13 @@
 				<value>pasta.domain.release.DateRule</value>
 				<value>pasta.domain.release.HasSubmittedRule</value>
 				<value>pasta.domain.release.MarkCompareRule</value>
+				<value>pasta.domain.release.ReleaseAllResultsRule</value>
 				<value>pasta.domain.release.ReleaseAndRule</value>
 				<value>pasta.domain.release.ReleaseOrRule</value>
 				<value>pasta.domain.release.ReleaseResultsRule</value>
 				<value>pasta.domain.release.ReleaseRule</value>
 				<value>pasta.domain.release.StreamRule</value>
+				<value>pasta.domain.release.SubmissionCountRule</value>
 				<value>pasta.domain.release.UsernameRule</value>
 				<value>pasta.domain.result.AssessmentResult</value>
 				<value>pasta.domain.result.CompetitionMarks</value>

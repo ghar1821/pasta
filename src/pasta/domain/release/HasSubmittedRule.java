@@ -1,5 +1,7 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -16,7 +18,9 @@ import pasta.domain.result.AssessmentResult;
  */
 @Entity
 @Table (name = "rules_has_submitted")
-public class HasSubmittedRule extends ReleaseResultsRule {
+public class HasSubmittedRule extends ReleaseResultsRule implements Serializable {
+	private static final long serialVersionUID = 3556811612265185953L;
+
 	@Override
 	protected boolean isMet(PASTAUser user, AssessmentResult latestCompareResult) {
 		return (latestCompareResult != null);
@@ -24,7 +28,7 @@ public class HasSubmittedRule extends ReleaseResultsRule {
 
 	@Override
 	public String getShortDescription() {
-		return "Release after completing another assessment.";
+		return "Release after completing another assessment";
 	}
 	@Override
 	public String getDescription() {

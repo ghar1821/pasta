@@ -14,25 +14,34 @@
 		<form:hidden path="ruleId" value="${rule.ruleId}"/>
 		<form:hidden path="ruleName" value="${ruleName}"/>
 		<div class='float-right'>
-			<a class='deleteRule'>Delete</a>
+			<a class='deleteRule'>Delete Rule</a>
 		</div>
 		<div class='vertical-block'>
-			<strong>${rule.shortDescription}<span id="deleteMessage"></span></strong>
-			<p>${rule.description}
+			<div class='vertical-block'>
+				<div class='horizontal-block'>
+					<strong>${rule.shortDescription}<span id="deleteMessage"></span></strong>
+				</div>
+				<div class='horizontal-block'>
+					<a class='showChangeRule'>(change)</a>
+					<div class='changeRuleDiv'>
+						Change to:
+						<select class='changeRule chosen'>
+							<option></option>
+							<c:forEach var="ruleType" items="${allRules}">
+								<c:if test="${ruleType['class'].name != ruleName}">
+									<option value="${ruleType['class'].name}">${ruleType.shortDescription}</option>
+								</c:if>
+							</c:forEach>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class='vertical-block'>
+				<p>${rule.description}
+			</div>
 		</div>
 		<div class='vertical-block'>
-			Change this rule:
-			<select class='changeRule chosen'>
-				<option></option>
-				<c:forEach var="ruleType" items="${allRules}">
-					<c:if test="${ruleType['class'].name != ruleName}">
-						<option value="${ruleType['class'].name}">${ruleType.shortDescription}</option>
-					</c:if>
-				</c:forEach>
-			</select>
-		</div>
-		<div class='vertical-block'>
-			<strong>Options:</strong>
+			<strong><c:choose><c:when test="${fn:endsWith(ruleName, 'ReleaseAndRule') or fn:endsWith(ruleName, 'ReleaseOrRule')}">Sub Rules:</c:when><c:otherwise>Options:</c:otherwise></c:choose></strong>
 		</div>
 	</c:if>
 	<div class='vertical-block'>
@@ -87,20 +96,15 @@
 						</tr>
 						<tr>
 							<td>Compare Mode:</td>
-							<td><form:select path="compareMode"><form:options /></form:select></td>
+							<td><form:select path="compareMode"><form:options itemLabel="text"/></form:select></td>
 						</tr>
 						<tr>
 							<td>Mark:</td>
-							<td><form:input path="compareMark" cssClass="setMark" /></td>
+							<td><form:input path="compareMark" cssClass="setMark" /> <form:checkbox path="asPercentage" label="Use percentages rather than raw marks"/></td>
 						</tr>
 						<tr>
 							<td>Mark Type:</td>
-							<td><form:select path="markType"><form:options /></form:select></td>
-						</tr>
-						<tr>
-							<td colspan=2>
-								<form:checkbox path="asPercentage" label="Use percentages rather than raw marks"/>
-							</td>
+							<td><form:select path="markType"><form:options itemLabel="text"/></form:select></td>
 						</tr>
 					</table>
 				</c:when>
@@ -149,7 +153,7 @@
 						</tr>
 						<tr>
 							<td>Compare Mode:</td>
-							<td><form:select path="compareMode"><form:options /></form:select></td>
+							<td><form:select path="compareMode"><form:options itemLabel="text"/></form:select></td>
 						</tr>
 						<tr>
 							<td>Submission Count:</td>

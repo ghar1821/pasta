@@ -1,5 +1,6 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,7 +26,8 @@ import pasta.domain.PASTAUser;
  */
 @Entity
 @Table (name = "rules_stream")
-public class StreamRule extends ReleaseRule {
+public class StreamRule extends ReleaseRule implements Serializable {
+	private static final long serialVersionUID = -5739815741393650873L;
 
 	@ElementCollection
 	@CollectionTable(name = "rules_stream_content", joinColumns = @JoinColumn(name = "rule_id"))
@@ -59,7 +61,7 @@ public class StreamRule extends ReleaseRule {
 	
 	@Override
 	public String getShortDescription() {
-		return "Release to a set of streams.";
+		return "Release to a set of streams";
 	}
 	@Override
 	public String getDescription() {

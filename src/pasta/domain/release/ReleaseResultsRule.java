@@ -1,5 +1,7 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -21,7 +23,9 @@ import pasta.util.ProjectProperties;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class ReleaseResultsRule extends ReleaseRule {	
+public abstract class ReleaseResultsRule extends ReleaseRule implements Serializable {	
+	private static final long serialVersionUID = -6903623755063753904L;
+
 	@OneToOne
 	@JoinColumn(name = "compare_assessment_id")
 	private Assessment compareAssessment;

@@ -1,5 +1,6 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,8 +26,9 @@ import pasta.domain.PASTAUser;
  */
 @Entity
 @Table (name = "rules_usernames")
-public class UsernameRule extends ReleaseRule {
-
+public class UsernameRule extends ReleaseRule implements Serializable {
+	private static final long serialVersionUID = 1673729114700386626L;
+	
 	@ElementCollection
 	@CollectionTable(name = "rules_usernames_content", joinColumns = @JoinColumn(name = "rule_id"))
 	@Column(name = "username")
@@ -59,7 +61,7 @@ public class UsernameRule extends ReleaseRule {
 	
 	@Override
 	public String getShortDescription() {
-		return "Release to a set of usernames.";
+		return "Release to a set of usernames";
 	}
 	@Override
 	public String getDescription() {

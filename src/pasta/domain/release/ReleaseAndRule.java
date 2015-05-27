@@ -1,5 +1,6 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,8 @@ import pasta.domain.PASTAUser;
  */
 @Entity
 @Table (name = "rules_release_and")
-public class ReleaseAndRule extends ReleaseRule {
+public class ReleaseAndRule extends ReleaseRule implements Serializable {
+	private static final long serialVersionUID = -726785216525347073L;
 
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinTable (name = "rules_release_and_content", 

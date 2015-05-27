@@ -1,5 +1,6 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,9 +20,10 @@ import pasta.domain.PASTAUser;
  */
 @Entity
 @Table (name = "rules_date")
-public class DateRule extends ReleaseRule {
+public class DateRule extends ReleaseRule implements Serializable {
+	private static final long serialVersionUID = 2694477219675701797L;
+
 	private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-	
 	
 	@Column(name = "release_date")
 	private Date releaseDate;
@@ -66,7 +68,7 @@ public class DateRule extends ReleaseRule {
 	
 	@Override
 	public String getShortDescription() {
-		return "Release on a certain date.";
+		return "Release on a certain date";
 	}
 	@Override
 	public String getDescription() {

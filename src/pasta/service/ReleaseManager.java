@@ -54,13 +54,10 @@ public class ReleaseManager {
 	public void updateRelease(Assessment assessment, AssessmentReleaseForm form) {		
 		ReleaseRule rule = null;
 		if(!assessment.isReleased()) {
-			logger.warn("Assessment was not yet released.");
 			rule = createInstance(form.getRuleName());
 		} else {
-			logger.warn("Assessment was released.");
 			rule = assessment.getReleaseRule();
 			if(rule.getId() != form.getRuleId()) {
-				logger.warn("Replacing top level rule with new one.");
 				releaseDAO.delete(assessment.getReleaseRule());
 				rule = createInstance(form.getRuleName());
 			}
@@ -76,8 +73,6 @@ public class ReleaseManager {
 		if(rule == null) {
 			return;
 		}
-		
-		logger.warn(String.format("Updating rule %s (%d) using form %s (%d)", rule.getName(), rule.getId(), form.getRuleName(), form.getRuleId()));
 		
 		if(rule instanceof ReleaseResultsRule || rule instanceof ReleaseAllResultsRule) {
 			long existingId = 0;
@@ -134,7 +129,6 @@ public class ReleaseManager {
 			}
 			((UsernameRule) rule).setUsernames(newUsernames);
 		} else if(rule instanceof ReleaseAndRule || rule instanceof ReleaseOrRule) {
-			logger.warn("\tRule is a nested rule:");
 			Map<Long, AssessmentReleaseForm> subFormsMap = new LinkedHashMap<>();
 			List<AssessmentReleaseForm> newSubForms = new LinkedList<AssessmentReleaseForm>();
 			if(form.getRules() != null) {
@@ -148,15 +142,11 @@ public class ReleaseManager {
 				// Identify which rules are new and which are updated
 				for(AssessmentReleaseForm subForm : form.getRules()) {
 					if(subForm.getRuleId() != 0) {
-						logger.warn("\tAdding " + subForm.getRuleId() + " to the list of keep IDs");
 						subFormsMap.put(subForm.getRuleId(), subForm);
 					} else {
-						logger.warn("\tAdding new rule: " + subForm.getRuleName() + " to the list of new rules");
 						newSubForms.add(subForm);
 					}
 				}
-			} else {
-				logger.warn("\tForm has no subrules");
 			}
 			
 			Iterator<ReleaseRule> it;
@@ -168,19 +158,15 @@ public class ReleaseManager {
 			while(it.hasNext()) {
 				ReleaseRule subRule = it.next();
 				if(!subFormsMap.containsKey(subRule.getId())) {
-					logger.warn("\tRemoving " + subRule.getId() + " from the list of sub rules");
 					it.remove();
 					continue;
 				}
-				logger.warn("\tUpdating subrule " + subRule.getId() + ":\n\n");
 				updateReleaseRule(subRule, subFormsMap.get(subRule.getId()));
 				subFormsMap.remove(subRule.getId());
 			}
 			
 			for(AssessmentReleaseForm newSubForm : newSubForms) {
-				logger.warn("\tCREATING INSTANCE: " + newSubForm.getRuleName());
 				ReleaseRule newRule = createInstance(newSubForm.getRuleName());
-				logger.warn("\tAdding new rule:\n\n");
 				updateReleaseRule(newRule, newSubForm);
 				if(rule instanceof ReleaseAndRule) {
 					((ReleaseAndRule) rule).addRule(newRule);

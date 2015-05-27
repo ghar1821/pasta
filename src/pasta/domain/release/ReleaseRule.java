@@ -1,5 +1,7 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -18,7 +20,9 @@ import pasta.util.ProjectProperties;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class ReleaseRule implements Comparable<ReleaseRule> {
+public abstract class ReleaseRule implements Comparable<ReleaseRule>, Serializable {
+	private static final long serialVersionUID = -2751801889498306673L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	private long id;

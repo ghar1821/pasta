@@ -116,7 +116,7 @@ public class ReleaseController {
 		releaseManager.updateRelease(assessment, form);
 		status.setComplete();
 		model.clear();
-		return "redirect:.";
+		return "redirect:../../" + assessment.getId() + "/";
 	}
 	
 	@RequestMapping(value = "{assessmentId}/load/")

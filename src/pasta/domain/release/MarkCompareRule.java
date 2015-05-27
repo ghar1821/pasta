@@ -1,5 +1,7 @@
 package pasta.domain.release;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -27,7 +29,8 @@ import pasta.domain.result.AssessmentResult;
  */
 @Entity
 @Table (name = "rules_mark_compare")
-public class MarkCompareRule extends ReleaseResultsRule {
+public class MarkCompareRule extends ReleaseResultsRule implements Serializable {
+	private static final long serialVersionUID = 5182097220832448841L;
 
 	@Column(name = "compare_mark")
 	private double compareMark;
@@ -79,7 +82,7 @@ public class MarkCompareRule extends ReleaseResultsRule {
 			return mark == compareMark;
 		case GREATER_THAN:
 			return mark > compareMark;
-		case GREEATER_THAN_OR_EQUAL:
+		case GREATER_THAN_OR_EQUAL:
 			return mark >= compareMark;
 		case LESS_THAN:
 			return mark < compareMark;
@@ -120,7 +123,7 @@ public class MarkCompareRule extends ReleaseResultsRule {
 
 	@Override
 	public String getShortDescription() {
-		return "Release based on assessment mark.";
+		return "Release based on assessment mark";
 	}
 	@Override
 	public String getDescription() {
