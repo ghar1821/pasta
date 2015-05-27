@@ -63,7 +63,6 @@ import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
-import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Competition;
 
 /**
@@ -360,7 +359,7 @@ public class PASTAUtil {
 	@SuppressWarnings("unchecked")
 	public static <T> List<Class<? extends T>> getSubclasses(Class<T> clazz, String packageToSearch) {
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.addIncludeFilter(new AssignableTypeFilter(ReleaseRule.class));
+		provider.addIncludeFilter(new AssignableTypeFilter(clazz));
 		Set<BeanDefinition> components = provider.findCandidateComponents(packageToSearch);
 		List<Class<? extends T>> subclasses = new LinkedList<>();
 		for (BeanDefinition component : components) {
