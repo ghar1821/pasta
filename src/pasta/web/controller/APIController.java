@@ -31,16 +31,11 @@ package pasta.web.controller;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -111,7 +106,7 @@ public class APIController {
 		userMsg.setUnikey(username);
 		userMsg.setPassword(password);
 
-		Errors result = (Errors) new BindException("", "");
+		Errors result = new BindException("", "");
 
 		ProjectProperties.getInstance().getAuthenticationValidator()
 				.validate(userMsg, result);
