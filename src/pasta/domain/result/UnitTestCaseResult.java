@@ -60,6 +60,10 @@ import javax.validation.constraints.Size;
 public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCaseResult>{
 	
 	private static final long serialVersionUID = 6764260613777032069L;
+	
+	public static final String PASS = "pass";
+	public static final String FAILURE = "failure";
+	public static final String ERROR = "error";
 
 	@Id @GeneratedValue
 	private long id;
@@ -123,6 +127,16 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	}
 	public void setType(String type) {
 		this.type = type.trim();
+	}
+	
+	public boolean isPass() {
+		return getTestResult().equals(PASS);
+	}
+	public boolean isFailure() {
+		return getTestResult().equals(FAILURE);
+	}
+	public boolean isError() {
+		return getTestResult().equals(ERROR);
 	}
 	
 	@Override

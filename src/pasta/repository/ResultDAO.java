@@ -362,7 +362,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public AssessmentResult getLatestResultsForUserAssessment(String username, long assessmentId) {
-		List<AssessmentResult> results = getResultsForUserAssessment(username, assessmentId, 1);
+		List<AssessmentResult> results = getResultsForUserAssessment(username, assessmentId, 1, true);
 		if (results == null || results.isEmpty()) {
 			return null;
 		}
@@ -370,15 +370,23 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 
 	public List<AssessmentResult> getAllResultsForUserAssessment(String username, long assessmentId) {
-		return getResultsForUserAssessment(username, assessmentId, -1);
+		return getResultsForUserAssessment(username, assessmentId, -1, true);
+	}
+	
+	public List<AssessmentResult> getAllResultsForUserAssessment(String username, long assessmentId, boolean latestFirst) {
+		return getResultsForUserAssessment(username, assessmentId, -1, latestFirst);
 	}
 	
 	private List<AssessmentResult> getResultsForUserAssessment(String username,
-			long assessmentId, int resultCount) {
+			long assessmentId, int resultCount, boolean latestFirst) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
 		cr.add(Restrictions.eq("username", username));
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
-		cr.addOrder(Order.desc("submissionDate"));
+		if(latestFirst) {
+			cr.addOrder(Order.desc("submissionDate"));
+		} else {
+			cr.addOrder(Order.asc("submissionDate"));
+		}
 		@SuppressWarnings("unchecked")
 		List<AssessmentResult> results = getHibernateTemplate().findByCriteria(cr, 0, resultCount);
 		for(AssessmentResult result : results) {

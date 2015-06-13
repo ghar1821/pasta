@@ -31,6 +31,8 @@ package pasta.domain.template;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -41,6 +43,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.util.ProjectProperties;
 
@@ -135,6 +138,23 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.id = id;
 	}
 
+	/**
+	 * Get a list of the most recent test case names. These will be retrieved
+	 * according to the last run test on the unit test. If the unit test has not
+	 * yet been tested, there will be no test result yet.
+	 * 
+	 * @return a list of unit test names
+	 */
+	public List<String> getAllTestNames() {
+		List<String> names = new LinkedList<String>();
+		if(testResult != null && testResult.getTestCases() != null) {
+			for(UnitTestCaseResult result : testResult.getTestCases()) {
+				names.add(result.getTestName());
+			}
+		}
+		return names;
+	}
+	
 	@Override
 	public String toString(){
 		String output = "<unitTestProperties>" + System.getProperty("line.separator");

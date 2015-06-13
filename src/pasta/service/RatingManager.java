@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -78,6 +79,7 @@ public class RatingManager {
 	
 	@Async
 	public Future<AssessmentRating> loadRating(Assessment assessment, String username) {
+		// This method is for test purposes
 		try {
 			Thread.sleep(5000);
 		} catch( Exception e) {
@@ -108,5 +110,9 @@ public class RatingManager {
 			ratings.put(rating.getAssessment().getId(), rating);
 		}
 		return ratings;
+	}
+
+	public List<AssessmentRating> getRatingsForAssessment(Assessment assessment) {
+		return ratingDAO.getAllRatingsForAssessment(assessment);
 	}
 }
