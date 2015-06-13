@@ -110,7 +110,9 @@ public class AssessmentReportingManager {
 		ObjectNode ratingsNode = mapper.createObjectNode();
 		ArrayNode commentsNode = mapper.createArrayNode();
 		for(String comment : comments) {
-			commentsNode.add(comment);
+			if(comment != null && !comment.trim().isEmpty()) {
+				commentsNode.add(comment);
+			}
 		}
 		ratingsNode.set("comments", commentsNode);
 		ArrayNode valuesNode = mapper.createArrayNode();
