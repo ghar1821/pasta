@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.web.controller;
 
 import java.beans.PropertyEditorSupport;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -222,10 +221,6 @@ public class HandMarkingController {
 			return "redirect:/home/.";
 		}
 		if (getUser().isInstructor()) {
-			Map<?,?> m = new TreeMap<>(request.getParameterMap());
-			for(Map.Entry<?, ?> entry : m.entrySet()) {
-				logger.warn(String.format("Parameter %-28s: %s", entry.getKey(), Arrays.toString((String[])entry.getValue())));
-			}
 			handMarkingManager.updateHandMarking(template, form);
 		}
 		return "redirect:.";
