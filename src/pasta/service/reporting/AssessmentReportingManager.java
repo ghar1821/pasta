@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -79,7 +78,6 @@ public class AssessmentReportingManager {
 		ArrayNode marksNode = mapper.createArrayNode();
 		for(PASTAUser user : students) {
 			AssessmentResult result = resultDAO.getLatestResultsForUserAssessment(user.getUsername(), assessment.getId());
-			Logger.getLogger(getClass()).warn(result);
 			double mark = -1;
 			if(result != null) {
 				mark = result.getMarks();
