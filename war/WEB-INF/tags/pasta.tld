@@ -1,0 +1,17 @@
+<!--?xml version="1.0" encoding="UTF-8"? -->
+<taglib>
+	<tlibversion>1.0</tlibversion>
+	<jspversion>1.1</jspversion>
+	<info>Basic PASTA tag operations.</info>
+	<tag>
+		<name>readableDate</name>
+		<tagclass>pasta.tag.ReadableDateTagHandler</tagclass>
+		<info>Converts a date to a readable format.</info>
+		<attribute>
+			<name>date</name>
+			<type>java.util.Date</type>
+			<rtexprvalue>true</rtexprvalue>
+			<required>true</required>
+		</attribute>
+	</tag>
+</taglib> 
