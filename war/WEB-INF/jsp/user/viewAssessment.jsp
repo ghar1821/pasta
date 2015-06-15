@@ -32,6 +32,9 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<%@ taglib prefix="pasta" uri="pastaTag"%>
+
 <jsp:useBean id="now" class="java.util.Date"/>
 
 <h1>
@@ -41,94 +44,65 @@ either expressed or implied, of the PASTA Project.
 	${assessment.name}
 </h1>
 
-<h3>Due: ${assessment.dueDate}</h3>
-<h3>Worth: ${assessment.marks} marks</h3>
+<table>
+	<tr><th>Due Date</th><td><pasta:readableDate date="${assessment.dueDate}" /></td></tr>
+	<tr><th>Possible Marks</th><td>${assessment.marks}</td></tr>
+</table>
 
-${assessment.description}
+<c:if test="${not empty assessment.description}">
+	<h6>Description</h6>
+	${assessment.description}
+</c:if>
 
 <c:choose>
 	<c:when test="${not empty history}">
-		<h3>History</h3>
+		<h2>Submission History</h2>
 		
 		<c:forEach var="result" items="${history}" varStatus="resultStatus">
-			<h4>${result.submissionDate}</h4>
-			<c:if test="${unikey.tutor}">
-				<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-				<ul class="list">
-					<jsp:include page="../recursive/fileWriter.jsp"/>
-				</ul>
-			</c:if>
-			<div style="width:100%; text-align:right;">
-				<button onclick='$("#${resultStatus.index}").slideToggle("slow")'>Details</button>
+		<div class='vertical-block boxCard'>
+			<%--Heading and button panel--%>
+			<div class='vertical-block float-container'>
+				<div class='float-left'>
+					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /></h4>
+				</div>
 				<c:if test="${ unikey.tutor }" >
-					<!-- tutor abilities -->
-					<!-- if assessment has hand marking -->
-					<c:if test="${not empty result.assessment.handMarking}">
-						<!-- edit marking if already marked -->
-						<c:choose>
-							<c:when test="${not empty viewedUser}">
-								<c:choose>
-									<c:when test="${ not result.finishedHandMarking }">
-										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-									</c:when>
-									<c:otherwise>
-										<button onclick="window.location.href='../../../../mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-									</c:otherwise>
-								</c:choose>
-							</c:when>
-							<c:otherwise>
-								<c:choose>
-									<c:when test="${ not result.finishedHandMarking }">
-										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Mark attempt</button>
-									</c:when>
-									<c:otherwise>
-										<button onclick="window.location.href='../../mark/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Edit attempt marks</button>
-									</c:otherwise>
-								</c:choose>
-							</c:otherwise>
-						</c:choose>
-					</c:if>
-					<!-- if the assessment contains unit tests -->
-					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-						<c:choose>
-							<c:when test="${not empty viewedUser}">	
-								<button onclick="window.location.href='../../../../runAssessment/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-							</c:when>
-							<c:otherwise>
-								<button onclick="window.location.href='../../runAssessment/${unikey.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-							</c:otherwise>
-						</c:choose>
-					</c:if>
-					<c:choose>
-						<c:when test="${not empty viewedUser}">	
-							<button onclick="window.location.href='../../../../download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
-						</c:when>
-						<c:otherwise>
-							<button onclick="window.location.href='../../download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
-						</c:otherwise>
-					</c:choose>
+					<div id='buttonPanel' class='float-right'>
+						<c:set var="pathPrefix" value="../.." />
+						<c:if test="${not empty viewedUser}">
+							<c:set var="pathPrefix" value="../../../.." />
+						</c:if>
+						<c:if test="${not empty result.assessment.handMarking}">
+							<c:set var="markButtonText" value="Mark attempt" />
+							<c:if test="${result.finishedHandMarking}">
+								<c:set var="markButtonText" value="Edit attempt marks" />
+							</c:if>
+							<button onclick="window.location.href='${pathPrefix}/mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
+						</c:if>
+						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+							<button onclick="window.location.href='${pathPrefix}/runAssessment/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+						</c:if>
+						<button onclick="window.location.href='${pathPrefix}/download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+					</div>
 				</c:if>
 			</div>
-			<c:if test="${ unikey.tutor }" >
-				<h5>Files Compiled <a onclick='$("#files_${resultStatus.index}").slideToggle("fast")'>(toggle)</a></h5>
-				<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
-					<c:forEach var="unitTest" items="${result.unitTests}">
-						<h6 style="margin-top:0.8em;">${unitTest.test.name}</h6>
-						<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
-					</c:forEach>
+			
+			<%--Submission contents--%>
+			<c:if test="${unikey.tutor}">
+				<div class='vertical-block'>
+					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
+					<ul class="list">
+						<jsp:include page="../recursive/fileWriter.jsp"/>
+					</ul>
 				</div>
 			</c:if>
-			<c:choose>
-				<c:when test="${result.compileError}">
-					<h5>Compile Errors</h5>
-					<div id="${resultStatus.index}" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
-						<c:forEach var="compError" items="${result.compilationErrors}">
-							<div style="margin-top:1em;"><pre><c:out value="${compError}" escapeXml="true"/></pre></div>
-						</c:forEach>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+			
+			<%--Summary of results--%>
+			<div class='vertical-block float-container'>
+				<c:choose>
+					<c:when test="${result.compileError}">
+						<h4 class='compact'>Compile Errors</h4>
+					</c:when>
+					<c:when test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 						<div class='float-container'>
 							<c:forEach var="allUnitTests" items="${result.unitTests}">
 								<c:set var="secret" value="${allUnitTests.secret}"/>
@@ -140,185 +114,144 @@ ${assessment.description}
 								</c:forEach>
 							</c:forEach>
 						</div>
-					</c:if>
-					<div id="${resultStatus.index}" style="display:none; clear:left;">
-						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<table class="pastaTable" >
-								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-								<c:forEach var="allUnitTests" items="${result.unitTests}">
-									<c:forEach var="testCase" items="${allUnitTests.testCases}">
-										<tr>
-											<c:choose>
-												<c:when test="${allUnitTests.secret}">
-													<c:choose>
-														<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty unikey.extensions[assessment.id] or unikey.extensions[assessment.id] lt now))}">
-															<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-															<td style="text-align:left;">Secret - ${testCase.testName}</td>
-															<td>${testCase.time}</td>
-															<td>
-																<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
-															</td>
-														</c:when>
-														<c:otherwise>
-															<td><span class="pastaUnitTestResult pastaUnitTestResultSecret">hidden</span></td>
-															<td style="text-align:left;">???</td>
-															<td>???</td>
-															<td>???</td>
-														</c:otherwise>
-													</c:choose>
-												</c:when>
-												<c:otherwise>
-													<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-													<td style="text-align:left;">${testCase.testName}</td>
-													<td>${testCase.time}</td>
-													<td>
-														<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
-
-													</td>
-												</c:otherwise>
-											</c:choose>
-										</tr>
-									</c:forEach>
-								</c:forEach>
-							</table>
-						</c:if>
-						<c:if test="${not empty viewedUser}">
-							<button type="button" onclick="$('div#updateComments${assessment.id}').show();$(this).hide()">Modify Comments</button>
-							<div id="updateComments${assessment.id}"  style="display:none;">
-								<form action="updateComment/" enctype="multipart/form-data" method="POST">
-									<input name="resultId" type="hidden" value="${result.id}">
-									<%--<input name="assessmentDate" type="hidden" value="${result.formattedSubmissionDate}"> --%>
-									<textarea name="newComment" cols="110" rows="10" id="modifyComments${assessment.id}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
-									<button id="updateComments${assessment.id}" type="submit" >Update Comments</button>
-								</form>
-								<script>
-							    $(function() {
-									$("#modifyComments${assessment.id}").on('keyup', function() {
-							            $("#comments${assessment.id}").html(document.getElementById("modifyComments${assessment.id}").value);
-							        });
-							    });
-								
-								(function($) {
-									$(document).ready(function() {
-										$('#modifyComments${assessment.id}').wysiwyg({
-											initialContent: function() {
-												return value_of_textarea;
-											},
-										  controls: {
-											bold          : { visible : true },
-											italic        : { visible : true },
-											underline     : { visible : true },
-											strikeThrough : { visible : true },
-											
-											justifyLeft   : { visible : true },
-											justifyCenter : { visible : true },
-											justifyRight  : { visible : true },
-											justifyFull   : { visible : true },
-
-											indent  : { visible : true },
-											outdent : { visible : true },
-
-											subscript   : { visible : true },
-											superscript : { visible : true },
-											
-											undo : { visible : true },
-											redo : { visible : true },
-											
-											insertOrderedList    : { visible : true },
-											insertUnorderedList  : { visible : true },
-											insertHorizontalRule : { visible : true },
-
-											h4: {
-												visible: true,
-												className: 'h4',
-												command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-												arguments: ($.browser.msie || $.browser.safari) ? '<h4>' : 'h4',
-												tags: ['h4'],
-												tooltip: 'Header 4'
-											},
-											h5: {
-												visible: true,
-												className: 'h5',
-												command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-												arguments: ($.browser.msie || $.browser.safari) ? '<h5>' : 'h5',
-												tags: ['h5'],
-												tooltip: 'Header 5'
-											},
-											h6: {
-												visible: true,
-												className: 'h6',
-												command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-												arguments: ($.browser.msie || $.browser.safari) ? '<h6>' : 'h6',
-												tags: ['h6'],
-												tooltip: 'Header 6'
-											},
-											cut   : { visible : true },
-											copy  : { visible : true },
-											paste : { visible : true },
-											html  : { visible: true },
-											increaseFontSize : { visible : true },
-											decreaseFontSize : { visible : true },
-											exam_html: {
-												exec: function() {
-													this.insertHtml('<abbr title="exam">Jam</abbr>');
-													return true;
-												},
-												visible: true
-											}
-										  }
-										});
-									});
-								})(jQuery);
-								</script>
-							</div>
-						</c:if>
-					</div>
-				</c:otherwise>
-			</c:choose>
-			<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
-				<h5>Hand Marking</h5>
-				<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
-					<div style="width:100%; overflow:auto">
-						<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
-							<thead>
-								<tr>
-									<th></th> <!-- empty on purpose -->
-									<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
-										<th style="cursor:pointer">
-											${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-											${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%<br />
-										</th>
-									</c:forEach>
-								</tr>
-							</thead>
-							<tbody>
-								<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
-									<tr>
-										<th>
-											${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-											<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
-										</th>
-										<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-											<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>><%-- To be filled with JavaScript --%></td>
-										</c:forEach>
-									</tr>
-								</c:forEach>
-							</tbody>
-						</table>
-					</div>
-				</c:forEach>
-			</c:if>
-			<h5>Comments</h5>
-			<div id="comments${assessment.id}">
-				<c:choose>
-					<c:when test="${empty result.comments}">
-						No comments
 					</c:when>
 					<c:otherwise>
-						${result.comments}
+						<h3 class='compact'>Result Error</h3>
 					</c:otherwise>
 				</c:choose>
 			</div>
+			
+			<%--Files compiled--%>
+			<c:if test="${ unikey.tutor }" >
+				<div class='vertical-block'>
+					<p class='showHide' showhide="files_${resultStatus.index}"><strong>Files Compiled</strong>
+					<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
+						<c:forEach var="unitTest" items="${result.unitTests}">
+							<div class='vertical-block'>
+								<h6 class='compact'>${unitTest.test.name}</h6>
+								<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
+							</div>
+						</c:forEach>
+					</div>
+				</div>
+			</c:if>
+			
+			<%--Details of results--%>
+			<div id="${result.id}" class='resultDetails vertical-block'>
+				<c:choose>
+					<c:when test="${result.compileError}">
+						<div class="ui-state-error ui-corner-all" style="font-size: 1em;padding:1em;">
+							<c:forEach var="compError" items="${result.compilationErrors}">
+								<div style="margin-top:1em;"><pre><c:out value="${compError}" escapeXml="true"/></pre></div>
+							</c:forEach>
+						</div>
+					</c:when>
+					<c:otherwise>
+						<div class='vertical-block'>
+							<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+								<table class="pastaTable" style='margin:0px'>
+									<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+									<c:forEach var="allUnitTests" items="${result.unitTests}">
+										<c:forEach var="testCase" items="${allUnitTests.testCases}">
+											<tr>
+												<c:choose>
+													<c:when test="${allUnitTests.secret}">
+														<c:choose>
+															<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty unikey.extensions[assessment.id] or unikey.extensions[assessment.id] lt now))}">
+																<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+																<td style="text-align:left;">Secret - ${testCase.testName}</td>
+																<td>${testCase.time}</td>
+																<td>
+																	<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
+																</td>
+															</c:when>
+															<c:otherwise>
+																<td><span class="pastaUnitTestResult pastaUnitTestResultSecret">hidden</span></td>
+																<td style="text-align:left;">???</td>
+																<td>???</td>
+																<td>???</td>
+															</c:otherwise>
+														</c:choose>
+													</c:when>
+													<c:otherwise>
+														<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+														<td style="text-align:left;">${testCase.testName}</td>
+														<td>${testCase.time}</td>
+														<td>
+															<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
+														</td>
+													</c:otherwise>
+												</c:choose>
+											</tr>
+										</c:forEach>
+									</c:forEach>
+								</table>
+							</c:if>
+						</div>
+					</c:otherwise>
+				</c:choose>
+				<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
+					<div class='vertical-block'>
+						<h5 class='compact'>Hand Marking</h5>
+						<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
+							<div style="width:100%; overflow:auto">
+								<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
+									<thead>
+										<tr>
+											<th></th> <!-- empty on purpose -->
+											<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
+												<th style="cursor:pointer">
+													${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+													${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%<br />
+												</th>
+											</c:forEach>
+										</tr>
+									</thead>
+									<tbody>
+										<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
+											<tr>
+												<th>
+													${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
+													<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
+												</th>
+												<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
+													<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>><%-- To be filled with JavaScript --%></td>
+												</c:forEach>
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</div>
+						</c:forEach>
+					</div>
+				</c:if>
+				<div class='vertical-block'>
+					<h5 class='compact'>Comments</h5>
+					<div id="comments${result.id}" class='vertical-block'>
+						<c:choose>
+							<c:when test="${empty result.comments}">
+								No comments
+							</c:when>
+							<c:otherwise>
+								${result.comments}
+							</c:otherwise>
+						</c:choose>
+					</div>
+					<c:if test="${not empty viewedUser}">
+						<div class='vertical-block'>
+							<div id="updateComments${result.id}" style="display:none;">
+								<form action="updateComment/" enctype="multipart/form-data" method="POST">
+									<input name="resultId" type="hidden" value="${result.id}">
+									<textarea name="newComment" cols="110" rows="10" id="modifyComments${result.id}" ><c:choose><c:when test="${empty result.comments}">No comments</c:when><c:otherwise>${result.comments}</c:otherwise></c:choose></textarea>
+									<button type="submit" >Save Comments</button>
+								</form>
+							</div>
+							<button type="button" onclick="$('div#updateComments${result.id}').show();$(this).hide()">Modify Comments</button>
+						</div>
+					</c:if>
+				</div>
+			</div>
+		</div>
 		</c:forEach>
 		<script src='<c:url value="/static/scripts/assessment/userViewAssessment.js"/>'></script>
 		<script>		
