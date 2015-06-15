@@ -83,7 +83,7 @@ function registerEvents() {
 	$(document).ready(function() {	
 		$('#comments').wysiwyg({
 			initialContent: function() {
-				return value_of_textarea;
+				return "";
 			},
 		  controls: {
 			bold          : { visible : true },
@@ -138,14 +138,7 @@ function registerEvents() {
 			paste : { visible : true },
 			html  : { visible: true },
 			increaseFontSize : { visible : true },
-			decreaseFontSize : { visible : true },
-			exam_html: {
-				exec: function() {
-					this.insertHtml('<abbr title="exam">Jam</abbr>');
-					return true;
-				},
-				visible: true
-			}
+			decreaseFontSize : { visible : true }
 		  }
 		});
 	});
