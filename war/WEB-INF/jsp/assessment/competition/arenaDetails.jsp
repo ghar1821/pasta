@@ -118,5 +118,5 @@ either expressed or implied, of the PASTA Project.
 
 <h2>Users Participating:</h2>
 <c:forEach items="${arena.players}" var="player">
-	<a href="../${player.username}/players/">${player.username} : ${player.playerName}</a><br/>
+	<a href="../${player.user.username}/players/">${player.user.username} : ${player.playerName}</a><br/>
 </c:forEach>
