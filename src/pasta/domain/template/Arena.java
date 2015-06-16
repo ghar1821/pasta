@@ -56,6 +56,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTAPlayer;
 import pasta.domain.PASTATime;
+import pasta.domain.PASTAUser;
 /**
  * Container class for the Arena information.
  * <p>
@@ -227,14 +228,14 @@ public class Arena {
 	 * If the arena is not official (used for marking),
 	 * the student is allowed to add as many players as they wish.
 	 * 
-	 * @param user the username of the user adding the player
+	 * @param user the user id of the user adding the player
 	 * @param playerName the name of the player the user is adding to the arena
 	 */
-	public void addPlayer(String user, String playerName){
+	public void addPlayer(PASTAUser user, String playerName){
 		if(this.isOfficialArena()) {
 			for(Iterator<PASTAPlayer> it = players.iterator(); it.hasNext();) {
 				PASTAPlayer player = it.next();
-				if(player.getUsername().equals(user)) {
+				if(player.getUser().equals(user)) {
 					it.remove();
 				}
 			}
@@ -243,7 +244,7 @@ public class Arena {
 		players.add(new PASTAPlayer(user, playerName));
 	}
 	
-	public void removePlayer(String user, String playerName){
+	public void removePlayer(PASTAUser user, String playerName){
 		players.remove(new PASTAPlayer(user, playerName));
 	}
 	
@@ -255,9 +256,9 @@ public class Arena {
 				&& competition.getOfficialArena() == this;
 	}
 	
-	public boolean hasPlayers(String user) {
+	public boolean hasPlayers(PASTAUser user) {
 		for(PASTAPlayer player : players) {
-			if(player.getUsername().equals(user)) {
+			if(player.getUser().equals(user)) {
 				return true;
 			}
 		}
@@ -268,9 +269,13 @@ public class Arena {
 		return players.size();
 	}
 	
+	/**
+	 * @deprecated use hasPlayers (i think) (PASTAUser)
+	 */
+	@Deprecated
 	public boolean hasUser(String username) {
 		for(PASTAPlayer player : getPlayers()) {
-			if(player.getUsername().equals(username)) {
+			if(player.getUser().getUsername().equals(username)) {
 				return true;
 			}
 		}

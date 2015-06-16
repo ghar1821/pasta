@@ -48,7 +48,6 @@ import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
 import pasta.domain.upload.NewHandMarkingForm;
 import pasta.service.HandMarkingManager;
-import pasta.service.UserManager;
 
 /**
  * Controller class for Hand marking functions. 
@@ -92,15 +91,9 @@ public class AllHandMarkingsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private UserManager userManager;
 	private HandMarkingManager handMarkingManager;
 	private Map<String, String> codeStyle;
 
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
 	@Autowired
 	public void setMyService(HandMarkingManager myService) {
 		this.handMarkingManager = myService;
@@ -125,13 +118,10 @@ public class AllHandMarkingsController {
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

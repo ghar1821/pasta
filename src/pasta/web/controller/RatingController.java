@@ -73,27 +73,11 @@ public class RatingController {
 
 	@Autowired
 	private UserManager userManager;
-	
 	@Autowired
 	private RatingManager ratingManager;
 	@Autowired
 	private AssessmentManager assessmentManager;
 
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Models //
-	// ///////////////////////////////////////////////////////////////////////////
-//	@ModelAttribute("ratingForm")
-//	public RatingForm loadRatingForm() {
-//		Assessment ass = assessmentManager.getAssessment(3);
-//		String username = "josh";
-//		AssessmentRating rating = ratingManager.getRating(ass, username);
-//		if(rating == null) {
-//			rating = new AssessmentRating(ass, username);
-//		}
-//		return new RatingForm(rating);
-//	}
-	
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
@@ -105,23 +89,10 @@ public class RatingController {
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
-	}
-	
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 
@@ -156,8 +127,9 @@ public class RatingController {
 			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute("ratingForm") RatingForm form,
 			HttpSession session) {
+		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
-		Future<AssessmentRating> rating = ratingManager.saveRating(assessment, username, form);
+		Future<AssessmentRating> rating = ratingManager.saveRating(assessment, userManager.getUser(username), form);
 		session.setAttribute("rating", rating);
 	}
 	

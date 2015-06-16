@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import pasta.domain.PASTAUser;
 import pasta.util.ProjectProperties;
 
 public class PlayerValidationRunner extends Runner {
@@ -16,7 +17,7 @@ public class PlayerValidationRunner extends Runner {
 	public static final String playerNameFilename = "playername.out";
 	public static final String validationErrorFilename = "validate.out";
 	
-	private String username;
+	private PASTAUser user;
 	private String validationClassname;
 	private String codeDirectory = "src";
 	private String playerDirectory = "player";
@@ -27,16 +28,16 @@ public class PlayerValidationRunner extends Runner {
 		setValidationDirectory("validate");
 	}
 	
-	public PlayerValidationRunner(String username, String validationClassname, String validateCodeLocation) {
+	public PlayerValidationRunner(PASTAUser user, String validationClassname, String validateCodeLocation) {
 		this();
-		this.username = username;
+		this.user = user;
 		this.validationClassname = validationClassname;
 		setValidationDirectory(validateCodeLocation);
 		refreshArgs();
 	}
 	
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 		refreshArgs();
 	}
 
@@ -52,7 +53,7 @@ public class PlayerValidationRunner extends Runner {
 	}
 	
 	private void refreshArgs() {
-		addArgsOption("validationArgs", username, "${basedir}/" + playerDirectory, validationClassname, "${basedir}/" + playerNameFilename, "${basedir}/" + validationErrorFilename);
+		addArgsOption("validationArgs", user.getUsername(), "${basedir}/" + playerDirectory, validationClassname, "${basedir}/" + playerNameFilename, "${basedir}/" + validationErrorFilename);
 	}
 	
 	public void setMaxRunTime(long milliseconds) {

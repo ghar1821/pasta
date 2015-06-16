@@ -50,8 +50,8 @@ import org.springframework.validation.BindingResult;
 import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
-import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.CompetitionMarks;
+import pasta.domain.result.CompetitionResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -254,11 +254,11 @@ public class CompetitionManager {
 	 * Add a player
 	 * 
 	 * @param playerForm the new player form. See {@link pasta.domain.upload.NewPlayer}
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
 	 * @param result the BindingResult which can be user to give the user feedback and reject the {@link pasta.domain.upload.NewPlayer}
 	 */
-	public void addPlayer(NewPlayer playerForm, String username, 
+	public void addPlayer(NewPlayer playerForm, PASTAUser user, 
 			long competitionId, BindingResult result) {
 		// copy player to temp location
 		
@@ -267,7 +267,7 @@ public class CompetitionManager {
 			result.rejectValue("competition", "Competition.doesNotExist");
 		}
 		
-		String submitLocation = comp.getFileLocation() + File.separator + "players" + File.separator + username;
+		String submitLocation = comp.getFileLocation() + File.separator + "players" + File.separator + user.getUsername();
 		File submitDir = new File(submitLocation);
 		File tempDir = new File(submitDir, "temp");
 		File codeDir = new File(tempDir, "code");
@@ -310,7 +310,7 @@ public class CompetitionManager {
 		String playerCodeLocation = "player";
 		
 		//TODO: make this generic, not just "Validator"
-		PlayerValidationRunner runner = new PlayerValidationRunner(username, "Validator", validateCodeLocation);
+		PlayerValidationRunner runner = new PlayerValidationRunner(user, "Validator", validateCodeLocation);
 		runner.setMaxRunTime(30000);
 		runner.setPlayerDirectory(playerCodeLocation);
 		
@@ -390,16 +390,16 @@ public class CompetitionManager {
 			newPlayer.setFirstUploaded(new Date());
 			newPlayer.setName(playerName);
 			
-			PlayerHistory history = playerDAO.getPlayerHistory(username, competitionId, newPlayer.getName());
+			PlayerHistory history = playerDAO.getPlayerHistory(user, competitionId, newPlayer.getName());
 			if(history == null){
 				history = new PlayerHistory(newPlayer.getName());
-				history.setUsername(username);
+				history.setUser(user);
 				history.setCompetitionId(competitionId);
 			}
 			
 			// if no errors and the player has the same name as an existing player
 			// retire the old player.
-			retirePlayer(username, competitionId, newPlayer.getName());
+			retirePlayer(user, competitionId, newPlayer.getName());
 			history.setActivePlayer(newPlayer);
 			playerDAO.saveOrUpdate(history);
 			
@@ -428,9 +428,9 @@ public class CompetitionManager {
 	 * @param competitionId the id of the competition
 	 * @param playerName the name of the player
 	 */
-	public void retirePlayer(String username, long competitionId, String playerName){
+	public void retirePlayer(PASTAUser user, long competitionId, String playerName){
 		Competition comp = ProjectProperties.getInstance().getCompetitionDAO().getCompetition(competitionId);
-		PlayerHistory history = playerDAO.getPlayerHistory(username, competitionId, playerName);
+		PlayerHistory history = playerDAO.getPlayerHistory(user, competitionId, playerName);
 		if(history == null) {
 			return;
 		}
@@ -446,14 +446,14 @@ public class CompetitionManager {
 		//TODO move to DAO
 		try {
 			// archive the old player
-			String playerLocation = comp.getFileLocation() + File.separator + "players" + File.separator + username + File.separator + playerName;
+			String playerLocation = comp.getFileLocation() + File.separator + "players" + File.separator + user.getUsername() + File.separator + playerName;
 			File oldLoc = new File(playerLocation, "active");
 			File newLoc = new File(playerLocation, "retired");
 			newLoc.mkdirs();
 			FileUtils.moveDirectory(oldLoc, new File(newLoc, PASTAUtil.formatDate(oldPlayer.getFirstUploaded())));
 		} catch (IOException e) {
 			logger.error("Could not retire player " + playerName 
-					+ " of user " + username 
+					+ " of user " + user.getUsername() 
 					+ " for competition " + comp.getName(), e);
 		}
 	}
@@ -462,24 +462,24 @@ public class CompetitionManager {
 	 * Get the player history for a user in a competition
 	 * 
 	 * @see pasta.repository.PlayerDAO#getAllPlayerHistories(String, String)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
-	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
+	 * @return a list of the collection of player history, empty map if no players or competition/user is invalid
 	 */
-	public List<PlayerHistory> getPlayers(String username, long competitionId) {
-		return playerDAO.getAllPlayerHistories(username, competitionId);
+	public List<PlayerHistory> getPlayers(PASTAUser user, long competitionId) {
+		return playerDAO.getAllPlayerHistories(user, competitionId);
 	}
 	
 	/**
 	 * Get the latest history of the player for a user in a competition
 	 * 
 	 * @see pasta.repository.PlayerDAO#loadPlayerHistories(String, String)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
 	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
 	 */
-	@Deprecated public List<PlayerHistory> getLatestPlayers(String username, long competitionId) {
-		return getPlayers(username, competitionId);
+	@Deprecated public List<PlayerHistory> getLatestPlayers(PASTAUser user, long competitionId) {
+		return getPlayers(user, competitionId);
 	}
 
 	/**
@@ -490,9 +490,9 @@ public class CompetitionManager {
 	 * @param arenaId the id of the arena
 	 * @param playerName the name of the player.
 	 */
-	public void addPlayerToArena(String username, long competitionId,
+	public void addPlayerToArena(PASTAUser user, long competitionId,
 			long arenaId, String playerName) {
-		if(!playerExists(username, competitionId, playerName)) {
+		if(!playerExists(user, competitionId, playerName)) {
 			return;
 		}
 		Competition comp = getCompetition(competitionId);
@@ -500,7 +500,7 @@ public class CompetitionManager {
 		if(comp == null || (arena = comp.getArena(arenaId)) == null) {
 			return;
 		}
-		arena.addPlayer(username, playerName);
+		arena.addPlayer(user, playerName);
 		ProjectProperties.getInstance().getCompetitionDAO().update(arena);
 	}
 	
@@ -512,9 +512,9 @@ public class CompetitionManager {
 	 * @param arenaId the id of the arena
 	 * @param playerName the name of the player.
 	 */
-	public void removePlayerFromArena(String username, long competitionId,
+	public void removePlayerFromArena(PASTAUser user, long competitionId,
 			long arenaId, String playerName) {
-		if(!playerExists(username, competitionId, playerName)) {
+		if(!playerExists(user, competitionId, playerName)) {
 			return;
 		}
 		Competition comp = getCompetition(competitionId);
@@ -522,7 +522,7 @@ public class CompetitionManager {
 		if(comp == null || (arena = comp.getArena(arenaId)) == null) {
 			return;
 		}
-		arena.removePlayer(username, playerName);
+		arena.removePlayer(user, playerName);
 		ProjectProperties.getInstance().getCompetitionDAO().update(arena);
 	}
 
@@ -541,8 +541,8 @@ public class CompetitionManager {
 		return null;
 	}
 	
-	public boolean playerExists(String username, long competitionId, String playerName) {
-		return playerDAO.getPlayerHistory(username, competitionId, playerName) != null;
+	public boolean playerExists(PASTAUser user, long competitionId, String playerName) {
+		return playerDAO.getPlayerHistory(user, competitionId, playerName) != null;
 	}
 
 	public Map<Long, Integer> getLiveAssessmentCounts(PASTAUser user) {

@@ -34,7 +34,7 @@ public abstract class ReleaseAllResultsRule extends ReleaseRule implements Seria
 	@Override
 	protected boolean isMet(PASTAUser user) {
 		List<AssessmentResult> results = ProjectProperties.getInstance().getResultDAO()
-				.getAllResultsForUserAssessment(user.getUsername(), compareAssessment.getId());
+				.getAllResultsForUserAssessment(user, compareAssessment.getId());
 		return isMet(user, results);
 	}
 	

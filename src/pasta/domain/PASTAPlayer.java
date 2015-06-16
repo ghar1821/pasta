@@ -17,7 +17,7 @@ public class PASTAPlayer implements Serializable, Comparable<PASTAPlayer> {
 	@GeneratedValue
 	private long id;
 	
-	private String username;
+	private PASTAUser user;
 	
 	@Column (name = "player_name")
 	private String playerName;
@@ -26,8 +26,8 @@ public class PASTAPlayer implements Serializable, Comparable<PASTAPlayer> {
 		
 	}
 	
-	public PASTAPlayer(String username, String playerName) {
-		this.username = username;
+	public PASTAPlayer(PASTAUser user, String playerName) {
+		this.user = user;
 		this.playerName = playerName;
 	}
 
@@ -38,11 +38,11 @@ public class PASTAPlayer implements Serializable, Comparable<PASTAPlayer> {
 		this.id = id;
 	}
 
-	public String getUsername() {
-		return username;
+	public PASTAUser getUser() {
+		return user;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 	}
 
 	public String getPlayerName() {
@@ -54,7 +54,7 @@ public class PASTAPlayer implements Serializable, Comparable<PASTAPlayer> {
 
 	@Override
 	public int compareTo(PASTAPlayer o) {
-		int diff = this.username.compareTo(o.username);
+		int diff = this.user.compareTo(o.user);
 		if(diff != 0) {
 			return diff;
 		}

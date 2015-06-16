@@ -127,12 +127,12 @@ public class APIController {
 				out.println();
 
 				// username, assessment name, result
-				Map<String, Map<Long, AssessmentResult>> latestResults = assessmentManager
+				Map<PASTAUser, Map<Long, AssessmentResult>> latestResults = assessmentManager
 						.getLatestResults(userManager.getUserList());
 
-				for (Entry<String, Map<Long, AssessmentResult>> entry : latestResults
+				for (Entry<PASTAUser, Map<Long, AssessmentResult>> entry : latestResults
 						.entrySet()) {
-					PASTAUser user = userManager.getUser(entry.getKey());
+					PASTAUser user = entry.getKey();
 					if (user != null) {
 						out.print(user.getUsername() + "," + user.getStream()
 								+ "," + user.getTutorial());

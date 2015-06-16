@@ -160,11 +160,23 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	
 	@Transient
 	public boolean equals(PASTAUser user){
-		return (username.equals(user.getUsername()));
+		if(user == null) {
+			return false;
+		}
+		return id == user.getId();
 	}
 	
 	@Override
 	public int compareTo(PASTAUser o) {
 		return getUsername().trim().compareTo(o.getUsername().trim());
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
+		return result;
 	}
 }

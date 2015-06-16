@@ -31,6 +31,7 @@ package pasta.web.controller;
 
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,6 @@ import pasta.domain.PASTAUser;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTestForm;
 import pasta.service.UnitTestManager;
-import pasta.service.UserManager;
 
 /**
  * Controller class for Unit Test functions. 
@@ -92,8 +92,6 @@ public class AllUnitTestsController {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private UnitTestManager unitTestManager;
 	
 	private Map<String, String> codeStyle;
@@ -113,55 +111,16 @@ public class AllUnitTestsController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get or create the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in.
-	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return getOrCreateUser(username);
-	}
-	
-	/**
-	 * Get or create the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null.
-	 */
-	public PASTAUser getOrCreateUser(String username) {
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
-		}
-		return null;
-	}
-
-	/**
 	 * Get the currently logged in user.
 	 * 
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
+		return user;
 	}
-	
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
-	}
-
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// UNIT TEST //

@@ -120,33 +120,15 @@ public class AllAssessmentsController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get or create the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in.
-	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
-		}
-		return null;
-	}
-
-	/**
 	 * Get the currently logged in user. If it doesn't exist, don't create it.
 	 * 
 	 * @return the currently logged in user, null if not logged in or doesn't already exist.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

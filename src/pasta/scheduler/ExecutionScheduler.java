@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
@@ -70,8 +71,8 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 		setSessionFactory(sessionFactory);
 	}
 	
-	public void scheduleJob(String username, long assessmentId, AssessmentResult result, Date runDate) {
-		save(new AssessmentJob(username, assessmentId, runDate, result));
+	public void scheduleJob(PASTAUser user, long assessmentId, AssessmentResult result, Date runDate) {
+		save(new AssessmentJob(user, assessmentId, runDate, result));
 	}
 	
 	public void scheduleJob(Competition comp, Arena arena, Date runDate) {

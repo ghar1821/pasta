@@ -31,6 +31,8 @@ package pasta.domain.upload;
 
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.domain.PASTAUser;
+
 /**
  * Form object for a submission.
  * 
@@ -42,8 +44,8 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 public class Submission {
 	private CommonsMultipartFile file;
 	private Long assessment;
-	private String submittingUsername;
-	private String submittingForUsername;
+	private PASTAUser submittingUser;
+	private PASTAUser submittingForUser;
 	
 	public CommonsMultipartFile getFile() {
 		return file;
@@ -57,16 +59,17 @@ public class Submission {
 	public void setAssessment(Long assessment) {
 		this.assessment = assessment;
 	}
-	public String getSubmittingUsername() {
-		return submittingUsername;
+	
+	public PASTAUser getSubmittingUser() {
+		return submittingUser;
 	}
-	public void setSubmittingUsername(String submittingUsername) {
-		this.submittingUsername = submittingUsername;
+	public void setSubmittingUser(PASTAUser submittingUser) {
+		this.submittingUser = submittingUser;
 	}
-	public String getSubmittingForUsername() {
-		return submittingForUsername;
+	public PASTAUser getSubmittingForUser() {
+		return submittingForUser;
 	}
-	public void setSubmittingForUsername(String submittingForUsername) {
-		this.submittingForUsername = submittingForUsername;
+	public void setSubmittingForUser(PASTAUser submittingForUser) {
+		this.submittingForUser = submittingForUser;
 	}
 }

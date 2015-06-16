@@ -32,9 +32,7 @@ package pasta.repository;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -50,10 +48,10 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 
 /**
  * Data Access Object for Players.
@@ -84,14 +82,14 @@ public class PlayerDAO extends HibernateDaoSupport {
 	 * Get the history (statistics) of all players a user has submitted to a
 	 * specific competition from cache
 	 * 
-	 * @param username name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
 	 * @return collection of the player histories (statistics)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PlayerHistory> getAllPlayerHistories(String username, long competitionId) {
+	public List<PlayerHistory> getAllPlayerHistories(PASTAUser user, long competitionId) {
 		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		cr.add(Restrictions.eq("competitionId", competitionId));
 		return getHibernateTemplate().findByCriteria(cr);
 	}
@@ -100,14 +98,14 @@ public class PlayerDAO extends HibernateDaoSupport {
 	 * Get the history (statistics) of a specific player a user has submitted to a
 	 * specific competition from cache
 	 * 
-	 * @param username name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
 	 * @param playerName the name of the player being queried
 	 * @return the player history (statistics)
 	 */
-	public PlayerHistory getPlayerHistory(String username, long competitionId, String playerName) {
+	public PlayerHistory getPlayerHistory(PASTAUser user, long competitionId, String playerName) {
 		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		cr.add(Restrictions.eq("competitionId", competitionId));
 		cr.add(Restrictions.eq("playerName", playerName));
 		@SuppressWarnings("unchecked")
@@ -122,14 +120,14 @@ public class PlayerDAO extends HibernateDaoSupport {
 	 * Get the history (statistics) of all players a user has submitted to a
 	 * specific competition from disk.
 	 * 
-	 * @param username name of the user
+	 * @param user the user
 	 * @param competitionId the id of the competition
 	 * @return map of the player histories (statistics) with the key being the
 	 *         player name
 	 */
-	public Map<String, PlayerHistory> loadPlayerHistories(String username, long competitionId) {
+	public Map<String, PlayerHistory> loadPlayerHistories(PASTAUser user, long competitionId) {
 		Map<String, PlayerHistory> playerHistory = new TreeMap<String, PlayerHistory>();
-		List<PlayerHistory> results = getAllPlayerHistories(username, competitionId);
+		List<PlayerHistory> results = getAllPlayerHistories(user, competitionId);
 		if(results == null || results.isEmpty()) {
 			return playerHistory;
 		}

@@ -83,7 +83,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top" >
 				<div style="float:left; width:100%;">
 					<h2> Unit Tests </h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable newUnitTests">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${nonSecretUnitTests}">
@@ -102,7 +102,7 @@ either expressed or implied, of the PASTA Project.
 					</table>
 				
 					<h2> Secret Unit Tests </h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable newSecretUnitTests">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${secretUnitTests}">
@@ -124,7 +124,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top">
 				<div style="float:left; width:100%;">
 					<h2> Available Unit Tests </h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
 						<tbody id="unitTest" class="sortable unusedUnitTest">
 							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
@@ -151,7 +151,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top" >
 				<div style="float:left; width:100%;">
 					<h2> Hand Marking </h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="handMarking" class="sortable newHandMarking">
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${assessment.handMarking}">
@@ -172,7 +172,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top">
 				<div style="float:left; width:100%;">
 					<h2> Available Hand Marking</h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="handMarking" class="sortable unusedHandMarking">
 							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${otherHandMarking}">
@@ -198,7 +198,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top" >
 				<div style="float:left; width:100%;">
 					<h2> Competitions </h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="competitions" class="sortable newCompetitions">
 							<c:forEach var="competition" varStatus="competitionIndex" items="${assessment.competitions}">
@@ -219,7 +219,7 @@ either expressed or implied, of the PASTA Project.
 			<td valign="top">
 				<div style="float:left; width:100%;">
 					<h2> Available Competitions</h2>
-					<table style="width:100%;">
+					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="competitions" class="sortable unusedCompetition">
 							<c:forEach var="competition" varStatus="competitionIndex" items="${otherCompetitions}">
@@ -251,7 +251,7 @@ either expressed or implied, of the PASTA Project.
     		$textBox = $(this);
     		$textBox.tipsy({trigger: 'focus', gravity: 'w', title: function() {
     			if($(this).is("[id^='unused']")) {
-    				return "Drag this item to the table on the left to select it.";
+    				return "Drag this row to the table on the left to select it.";
     			}
     			return "";
     		}});

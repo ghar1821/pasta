@@ -204,11 +204,10 @@ public class SubmissionController {
 			return null;
 		}
 		
-		String username = user.getUsername();
 		for(Assessment assessment : assessmentManager.getAssessmentList()) {
-			AssessmentRating rating = ratingManager.getRating(assessment, username);
+			AssessmentRating rating = ratingManager.getRating(assessment, user);
 			if(rating == null) {
-				rating = new AssessmentRating(assessment, username);
+				rating = new AssessmentRating(assessment, user);
 			}
 			forms.put(assessment.getId(), new RatingForm(rating));
 		}
@@ -231,21 +230,21 @@ public class SubmissionController {
 	 * @return the currently used user, null if nobody is logged in.
 	 */
 	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder.currentRequestAttributes().getAttribute("user",
+		PASTAUser user = (PASTAUser) RequestContextHolder.currentRequestAttributes().getAttribute("user",
 				RequestAttributes.SCOPE_SESSION);
-		return getOrCreateUser(username);
+		return getOrCreateUser(user);
 	}
 
 	/**
-	 * Get or create the user given a username
+	 * Get or create the user given a base user object
 	 * 
-	 * @param username
-	 *            the username of the user
+	 * @param user the user to base the new one off. This object should have an
+	 *            ID set if it exists, or a username set if it is to be created.
 	 * @return the user, null if the username is null.
 	 */
-	public PASTAUser getOrCreateUser(String username) {
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
+	public PASTAUser getOrCreateUser(PASTAUser user) {
+		if (user != null) {
+			return userManager.getOrCreateUser(user);
 		}
 		return null;
 	}
@@ -257,23 +256,10 @@ public class SubmissionController {
 	 *         isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder.currentRequestAttributes().getAttribute("user",
-				RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
-	}
-
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username
-	 *            the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		PASTAUser user = (PASTAUser) RequestContextHolder
+				.currentRequestAttributes().getAttribute("user",
+						RequestAttributes.SCOPE_SESSION);
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -346,7 +332,7 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("results", manager.getLatestResultsForUser(user.getUsername()));
+		model.addAttribute("results", manager.getLatestResultsForUser(user));
 		
 		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
 		Iterator<String> itCategories = allAssessments.keySet().iterator();
@@ -458,7 +444,7 @@ public class SubmissionController {
 						.get(form.getAssessment()).before(now)) && (!user.isTutor())) {
 			result.rejectValue("file", "Submission.AfterClosingDate");
 		}
-		AssessmentResult latestResult = manager.getLatestResultsForUserAssessment(user.getUsername(),
+		AssessmentResult latestResult = manager.getLatestResultsForUserAssessment(user,
 				form.getAssessment());
 		int maxSubmissions = assessmentManager.getAssessment(form.getAssessment()).getNumSubmissionsAllowed();
 		if ((!user.isTutor()) && latestResult != null && maxSubmissions != 0
@@ -470,7 +456,7 @@ public class SubmissionController {
 			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
 					.getAssessment(form.getAssessment()).getName()
 					+ " submitted by " + user.getUsername());
-			manager.submit(user.getUsername(), form);
+			manager.submit(user, form);
 		}
 		session.setAttribute("binding", result);
 		return "redirect:/mirror/";
@@ -494,7 +480,7 @@ public class SubmissionController {
 		int subCount = 0;
 		for(int i = 0; i < jobs.size(); i++) {
 			AssessmentJob job = jobs.get(i);
-			if(job.getUsername().equals(user.getUsername()) && job.getAssessmentId() == assessmentId) {
+			if(job.getUser().equals(user) && job.getAssessmentId() == assessmentId) {
 				if(subCount > 0) {
 					positions.append(", ");
 				}
@@ -566,8 +552,8 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
 		model.addAttribute("history",
-				assessmentManager.getAssessmentHistory(user.getUsername(), assessmentId));
-		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(user.getUsername(), assessmentId));
+				assessmentManager.getAssessmentHistory(user, assessmentId));
+		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(user, assessmentId));
 
 		return "user/viewAssessment";
 	}
@@ -889,10 +875,14 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-		PASTAUser viewedUser = getOrCreateUser(username);
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("results", manager.getLatestResultsForUser(viewedUser.getUsername()));
+		model.addAttribute("results", manager.getLatestResultsForUser(viewedUser));
 		
 		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
 		Iterator<String> itCategories = allAssessments.keySet().iterator();
@@ -979,6 +969,11 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
+		
 		// check if the submission is valid
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
@@ -990,8 +985,8 @@ public class SubmissionController {
 			// accept the submission
 			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
 					.getAssessment(form.getAssessment()).getName()
-					+ " submitted for " + username + " by " + user.getUsername());
-			manager.submit(username, form);
+					+ " submitted for " + viewedUser.getUsername() + " by " + user.getUsername());
+			manager.submit(viewedUser, form);
 		}
 		session.setAttribute("binding", result);
 		return "redirect:/mirror/";
@@ -1057,12 +1052,16 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("unikey", user);
-		model.addAttribute("viewedUser", getUser(username));
+		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
-		model.addAttribute("history", assessmentManager.getAssessmentHistory(username, assessmentId));
-		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(username, assessmentId));
+		model.addAttribute("history", assessmentManager.getAssessmentHistory(viewedUser, assessmentId));
+		model.addAttribute("nodeList", PASTAUtil.genereateFileTree(viewedUser, assessmentId));
 
 		return "user/viewAssessment";
 	}
@@ -1157,10 +1156,14 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
 
-		AssessmentResult result = assessmentManager.loadAssessmentResult(username, assessmentId,
+		AssessmentResult result = assessmentManager.loadAssessmentResult(viewedUser, assessmentId,
 				assessmentDate);
-		manager.runAssessment(username, assessmentId, assessmentDate, result);
+		manager.runAssessment(viewedUser, assessmentId, assessmentDate, result);
 		return "redirect:" + request.getHeader("Referer");
 	}
 
@@ -1202,10 +1205,14 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
 		if (user.isInstructor()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 			try {
-				userManager.giveExtension(username, assessmentId, sdf.parse(extension));
+				userManager.giveExtension(viewedUser, assessmentId, sdf.parse(extension));
 			} catch (ParseException e) {
 				logger.error("Parse Exception");
 			}
@@ -1280,6 +1287,11 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
+		
 		model.addAttribute("unikey", user);
 		model.addAttribute("student", username);
 
@@ -1290,13 +1302,13 @@ public class SubmissionController {
 		// TODO this object's handmarkingresults are not being got from a passed
 		// ID rom the JSP
 
-		AssessmentResult result = assessmentManager.loadAssessmentResult(username, assessmentId,
+		AssessmentResult result = assessmentManager.loadAssessmentResult(viewedUser, assessmentId,
 				assessmentDate);
 
 		logger.warn("Loading result: " + result.getId());
 		logger.warn("hand marks: " + result.getHandMarkingResults().size());
 
-		model.addAttribute("node", PASTAUtil.generateFileTree(username, assessmentId, assessmentDate));
+		model.addAttribute("node", PASTAUtil.generateFileTree(viewedUser, assessmentId, assessmentDate));
 		model.addAttribute("assessmentResult", result);
 		model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
 		model.addAttribute("handMarkingResultList", result.getHandMarkingResults());
@@ -1346,8 +1358,12 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(username);
+		if(viewedUser == null) {
+			return "redirect:/home/";
+		}
 
-		AssessmentResult assessResult = assessmentManager.loadAssessmentResult(username, assessmentId,
+		AssessmentResult assessResult = assessmentManager.loadAssessmentResult(viewedUser, assessmentId,
 				assessmentDate);
 
 		// rebinding hand marking results with their hand marking templates
@@ -1465,6 +1481,7 @@ public class SubmissionController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		PASTAUser viewedUser = userManager.getUser(student);
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentId", assessmentId);
@@ -1476,7 +1493,7 @@ public class SubmissionController {
 		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
 
 		// if submitted
-		if (form != null && student != null && getUser(student) != null) {
+		if (form != null && viewedUser != null) {
 
 			// save changes
 			List<HandMarkingResult> results = form.getHandMarkingResults();
@@ -1486,7 +1503,7 @@ public class SubmissionController {
 			}
 
 			AssessmentResult assessResult = assessmentManager
-					.getLatestAssessmentResult(student, assessmentId);
+					.getLatestAssessmentResult(viewedUser, assessmentId);
 			assessResult.setComments(form.getComments());
 			assessResult.setHandMarkingResults(results);
 			assessmentManager.updateAssessmentResults(assessResult);
@@ -1497,7 +1514,7 @@ public class SubmissionController {
 		int lastIndex = -1;
 		for (int i = 0; i < myStudents.length; ++i) {
 			AssessmentResult latestResult = manager.getLatestResultsForUserAssessment(
-					myStudents[i].getUsername(), assessmentId);
+					myStudents[i], assessmentId);
 			hasSubmission[i] = (myStudents[i] != null && latestResult != null);
 			if(hasSubmission[i]) {
 				lastIndex = i;
@@ -1518,10 +1535,10 @@ public class SubmissionController {
 				model.addAttribute("student", currStudent.getUsername());
 
 				AssessmentResult result = manager.getLatestResultsForUserAssessment(
-						currStudent.getUsername(), assessmentId);
+						currStudent, assessmentId);
 				model.addAttribute(
 						"node",
-						PASTAUtil.generateFileTree(currStudent.getUsername(), assessmentId,
+						PASTAUtil.generateFileTree(currStudent, assessmentId,
 								result.getFormattedSubmissionDate()));
 				model.addAttribute("assessmentResult", result);
 				model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
@@ -1566,7 +1583,7 @@ public class SubmissionController {
 			int i = 0;
 			for (String tutorial : user.getTutorClasses()) {
 				for (PASTAUser student : userManager.getUserListByTutorial(tutorial)) {
-					if (assessmentManager.getLatestAssessmentResult(student.getUsername(), assessmentId) != null) {
+					if (assessmentManager.getLatestAssessmentResult(student, assessmentId) != null) {
 						return "redirect:" + request.getServletPath() + i + "/";
 					}
 					++i;
@@ -1626,7 +1643,6 @@ public class SubmissionController {
 			return "";
 		}
 
-		// latestResults[user.username][assessment.shortName].marks
 		if (userManager.getUserListByStream(streamName) == null) {
 			return "";
 		}
@@ -1656,7 +1672,6 @@ public class SubmissionController {
 			return "";
 		}
 
-		// latestResults[user.username][assessment.shortName].marks
 		if (userManager.getUserListByTutorial(className) == null) {
 			return "";
 		}
@@ -1783,7 +1798,7 @@ public class SubmissionController {
 				String percentage = "";
 
 				AssessmentResult latestResult = assessmentManager.getLatestAssessmentResult(
-						user.getUsername(), currAssessment.getId());
+						user, currAssessment.getId());
 				if (latestResult != null) {
 					mark = df.format(latestResult.getMarks());
 					percentage = String.valueOf(latestResult.getPercentage());

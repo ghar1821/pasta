@@ -43,7 +43,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.PASTAUser;
 import pasta.service.MossManager;
-import pasta.service.UserManager;
 
 /**
  * Controller class for the MOSS plagarism detection functions. 
@@ -63,14 +62,8 @@ public class MossController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	private UserManager userManager;
 	private MossManager mossManager;
 
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
 	@Autowired
 	public void setMyService(MossManager myService) {
 		this.mossManager = myService;
@@ -86,13 +79,10 @@ public class MossController {
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

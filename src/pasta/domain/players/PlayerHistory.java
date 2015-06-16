@@ -48,6 +48,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.PASTAUser;
+
 /**
 import pasta.domain.template.Competition;
  * Class to contain the player history of a competition.
@@ -69,7 +71,9 @@ public class PlayerHistory implements Serializable, Comparable<PlayerHistory> {
 	@GeneratedValue
 	private long id;
 	
-	private String username;
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private PASTAUser user;
 	
 	@Column (name = "competition_id")
 	private long competitionId;
@@ -102,11 +106,11 @@ public class PlayerHistory implements Serializable, Comparable<PlayerHistory> {
 		this.id = id;
 	}
 	
-	public String getUsername() {
-		return username;
+	public PASTAUser getUser() {
+		return user;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 	}
 
 	public long getCompetitionId() {

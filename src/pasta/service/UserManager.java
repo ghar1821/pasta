@@ -83,6 +83,17 @@ public class UserManager {
 	/**
 	 * Helper method
 	 * 
+	 * @see pasta.repository.UserDAO#getUser(long)
+	 * @param userId the id of the user
+	 * @return the user object or null if there is no user with the given id
+	 */
+	public PASTAUser getUser(long userId) {
+		return userDao.getUser(userId);
+	}
+	
+	/**
+	 * Helper method
+	 * 
 	 * @see pasta.repository.UserDAO#getUser(String)
 	 * @param username the name of the user
 	 * @return the user object or null if there is no user with the given name
@@ -154,15 +165,14 @@ public class UserManager {
 	 * @param username the name of the user
 	 * @return the user object
 	 */
-	public PASTAUser getOrCreateUser(String username) {
-		PASTAUser user = userDao.getUser(username);
+	public PASTAUser getOrCreateUser(PASTAUser checkUser) {
+		PASTAUser user = userDao.getUser(checkUser.getId());
 		if(user == null){
 			user = new PASTAUser();
-			user.setUsername(username);
+			user.setUsername(checkUser.getUsername());
 			user.setStream("");
 			user.setTutorial("");
 			user.setPermissionLevel(UserPermissionLevel.STUDENT);
-			
 			userDao.add(user);
 		}
 		return user;
@@ -175,7 +185,9 @@ public class UserManager {
 	 * @param username the username of the student getting an extension
 	 * @param assessmentId the id of the assessment
 	 * @param extension the new due date for the assessment
+	 * @deprecated use the (PASTAUser, long, Date) version
 	 */
+	@Deprecated
 	public void giveExtension(String username, long assessmentId, Date extension) {
 		PASTAUser user = getUser(username);
 		if(user != null){

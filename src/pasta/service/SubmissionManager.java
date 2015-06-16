@@ -30,22 +30,13 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.Scanner;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
@@ -54,12 +45,11 @@ import org.springframework.stereotype.Service;
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.Submission;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
-import pasta.scheduler.ExecutionScheduler;
 import pasta.scheduler.AssessmentJob;
+import pasta.scheduler.ExecutionScheduler;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -118,14 +108,14 @@ public class SubmissionManager {
 	 *  <li>If the submission compiled, run the assessment using {@link #runAssessment(String, String, String, AssessmentResult)}</li>
 	 * </ol>
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param form the submission form
 	 */
-	public void submit(String username, Submission form) {
+	public void submit(PASTAUser user, Submission form) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 		Date now = new Date();
 		String currDate = sdf.format(now);
-		String location = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
+		String location = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
 				+ form.getAssessment() + "/" + currDate + "/submission";
 		
 		Assessment currAssessment = assDao.getAssessment(form.getAssessment());
@@ -133,7 +123,7 @@ public class SubmissionManager {
 		
 		AssessmentResult result = new AssessmentResult();
 		result.setAssessment(currAssessment);
-		result.setUsername(username);
+		result.setUser(user);
 		
 		try {
 			result.setSubmissionDate(sdf.parse(currDate));
@@ -279,10 +269,10 @@ public class SubmissionManager {
 			
 			// add to scheduler
 			if(compiled){
-				runAssessment(username, currAssessment.getId(), currDate, result);
+				runAssessment(user, currAssessment.getId(), currDate, result);
 			}
 		} catch (Exception e) {
-			logger.error("Submission error for " + username + " - " + form + "   " + e);
+			logger.error("Submission error for " + user.getUsername() + " - " + form + "   " + e);
 		}
 	}
 	
@@ -290,39 +280,39 @@ public class SubmissionManager {
 	 * Helper method
 	 * 
 	 * @see pasta.repository.ResultDAO#getLatestResults(String)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @return a map containing the latest results for a given user.
 	 */
-	public Map<Long, AssessmentResult> getLatestResultsForUser(String username){
-		return resultDAO.getLatestResults(username);
+	public Map<Long, AssessmentResult> getLatestResultsForUser(PASTAUser user){
+		return resultDAO.getLatestResults(user);
 	}
 	
 	/**
 	 * Helper method
 	 * 
 	 * @see pasta.repository.ResultDAO#getLatestResultsForUserAssessment(String, long)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the id of the assessment
 	 * @return the latest results for a given user for a given assessment.
 	 */
-	public AssessmentResult getLatestResultsForUserAssessment(String username, long assessmentId){
-		return resultDAO.getLatestResultsForUserAssessment(username, assessmentId);
+	public AssessmentResult getLatestResultsForUserAssessment(PASTAUser user, long assessmentId){
+		return resultDAO.getLatestResultsForUserAssessment(user, assessmentId);
 	}
 	
 	/**
 	 * Schedule an assessment attempt for a given user for execution
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment (format yyyy-MM-dd'T'HH-mm-ss)
 	 * @param result the assessment result object to store results in
 	 */
-	public void runAssessment(String username, long assessmentId, String assessmentDate, AssessmentResult result){
+	public void runAssessment(PASTAUser user, long assessmentId, String assessmentDate, AssessmentResult result){
 		try {
-			scheduler.save(new AssessmentJob(username, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
+			scheduler.save(new AssessmentJob(user, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
-					+ assessmentId + " for " + username
+					+ assessmentId + " for " + user.getUsername()
 					+ System.getProperty("line.separator") + e);
 		}
 	}
@@ -337,10 +327,10 @@ public class SubmissionManager {
 	public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
 		for(PASTAUser user: allUsers){
 			// scan to see all who made a submission
-			AssessmentResult currResult = resultDAO.getLatestResults(user.getUsername()).get(assessment.getId());
+			AssessmentResult currResult = resultDAO.getLatestResults(user).get(assessment.getId());
 			if(currResult != null){
 				// add them to the queue
-				scheduler.save(new AssessmentJob(user.getUsername(), 
+				scheduler.save(new AssessmentJob(user, 
 						assessment.getId(), 
 						currResult.getSubmissionDate(), currResult));
 			}

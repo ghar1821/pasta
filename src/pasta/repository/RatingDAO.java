@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.template.Assessment;
 
@@ -27,23 +28,23 @@ public class RatingDAO extends HibernateDaoSupport {
 	
 	public AssessmentRating saveOrUpdate(AssessmentRating rating) {
 		getHibernateTemplate().saveOrUpdate(rating);
-		logger.info("Saved rating for " + rating.getAssessment().getName() + " by " + rating.getUsername());
+		logger.info("Saved rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
 		return rating;
 	}
 	
 	public void delete(AssessmentRating rating) {
 		getHibernateTemplate().delete(rating);
-		logger.info("Deleted rating for " + rating.getAssessment().getName() + " by " + rating.getUsername());
+		logger.info("Deleted rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
 	}
 	
 	public List<AssessmentRating> getAllRatings() {
 		return getHibernateTemplate().loadAll(AssessmentRating.class);
 	}
 
-	public AssessmentRating getRating(Assessment assessment, String username) {
+	public AssessmentRating getRating(Assessment assessment, PASTAUser user) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentRating.class);
 		cr.add(Restrictions.eq("assessment", assessment));
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		@SuppressWarnings("unchecked")
 		List<AssessmentRating> results = getHibernateTemplate().findByCriteria(cr);
 		if(results == null || results.isEmpty()) {
@@ -60,9 +61,9 @@ public class RatingDAO extends HibernateDaoSupport {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<AssessmentRating> getAllRatingsForUser(String username) {
+	public List<AssessmentRating> getAllRatingsForUser(PASTAUser user) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentRating.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		return getHibernateTemplate().findByCriteria(cr);
 	}
 	

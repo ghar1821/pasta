@@ -44,7 +44,6 @@ import pasta.domain.PASTAUser;
 import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetitionForm;
 import pasta.service.CompetitionManager;
-import pasta.service.UserManager;
 
 /**
  * Controller class for Competition functions. 
@@ -65,14 +64,8 @@ public class AllCompetitionsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private UserManager userManager;
 	private CompetitionManager competitionManager;
 
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
 	@Autowired
 	public void setMyService(CompetitionManager myService) {
 		this.competitionManager = myService;
@@ -97,25 +90,11 @@ public class AllCompetitionsController {
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
+		return user;
 	}
-	
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
-	}
-
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// COMPETITIONS //

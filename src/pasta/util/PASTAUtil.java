@@ -62,6 +62,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.template.Competition;
 
@@ -177,15 +178,15 @@ public class PASTAUtil {
 	/**
 	 * Helper method for {@link #generateFileTree(String)}
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the id of the assessment
 	 * @param assessmentDate the date of the assessment
 	 * @return the file tree node that is root for the file tree.
 	 */
-	public static FileTreeNode generateFileTree(String username,
+	public static FileTreeNode generateFileTree(PASTAUser user,
 			long assessmentId, String assessmentDate) {
 		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
-				+ username
+				+ user.getUsername()
 				+ "/assessments/"
 				+ assessmentId
 				+ "/"
@@ -240,22 +241,22 @@ public class PASTAUtil {
 	 * <p>
 	 * Calls {@link #generateFileTree(String)} for all submission attempts.
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the short (no whitespace) name of the assessment
 	 * @return the map of file tree nodes for each submission with the submission
 	 * date as a key.
 	 */
-	public static Map<String, FileTreeNode> genereateFileTree(String username, long assessmentId) {
+	public static Map<String, FileTreeNode> genereateFileTree(PASTAUser user, long assessmentId) {
 		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
 		String[] allSubs = (new File(ProjectProperties.getInstance().getSubmissionsLocation()
-				+ username
+				+ user.getUsername()
 				+ "/assessments/"
 				+ assessmentId).list());
 		if(allSubs != null && allSubs.length > 0){
 			for(String submission : allSubs){
 				if(submission.matches("\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d-\\d\\d-\\d\\d")){
-					allsubmissions.put(submission, generateFileTree(username, assessmentId, submission));
+					allsubmissions.put(submission, generateFileTree(user, assessmentId, submission));
 				}
 			}
 		}
@@ -266,19 +267,19 @@ public class PASTAUtil {
 	/**
 	 * Generate the file tree for the players used by arena based competitions.
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param competition the competition
 	 * @param players a collection of players you are interested in.
 	 * @return the map of file tree nodes, with the name of the player as the key.
 	 */
-	public static Map<String, FileTreeNode> generateFileTree(String username,
+	public static Map<String, FileTreeNode> generateFileTree(PASTAUser user,
 			Competition competition, Collection<PlayerHistory> players) {
 		Map<String, FileTreeNode> allPlayers = new TreeMap<String, FileTreeNode>();
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){
 				FileTreeNode node = generateFileTree(competition.getFileLocation()
-						+ "/players/" + username + "/"
+						+ "/players/" + user.getUsername() + "/"
 						+ player.getPlayerName()
 						+ "/active/code/");
 				if(node != null){

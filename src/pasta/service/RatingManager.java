@@ -42,6 +42,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.template.Assessment;
@@ -73,12 +74,12 @@ public class RatingManager {
 	public static final Logger logger = Logger
 			.getLogger(RatingManager.class);
 	
-	public AssessmentRating getRating(Assessment assessment, String username) {
-		return ratingDAO.getRating(assessment, username);
+	public AssessmentRating getRating(Assessment assessment, PASTAUser user) {
+		return ratingDAO.getRating(assessment, user);
 	}
 	
 	@Async
-	public Future<AssessmentRating> loadRating(Assessment assessment, String username) {
+	public Future<AssessmentRating> loadRating(Assessment assessment, PASTAUser user) {
 		// This method is for test purposes
 		try {
 			Thread.sleep(5000);
@@ -86,14 +87,14 @@ public class RatingManager {
 			logger.error("Error sleeping", e);
 		}
 		
-		return new AsyncResult<AssessmentRating>(ratingDAO.getRating(assessment, username));
+		return new AsyncResult<AssessmentRating>(ratingDAO.getRating(assessment, user));
 	}
 	
 	@Async
-	public Future<AssessmentRating> saveRating(Assessment assessment, String username, RatingForm form) {
-		AssessmentRating rating = ratingDAO.getRating(assessment, username);
+	public Future<AssessmentRating> saveRating(Assessment assessment, PASTAUser user, RatingForm form) {
+		AssessmentRating rating = ratingDAO.getRating(assessment, user);
 		if(rating == null) {
-			rating = new AssessmentRating(assessment, username);
+			rating = new AssessmentRating(assessment, user);
 		}
 		rating.setRating(form.getRating());
 		rating.setTooHard(form.isTooHard());
@@ -104,9 +105,9 @@ public class RatingManager {
 		return new AsyncResult<AssessmentRating>(rating);
 	}
 
-	public Map<Long, AssessmentRating> getRatingsForUser(String username) {
+	public Map<Long, AssessmentRating> getRatingsForUser(PASTAUser user) {
 		Map<Long, AssessmentRating> ratings = new HashMap<Long, AssessmentRating>();
-		for(AssessmentRating rating : ratingDAO.getAllRatingsForUser(username)) {
+		for(AssessmentRating rating : ratingDAO.getAllRatingsForUser(user)) {
 			ratings.put(rating.getAssessment().getId(), rating);
 		}
 		return ratings;

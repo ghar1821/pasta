@@ -171,7 +171,9 @@ public class UserDAO extends HibernateDaoSupport{
 	 * 
 	 * @param username the name of the user
 	 * @return the user or null if the user does not exist
+	 * @deprecated should get users by id
 	 */
+	@Deprecated
 	public PASTAUser getUser(String username){
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("username", username));

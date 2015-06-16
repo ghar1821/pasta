@@ -44,7 +44,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
@@ -125,34 +124,12 @@ public class AssessmentManager {
 	 * Helper method.
 	 * 
 	 * @see pasta.repository.ResultDAO#getAssessmentHistory(String, Assessment)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the id of the assessment
 	 * @return the collection of submission history for a user for a given assessment
 	 */
-	public Collection<AssessmentResult> getAssessmentHistory(String username, long assessmentId){
-		return resultDAO.getAllResultsForUserAssessment(username, assessmentId);
-		//return resultDAO.getAssessmentHistory(username, getAssessment(assessmentId));
-	}
-	
-	/**
-	 * Helper method.
-	 * @param assessment 
-	 * 
-	 * @see pasta.repository.AssessmentDAO#releaseAssessment(long, AssessmentReleaseForm)
-	 * @param releaseForm {@link pasta.domain.form.AssessmentReleaseForm} 
-	 */
-	public void releaseAssessment(Assessment assessment, AssessmentReleaseForm releaseForm)
-	{
-		//TODO rework completely
-		
-//		assessment.setReleasedClasses(releaseForm.getList());
-//		if (releaseForm.getSpecialRelease() != null
-//				&& !releaseForm.getSpecialRelease().isEmpty()) {
-//			assessment.setSpecialRelease(releaseForm.getSpecialRelease());
-//		}
-		
-		// Update in database
-		assDao.saveOrUpdate(assessment);
+	public Collection<AssessmentResult> getAssessmentHistory(PASTAUser user, long assessmentId){
+		return resultDAO.getAllResultsForUserAssessment(user, assessmentId);
 	}
 	
 	/**
@@ -275,11 +252,11 @@ public class AssessmentManager {
 	 * Helper method
 	 * 
 	 * @see pasta.repository.ResultDAO#getLatestResults(String)
-	 * @param username the name of the user
+	 * @param user the user
 	 * @return all of the cached assessment results.
 	 */
-	public Map<Long, AssessmentResult> getLatestResultsForUser(String username){
-		return resultDAO.getLatestResults(username);
+	public Map<Long, AssessmentResult> getLatestResultsForUser(PASTAUser user){
+		return resultDAO.getLatestResults(user);
 	}
 	
 	/**
@@ -289,32 +266,32 @@ public class AssessmentManager {
 	 * collection of users given.
 	 * 
 	 * @param allUsers the collection of {@link pasta.domain.PASTAUser} that are being queried
-	 * @return the map (String username , Long assessmentId, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
+	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
 	 */
-	public Map<String, Map<Long, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
-		Map<String, Map<Long, AssessmentResult>> results = new TreeMap<String, Map<Long, AssessmentResult>>();
+	public Map<PASTAUser, Map<Long, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
+		Map<PASTAUser, Map<Long, AssessmentResult>> results = new TreeMap<>();
 		
 		for(PASTAUser user: allUsers){
-			Map<Long, AssessmentResult> currResultMap = resultDAO.getLatestResults(user.getUsername());
-			results.put(user.getUsername(), currResultMap);
+			Map<Long, AssessmentResult> currResultMap = resultDAO.getLatestResults(user);
+			results.put(user, currResultMap);
 		}
 		
 		return results;
 	}
 	
 	/**
-	 * Gets an assessment result given a username, assessment and formatted submission date.
+	 * Gets an assessment result given a user, assessment and formatted submission date.
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @param assessmentId the id of the assessment 
 	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss")
 	 * @return the queried assessment result or null if not available.
 	 */
-	public AssessmentResult loadAssessmentResult(String username, long assessmentId,
+	public AssessmentResult loadAssessmentResult(PASTAUser user, long assessmentId,
 			String assessmentDate) {
 		AssessmentResult result;
 		try {
-			result = resultDAO.getAssessmentResult(username, assessmentId, PASTAUtil.parseDate(assessmentDate));
+			result = resultDAO.getAssessmentResult(user, assessmentId, PASTAUtil.parseDate(assessmentDate));
 		} catch (ParseException e) {
 			logger.error("Error parsing date", e);
 			return null;
@@ -347,9 +324,9 @@ public class AssessmentManager {
 		ProjectProperties.getInstance().getResultDAO().update(result);
 	}
 
-	public AssessmentResult getLatestAssessmentResult(String username, long assessmentId) {
+	public AssessmentResult getLatestAssessmentResult(PASTAUser user, long assessmentId) {
 		List<AssessmentResult> allResults = ProjectProperties.getInstance().getResultDAO()
-				.getAllResultsForUserAssessment(username, assessmentId);
+				.getAllResultsForUserAssessment(user, assessmentId);
 		if(allResults == null || allResults.isEmpty()) {
 			return null;
 		}

@@ -162,35 +162,16 @@ public class AssessmentController {
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
 	// ///////////////////////////////////////////////////////////////////////////
-
 	/**
-	 * Get or create the currently logged in user.
+	 * Get the currently logged in user.
 	 * 
-	 * @return the currently used user, null if nobody is logged in.
-	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
-		}
-		return null;
-	}
-
-	/**
-	 * Get the currently logged in user. If it doesn't exist, don't create it.
-	 * 
-	 * @return the currently logged in user, null if not logged in or doesn't already exist.
+	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -502,9 +483,9 @@ public class AssessmentController {
 				+ assessment.getFileAppropriateName() + "-latest.zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
-		Map<String, Map<Long, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
 		try {
-			for(Entry<String, Map<Long, AssessmentResult> > entry : allResults.entrySet()){
+			for(Entry<PASTAUser, Map<Long, AssessmentResult> > entry : allResults.entrySet()){
 				if(entry.getValue() != null && 
 						entry.getValue().containsKey(assessmentId) &&
 						entry.getValue().get(assessmentId) != null &&
@@ -513,7 +494,7 @@ public class AssessmentController {
 
 					PASTAUtil.zip(zip, new File(ProjectProperties.getInstance()
 							.getSubmissionsLocation()
-							+ entry.getKey()
+							+ entry.getKey().getUsername()
 							+ "/assessments/"
 							+ assessmentId
 							+ "/"
@@ -580,7 +561,7 @@ public class AssessmentController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-		Map<String, Map<Long, AssessmentResult>> allResults = assessmentManager
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = assessmentManager
 				.getLatestResults(userManager.getUserList());
 		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 
@@ -588,7 +569,7 @@ public class AssessmentController {
 
 		int[] markDistribution = new int[maxBreaks + 1];
 
-		for (Entry<String, Map<Long, AssessmentResult>> entry : allResults
+		for (Entry<PASTAUser, Map<Long, AssessmentResult>> entry : allResults
 				.entrySet()) {
 			int spot = 0;
 			int numSubmissionsMade = 0;

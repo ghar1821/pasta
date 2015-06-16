@@ -103,20 +103,16 @@ public class AdminController {
 	/**
 	 * Get the current logged in user.
 	 * <p>
-	 * Gets the "user" attribute from the current session and gets the user with
-	 * that username from the {@link pasta.service.UserManager}.
+	 * Gets the "user" attribute from the current session.
 	 *  
 	 * @see pasta.service.UserManager#getUser(String)
 	 * @return the user or null if there is no user with that name.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -333,7 +329,7 @@ public class AdminController {
 					String classes = new String(line);
 					currUser.setUsername(split[0]);
 					currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					classes.replaceFirst(split[0]+",", "");
+					classes = classes.replaceFirst(split[0]+",", "");
 					if(split[1].trim().toLowerCase().equals("instructor")){
 						currUser.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
 					}
@@ -344,7 +340,7 @@ public class AdminController {
 						currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
 					}
 					currUser.setStream("");
-					classes.replaceFirst(split[1]+",", "");
+					classes = classes.replaceFirst(split[1]+",", "");
 					currUser.setTutorial(classes);
 					
 					users.add(currUser);
@@ -439,8 +435,7 @@ public class AdminController {
 	
 		if(user != null && user.isTutor()){
 			// update classlist
-			PASTAUser toDelete = new PASTAUser();
-			toDelete.setUsername(username);
+			PASTAUser toDelete = userManager.getUser(username);
 			userManager.deleteUser(toDelete);
 		}
 				

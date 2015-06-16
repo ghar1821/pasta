@@ -89,6 +89,21 @@ div.boxCard {
 	padding: 0.6em;
 }
 
+table.dragRows {
+	border-collapse: collapse;
+}
+table.dragRows td {
+	border-style: solid;
+	border-color: lightgray;
+	border-width: 1px 0px;
+}
+table.dragRows td:first-child {
+	border-width: 1px 0px 1px 1px;
+}
+table.dragRows td:last-child {
+	border-width: 1px 1px 1px 0px;
+}
+
 div.star-medal {
 	height: 1px;
 	width: 44px;

@@ -73,14 +73,11 @@ public class CompetitionController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private UserManager userManager;
 	private CompetitionManager competitionManager;
-
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
 	
+	@Autowired
+	private UserManager userManager;
+
 	@Autowired
 	public void setMyService(CompetitionManager myService) {
 		this.competitionManager = myService;
@@ -126,26 +123,12 @@ public class CompetitionController {
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
+		return user;
 	}
 	
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
-	}
-
-
 	// ///////////////////////////////////////////////////////////////////////////
 	// COMPETITIONS //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -426,7 +409,7 @@ public class CompetitionController {
 		
 		if(!currComp.isCalculated()){
 			model.addAttribute("unikey", user);
-			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
+			model.addAttribute("players", competitionManager.getPlayers(user, competitionId));
 			model.addAttribute("arena", currComp.getArena(arenaId));
 			model.addAttribute("completed", currComp.isCompleted(arenaId));
 			model.addAttribute("results", competitionManager.getLatestArenaResults(currComp, currComp.getArena(arenaId)));
@@ -471,7 +454,7 @@ public class CompetitionController {
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
-		competitionManager.addPlayerToArena(user.getUsername(), competitionId, arenaId, playername);
+		competitionManager.addPlayerToArena(user, competitionId, arenaId, playername);
 		
 		return "redirect:../..";
 	}
@@ -509,7 +492,7 @@ public class CompetitionController {
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
-		competitionManager.removePlayerFromArena(user.getUsername(), competitionId, arenaId, playername);
+		competitionManager.removePlayerFromArena(user, competitionId, arenaId, playername);
 		
 		return "redirect:../..";
 	}
@@ -544,7 +527,7 @@ public class CompetitionController {
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/.";
 		}	
-		competitionManager.retirePlayer(user.getUsername(), competitionId, playerName);
+		competitionManager.retirePlayer(user, competitionId, playerName);
 		
 		return "redirect:../..";
 	}
@@ -587,10 +570,10 @@ public class CompetitionController {
 		
 		model.addAttribute("unikey", user);
 		//model.addAttribute("competition", currComp);
-		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(), competitionManager
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user, competitionManager
 				.getCompetition(competitionId), competitionManager.getPlayers(
-				user.getUsername(), competitionId)));
-		model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
+				user, competitionId)));
+		model.addAttribute("players", competitionManager.getPlayers(user, competitionId));
 		
 		return "assessment/competition/players";
 	}
@@ -639,15 +622,15 @@ public class CompetitionController {
 		}		
 		
 		// validate player
-		competitionManager.addPlayer(playerForm, user.getUsername(), currComp.getId(), result);
+		competitionManager.addPlayer(playerForm, user, currComp.getId(), result);
 		
 		if(result.hasErrors()){
 			model.addAttribute("unikey", user);
 			//model.addAttribute("competition", currComp);
-			model.addAttribute("players", competitionManager.getPlayers(user.getUsername(), competitionId));
-			model.addAttribute("nodeList", PASTAUtil.generateFileTree(user.getUsername(),
+			model.addAttribute("players", competitionManager.getPlayers(user, competitionId));
+			model.addAttribute("nodeList", PASTAUtil.generateFileTree(user,
 					competitionManager.getCompetition(competitionId),
-					competitionManager.getPlayers(user.getUsername(), competitionId)));
+					competitionManager.getPlayers(user, competitionId)));
 			return "assessment/competition/players";
 		}
 		
@@ -684,7 +667,7 @@ public class CompetitionController {
 			@PathVariable("unikey") String unikey,
 			@PathVariable("competitionId") long competitionId) {
 		PASTAUser user = getUser();
-		PASTAUser viewedUser = getUser(unikey);
+		PASTAUser viewedUser = userManager.getUser(unikey);
 		Competition currComp = competitionManager.getCompetition(competitionId);
 
 		if (user == null) {
@@ -696,11 +679,11 @@ public class CompetitionController {
 		
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser.getUsername(),
+		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser,
 				competitionManager.getCompetition(competitionId),
-				competitionManager.getPlayers(viewedUser.getUsername(), competitionId)));
+				competitionManager.getPlayers(viewedUser, competitionId)));
 		//model.addAttribute("competition", currComp);
-		model.addAttribute("players", competitionManager.getPlayers(viewedUser.getUsername(), competitionId));
+		model.addAttribute("players", competitionManager.getPlayers(viewedUser, competitionId));
 		
 		return "assessment/competition/players";
 	}

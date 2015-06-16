@@ -76,53 +76,15 @@ public class AuthenticationController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get or create the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in.
-	 */
-	public PASTAUser getOrCreateUser() {
-		String username = (String) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return getOrCreateUser(username);
-	}
-	
-	/**
-	 * Get or create the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null.
-	 */
-	public PASTAUser getOrCreateUser(String username) {
-		if (username != null) {
-			return userManager.getOrCreateUser(username);
-		}
-		return null;
-	}
-
-	/**
 	 * Get the currently logged in user.
 	 * 
 	 * @return the currently used user, null if nobody is logged in or user isn't registered.
 	 */
 	public PASTAUser getUser() {
-		String username = (String) RequestContextHolder
+		PASTAUser user = (PASTAUser) RequestContextHolder
 				.currentRequestAttributes().getAttribute("user",
 						RequestAttributes.SCOPE_SESSION);
-		return getUser(username);
-	}
-	
-	/**
-	 * Get the user given a username
-	 * 
-	 * @param username the username of the user
-	 * @return the user, null if the username is null or user isn't registered.
-	 */
-	public PASTAUser getUser(String username) {
-		if (username != null) {
-			return userManager.getUser(username);
-		}
-		return null;
+		return user;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////

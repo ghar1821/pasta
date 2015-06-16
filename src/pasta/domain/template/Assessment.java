@@ -77,8 +77,6 @@ import pasta.domain.release.ReleaseRule;
  * 	<li>description (raw html) of the assessment</li>
  * 	<li>number of submissions allowed (0 for infinite submissions allowed)</li>
  * 	<li>category</li>
- * 	<li>list of usernames to whom the assessment has been specially released</li>
- * 	<li>list of classes to whom the assessment has been released (csv of STREAM.CLASS)</li>
  * 	<li>a flag to count submissions that compile towards the limit or not</li>
  * </ul>
  * 
@@ -87,8 +85,6 @@ import pasta.domain.release.ReleaseRule;
  * <pre>{@code <assessment>
 	<name>name</name>
 	<category>category</category>
-	<releasedClasses>STREAM1.CLASS1,...,STREAMn.CLASSn</releasedClasses>
-	<specialRelease>usernames</specialRelease>
 	<dueDate>hh:mm dd/MM/yyyy</dueDate>
 	<marks>double</marks>
 	<submissionsAllowed>int >= 0</submissionsAllowed>

@@ -77,7 +77,7 @@ public class AssessmentReportingManager {
 		marksSummaryNode.put("maxMark", assessment.getMarks());
 		ArrayNode marksNode = mapper.createArrayNode();
 		for(PASTAUser user : students) {
-			AssessmentResult result = resultDAO.getLatestResultsForUserAssessment(user.getUsername(), assessment.getId());
+			AssessmentResult result = resultDAO.getLatestResultsForUserAssessment(user, assessment.getId());
 			double mark = -1;
 			if(result != null) {
 				mark = result.getMarks();

@@ -39,6 +39,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 
 /**
@@ -76,8 +77,9 @@ public class AssessmentJob extends Job implements Serializable{
 
 	private static final long serialVersionUID = 2058301754166837748L;
 	
-	@Column(nullable = false)
-	private String username;
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private PASTAUser user;
 	
 	@Column(name = "assessment_id", nullable = false)
 	private long assessmentId;
@@ -88,20 +90,20 @@ public class AssessmentJob extends Job implements Serializable{
 	
 	public AssessmentJob(){}
 	
-	public AssessmentJob(String username, long assessmentId, Date runDate, AssessmentResult result){
+	public AssessmentJob(PASTAUser user, long assessmentId, Date runDate, AssessmentResult result){
 		super(runDate);
-		this.username = username;
+		this.user = user;
 		this.assessmentId = assessmentId;
 		this.results = result;
 	}
 
-	public String getUsername() {
-		return username;
+	public PASTAUser getUser() {
+		return user;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 	}
-	
+
 	public long getAssessmentId() {
 		return assessmentId;
 	}

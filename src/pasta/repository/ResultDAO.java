@@ -361,26 +361,26 @@ public class ResultDAO extends HibernateDaoSupport{
 		getHibernateTemplate().delete(result);
 	}
 	
-	public AssessmentResult getLatestResultsForUserAssessment(String username, long assessmentId) {
-		List<AssessmentResult> results = getResultsForUserAssessment(username, assessmentId, 1, true);
+	public AssessmentResult getLatestResultsForUserAssessment(PASTAUser user, long assessmentId) {
+		List<AssessmentResult> results = getResultsForUserAssessment(user, assessmentId, 1, true);
 		if (results == null || results.isEmpty()) {
 			return null;
 		}
 		return results.get(0);
 	}
 
-	public List<AssessmentResult> getAllResultsForUserAssessment(String username, long assessmentId) {
-		return getResultsForUserAssessment(username, assessmentId, -1, true);
+	public List<AssessmentResult> getAllResultsForUserAssessment(PASTAUser user, long assessmentId) {
+		return getResultsForUserAssessment(user, assessmentId, -1, true);
 	}
 	
-	public List<AssessmentResult> getAllResultsForUserAssessment(String username, long assessmentId, boolean latestFirst) {
-		return getResultsForUserAssessment(username, assessmentId, -1, latestFirst);
+	public List<AssessmentResult> getAllResultsForUserAssessment(PASTAUser user, long assessmentId, boolean latestFirst) {
+		return getResultsForUserAssessment(user, assessmentId, -1, latestFirst);
 	}
 	
-	private List<AssessmentResult> getResultsForUserAssessment(String username,
+	private List<AssessmentResult> getResultsForUserAssessment(PASTAUser user,
 			long assessmentId, int resultCount, boolean latestFirst) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		if(latestFirst) {
 			cr.addOrder(Order.desc("submissionDate"));
@@ -396,9 +396,9 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 
 
-	public AssessmentResult getAssessmentResult(String username, long assessmentId, Date submissionDate) {
+	public AssessmentResult getAssessmentResult(PASTAUser user, long assessmentId, Date submissionDate) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		cr.add(Restrictions.eq("submissionDate", submissionDate));
 		@SuppressWarnings("unchecked")
@@ -415,14 +415,14 @@ public class ResultDAO extends HibernateDaoSupport{
 	/**
 	 * Get the latest result for a user.
 	 * 
-	 * @param username the name of the user
+	 * @param user the user
 	 * @return the map which holds the assessment results with a key which is the assessment name
 	 */
-	public Map<Long, AssessmentResult> getLatestResults(String username){
+	public Map<Long, AssessmentResult> getLatestResults(PASTAUser user){
 		Map<Long, AssessmentResult> results = new HashMap<Long, AssessmentResult>();
 		
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
-		cr.add(Restrictions.eq("username", username));
+		cr.add(Restrictions.eq("user", user));
 		cr.addOrder(Order.desc("submissionDate"));
 		
 		@SuppressWarnings("unchecked")
@@ -468,11 +468,11 @@ public class ResultDAO extends HibernateDaoSupport{
 	public void saveOrUpdate(HandMarkingResult result) {
 		getHibernateTemplate().saveOrUpdate(result);
 	}
-
-	public int getSubmissionCount(String username, long assessmentId) {
+	
+	public int getSubmissionCount(PASTAUser user, long assessmentId) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
 		cr.setProjection(Projections.rowCount())
-		.add(Restrictions.eq("username", username))
+		.createCriteria("user").add(Restrictions.eq("id", assessmentId))
 		.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		return ((Number)getHibernateTemplate().findByCriteria(cr).get(0)).intValue();
 	}

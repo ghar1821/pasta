@@ -59,9 +59,9 @@ import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
+import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.CompetitionJob;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.scheduler.AssessmentJob;
 import pasta.testing.AntJob;
 import pasta.testing.AntResults;
 import pasta.testing.ArenaCompetitionRunner;
@@ -278,16 +278,16 @@ public class ExecutionManager {
 		
 		for(PASTAPlayer player : arena.getPlayers()) {
 			String playerLocation = null;
-			PlayerHistory history = ProjectProperties.getInstance().getPlayerDAO().getPlayerHistory(player.getUsername(), comp.getId(), player.getPlayerName());
+			PlayerHistory history = ProjectProperties.getInstance().getPlayerDAO().getPlayerHistory(player.getUser(), comp.getId(), player.getPlayerName());
 			if(history.getActivePlayer() != null) {
-				playerLocation = comp.getFileLocation() + "players/" + player.getUsername() + "/"
+				playerLocation = comp.getFileLocation() + "players/" + player.getUser().getUsername() + "/"
 						+ player.getPlayerName() + "/active/code";
 			} else {
 				if(history.getRetiredPlayers() == null || history.getRetiredPlayers().isEmpty()) {
 					continue;
 				}
 				List<PlayerResult> retired = history.getRetiredPlayers();
-				playerLocation = comp.getFileLocation() + "players/" + player.getUsername() + "/"
+				playerLocation = comp.getFileLocation() + "players/" + player.getUser().getUsername() + "/"
 						+ player.getPlayerName() + "/retired/"
 						+ retired.get(retired.size() - 1).getFirstUploaded() + "/code";
 				logger.warn("DEBUGGING: MAKE SURE THIS IS MOST RECENT RETIRED PLAYER: " + playerLocation);
@@ -295,9 +295,9 @@ public class ExecutionManager {
 			
 			if (playerLocation != null) {
 				// copy player across
-				playerLocations.put(player.getUsername() + "." + player.getPlayerName(), playerLocation);
+				playerLocations.put(player.getUser().getUsername() + "." + player.getPlayerName(), playerLocation);
 				
-				File playerDir = new File(thisRunDir, "players/" + player.getUsername());
+				File playerDir = new File(thisRunDir, "players/" + player.getUser().getUsername());
 				
 				// make folder
 				playerDir.mkdirs();
@@ -430,11 +430,11 @@ public class ExecutionManager {
 	
 	private void executeNormalJob(AssessmentJob job) {
 		// TODO: remove /submission
-		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUsername() + "/assessments/"
+		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUser().getUsername() + "/assessments/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
 		File submissionLoc = new File(submissionHome);
 		
-		String sandboxHome = ProjectProperties.getInstance().getSandboxLocation() + job.getUsername() + "/"
+		String sandboxHome = ProjectProperties.getInstance().getSandboxLocation() + job.getUser().getUsername() + "/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate());
 		File sandboxLoc = new File(sandboxHome);	
 		
@@ -442,7 +442,7 @@ public class ExecutionManager {
 		
 		try {
 			logger.info("Running unit test " + currAssessment.getName()
-					+ " for " + job.getUsername() + " with ExecutionScheduler - " + this);
+					+ " for " + job.getUser().getUsername() + " with ExecutionScheduler - " + this);
 			
 			if (sandboxLoc.exists()) {
 				FileUtils.deleteDirectory(sandboxLoc);
@@ -551,7 +551,7 @@ public class ExecutionManager {
 					ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 				} catch(Exception e2) {
 					logger.error(
-							"Error executing test " + test.getTest().getName() + " for " + job.getUsername()
+							"Error executing test " + test.getTest().getName() + " for " + job.getUser().getUsername()
 									+ " - " + job.getAssessmentId(), e2);
 				}
 			}
@@ -559,7 +559,7 @@ public class ExecutionManager {
 			FileUtils.deleteDirectory(sandboxLoc);
 		}
 		catch (Exception e) {
-			logger.error("Execution error for " + job.getUsername() + " - "
+			logger.error("Execution error for " + job.getUser().getUsername() + " - "
 					+ job.getAssessmentId(), e);
 		}
 		

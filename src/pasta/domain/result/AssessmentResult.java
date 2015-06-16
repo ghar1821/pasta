@@ -54,6 +54,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
@@ -81,7 +82,7 @@ import pasta.util.ProjectProperties;
 @Entity
 @Table(name = "assessment_results",
 uniqueConstraints = { @UniqueConstraint(columnNames={
-		"username", "assessment_id", "submission_date"
+		"user_id", "assessment_id", "submission_date"
 })})
 public class AssessmentResult implements Serializable, Comparable<AssessmentResult>{
 
@@ -91,8 +92,9 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	@GeneratedValue 
 	private long id;
 	
-	@Column(name="username", nullable = false)
-	private String username;
+	@ManyToOne
+	@JoinColumn(name="user_id", nullable = false)
+	private PASTAUser user;
 	
 	@OneToMany (cascade = CascadeType.ALL)
 	@JoinTable(name="assessment_result_unit_test_joins",
@@ -127,11 +129,11 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		this.id = id;
 	}
 
-	public String getUsername() {
-		return username;
+	public PASTAUser getUser() {
+		return user;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 	}
 	
 	public Collection<UnitTestResult> getUnitTests() {
@@ -151,11 +153,11 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	public int getSubmissionsMade() {
-		if(username == null || assessment == null) {
+		if(user == null || assessment == null) {
 			return 0;
 		}
 		return ProjectProperties.getInstance().getResultDAO()
-				.getSubmissionCount(username, assessment.getId());
+				.getSubmissionCount(user, assessment.getId());
 	}
 
 	public Date getSubmissionDate() {

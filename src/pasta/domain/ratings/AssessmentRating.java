@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
 
 @Entity
@@ -22,7 +23,7 @@ public class AssessmentRating implements Serializable {
 	@GeneratedValue
 	private long id;
 	
-	private String username;
+	private PASTAUser user;
 	
 	@ManyToOne
 	@JoinColumn(name = "assessment_id")
@@ -36,8 +37,8 @@ public class AssessmentRating implements Serializable {
 	public AssessmentRating() {
 	}
 	
-	public AssessmentRating(Assessment assessment, String username) {
-		this.username = username;
+	public AssessmentRating(Assessment assessment, PASTAUser user) {
+		this.user = user;
 		this.assessment = assessment;
 	}
 	
@@ -48,13 +49,13 @@ public class AssessmentRating implements Serializable {
 		this.id = id;
 	}
 	
-	public String getUsername() {
-		return username;
+	public PASTAUser getUser() {
+		return user;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser(PASTAUser user) {
+		this.user = user;
 	}
-	
+
 	public Assessment getAssessment() {
 		return assessment;
 	}
@@ -85,7 +86,7 @@ public class AssessmentRating implements Serializable {
 
 	@Override
 	public String toString() {
-		return "AssessmentRating [id=" + id + ", username=" + username + ", assessment=" + assessment
+		return "AssessmentRating [id=" + id + ", user=" + user.getUsername() + ", assessment=" + assessment
 				+ ", tooHard=" + tooHard + ", rating=" + rating + ", comment=" + comment + "]";
 	}
 }

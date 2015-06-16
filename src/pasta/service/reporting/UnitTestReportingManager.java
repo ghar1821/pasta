@@ -46,7 +46,7 @@ public class UnitTestReportingManager {
 		Collection<PASTAUser> students = userManager.getStudentList();
 		Map<String, List<AssessmentResult>> allResults = new LinkedHashMap<>();
 		for(PASTAUser user : students) {
-			List<AssessmentResult> studentResults = resultDAO.getAllResultsForUserAssessment(user.getUsername(), assessment.getId(), false);
+			List<AssessmentResult> studentResults = resultDAO.getAllResultsForUserAssessment(user, assessment.getId(), false);
 			allResults.put(user.getUsername(), studentResults);
 		}
 		
