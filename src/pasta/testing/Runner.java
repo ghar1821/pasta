@@ -3,6 +3,7 @@ package pasta.testing;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -35,7 +36,7 @@ public class Runner {
 	}
 	
 	public void addArgsOption(String key, String... values) {
-		addArgsOption(key, values);
+		addArgsOption(key, Arrays.asList(values));
 	}
 	
 	public void addArgsOption(String key, Iterable<String> values) {
