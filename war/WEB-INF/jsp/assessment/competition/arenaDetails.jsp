@@ -50,8 +50,8 @@ either expressed or implied, of the PASTA Project.
 	<table>
 		<c:forEach var="player" items="${players}">
 			<c:set var="found" value="false"/>
-			<c:if test="${not empty arena.players[unikey.username]}">
-				<c:forEach items="${arena.players[unikey.username]}" var="value">
+			<c:if test="${not empty arena.players}">
+				<c:forEach items="${arena.players}" var="value">
 				    <c:if test="${value == player.playerName}">
 				        <c:set var="found" value="true" />
 				    </c:if>
@@ -117,10 +117,6 @@ either expressed or implied, of the PASTA Project.
 </c:if>
 
 <h2>Users Participating:</h2>
-<c:forEach items="${arena.players}" var="user">
-	<c:if test="${not empty user.value}">
-		<c:forEach items="${user.value}" var="player">
-			<a href="../${user.key}/players/">${user.key} : ${player} </a><br/>
-		</c:forEach>
-	</c:if>
+<c:forEach items="${arena.players}" var="player">
+	<a href="../${player.username}/players/">${player.username} : ${player.playerName}</a><br/>
 </c:forEach>
