@@ -30,8 +30,13 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -46,6 +51,8 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.result.UnitTestResult;
+import pasta.domain.template.BlackBoxTest;
+import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.TestUnitTestForm;
@@ -55,9 +62,16 @@ import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.testing.AntJob;
 import pasta.testing.AntResults;
+import pasta.testing.BlackBoxTestRunner;
+import pasta.testing.CBlackBoxTestRunner;
 import pasta.testing.JUnitTestRunner;
+import pasta.testing.JavaBlackBoxTestRunner;
+import pasta.testing.Runner;
 import pasta.testing.task.DirectoryCopyTask;
+import pasta.testing.task.FileOrDirectoryDeleteTask;
+import pasta.testing.task.MakeDirectoryTask;
 import pasta.testing.task.UnzipTask;
+import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -80,6 +94,9 @@ public class UnitTestManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	
+	private final String BB_TEST_TEMPLATE = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "PASTABlackBoxTest.template";
+	private final String BB_TEST_METHOD_TEMPLATE = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "PASTABlackBoxTestMethod.template";
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
@@ -138,14 +155,22 @@ public class UnitTestManager {
 	 * @param newTest the new unit test form used to create a new unit test template
 	 */
 	public UnitTest addUnitTest(NewUnitTestForm newTest) {
-		UnitTest thisTest = new UnitTest(newTest.getName(), false);
+		
+		UnitTest thisTest;
+		switch(newTest.getType()) {
+		case BLACK_BOX:
+			thisTest = new BlackBoxTest(newTest.getName(), false);
+			break;
+		default:
+			thisTest = new UnitTest(newTest.getName(), false);
+		}
 
 		// Save unit test to database
 		try {
 			unitTestDAO.save(thisTest);
 			return thisTest;
 		} catch (Exception e) {
-			logger.error("Could not save unit test " + thisTest.getName(), e);
+			logger.error("Could not save unit test (" + thisTest.getClass().getSimpleName() + ") " + thisTest.getName(), e);
 			return null;
 		}
 	}
@@ -186,6 +211,13 @@ public class UnitTestManager {
 	public void testUnitTest(UnitTest test, TestUnitTestForm testForm) {
 		logger.info("Testing unit test " + test.getName());
 		
+		String mainClass = test.getMainClassName();
+		if(mainClass == null || mainClass.isEmpty()) {
+			finishTesting(test, "Internal error: contact administrator.");
+			logger.error("No main test class for test " + test.getName());
+			return;
+		}
+		
 		File testLoc = test.getCodeLocation();
 		File sandboxLoc = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
 		
@@ -194,69 +226,105 @@ public class UnitTestManager {
 				FileUtils.deleteDirectory(sandboxLoc);
 			}
 		} catch (IOException e) {
+			finishTesting(test, "Internal error: contact administrator.");
 			logger.error("Could not delete existing test.", e);
-			return;
-		}
-		
-		String mainClass = test.getMainClassName();
-		if(mainClass == null || mainClass.isEmpty()) {
-			logger.error("No main test class for test " + test.getName());
 			return;
 		}
 		
 		sandboxLoc.mkdirs();
 		
-		JUnitTestRunner runner = new JUnitTestRunner();
-		runner.setMainTestClassname(mainClass);
-		runner.setFilterStackTraces(false);
+		// Save submission to disk
+		CommonsMultipartFile submission = testForm.getFile();
+		File unzipTo = new File(sandboxLoc, "unzipped/");
+		unzipTo.mkdirs();
+		File submissionFile = new File(unzipTo, submission.getOriginalFilename());
+		try {
+			submission.getInputStream().close();
+			submission.transferTo(submissionFile);
+		} catch (IOException e) {
+			finishTesting(test, "Internal error: contact administrator.");
+			logger.error("Error moving submission initially", e);
+			return;
+		}
 		
-		//TODO make generic
-		runner.setTestDirectory("test");
-		runner.setSubmissionDirectory("src");
+		Runner runner = null;
+		String[] targets = null;
 		
-		AntJob antJob = new AntJob(sandboxLoc, runner, "build", "test", "clean");
+		if(test instanceof BlackBoxTest) {
+			String solutionName = testForm.getSolutionName();
+			String base = test.getSubmissionCodeRoot();
+			
+			Language subLanguage = null;
+			try {
+				String[] submissionContents = PASTAUtil.listZipContents(submissionFile);
+				String shortest = null;
+				for(String filename : submissionContents) {
+					if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
+						if(Language.getLanguage(filename) != null) {
+							if(shortest == null || filename.length() < shortest.length()) {
+								shortest = filename;
+							}
+						}
+					}
+				}
+				subLanguage = Language.getLanguage(shortest);
+			} catch (IOException e) {
+				// Maybe submission wasn't a zip
+				subLanguage = Language.getLanguage(submissionFile);
+			}
+			
+			if(subLanguage == null) {
+				finishTesting(test, "Language not recognised");
+				logger.error("Language not recognised.");
+				return;
+			}
+			
+			switch(subLanguage) {
+			case JAVA:
+				runner = new JavaBlackBoxTestRunner(); break;
+			case C:
+				runner = new CBlackBoxTestRunner(); break;
+			default:
+				finishTesting(test, "Language not yet implemented");
+				logger.error("Language not implemented.");
+				return;
+			}
+			
+			((BlackBoxTestRunner) runner).setMainTestClassname(mainClass);
+			((BlackBoxTestRunner) runner).setFilterStackTraces(false);
+			((BlackBoxTestRunner) runner).setTestData(((BlackBoxTest) test).getTestCases());
+			int totalTime = 1000;
+			for(BlackBoxTestCase testCase : ((BlackBoxTest) test).getTestCases()) {
+				totalTime += testCase.getTimeout();
+			}
+			((BlackBoxTestRunner) runner).setMaxRunTime(totalTime);
+			((BlackBoxTestRunner) runner).setSolutionName(solutionName);
+			targets = new String[] {"build", "run", "test", "clean"};
+		} else {
+			runner = new JUnitTestRunner();
+			((JUnitTestRunner) runner).setMainTestClassname(mainClass);
+			((JUnitTestRunner) runner).setFilterStackTraces(false);
+			targets = new String[] {"build", "test", "clean"};
+		}
+		
+		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
 		antJob.addDependency("test", "build");
+		antJob.addDependency("run", "build");
 		
+		
+		antJob.addSetupTask(new UnzipTask(submissionFile, unzipTo));
+		File importantCode = test.getSubmissionCodeLocation(unzipTo);
+		antJob.addSetupTask(new DirectoryCopyTask(importantCode, sandboxLoc));
+		antJob.addSetupTask(new FileOrDirectoryDeleteTask(unzipTo));
 		antJob.addSetupTask(new DirectoryCopyTask(testLoc, sandboxLoc));
-		antJob.addSetupTask(new UnzipTask(testForm.getFile(), sandboxLoc));
+		
+		File binLoc = new File(sandboxLoc, "bin/");
+		antJob.addSetupTask(new MakeDirectoryTask(binLoc));
+		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, "userout/")));
 		
 		antJob.run();
 		
 		AntResults results = antJob.getResults();
-		
-		Scanner scn = new Scanner(results.getOutput("build"));
-		StringBuilder files = new StringBuilder();
-		StringBuilder compErrors = new StringBuilder();
-		String line = "";
-		if(scn.hasNext()) {
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				if(line.contains("Files to be compiled")) {
-					break;
-				}
-			}
-		}
-		if(scn.hasNextLine()) {
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				if(line.contains("error")) {
-					break;
-				}
-				files.append(line.replaceFirst("\\s*\\[javac\\]", "").trim()).append('\n');
-			}
-			// Chop off the trailing "\n"
-			files.replace(files.length()-1, files.length(), "");
-		}
-		if(scn.hasNextLine()) {
-			compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-			}
-			// Chop off the trailing "\n"
-			compErrors.replace(compErrors.length()-1, compErrors.length(), "");
-		}
-		scn.close();
 		
 		// Get results from ant output
 		UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
@@ -266,9 +334,10 @@ public class UnitTestManager {
 		}
 		utResults.setTest(test);
 		
-		utResults.setFilesCompiled(files.toString());
+		utResults.setFilesCompiled(runner.extractFilesCompiled(results));
 		if(!results.isSuccess("build")) {
-			utResults.setCompileErrors(compErrors.toString().replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
+			utResults.setBuildError(true);
+			utResults.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
 		}
 		
 		utResults.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
@@ -280,17 +349,158 @@ public class UnitTestManager {
 		ProjectProperties.getInstance().getResultDAO().save(utResults);
 		ProjectProperties.getInstance().getUnitTestDAO().update(test);
 		
-		try {
-			FileUtils.deleteDirectory(sandboxLoc);
-		} catch (IOException e) {
-			logger.error("Error deleting sandbox test at " + sandboxLoc);
-		}
+//		try {
+//			FileUtils.deleteDirectory(sandboxLoc);
+//		} catch (IOException e) {
+//			logger.error("Error deleting sandbox test at " + sandboxLoc);
+//		}
+	}
+	private void finishTesting(UnitTest test, String errorMessage) {
+		UnitTestResult results = new UnitTestResult();
+		results.setBuildError(true);
+		results.setRuntimeOutput(errorMessage);
+		test.setTestResult(results);
+		ProjectProperties.getInstance().getResultDAO().save(results);
+		ProjectProperties.getInstance().getUnitTestDAO().update(test);
 	}
 
 	public void updateUnitTest(UnitTest test, UpdateUnitTestForm updateForm) {
 		test.setName(updateForm.getName());
-		test.setMainClassName(updateForm.getMainClassName());
+
+		if(test instanceof BlackBoxTest) {
+			BlackBoxTest bbTest = (BlackBoxTest) test;
+			List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
+			ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();
+			List<BlackBoxTestCase> oldCases = new LinkedList<>(bbTest.getTestCases());
+			while(newIt.hasNext()) {
+				BlackBoxTestCase newTestCase = newIt.next();
+				ListIterator<BlackBoxTestCase> oldIt = oldCases.listIterator();
+				while(oldIt.hasNext()) {
+					BlackBoxTestCase oldTestCase = oldIt.next();
+					if(oldTestCase.equals(newTestCase)) {
+						if(!oldTestCase.exactlyEquals(newTestCase)) {
+							oldTestCase.setTestName(newTestCase.getTestName());
+							oldTestCase.setCommandLine(newTestCase.getCommandLine());
+							oldTestCase.setInput(newTestCase.getInput());
+							oldTestCase.setOutput(newTestCase.getOutput());
+							oldTestCase.setTimeout(newTestCase.getTimeout());
+						}
+						newIt.set(oldTestCase);
+						oldIt.remove();
+						break;
+					}
+				}
+			}
+			bbTest.setTestCases(newCases);
+			updateBlackBoxCode(bbTest);
+			createInputFiles(bbTest);
+			createExpectedOutputFiles(bbTest);
+		} else {
+			test.setMainClassName(updateForm.getMainClassName());
+			test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
+		}
 		updateUnitTest(test);
+	}
+
+	private void updateBlackBoxCode(BlackBoxTest test) {
+		logger.info("Creating black box code for " + test.getName());
+		
+		StringBuilder testContent = new StringBuilder();
+		try {
+			Scanner testScn = new Scanner(new File(BB_TEST_TEMPLATE));
+			while(testScn.hasNextLine()) {
+				String line = testScn.nextLine();
+				if(line.contains("${tests}")) {
+					testContent.append(getTestsContent(test)).append(System.lineSeparator());
+				} else {
+					testContent.append(line).append(System.lineSeparator());
+				}
+			}
+			testScn.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Could not read black box template at " + BB_TEST_TEMPLATE);
+		}
+		
+		String filename = BB_TEST_TEMPLATE.substring(BB_TEST_TEMPLATE.lastIndexOf(File.separatorChar) + 1).replace(".template", ".java");
+		File testFile = new File(test.getCodeLocation(), filename);
+		if(!testFile.exists()) {
+			testFile.getParentFile().mkdirs();
+		}
+		try {
+			PrintWriter writer = new PrintWriter(testFile);
+			writer.println(testContent.toString());
+			writer.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Unable to write to " + testFile, e);
+		}
+		
+		test.setMainClassName(BB_TEST_TEMPLATE.substring(BB_TEST_TEMPLATE.lastIndexOf(File.separatorChar), BB_TEST_TEMPLATE.lastIndexOf('.')));
+		test.setTested(false);
+	}
+	
+	private String getTestsContent(BlackBoxTest test) {
+		StringBuilder methodTemplate = new StringBuilder();
+		try {
+			Scanner methodScn = new Scanner(new File(BB_TEST_METHOD_TEMPLATE));
+			while(methodScn.hasNextLine()) {
+				methodTemplate.append(methodScn.nextLine()).append(System.lineSeparator());
+			}
+			methodScn.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Could not read black box method template at " + BB_TEST_METHOD_TEMPLATE);
+		} 
+		
+		StringBuilder allTests = new StringBuilder();
+		for(BlackBoxTestCase testCase : test.getTestCases()) {
+			if(testCase.hasValidName()) {
+				String content = new String(methodTemplate.toString());
+				content = content.replaceAll("\\$\\{timeout\\}", String.valueOf(testCase.getTimeout()));
+				content = content.replaceAll("\\$\\{testName\\}", testCase.getTestName());
+				allTests.append(content);
+			}
+		}
+		
+		return allTests.toString();
+	}
+	
+	private void createExpectedOutputFiles(BlackBoxTest test) {
+		File parentDir = new File(test.getCodeLocation(), "bbexpected/");
+		parentDir.mkdirs();
+		for(BlackBoxTestCase testCase : test.getTestCases()) {
+			if(testCase.hasValidName()) {
+				File testOut = new File(parentDir, testCase.getTestName());
+				try {
+					PrintWriter writer = new PrintWriter(testOut);
+					String output = testCase.getOutput();
+					output = output.replaceAll("\r", "");
+					writer.print(output);
+					writer.close();
+				} catch (FileNotFoundException e) {
+					logger.error("Cannot write to " + testOut, e);
+					break;
+				}
+			}
+		}
+	}
+	
+	private void createInputFiles(BlackBoxTest test) {
+		File parentDir = new File(test.getCodeLocation(), "bbinput/");
+		parentDir.mkdirs();
+		for(BlackBoxTestCase testCase : test.getTestCases()) {
+			if(testCase.hasValidName()) {
+				File testOut = new File(parentDir, testCase.getTestName());
+				try {
+					PrintWriter writer = new PrintWriter(testOut);
+					String input = testCase.getInput();
+					input = input.replaceAll("\r", "");
+					writer.print(input);
+					writer.close();
+				} catch (FileNotFoundException e) {
+					logger.error("Cannot write to " + testOut, e);
+					break;
+				}
+			}
+		}
 	}
 
 	public void updateUnitTestCode(UnitTest test, UpdateUnitTestForm updateForm) {

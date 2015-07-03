@@ -36,40 +36,143 @@ either expressed or implied, of the PASTA Project.
 <h1> Unit Test - ${unitTest.name}</h1>
 
 <form:form commandName="updateUnitTest" enctype="multipart/form-data" method="POST">
-	<table>
+	<table class='vertical-block'>
+		<tr><td><strong>Compatible languages:</strong></td><td>
+			<c:choose>
+				<c:when test="${unitTest['class'].simpleName == 'UnitTest'}">
+					Java
+				</c:when>
+				<c:when test="${unitTest['class'].simpleName == 'BlackBoxTest'}">
+					Java, Python, C, C++, Octave
+				</c:when>
+				<c:otherwise>
+					None
+				</c:otherwise>
+			</c:choose><span class='help'>If an assessment is to run student submissions as code using this test, these are the languages that can be run using this test type.</span>
+		</td></tr>
+		<tr><td colspan='2'><hr /></td></tr>
 		<tr><td>Name:</td><td><form:input path="name" /></td></tr>
 		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 		
-		<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
-		<c:if test="${unitTest.hasCode}">
-			<tr>
-				<td>Current Code</td>
-				<td>
-					<ul class="list">
-					<jsp:include page="../../recursive/fileWriter.jsp"/>
-					</ul>
-				</td>
-			</tr>
-			<tr>
-				<td>Main class:</td>
-				<td>
-					<form:select path="mainClassName">
-						<form:option value="" label="--- Select ---"/>
-						<form:options items="${candidateMainFiles}" />
-					</form:select>
-				</td>
-			</tr>
+		<c:if test="${unitTest['class'].simpleName == 'UnitTest'}">
+			<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
+			<c:if test="${unitTest.hasCode}">
+				<tr>
+					<td>Current Code</td>
+					<td>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
+					</td>
+				</tr>
+				<tr>
+					<td>Main class:</td>
+					<td>
+						<form:select path="mainClassName">
+							<form:option value="" label="--- Select ---"/>
+							<form:options items="${candidateMainFiles}" />
+						</form:select>
+					</td>
+				</tr>
+				<tr>
+					<td>Submission base directory:</td>
+					<td>
+						<form:input path="submissionCodeRoot"/> <span class='help'>The expected base directory of students' code (where the root is their code submission); e.g. "<code>src</code>". If their code is not to be submitted in a directory, leave this blank.</span>
+					</td>
+				</tr>
+			</c:if>
 		</c:if>
 		<tr><td></td><td><input type="submit" value="Save Changes" id="submit" /></td></tr>
 	</table> 
+	<c:if test="${unitTest['class'].simpleName == 'BlackBoxTest'}">
+		<div id='allTestCases' class='vertical-block'>
+			<c:forEach var="testCase" items="${updateUnitTest.testCases}" varStatus="testStatus">
+				<div class='testCase boxCard vertical-block'>
+					<form:hidden path="testCases[${testStatus.index}].id"/>
+					<div class='float-right'>
+						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
+						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+					</div>
+					<div class='vertical-block showHide'>
+						<p>Test Name: <form:input path="testCases[${testStatus.index}].testName"/>
+					</div>
+					<div class='vertical-block'>
+						<table class='alignCellsTop'>
+							<tr>
+								<td>Timeout (ms):</td>
+								<td><form:input path="testCases[${testStatus.index}].timeout"/></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Command Line Arguments:</td>
+								<td><form:textarea path="testCases[${testStatus.index}].commandLine" cols="40" rows="3"/></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Console Input:</td>
+								<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].input" cols="40" rows="7"/></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							</tr>
+							<tr>
+								<td>Expected Console Output:</td>
+								<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].output" cols="40" rows="7"/></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</c:forEach>
+			<div id='emptyTest' class='hidden'>
+				<div class='testCase boxCard vertical-block'>
+					<div class='float-right'>
+						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
+						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+					</div>
+					<div class='vertical-block showHide'>
+						<p>Test Name: <input id="testCases0.testName" name="testCases[0].testName" type="text" value=""/>
+					</div>
+					<div class='vertical-block'>
+						<table class='alignCellsTop'>
+							<tr>
+								<td>Timeout (ms):</td>
+								<td><input id="testCases0.timeout" name="testCases[0].timeout" type="text" value="2000"/></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Command Line Arguments:</td>
+								<td><textarea id="testCases0.commandLine" name="testCases[0].commandLine" rows="3" cols="40"></textarea></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Console Input:</td>
+								<td><textarea id="testCases0.input" name="testCases[0].input" class="console" rows="7" cols="40"></textarea></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							</tr>
+							<tr>
+								<td>Expected Console Output:</td>
+								<td><textarea id="testCases0.output" name="testCases[0].output" class="console" rows="7" cols="40"></textarea></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='vertical-block'>
+			<button id='addTest'>Add Test</button>
+			<input type="submit" value="Save Changes" id="submit" />
+		</div>
+	</c:if>
 </form:form>
 
-<c:if test="${not empty unitTest.mainClassName}">
-	<button id="testPopup"> Test Unit Test </button>
-</c:if>
-<c:if test="${unitTest.hasCode}">
-	<a href="./download/"><button id="downloadTest"> Download Test </button></a>
-</c:if>
+<div class='vertical-block'>
+	<c:if test="${unitTest['class'].simpleName != 'UnitTest' or not empty unitTest.mainClassName}">
+		<button id="testPopup"> Test Unit Test </button>
+	</c:if>
+	<c:if test="${unitTest['class'].simpleName == 'UnitTest' and unitTest.hasCode}">
+		<a href="./download/"><button id="downloadTest"> Download Test </button></a>
+	</c:if>
+</div>
 
 <c:if test="${not empty latestResult}">
 	<h2>Latest Test results
@@ -79,6 +182,15 @@ either expressed or implied, of the PASTA Project.
 			</c:when>
 			<c:when test="${not empty latestResult.compileErrors}">
 				- Compilation Errors Detected
+			</c:when>
+			<c:when test="${latestResult.buildError}">
+				- Build Error
+			</c:when>
+			<c:when test="${latestResult.runtimeError}">
+				- Runtime Error
+			</c:when>
+			<c:when test="${latestResult.cleanError}">
+				- Cleanup Error
 			</c:when>
 			<c:otherwise>
 				- Execution Successful
@@ -103,7 +215,7 @@ either expressed or implied, of the PASTA Project.
 		</div>
 	</c:if>
 	<c:choose>
-		<c:when test="${latestResult.testCrashed}">
+		<c:when test="${latestResult.testCrashed or (empty latestResult.compileErrors and latestResult.buildError) or latestResult.runtimeError or latestResult.cleanError}">
 			<div class='vertical-block'>
 				<h3>Full Output:</h3>
 				<div class="ui-state-error">
@@ -143,7 +255,7 @@ either expressed or implied, of the PASTA Project.
 							<td style="text-align:left;">${testCase.testName}</td>
 							<td>${testCase.time}</td>
 							<td>
-								<pre>${testCase.type} - ${testCase.testMessage}</pre>
+								<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
 							</td>
 						</tr>
 					</c:forEach>
@@ -160,7 +272,10 @@ either expressed or implied, of the PASTA Project.
 	<h1> Test Unit Test </h1>
 	<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Unit Test Code:</td><td><form:input type="file" path="file"/></td></tr>
+			<tr><td>Test Submission:</td><td><form:input type="file" path="file"/></td></tr>
+			<c:if test="${unitTest['class'].simpleName == 'BlackBoxTest'}">
+				<tr><td>Solution Name:</td><td><form:input path="solutionName"/><span class='help'>The name of the main solution source code file. If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span></td></tr>
+			</c:if>
 		</table>
     	<input type="submit" value="Upload" id="submit"/>
 	</form:form>
@@ -202,8 +317,141 @@ either expressed or implied, of the PASTA Project.
             $('#mainClassName').on('change', function() {
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
             });
-
+            
+            $("#addTest").on("click", function() {
+            	var newIndex = $("#allTestCases").children(".testCase").length;
+            	var $emptyTest = $("#emptyTest").children().first().clone();
+            	if(newIndex > 0) {
+	            	$emptyTest.find("input,textarea").each(function() {
+	            		$(this).attr("name", $(this).attr("name").replace(/0/g, newIndex));
+	            		$(this).attr("id", $(this).attr("id").replace(/0/g, newIndex));
+	            	});
+            	}
+            	$emptyTest.insertBefore($("#emptyTest"));
+            	$emptyTest.find("a.showHide").trigger("click");
+            	e.preventDefault();
+            });
+            
+            $("form").on("submit", function() {
+            	$("#emptyTest").empty();
+            	$('.console').each(function() {
+            		$(this).val($(this).val().replace(/\r/g,""));
+            	})
+            });
+            
+         	// controls for the "delete case" button
+        	$(document.body).on('click', 'a.deleteCase', function() {
+        		var $container = $(this).parent().parents("div").first();
+        		
+        		var deleting = !$container.is(".toDelete");
+        		$container.toggleClass("toDelete");
+        		
+        		$(this).children().first().toggleClass("icon_delete icon_undo");
+        		$(".icon_delete").attr("title", "Delete");
+        		$(".icon_undo").attr("title", "Undo Delete");
+        		$(this).prev().val(deleting);
+        		
+        		$container.find("input[type!='hidden'],textarea").prop("disabled", deleting);
+        		
+        		if(!$container.is(".collapsed")) {
+        			$(this).next().trigger("click");
+        		}
+        		$(this).next().toggle(!deleting);
+        	});
+         	// controls for the "collapse" button
+        	$(document.body).on('click', 'a.showHide', function() {
+        		var $container = $(this).parent().parents("div").first();
+        		
+        		$container.toggleClass("collapsed");
+        		var collapsed = $container.is(".collapsed");
+        		
+        		$(this).children().first().toggleClass("icon_toggle_plus icon_toggle_minus");
+        		$(".icon_toggle_plus").attr("title", "Show Details");
+        		$(".icon_toggle_minus").attr("title", "Hide Details");
+        		
+        		toggleDetails($container, $(this), collapsed);
+        	});
+         	// Also collapse on div click
+        	$(document.body).on('click', 'div.showHide', function(e) {
+        		if(!$(e.target).is("input")) {
+        			$(this).prev().find("a.showHide").trigger("click");
+        		}
+        	});
+         	
+         	$("a.showHide").trigger("click");
+ 
+        	$(".console").allowTabChar();
+         	$(".console").each(function() {
+         		updateConsolePreviews($(this));
+         	});
+         	$(".console").on("keyup", function() {
+         		updateConsolePreviews($(this));
+         	});
+         	
+         	tabSize = findTabWidth($(".consolePreview").first());
         });
-
+        
+        function toggleDetails($container, $link, hiding) {
+     		if(hiding) {
+     			if(!$container.attr("oht")) {
+     				$container.attr("oht", $container.height())
+        			$container.css("overflow", "hidden");
+        			$container.animate({height:$link.parent().next().css("height")}, 150);
+     			}
+    		} else {
+    			if($container.attr("oht")) {
+    				$container.animate({height:$container.attr("oht")}, 150, function() {
+        				$container.removeAttr("oht");
+        				$container.removeAttr("style");
+        			});
+    			}
+    		}
+     	}
+         
+        function updateConsolePreviews($console) {
+        	var $preview = $console.parent().next().find(".consolePreview");
+     		var text = $console.val();
+     		text = text.replace(/\r/g, "");
+     		text = text.replace(/ /g, "&middot;");
+     		text = replaceTabs(text);
+     		text = text.replace(/&(?!middot;|not;)/g, "&amp;");
+     		text = text.replace(/\n/g, "&para;\n");
+     		text = text.replace(/</g, "&lt;");
+     		text = text.replace(/>/g, "&gt;");
+     		$preview.html(text);
+        }
+         
+        var tabSize = 8;
+        function findTabWidth($element) {
+        	var width = $element.css("tab-size");
+        	if(!width) {
+        		width = $element.css("-moz-tab-size"); /* Code for Firefox */
+        	}
+        	if(!width) {
+        		width = $element.css("-o-tab-size"); /* Code for Opera 10.6-12.1 */
+        	}
+        	if(!width) {
+        		width = 8; /* Code for IE */
+        	}
+        	return width;
+        }
+        
+        function replaceTabs(text) {
+        	var lines = text.split('\n');
+        	for(var j = 0; j < lines.length; j++) {
+        		var bits = lines[j].split('\t');
+            	var wholeTab = Array(Number(tabSize) + 1).join(' ');
+            	var newText = "";
+            	for(var i = 0; i < bits.length - 1; i++) {
+            		var length = bits[i].replace(/&middot;/g," ").length;
+            		var thisTab = tabSize - (length % tabSize);
+            		var left = wholeTab.substr(0, thisTab / 2);
+            		var right = wholeTab.substr(0, thisTab - 1 - left.length);
+            		bits[i] = bits[i] + left + "&not;" + right;
+            	}
+            	lines[j] = bits.join('');
+        	}
+        	return lines.join('\n');
+        }
     })(jQuery);
 </script>

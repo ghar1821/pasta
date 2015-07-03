@@ -78,4 +78,16 @@ public class PlayerValidationRunner extends Runner {
 		}
 		return toReturn;
 	}
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
 }

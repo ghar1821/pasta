@@ -54,6 +54,7 @@ either expressed or implied, of the PASTA Project.
 		<tr><td>Assessment DueDate:</td><td><form:input type="text" path="strDate" /></td></tr>
 		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/></td></tr>
 		<tr><td>Count submissions that have failed to compile:</td><td><form:checkbox path="countUncompilable"/></td></tr>
+		<tr><td>Solution Name:</td><td><form:input path="solutionName"/><span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span></td></tr>
 	</table>
 	
 	<h2>Release Rule</h2>
@@ -71,11 +72,13 @@ either expressed or implied, of the PASTA Project.
 	
 	
 	<h2>Description</h2>
-	<div>
+	<div id='descriptionHTML'>
 		${assessment.description}
 	</div>
 	<button type="button" id="modifyDescription">Modify Description</button>
-	<form:textarea path="description" cols="110" rows="10" style="display:none"/><br/>
+	<div style="display:none">
+		<form:textarea path="description" cols="110" rows="10" /><br/>
+	</div>
 	
 	
 	<table style="margin-bottom:2em;width:90%">
@@ -358,12 +361,26 @@ either expressed or implied, of the PASTA Project.
         $('ul.tristate').tristate();
         
         $("#modifyDescription").bind('click', function(e) {
-        	$("#description").show();
+        	$("#description").parents('div').show();
         	$("#modifyDescription").hide();
         });
         
-        $("#description").on('keyup', function() {
-            $("#descriptionHTML").html(document.getElementById("description").value);
+        var timer;
+        $("#description").wysiwyg({
+        	initialContent: function() {
+    			return "";
+    		},
+        	controls: {
+        		html  : { visible: true }
+        	},
+        	events: {
+        		keyup: function() {
+        			clearTimeout(timer);
+                	timer = setTimeout(function() {
+                		$("#descriptionHTML").html($("#description").val());
+                	}, 1000);
+        		}
+        	}
         });
         
         refreshDragBuffers();

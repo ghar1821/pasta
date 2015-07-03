@@ -46,4 +46,16 @@ public class GenericScriptRunner extends Runner {
 			addOption("runtimeout", String.valueOf(timeout));
 		}
 	}
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
 }

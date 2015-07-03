@@ -143,6 +143,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	private String category;
 	
+	@Column (name = "solution_name")
+	private String solutionName;
+	
 	@OneToOne (cascade = CascadeType.ALL)
 	@JoinColumn (name = "release_rule_id")
 	private ReleaseRule releaseRule;
@@ -218,6 +221,13 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	public void setCategory(String category) {
 		this.category = category;
+	}
+	
+	public String getSolutionName() {
+		return solutionName;
+	}
+	public void setSolutionName(String solutionName) {
+		this.solutionName = solutionName;
 	}
 	
 	public boolean isCountUncompilable() {

@@ -1,6 +1,7 @@
 package pasta.testing;
 
 import java.io.File;
+import java.util.Scanner;
 
 import pasta.util.ProjectProperties;
 
@@ -10,11 +11,18 @@ public class JUnitTestRunner extends Runner {
 	
 	public JUnitTestRunner() {
 		super(new File(TEMPLATE_FILENAME));
+		init();
+	}
+	
+	public JUnitTestRunner(File file) {
+		super(file);
+		init();
+	}
+	
+	private void init() {
 		setMaxRunTime(60000);
-		addOption("outputFilename", "result");
+		addOption("testOutputFile", "result");
 		addOption("testName", "TestName");
-		addOption("submissionDirectory", "src");
-		addOption("testDirectory", "test");
 		addOption("filterStackTraces", "yes");
 	}
 	
@@ -36,26 +44,9 @@ public class JUnitTestRunner extends Runner {
 	}
 	
 	/**
-	 * Note: assumes setTestDirectory(String) has been called previously.
-	 * 
-	 * <ul>
-	 * <li> If testDirectory is "test", and name is "/test/foo/Bar.java", name will be converted to foo.Bar.java
-	 * <li> If testDirectory is "test/", and name is "/test/foo/Bar.java", name will be converted to foo.Bar.java
-	 * <li> If testDirectory is "test", and name is "ran/foo/Bar.java", name will be converted to ran.foo.Bar.java
-	 * </ul>
-	 * 
 	 * @param name the class name to use
 	 */
 	public void setMainTestClassname(String name) {
-		String testDir = getOption("testDirectory");
-		if(name.replaceAll("[\\\\/]", "").startsWith(testDir.replaceAll("[\\\\/]", ""))) {
-			for(int i = 0; i < name.length() - testDir.length() + 1; i++) {
-				if(name.startsWith(testDir, i)) {
-					name = name.substring(i + testDir.length());
-					break;
-				}
-			}
-		}
 		int firstGoodChar = 0;
 		for(; firstGoodChar < name.length(); firstGoodChar++) {
 			if(!(name.charAt(firstGoodChar) == '\\' || name.charAt(firstGoodChar) == '/')) {
@@ -65,12 +56,58 @@ public class JUnitTestRunner extends Runner {
 		name = name.substring(firstGoodChar).replaceAll("[/\\\\]", ".");
 		addOption("testName", name);
 	}
-	
-	public void setSubmissionDirectory(String directory) {
-		addOption("submissionDirectory", directory);
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		Scanner scn = new Scanner(results.getOutput("build"));
+		StringBuilder compErrors = new StringBuilder();
+		String line = "";
+		if(scn.hasNext()) {
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("error")) {
+					break;
+				}
+			}
+		}
+		if(scn.hasNextLine()) {
+			compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+			}
+			// Chop off the trailing "\n"
+			compErrors.replace(compErrors.length()-1, compErrors.length(), "");
+		}
+		scn.close();
+		return compErrors.toString();
 	}
-	
-	public void setTestDirectory(String directory) {
-		addOption("testDirectory", directory);
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		Scanner scn = new Scanner(results.getOutput("build"));
+		StringBuilder files = new StringBuilder();
+		String line = "";
+		if(scn.hasNext()) {
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("Files to be compiled")) {
+					break;
+				}
+			}
+		}
+		if(scn.hasNextLine()) {
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				if(line.contains("error")) {
+					break;
+				}
+				files.append(line.replaceFirst("\\s*\\[javac\\]", "").trim()).append('\n');
+			}
+			// Chop off the trailing "\n"
+			files.replace(files.length()-1, files.length(), "");
+		}
+		scn.close();
+		return files.toString();
 	}
 }

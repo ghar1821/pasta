@@ -34,10 +34,15 @@ public class UnzipTask implements Task {
 				formFile.transferTo(newLocation);
 			} else {
 				newLocation = new File(landingDirectory, zipFile.getName());
-				FileUtils.copyFile(zipFile, newLocation);
+				if(!newLocation.equals(zipFile)) {
+					FileUtils.copyFile(zipFile, newLocation);
+				}
 			}
-			PASTAUtil.extractFolder(newLocation.getAbsolutePath());
-			FileUtils.forceDelete(newLocation);
+			// UnzipTask can be used on non-zip file; no extraction will occur
+			if(newLocation.getName().endsWith(".zip")) {
+				PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+				FileUtils.forceDelete(newLocation);
+			}
 		} catch (IOException e) {
 			return false;
 		}

@@ -64,4 +64,16 @@ public class ArenaCompetitionRunner extends Runner {
 		}
 		addOption("compCodeDirectory", directory);
 	}
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		// TODO Auto-generated method stub
+		return "";
+	}
 }

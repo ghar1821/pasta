@@ -352,6 +352,7 @@ public class AssessmentManager {
 		assessment.setNumSubmissionsAllowed(form.getNumSubmissionsAllowed());
 		assessment.setCountUncompilable(form.isCountUncompilable());
 		assessment.setDescription(form.getDescription());
+		assessment.setSolutionName(form.getSolutionName());
 		
 		for(WeightedUnitTest test : form.getNewUnitTests()) {
 			test.setSecret(false);

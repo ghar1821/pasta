@@ -65,13 +65,14 @@ public class UpdateAssessmentForm {
 	private int numSubmissionsAllowed;
 	private boolean countUncompilable;
 	private String description;
+	private String solutionName;
 	
 	private List<WeightedUnitTest> newUnitTests;
 	private List<WeightedUnitTest> newSecretUnitTests;
 	private List<WeightedHandMarking> newHandMarking;
 	private List<WeightedCompetition> newCompetitions;
 	
-	// TODO: check if 0.5 or 50% -- only allow one
+	// TODO: check if 0.5 or 50% when submitting percentages -- only allow one
 	private ReleaseRule releaseRule;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -85,11 +86,13 @@ public class UpdateAssessmentForm {
 		this.numSubmissionsAllowed = base.getNumSubmissionsAllowed();
 		this.countUncompilable = base.isCountUncompilable();
 		this.description = base.getDescription();
+		this.solutionName = base.getSolutionName();
 		
 		/*
 		 * The assessment modules have to be in a lazy list for the drag and drop
 		 * Functionality on the web front end. Without this, there would be errors
 		 * when adding assessment modules.
+		 * TODO: not actually true any more -- normal lists should be able to be used
 		 */
 		this.newUnitTests = LazyList.lazyList(new ArrayList<WeightedUnitTest>(),
 				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
@@ -155,6 +158,13 @@ public class UpdateAssessmentForm {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getSolutionName() {
+		return solutionName;
+	}
+	public void setSolutionName(String solutionName) {
+		this.solutionName = solutionName;
 	}
 
 	public ReleaseRule getReleaseRule() {

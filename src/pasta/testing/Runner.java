@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 import pasta.util.ProjectProperties;
 
-public class Runner {
+public abstract class Runner {
 
 	private File templateFile;
 	private Map<String, String> options;
@@ -141,5 +141,8 @@ public class Runner {
 		}
 		addOption("libDirectory", directory);
 	}
+	
+	public abstract String extractCompileErrors(AntResults results);
+	public abstract String extractFilesCompiled(AntResults results);
 	
 }

@@ -39,11 +39,19 @@ package pasta.domain.upload;
  */
 public class NewUnitTestForm {
 	private String name;
+	private UnitTestType type;
 	
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public UnitTestType getType() {
+		return type;
+	}
+	public void setType(UnitTestType type) {
+		this.type = type;
 	}
 }

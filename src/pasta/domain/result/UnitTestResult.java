@@ -87,6 +87,9 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Size (max = 128000)
 	private String runtimeOutput;
 	
+	@Column (name = "build_error")
+	private boolean buildError;
+	
 	@Column (name = "runtime_error")
 	private boolean runtimeError;
 	
@@ -139,6 +142,14 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.id = id;
 	}
 
+	public boolean isBuildError() {
+		return buildError;
+	}
+
+	public void setBuildError(boolean buildError) {
+		this.buildError = buildError;
+	}
+
 	public boolean isRuntimeError() {
 		return runtimeError;
 	}
@@ -178,7 +189,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		}
 		double passed = 0;
 		for(UnitTestCaseResult result: testCases){
-			if(result.getTestResult().equals("pass")){
+			if(result.isPass()){
 				++passed;
 			}
 		}
@@ -195,6 +206,6 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 			return false;
 		}
 		return testCases.get(0).getTestName().equals("BeforeFirstTest") &&
-				testCases.get(0).getTestResult().equalsIgnoreCase("error");
+				testCases.get(0).isError();
 	}
 }

@@ -77,6 +77,10 @@ either expressed or implied, of the PASTA Project.
 	<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
 		<table>
 			<tr><td>Unit Test Name:</td><td><form:input autocomplete="off" type="text" path="name"/></td></tr>
+			<tr>
+				<td>Unit Test Type:</td>
+				<td><form:select path="type"><form:options itemLabel="description"/></form:select></td>
+			</tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>
 	</form:form>

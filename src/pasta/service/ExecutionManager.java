@@ -31,10 +31,10 @@ package pasta.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
@@ -55,7 +55,10 @@ import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.BlackBoxTest;
+import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.Competition;
+import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
@@ -65,10 +68,16 @@ import pasta.scheduler.ExecutionScheduler;
 import pasta.testing.AntJob;
 import pasta.testing.AntResults;
 import pasta.testing.ArenaCompetitionRunner;
+import pasta.testing.BlackBoxTestRunner;
+import pasta.testing.CBlackBoxTestRunner;
 import pasta.testing.GenericScriptRunner;
 import pasta.testing.JUnitTestRunner;
+import pasta.testing.JavaBlackBoxTestRunner;
+import pasta.testing.Runner;
 import pasta.testing.options.ScriptOptions;
 import pasta.testing.task.DirectoryCopyTask;
+import pasta.testing.task.MakeDirectoryTask;
+import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -440,6 +449,10 @@ public class ExecutionManager {
 		
 		Assessment currAssessment = assDao.getAssessment(job.getAssessmentId());
 		
+		logger.warn("submissionLoc: " + submissionLoc);
+		logger.warn("sandboxLoc: " + sandboxLoc);
+		logger.warn("currAssessment: " + currAssessment.getId());
+		
 		try {
 			logger.info("Running unit test " + currAssessment.getName()
 					+ " for " + job.getUser().getUsername() + " with ExecutionScheduler - " + this);
@@ -448,72 +461,110 @@ public class ExecutionManager {
 				FileUtils.deleteDirectory(sandboxLoc);
 			}
 			
-			for (WeightedUnitTest test : currAssessment.getAllUnitTests()) {
+			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
 				try {
-					String mainClass = test.getTest().getMainClassName();
+					UnitTest test = weightedTest.getTest();
+					logger.warn("weightedTest: " + weightedTest);
+					logger.warn("test: " + test.getName());
+					
+					String mainClass = test.getMainClassName();
 					if(mainClass == null || mainClass.isEmpty()) {
-						logger.warn("No main test class for test " + test.getTest().getName());
+						finishTesting(test, job, "Assessment setup error: contact administrator.");
+						logger.error("No main test class for test " + test.getName());
 						continue;
 					}
 					
-					// create folder
-					File testLoc = new File(sandboxLoc, test.getTest().getFileAppropriateName());
-					testLoc.mkdirs();
+					File testSandboxLoc = new File(sandboxLoc, test.getFileAppropriateName());
+					testSandboxLoc.mkdirs();
+					logger.warn("testSandboxLoc: " + testSandboxLoc);
 					
-					JUnitTestRunner runner = new JUnitTestRunner();
-					runner.setMainTestClassname(test.getTest().getMainClassName());
+					File testLoc = test.getCodeLocation();
+					logger.warn("testLoc: " + testLoc);
 					
-					AntJob antJob = new AntJob(testLoc, runner, "build", "test", "clean");
+					Runner runner = null;
+					String[] targets = null;
+					
+					if(test instanceof BlackBoxTest) {
+						String solutionName = currAssessment.getSolutionName();
+						if(solutionName == null || solutionName.isEmpty()) {
+							finishTesting(test, job, "Assessment setup error: contact administrator.");
+							logger.error("No solution name set for " + currAssessment.getName());
+							continue;
+						}
+						String base = test.getSubmissionCodeRoot();
+						logger.warn("base: " + base);
+						
+						String[] submissionContents = PASTAUtil.listDirectoryContents(submissionLoc);
+						logger.warn("submissionContents: " + Arrays.toString(submissionContents));
+						String shortest = null;
+						for(String filename : submissionContents) {
+							if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
+								if(Language.getLanguage(filename) != null) {
+									if(shortest == null || filename.length() < shortest.length()) {
+										shortest = filename;
+									}
+								}
+							}
+						}
+						Language subLanguage = Language.getLanguage(shortest);
+						
+						if(subLanguage == null) {
+							finishTesting(test, job, "No suitable language recognised");
+							logger.error("Language not recognised.");
+							continue;
+						}
+						
+						switch(subLanguage) {
+						case JAVA:
+							runner = new JavaBlackBoxTestRunner(); break;
+						case C:
+							runner = new CBlackBoxTestRunner(); break;
+						default:
+							finishTesting(test, job, "Language not yet implemented");
+							logger.error("Language not implemented.");
+							continue;
+						}
+						
+						((BlackBoxTestRunner) runner).setMainTestClassname(mainClass);
+						((BlackBoxTestRunner) runner).setFilterStackTraces(true);
+						((BlackBoxTestRunner) runner).setTestData(((BlackBoxTest) test).getTestCases());
+						int totalTime = 1000;
+						for(BlackBoxTestCase testCase : ((BlackBoxTest) test).getTestCases()) {
+							totalTime += testCase.getTimeout();
+						}
+						((BlackBoxTestRunner) runner).setMaxRunTime(totalTime);
+						((BlackBoxTestRunner) runner).setSolutionName(solutionName);
+						targets = new String[] {"build", "run", "test", "clean"};
+					} else {
+						runner = new JUnitTestRunner();
+						((JUnitTestRunner) runner).setMainTestClassname(mainClass);
+						((JUnitTestRunner) runner).setFilterStackTraces(true);
+						targets = new String[] {"build", "test", "clean"};
+					}
+					
+					AntJob antJob = new AntJob(testSandboxLoc, runner, targets);
 					antJob.addDependency("test", "build");
+					antJob.addDependency("run", "build");
 					
-					antJob.addSetupTask(new DirectoryCopyTask(submissionLoc, testLoc));
-					antJob.addSetupTask(new DirectoryCopyTask(new File(test.getTest().getFileLocation() + "/code/"), testLoc));
+					
+					File importantCode = test.getSubmissionCodeLocation(submissionLoc);
+					antJob.addSetupTask(new DirectoryCopyTask(importantCode, testSandboxLoc));
+					antJob.addSetupTask(new DirectoryCopyTask(testLoc, testSandboxLoc));
+					
+					File binLoc = new File(testSandboxLoc, "bin/");
+					antJob.addSetupTask(new MakeDirectoryTask(binLoc));
+					antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, "userout/")));
 					
 					antJob.run();
 					
 					AntResults results = antJob.getResults();
 					
-					Scanner scn = new Scanner(results.getOutput("build"));
-					StringBuilder files = new StringBuilder();
-					StringBuilder compErrors = new StringBuilder();
-					String line = "";
-					if(scn.hasNext()) {
-						while(scn.hasNextLine()) {
-							line = scn.nextLine();
-							if(line.contains("Files to be compiled")) {
-								break;
-							}
-						}
-					}
-					if(scn.hasNextLine()) {
-						while(scn.hasNextLine()) {
-							line = scn.nextLine();
-							if(line.contains("error")) {
-								break;
-							}
-							files.append(line.replaceFirst("\\s*\\[javac\\]", "").trim()).append('\n');
-						}
-						// Chop off the trailing "\n"
-						files.replace(files.length()-1, files.length(), "");
-					}
-					if(scn.hasNextLine()) {
-						compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-						while(scn.hasNextLine()) {
-							line = scn.nextLine();
-							compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-						}
-						// Chop off the trailing "\n"
-						compErrors.replace(compErrors.length()-1, compErrors.length(), "");
-					}
-					scn.close();
-					
-					// Check if this test has already been run
 					UnitTestResult currentResult = null;
 					for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
 						if(existingResult == null) {
 							continue;
 						}
-						if(existingResult.getTest().getId() == test.getTest().getId()) {
+						if(existingResult.getTest().getId() == test.getId()) {
 							currentResult = existingResult;
 							break;
 						}
@@ -521,27 +572,27 @@ public class ExecutionManager {
 					
 					// Get results from ant output
 					UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
-							.getUnitTestResultFromDisk(testLoc.getAbsolutePath());
+							.getUnitTestResultFromDisk(testSandboxLoc.getAbsolutePath());
 					if(utResults == null) {
 						utResults = new UnitTestResult();
-						utResults.setTest(test.getTest());
 					}
+					utResults.setTest(test);
 					
 					// If the test has been done before, update results, otherwise save new results
 					if(currentResult == null) {
 						currentResult = utResults;
 						job.getResults().addUnitTest(currentResult);
-						currentResult.setTest(test.getTest());
 					} else {
 						currentResult.getTestCases().clear();
 						currentResult.getTestCases().addAll(utResults.getTestCases());
 					}
 					
-					currentResult.setSecret(test.isSecret());
+					currentResult.setSecret(weightedTest.isSecret());
 					
-					currentResult.setFilesCompiled(files.toString());
+					currentResult.setFilesCompiled(runner.extractFilesCompiled(results));
 					if(!results.isSuccess("build")) {
-						currentResult.setCompileErrors(compErrors.toString().replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
+						currentResult.setBuildError(true);
+						currentResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
 					}
 					
 					currentResult.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
@@ -551,12 +602,12 @@ public class ExecutionManager {
 					ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 				} catch(Exception e2) {
 					logger.error(
-							"Error executing test " + test.getTest().getName() + " for " + job.getUser().getUsername()
+							"Error executing test " + weightedTest.getTest().getName() + " for " + job.getUser().getUsername()
 									+ " - " + job.getAssessmentId(), e2);
 				}
 			}
 			
-			FileUtils.deleteDirectory(sandboxLoc);
+			//TODO FileUtils.deleteDirectory(sandboxLoc);
 		}
 		catch (Exception e) {
 			logger.error("Execution error for " + job.getUser().getUsername() + " - "
@@ -564,6 +615,33 @@ public class ExecutionManager {
 		}
 		
 		scheduler.delete(job);
+	}
+	private void finishTesting(UnitTest test, AssessmentJob job, String errorMessage) {
+		UnitTestResult currentResult = null;
+		for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
+			logger.warn("existingResult: " + existingResult.getId() + " | " + existingResult.getTest());
+			
+			if(existingResult == null || existingResult.getTest() == null) {
+				continue;
+			}
+			if(existingResult.getTest().getId() == test.getId()) {
+				currentResult = existingResult;
+				break;
+			}
+		}
+		
+		if(currentResult == null) {
+			currentResult = new UnitTestResult();
+			job.getResults().addUnitTest(currentResult);
+		} else {
+			currentResult.getTestCases().clear();
+		}
+		
+		currentResult.setTest(test);
+		currentResult.setBuildError(true);
+		currentResult.setRuntimeOutput(errorMessage);
+		
+		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 	}
 
 	/**
@@ -598,7 +676,7 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	@Scheduled(fixedDelay = 10000)
+	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingCompetitionJobs() {
 		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
@@ -619,7 +697,7 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	@Scheduled(fixedDelay = 10000)
+	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingArenaJobs() {
 		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingArenaJobs();
 		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {

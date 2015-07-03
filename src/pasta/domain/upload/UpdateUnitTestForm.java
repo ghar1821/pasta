@@ -29,8 +29,13 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.domain.template.BlackBoxTest;
+import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 
 /**
@@ -45,16 +50,31 @@ public class UpdateUnitTestForm {
 	
 	private long id;
 	private String name;
-	private String mainClassName;
 	
 	private CommonsMultipartFile file;
+	
+	private String mainClassName;
+	private String submissionCodeRoot;
+	
+	private List<BlackBoxTestCaseForm> testCases;
 	
 	public UpdateUnitTestForm(UnitTest base) {
 		this.id = base.getId();
 		this.name = base.getName();
 		this.mainClassName = base.getMainClassName();
+		this.submissionCodeRoot = base.getSubmissionCodeRoot();
+		if(base instanceof BlackBoxTest) {
+			this.testCases = createTestCaseForms(((BlackBoxTest) base).getTestCases());
+		}
 		
 		this.file = null;
+	}
+	private List<BlackBoxTestCaseForm> createTestCaseForms(List<BlackBoxTestCase> testCases) {
+		List<BlackBoxTestCaseForm> forms = new ArrayList<BlackBoxTestCaseForm>();
+		for(BlackBoxTestCase testCase : testCases) {
+			forms.add(new BlackBoxTestCaseForm(testCase));
+		}
+		return forms;
 	}
 	
 	public long getId() {
@@ -69,16 +89,46 @@ public class UpdateUnitTestForm {
 	public void setName(String name) {
 		this.name = name;
 	}
+	public CommonsMultipartFile getFile() {
+		return file;
+	}
+	public void setFile(CommonsMultipartFile file) {
+		this.file = file;
+	}
+	
+	//JUnitTests
 	public String getMainClassName() {
 		return mainClassName;
 	}
 	public void setMainClassName(String mainClassName) {
 		this.mainClassName = mainClassName;
 	}
-	public CommonsMultipartFile getFile() {
-		return file;
+	public String getSubmissionCodeRoot() {
+		return submissionCodeRoot;
 	}
-	public void setFile(CommonsMultipartFile file) {
-		this.file = file;
+	public void setSubmissionCodeRoot(String submissionCodeRoot) {
+		this.submissionCodeRoot = submissionCodeRoot;
+	}
+	
+	//BlackBoxTests
+	public List<BlackBoxTestCaseForm> getTestCases() {
+		return testCases;
+	}
+	public void setTestCases(List<BlackBoxTestCaseForm> testCases) {
+		if(this.testCases == null || testCases == null) {
+			this.testCases = testCases;
+		} else {
+			this.testCases.clear();
+			this.testCases.addAll(testCases);
+		}
+	}
+	public List<BlackBoxTestCase> getPlainTestCases() {
+		List<BlackBoxTestCase> testCases = new ArrayList<BlackBoxTestCase>();
+		for(BlackBoxTestCaseForm form : this.testCases) {
+			if(!form.isDeleteMe()) {
+				testCases.add(form.asPlainTestCase());
+			}
+		}
+		return testCases;
 	}
 }

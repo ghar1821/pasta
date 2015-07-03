@@ -44,12 +44,13 @@ import pasta.domain.template.UnitTest;
 public class TestUnitTestForm {
 	
 	private long id;
+	private String solutionName;
 
 	private CommonsMultipartFile file;
 	
 	public TestUnitTestForm(UnitTest base) {
 		this.id = base.getId();
-		
+		this.solutionName = "";
 		this.file = null;
 	}
 	
@@ -59,6 +60,14 @@ public class TestUnitTestForm {
 	public void setId(long id) {
 		this.id = id;
 	}
+	
+	public String getSolutionName() {
+		return solutionName;
+	}
+	public void setSolutionName(String solutionName) {
+		this.solutionName = solutionName;
+	}
+
 	public CommonsMultipartFile getFile() {
 		return file;
 	}

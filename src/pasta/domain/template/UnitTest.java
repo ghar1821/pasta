@@ -39,6 +39,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -67,6 +69,7 @@ import pasta.util.ProjectProperties;
 
 @Entity
 @Table (name = "unit_tests")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
@@ -81,6 +84,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@Column (name = "main_class_name")
 	private String mainClassName;
 	
+	@Column (name = "submission_code_root")
+	private String submissionCodeRoot;
+	
 	@OneToOne (cascade=CascadeType.ALL)
 	@JoinColumn (name="test_result_id")
 	private UnitTestResult testResult;
@@ -88,16 +94,18 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	/**
 	 * Default constructor
 	 * <p>
-	 * name="nullgarbagetemptestihopenobodynamestheirtestthis" tested=false
+	 * name="Default" tested=false
 	 */
 	public UnitTest() {
-		this.name = "nullgarbagetemptestihopenobodynamestheirtestthis";
+		this.name = "Default";
 		this.tested = false;
+		this.submissionCodeRoot = "";
 	}
 
 	public UnitTest(String name, boolean tested) {
 		this.name = name;
 		this.tested = tested;
+		this.submissionCodeRoot = "";
 	}
 
 	public String getName() {
@@ -191,6 +199,20 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public void setTestResult(UnitTestResult testResult) {
 		this.testResult = testResult;
+	}
+	
+	public String getSubmissionCodeRoot() {
+		return submissionCodeRoot;
+	}
+	public void setSubmissionCodeRoot(String submissionCodeRoot) {
+		while(submissionCodeRoot.matches("[/\\\\]+.*")) {
+			submissionCodeRoot = submissionCodeRoot.substring(1);
+		}
+		this.submissionCodeRoot = submissionCodeRoot;
+	}
+	
+	public File getSubmissionCodeLocation(File submissionRoot) {
+		return new File(submissionRoot, submissionCodeRoot);
 	}
 
 	@Override
