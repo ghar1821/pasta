@@ -11,7 +11,7 @@
 		<meta name="Author" content="Alex Radu, Joshua Stretton" />
 		<title><spring:message code="UOS" /> </title>
 		
-		<link href="<c:url value="/static/styles/jquery/smoothness/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/screen-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -38,6 +38,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.allowTab.min.js"/>"></script>
 		<decorator:head />
 		
 		
@@ -57,7 +58,17 @@
 				$("pre.pythoncode").snippet("python",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.rubycode").snippet("ruby",{style:"ide-eclipse",transparent:false,numbered:true});
 				$("pre.sqlcode").snippet("sql",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});		
+				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});	
+				
+	            $(".help").each(function() {
+	            	$(this).attr("helpText", $(this).html());
+	            	$(this).empty();
+	            	$(this).tipsy({
+	            		gravity: "w",
+	            		title: "helpText",
+	            		html: true
+	            	});
+	            });
 				});
 		</script>
 	</head>
