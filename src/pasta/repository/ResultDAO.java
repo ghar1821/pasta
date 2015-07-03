@@ -135,7 +135,7 @@ public class ResultDAO extends HibernateDaoSupport{
 							// time
 							caseResult.setTime(Double.parseDouble(unitTestElement.getAttribute("time")));
 							// test case - assume it is a pass.
-							caseResult.setTestResult("pass");
+							caseResult.setTestResult(UnitTestCaseResult.PASS);
 							
 							// if failed
 							if(unitTestElement.hasChildNodes()){
@@ -472,7 +472,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	public int getSubmissionCount(PASTAUser user, long assessmentId) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
 		cr.setProjection(Projections.rowCount())
-		.createCriteria("user").add(Restrictions.eq("id", assessmentId))
+		.add(Restrictions.eq("user", user))
 		.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		return ((Number)getHibernateTemplate().findByCriteria(cr).get(0)).intValue();
 	}
@@ -558,7 +558,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	public File getLastestSubmission(PASTAUser user, Assessment assessment) {
 		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
 		cr.setProjection(Projections.property("submissionDate"));
-		cr.add(Restrictions.eq("username", user.getUsername()));
+		cr.createCriteria("user").add(Restrictions.eq("id", user.getId()));
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessment.getId()));
 		cr.addOrder(Order.desc("submissionDate"));
 		@SuppressWarnings("unchecked")
