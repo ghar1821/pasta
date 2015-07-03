@@ -81,4 +81,8 @@ public class FileTreeNode {
 		return children;
 	}
 	
+	public String getExtension() {
+		return name.substring(name.lastIndexOf('.') + 1);
+	}
+	
 }

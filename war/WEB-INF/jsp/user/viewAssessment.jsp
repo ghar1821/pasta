@@ -90,9 +90,7 @@ either expressed or implied, of the PASTA Project.
 			<c:if test="${unikey.tutor}">
 				<div class='vertical-block'>
 					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-					<ul class="list">
-						<jsp:include page="../recursive/fileWriter.jsp"/>
-					</ul>
+					<jsp:include page="../recursive/fileWriterRoot.jsp"/>
 				</div>
 			</c:if>
 			
@@ -162,7 +160,7 @@ either expressed or implied, of the PASTA Project.
 																<td style="text-align:left;">Secret - ${testCase.testName}</td>
 																<td>${testCase.time}</td>
 																<td>
-																	<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
+																	<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}"/></pre>
 																</td>
 															</c:when>
 															<c:otherwise>
@@ -178,7 +176,7 @@ either expressed or implied, of the PASTA Project.
 														<td style="text-align:left;">${testCase.testName}</td>
 														<td>${testCase.time}</td>
 														<td>
-															<pre>${testCase.type} - <c:out value="${testCase.testMessage}" escapeXml="true"/></pre>
+															<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}"/></pre>
 														</td>
 													</c:otherwise>
 												</c:choose>

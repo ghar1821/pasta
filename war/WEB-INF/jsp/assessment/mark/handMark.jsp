@@ -35,9 +35,7 @@ either expressed or implied, of the PASTA Project.
 
 <h1>${assessmentName} - ${student}</h1>
 
-<ul class="list">
-<jsp:include page="../../recursive/fileWriter.jsp"/>
-</ul>
+<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
 
 <style>
 th, td{
@@ -85,8 +83,7 @@ th, td{
 									<td style="text-align:left;">${testCase.testName}</td>
 									<td>${testCase.time}</td>
 									<td>
-										<pre>${testCase.type} - ${fn:replace(fn:replace(testCase.testMessage, '>', '&gt;'), '<', '&lt;')}</pre>
-
+										<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
 									</td>
 								</tr>
 							</c:forEach>

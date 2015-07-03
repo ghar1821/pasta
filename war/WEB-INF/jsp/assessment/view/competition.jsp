@@ -80,9 +80,7 @@ either expressed or implied, of the PASTA Project.
 			<tr>
 				<td>Current Code:</td>
 				<td>
-					<ul class="list">
-					<jsp:include page="../../recursive/fileWriter.jsp"/>
-					</ul>
+					<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
 				</td>
 			</tr>
 			</c:if>
