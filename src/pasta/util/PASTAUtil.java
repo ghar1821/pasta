@@ -91,7 +91,7 @@ public class PASTAUtil {
 	 * @throws IOException
 	 */
 	static public void extractFolder(String zipFile) throws ZipException, IOException {
-	    System.out.println(zipFile);
+	    logger.info("Unzipping " + zipFile);
 	    int BUFFER = 2048;
 	    File file = new File(zipFile);
 
@@ -144,6 +144,50 @@ public class PASTAUtil {
 	    zip.close();
 	}
 	
+	public static String[] listZipContents(File file) throws ZipException, IOException {
+		ZipFile zip = new ZipFile(file);
+		Enumeration zipFileEntries = zip.entries();
+		List<String> fileList = new LinkedList<String>();
+		// Process each entry
+		while (zipFileEntries.hasMoreElements()){
+			// grab a zip file entry
+			ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
+			if (!entry.isDirectory()){
+				fileList.add(entry.getName());
+			}
+		}
+		zip.close();
+		return fileList.toArray(new String[fileList.size()]);
+	}
+	
+	public static String[] listZipContents(String zipFile) throws ZipException, IOException {
+	    File file = new File(zipFile);
+	    return listZipContents(file);
+	}
+	
+	public static String[] listDirectoryContents(String baseFilename) {
+		File file = new File(baseFilename);
+		return listDirectoryContents(file);
+	}
+	
+	public static String[] listDirectoryContents(File file) {
+		if(!file.isDirectory()) {
+			return new String[] {file.getName()};
+		}
+		List<String> contents = new LinkedList<String>();
+		listDirectory(contents, file.getAbsolutePath(), file);
+		return contents.toArray(new String[contents.size()]);
+	}
+	private static void listDirectory(List<String> contents, String base, File current) {
+		for(File f : current.listFiles()) {
+			if(f.isDirectory()) {
+				listDirectory(contents, base, f);
+			} else {
+				contents.add(f.getAbsolutePath().substring(base.length()));
+			}
+		}
+	}
+
 	/**
 	 * Format date using the format yyyy-MM-dd'T'HH-mm-ss
 	 * 
