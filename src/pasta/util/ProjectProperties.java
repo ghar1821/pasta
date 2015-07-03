@@ -37,6 +37,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
 import java.nio.file.Files;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -132,6 +133,7 @@ public class ProjectProperties {
 		}
 
 		authType = settings.get("authentication").toLowerCase();
+		serverAddresses = new LinkedList<String>();
 
 		if (new File(getProjectLocation() + File.separator + "authentication.settings").exists()) {
 			logger.info("exists");
