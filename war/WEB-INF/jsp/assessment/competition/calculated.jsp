@@ -56,12 +56,12 @@ either expressed or implied, of the PASTA Project.
 					</c:otherwise>
 				</c:choose>
 			</tr>
-			<c:forEach var="positionData" items="${marks.positions}">
-				<c:forEach var="compResult" items="${positionData.value}">
+			<c:forEach var="positionData" items="${marks.positions}" varStatus="position">
+				<c:forEach var="compResult" items="${positionData.userResults}">
 					<tr>
 						<td>
-							${positionData.key}
-							<c:if test="${fn:length(positionData.value) > 1}">
+							${position.index + 1}
+							<c:if test="${fn:length(positionData.userResults) > 1}">
 								=
 							</c:if>
 						</td>
