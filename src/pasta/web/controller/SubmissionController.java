@@ -225,31 +225,6 @@ public class SubmissionController {
 	// ///////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Get or create the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in.
-	 */
-	public PASTAUser getOrCreateUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder.currentRequestAttributes().getAttribute("user",
-				RequestAttributes.SCOPE_SESSION);
-		return getOrCreateUser(user);
-	}
-
-	/**
-	 * Get or create the user given a base user object
-	 * 
-	 * @param user the user to base the new one off. This object should have an
-	 *            ID set if it exists, or a username set if it is to be created.
-	 * @return the user, null if the username is null.
-	 */
-	public PASTAUser getOrCreateUser(PASTAUser user) {
-		if (user != null) {
-			return userManager.getOrCreateUser(user);
-		}
-		return null;
-	}
-
-	/**
 	 * Get the currently logged in user.
 	 * 
 	 * @return the currently used user, null if nobody is logged in or user
@@ -326,7 +301,7 @@ public class SubmissionController {
 	@RequestMapping(value = "home/")
 	public String home(Model model, HttpSession session) {
 		// check if tutor or student
-		PASTAUser user = getOrCreateUser();
+		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
@@ -387,11 +362,6 @@ public class SubmissionController {
 	 * <tr>
 	 * <td>Submission.NoFile</td>
 	 * <td>The form doesn't contain a file</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Submission.NotZip</td>
-	 * <td>The file is not a zip file (extension of .zip)</td>
-	 * </tr>
 	 * <tr>
 	 * <td>Submission.AfterClosingDate</td>
 	 * <td>The submission is past the due date</td>
@@ -434,9 +404,6 @@ public class SubmissionController {
 			result.rejectValue("file", "Submission.NoFile");
 		}
 
-		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
-			result.rejectValue("file", "Submission.NotZip");
-		}
 		Date now = new Date();
 		if (assessmentManager.getAssessment(form.getAssessment()).isClosed()
 				&& (user.getExtensions() == null // no extension
@@ -933,10 +900,6 @@ public class SubmissionController {
 	 * <td>Submission.NoFile</td>
 	 * <td>The form doesn't contain a file</td>
 	 * </tr>
-	 * <tr>
-	 * <td>Submission.NotZip</td>
-	 * <td>The file is not a zip file (extension of .zip)</td>
-	 * </tr>
 	 * </table>
 	 * 
 	 * If the submission is validated correctly and doesn't encounter any of the
@@ -977,9 +940,6 @@ public class SubmissionController {
 		// check if the submission is valid
 		if (form.getFile() == null || form.getFile().isEmpty()) {
 			result.reject("Submission.NoFile");
-		}
-		if (!form.getFile().getOriginalFilename().endsWith(".zip")) {
-			result.rejectValue("file", "Submission.NotZip");
 		}
 		if (!result.hasErrors()) {
 			// accept the submission
