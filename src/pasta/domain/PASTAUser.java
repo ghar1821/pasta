@@ -65,6 +65,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	private String stream = "";
 	private UserPermissionLevel permissionLevel;
 	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
+	private boolean active = true;
 	
 	@Id
 	@GeneratedValue
@@ -156,6 +157,14 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	@Transient
 	public void giveExtension(Long assessmentId, Date newDueDate){
 		extensions.put(assessmentId, newDueDate);
+	}
+	
+	@Column(name="active")
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 	
 	@Transient

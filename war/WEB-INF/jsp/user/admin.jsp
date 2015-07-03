@@ -70,53 +70,62 @@ either expressed or implied, of the PASTA Project.
 	<h2>Authentication System</h2>
 		
 	<form method="get" action="auth/" autocomplete="off">
-		<select name="type" id="type"  path="type" onChange="addressChanged();">
-			<option value="ftp" <c:if test="${authType == 'pasta.login.FTPAuthValidator'}"> selected="selected" </c:if> >FTP</option>
-			<option value="imap" <c:if test="${authType == 'pasta.login.ImapAuthValidator'}"> selected="selected" </c:if> >IMAP</option>
-			<option value="database" <c:if test="${authType == 'pasta.login.DBAuthValidator'}"> selected="selected" </c:if> >Database</option>
-			<option value="ldap" <c:if test="${authType == 'pasta.login.LDAPAuthValidator'}"> selected="selected" </c:if> >LDAP</option>
-			<option value="dummy" <c:if test="${authType == 'pasta.login.DummyAuthValidator'}"> selected="selected" </c:if> >No Authentication</option>
-		</select>
-		<div id="addressDiv" <c:if test="${authType == 'pasta.login.DBAuthValidator' or authType == 'pasta.login.DummyAuthValidator'}">style="display:none;"</c:if>>
-			<table id="addressTable">
-				<c:choose>
-					<c:when test="${not empty addresses}">
-						<c:forEach var="address" items="${addresses}">
-							<tr><td><input path="address" name="address" id="address" value="${address}" /></td></tr>
-						</c:forEach>
-					</c:when>
-					<c:otherwise>
-						<tr><td><input path="address" name="address" id="address" /></td></tr>
-					</c:otherwise>
-				</c:choose>
-			</table>
-			<button type="button" onclick="cloneRowAbove()">Add new Row</button><br/>
-		</div>
-		<button type="submit" >Change Authentication System</button>
+		<table>
+			<tr>
+				<td>Authentication type:</td>
+				<td>
+					<select name="type" id="type"  path="type" onChange="addressChanged();">
+						<option value="ftp" <c:if test="${authType == 'pasta.login.FTPAuthValidator'}"> selected="selected" </c:if> >FTP</option>
+						<option value="imap" <c:if test="${authType == 'pasta.login.ImapAuthValidator'}"> selected="selected" </c:if> >IMAP</option>
+						<option value="database" <c:if test="${authType == 'pasta.login.DBAuthValidator'}"> selected="selected" </c:if> >Database</option>
+						<option value="ldap" <c:if test="${authType == 'pasta.login.LDAPAuthValidator'}"> selected="selected" </c:if> >LDAP</option>
+						<option value="dummy" <c:if test="${authType == 'pasta.login.DummyAuthValidator'}"> selected="selected" </c:if> >No Authentication</option>
+					</select>
+				</td>
+			</tr>
+			<tr class='addressRow'>
+				<td>Server Addresses:</td>
+				<td id='addressList'>
+					<c:forEach var="address" items="${addresses}">
+						<div><input name="address" id="address" value="${address}" /></div>
+					</c:forEach>
+				</td>
+			</tr>
+			<tr class='addressRow'>
+				<td>Add Address:</td>
+				<td id='newAddress'>
+					<div class='horizontal-block'><input name="address" id="address" /></div>
+					<div class='horizontal-block'><button type="button" onclick="cloneRowAbove()">Add</button></div>
+				</td>
+			</tr>
+			<tr><td colspan='2'><button type="submit" >Change Authentication System</button></td></tr>
+		</table>
+		
 	</form>
 	
 </c:if>
 <c:if test="${unikey.tutor}">
 
 	<h1>Tutors</h1>
-		<table>
-			<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th></tr>
-			<c:forEach var="person" items="${people}">
-				<c:if test="${person.tutor}">
-					<tr>
-						<td>${person.username}</td><td>${person.permissionLevel}</td><td><c:if test="${empty person.tutorial}">-</c:if>${person.tutorial}</td>
-						<td>
-							<div style="float: left">
-								<button style="float: left; text-align: center;"
-									onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-								<button style="float: left; display: none; text-align: center;"
-									onclick="location.href='delete/${person.username}/'"
-									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-							</div>
-						</td>
-					</tr>
-				</c:if>
-			</c:forEach>
+		<table class='dataTable'>
+			<thead>
+				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><th></th></tr>
+			</thead>
+			<tbody>
+				<c:forEach var="person" items="${people}">
+					<c:if test="${person.tutor}">
+						<tr>
+							<td>${person.username}</td><td>${person.permissionLevel}</td><td><c:if test="${empty person.tutorial}">-</c:if>${person.tutorial}</td>
+							<td>
+								<div>
+									<div title='Delete' class='icon_delete'></div>
+									<div title='Confirm' style='display:none' class='icon_delete_confirm' username='${person.username}'></div>
+								</div>
+							</td>
+						</tr>
+					</c:if>
+				</c:forEach>
+			</tbody>
 		</table>
 		
 		<button id="tutorUpdate" onclick="popup(true, false);">Update</button>
@@ -124,24 +133,25 @@ either expressed or implied, of the PASTA Project.
 		
 	
 	<h1>Students</h1>
-		<table>
-			<tr><th>Username</th><th>Stream</th><th>Tutorial</th></tr>
-			<c:forEach var="person" items="${people}">
-				<c:if test="${not person.tutor}">
-					<tr>
-						<td>${person.username}</td><td>${person.stream}</td><td>${person.tutorial}</td>
-						<td>
-							<div style="float: left">
-								<button style="float: left; text-align: center;"
-									onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-								<button style="float: left; display: none; text-align: center;"
-									onclick="location.href='delete/${person.username}/'"
-									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-							</div>
-						</td>
-					</tr>
-				</c:if>
-			</c:forEach>
+		<table class='dataTable'>
+			<thead>
+				<tr><th>Username</th><th>Stream</th><th>Tutorial</th><th></th></tr>
+			</thead>
+			<tbody>
+				<c:forEach var="person" items="${people}">
+					<c:if test="${not person.tutor}">
+						<tr>
+							<td>${person.username}</td><td>${person.stream}</td><td>${person.tutorial}</td>
+							<td>
+								<div>
+									<div title='Delete' class='icon_delete'></div>
+									<div title='Confirm' style='display:none' class='icon_delete_confirm' username='${person.username}'></div>
+								</div>
+							</td>
+						</tr>
+					</c:if>
+				</c:forEach>
+			</tbody>
 		</table>
 		
 		<button id="studentUpdate" onclick="popup(false, false);">Update</button>
@@ -150,68 +160,72 @@ either expressed or implied, of the PASTA Project.
 		<div id="confirmPopup" class='popup'>
 			<span class="button bClose"> <span><b>X</b></span>
 			</span>
-			<h1 id="popupText">Are you sure you want to do that?</h1>
-			<form id="classlist" method="post" action="replaceStudents/">
-				<textarea name="list" rows="10" cols="50"></textarea><br/>
-				<button type="submit">Submit</button>
-			</form>
+			<h1 id="updateHeading">Heading</h1>
+			<div id='updateDescription'>Description</div>
+			<form:form commandName="updateUsersForm" action="updateUsers/">
+				<form:hidden path="updateTutors" value="false"/>
+				<form:hidden path="replace" value="false"/>
+				<table class='alignCellsTop'>
+					<tr><td>CSV File (no headers):</td><td><form:input type='file' path="updateFile"/></td></tr>
+					<tr><td style='text-align:center;'><p><strong>OR</strong></td><td></td></tr>
+					<tr><td>Plain text:</td><td><form:textarea path="updateContents" rows="10" cols="50"/></td></tr>
+				</table>
+				<div>
+					<button type="submit">Submit</button>
+				</div>
+			</form:form>
 		</div>
 		
 		<script>
 			function popup(tutor, replace){
+				var heading = "";
+				heading += replace ? "Replace " : "Update ";
+				heading += tutor ? "tutors " : "students ";
 				
-				var content = "";
-				var example = "";
-				var action = "";
+				heading += "list using csv format.";
 				
-				if(replace){
-					content+="Replace ";
-					action+="replace";
-				}
-				else{
-					content+="Update ";
-					action+="update";
-				}
+				var example = tutor ?
+						"username,role,classes(separated by commas)" :
+						"username,stream,class";
 				
-				if(tutor){
-					content+="tutor ";
-					example="username,role,classes(separated by commas)";
-					action+="Tutors/";
-				}
-				else{
-					content+="student ";
-					example="username,stream,class";
-					action+="Students/";
-				}
-				
-				content+="list using csv format. <br/> e.g." + example;
-							
-				document.getElementById('classlist').action = action;
-				document.getElementById('popupText').innerHTML = content;
+				var content = "<p> e.g. <br/>&nbsp;&nbsp;<code>" + example + "</code><br/>&nbsp;&nbsp;<code>" + example + "</code>";
+				$('#updateDescription').html(content);
+				$('#updateHeading').html(heading);
+				$('#updateUsersForm #updateTutors').val(tutor);
+				$('#updateUsersForm #replace').val(replace);
 
-				// Triggering bPopup when click event is fired
 				$('#confirmPopup').bPopup();
 			}
 			
 			function cloneRowAbove(){
-				$("#addressTable").append('<tr><td><input path="address" name="address" id="address" /></td></tr>');
+				$("#addressList").append($('#newAddress').children().first().removeClass("horizontal-block"));
+				$('#newAddress').prepend('<div class="horizontal-block"><input name="address" id="address" /></div>')
 			}
 			
 			function addressChanged(){
 				var value = document.getElementById("type").value;
 				
 				if(value == "ftp" || value == "imap"){
-					$("#addressDiv").show();
+					$(".addressRow").show();
 				}
 				else{
-					$("#addressDiv").hide();
+					$(".addressRow").hide();
 				}
 				
-				var inputs = document.getElementsByName('address');
-				for (var i = 0; i < inputs.length; i += 1) {
-					inputs[i].value = '';
-				}
+				$('#address').val('');
 			}
+			
+			<c:if test="${authType == 'pasta.login.DBAuthValidator' or authType == 'pasta.login.DummyAuthValidator'}">
+			$(function () {
+				$('.addressRow').hide();
+			});
+			</c:if>
+			
+			$(function() {
+				$('.dataTable').dataTable({
+					"columnDefs" : [ { "orderable" : false, "targets" : -1 } ]
+				});
+			});
 		</script>
 		
 </c:if>
@@ -233,26 +247,18 @@ either expressed or implied, of the PASTA Project.
 </style>
 
 <script>
-	;(function($) {
 
-         // DOM Ready
-        $(function() {
-        
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#newPopup').bind('click', function(e) {
-
-                // Prevents the default action to be triggered. 
-                e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('#newArena').bPopup();
-
-            });
-            
-        });
-
-    })(jQuery);
+	$(function() {
+		$(".icon_delete").on('click', function() {
+			$(this).slideToggle(50, function(){$(this).next().slideToggle('fast');});
+		});
+		$(".icon_delete_confirm").on('mouseout', function() {
+			$(this).slideToggle(50, function(){$(this).prev().slideToggle('fast')});
+		});
+		$(".icon_delete_confirm").on('click', function() {
+			window.location.href = 'delete/' + $(this).attr("username") + '/';
+		});
+	});
 	
 	function checkPasswords(){
 		if (document.getElementById('newPassword').value == document.getElementById('confirmPassword').value){

@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.repository;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,77 +92,73 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	/**
-	 * Delete the user from the cache and the database.
+	 * "Delete" the user from the database by setting them as inactive.
 	 * 
 	 * @param user the user being deleted
 	 */
 	public void delete(PASTAUser user) {
-		getHibernateTemplate().delete(user);
+		user.setActive(false);
+		update(user);
 	}
 	
 	/**
-	 * Replace the current list of students with a new one.
+	 * "Undelete" the user from the database by setting them as active.
 	 * 
-	 * @param users the list of users which will replace the current list
+	 * @param user the user being undeleted
 	 */
-	public void replaceStudents(List<PASTAUser> users){
-		for(PASTAUser user: getUserList()){
-			if(!user.isTutor()){
-				delete(user);
-			}
-		}
-		for(PASTAUser user: users){
-			save(user);
-		}
+	public void undelete(PASTAUser user) {
+		user.setActive(true);
+		update(user);
 	}
 	
 	/**
-	 * Update the current list of students
+	 * Update the current list of users
 	 * 
 	 * @param users the list of users which will be updated
 	 */
-	public void updateStudents(List<PASTAUser> users){
-		Map<String, PASTAUser> currentUsers = getUserMap();
+	public void updateUsers(List<PASTAUser> users){
+		Map<String, PASTAUser> currentUsers = getAllUserMap();
+		logger.warn("Updating...");
 		for(PASTAUser user: users){
 			if(currentUsers.containsKey(user.getUsername())){
 				PASTAUser toUpdate = currentUsers.get(user.getUsername());
 				toUpdate.setPermissionLevel(user.getPermissionLevel());
 				toUpdate.setStream(user.getStream());
 				toUpdate.setTutorial(user.getTutorial());
+				toUpdate.setActive(true);
+				logger.warn("Updating: " + user.getUsername());
 				update(toUpdate);
 			}
 			else{
+				logger.warn("Adding: " + user.getUsername());
 				save(user);
 			}
 		}
 	}
 	
 	/**
-	 * Replace the current list of teaching staff with a new one.
+	 * Replace the current list of users with a new one.
 	 * 
 	 * @param users the list of users which will replace the current list
+	 * @param tutors whether or not you're replacing the list of teaching staff
 	 */
-	public void replaceTutors(List<PASTAUser> users){
-		for(PASTAUser user : getUserList()){
-			if(user.isTutor()){
-				delete(user);
-			}
-		}
+	public void replaceUsers(List<PASTAUser> users, boolean tutors){
+		Map<String, PASTAUser> currentUsers;
+		if(tutors)
+			currentUsers = getAllTutorMap();
+		else
+			currentUsers = getAllStudentMap();
+		
+		Set<String> existingUsernames = new HashSet<>(currentUsers.keySet());
 		for(PASTAUser user: users){
-			save(user);
+			existingUsernames.remove(user.getUsername());
 		}
+		for(String username : existingUsernames) {
+			delete(currentUsers.get(username));
+			currentUsers.remove(username);
+		}
+		updateUsers(users);
 	}
-	
-	/**
-	 * Update the current list of teaching staff
-	 * 
-	 * @param users the list of teaching staff which will be updated
-	 */
-	public void updateTutors(List<PASTAUser> users){
-		updateStudents(users);
-	}
-	
-	// calculated methods
 	
 	/**
 	 * Get the user
@@ -171,9 +168,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * 
 	 * @param username the name of the user
 	 * @return the user or null if the user does not exist
-	 * @deprecated should get users by id
 	 */
-	@Deprecated
 	public PASTAUser getUser(String username){
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("username", username));
@@ -190,35 +185,115 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	/**
-	 * Get the collection of all users.
+	 * Get the collection of all active users.
+	 * <p>
+	 * This list includes students, tutors and instructors.
+	 * @return the collection of all active users registered in the system
+	 */
+	public List<PASTAUser> getUserList(){
+		return getUserList(false, null);
+	}
+	
+	/**
+	 * Get the collection of all users (including inactive).
 	 * <p>
 	 * This list includes students, tutors and instructors.
 	 * @return the collection of all users registered in the system
 	 */
-	public List<PASTAUser> getUserList(){
-		return getHibernateTemplate().loadAll(PASTAUser.class);
+	public List<PASTAUser> getAllUserList(){
+		return getUserList(true, null);
+	}
+	
+	/**
+	 * Get the collection of students
+	 * 
+	 * @return the collection of all active students registered in the system
+	 */
+	public List<PASTAUser> getStudentList(){
+		return getUserList(false, UserPermissionLevel.STUDENT);
+	}
+	
+	/**
+	 * Get the collection of all students (including inactive ones)
+	 * 
+	 * @return the collection of all active students registered in the system
+	 */
+	public List<PASTAUser> getAllStudentList(){
+		return getUserList(true, UserPermissionLevel.STUDENT);
+	}
+	
+	/**
+	 * Get the collection of all active tutors and instructors.
+	 * 
+	 * @return the collection of all active tutors and instructors registered in the system
+	 */
+	public List<PASTAUser> getTutorList(){
+		return getUserList(false, UserPermissionLevel.TUTOR);
+	}
+	
+	/**
+	 * Get the collection of all tutors and instructors (including inactive).
+	 * 
+	 * @return the collection of all tutors and instructors registered in the system
+	 */
+	public List<PASTAUser> getAllTutorList(){
+		return getUserList(true, UserPermissionLevel.TUTOR);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<PASTAUser> getUserList(boolean includeInactive, UserPermissionLevel permissionLevel) {
+		if(includeInactive && permissionLevel == null) {
+			return getHibernateTemplate().loadAll(PASTAUser.class);
+		} else {
+			DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+			if(!includeInactive)
+				cr.add(Restrictions.eq("active", true));
+			if(permissionLevel != null) {
+				switch(permissionLevel) {
+				case TUTOR:
+				case INSTRUCTOR:
+					cr.add(
+							Restrictions.or(
+									Restrictions.eq("permissionLevel", UserPermissionLevel.TUTOR), 
+									Restrictions.eq("permissionLevel", UserPermissionLevel.INSTRUCTOR)));
+					break;
+				default:
+					cr.add(Restrictions.eq("permissionLevel", permissionLevel));
+				}
+			}
+			return getHibernateTemplate().findByCriteria(cr);
+		}
 	}
 	
 	public Map<String, PASTAUser> getUserMap(){
+		return getUserMap(false, null);
+	}
+	public Map<String, PASTAUser> getAllUserMap(){
+		return getUserMap(true, null);
+	}
+	public Map<String, PASTAUser> getStudentMap(){
+		return getUserMap(false, UserPermissionLevel.STUDENT);
+	}
+	public Map<String, PASTAUser> getAllStudentMap(){
+		return getUserMap(true, UserPermissionLevel.STUDENT);
+	}
+	public Map<String, PASTAUser> getTutorMap(){
+		return getUserMap(false, UserPermissionLevel.TUTOR);
+	}
+	public Map<String, PASTAUser> getAllTutorMap(){
+		return getUserMap(true, UserPermissionLevel.TUTOR);
+	}
+	
+	private Map<String, PASTAUser> getUserMap(boolean includeInactive, UserPermissionLevel permissionLevel) {
 		Map<String, PASTAUser> userMap = new HashMap<String, PASTAUser>();
-		List<PASTAUser> users = getUserList();
+		List<PASTAUser> users = getUserList(includeInactive, permissionLevel);
 		for(PASTAUser user : users) {
 			userMap.put(user.getUsername(), user);
 		}
 		return userMap;
 	}
 	
-	/**
-	 * Get the collection of students
-	 * 
-	 * @return the collection of all students registered in the system
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PASTAUser> getStudentList(){
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
-		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
-		return getHibernateTemplate().findByCriteria(cr);
-	}
+
 	
 	/**
 	 * Get the set of users in a given tutorial
@@ -232,6 +307,7 @@ public class UserDAO extends HibernateDaoSupport{
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.add(Restrictions.eq("tutorial", tutorialName));
+		cr.add(Restrictions.eq("active", true));
 		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
@@ -247,6 +323,7 @@ public class UserDAO extends HibernateDaoSupport{
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.add(Restrictions.eq("stream", streamName));
+		cr.add(Restrictions.eq("active", true));
 		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
@@ -295,6 +372,7 @@ public class UserDAO extends HibernateDaoSupport{
 		delete(toDelete);
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentTutorials() {
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
@@ -302,6 +380,7 @@ public class UserDAO extends HibernateDaoSupport{
 		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentStreams() {
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
@@ -309,6 +388,7 @@ public class UserDAO extends HibernateDaoSupport{
 		return getHibernateTemplate().findByCriteria(cr);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentUsernames() {
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));

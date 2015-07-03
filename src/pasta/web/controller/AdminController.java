@@ -29,10 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -52,6 +48,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
+import pasta.domain.upload.UpdateUsersForm;
 import pasta.login.DBAuthValidator;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
@@ -94,6 +91,11 @@ public class AdminController {
 	@ModelAttribute("changePasswordForm")
 	public ChangePasswordForm returnNewUnitTestModel() {
 		return new ChangePasswordForm();
+	}
+	
+	@ModelAttribute("updateUsersForm")
+	public UpdateUsersForm returnUpdateUsersForm() {
+		return new UpdateUsersForm();
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
@@ -198,11 +200,9 @@ public class AdminController {
 	}
 	
 	/**
-	 * $PASTAUrl$/admin/replaceStudents/ - POST
+	 * $PASTAUrl$/admin/updateUsers/ - POST
 	 * <p>
-	 * Replace the list of students with a new one. 
-	 * Parse the csv format that is passed in (e.g. username,stream,class), turn into
-	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#replaceStudents(List)}.
+	 * Updates the list of either students or tutors/instructors. This may be an update or replace operation.
 	 * <p>
 	 * Ensure user exists and has authenticated against the system.
 	 * If they have not, redirect them to the referring url.
@@ -211,204 +211,19 @@ public class AdminController {
 	 * 
 	 * @param model the model
 	 * @param request the http request object, used to send the user back to the page that referred them
-	 * @param list the list of students which will be used to replace (csv format).
 	 * @return redirect to the referrer url
 	 */
-	@RequestMapping(value = "/replaceStudents/", method = RequestMethod.POST)
-	public String replaceStudents(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String list) {
-				
+	@RequestMapping(value = "/updateUsers/", method = RequestMethod.POST)
+	public String updateUsers(ModelMap model, HttpServletRequest request,
+			@ModelAttribute("updateStudentsForm") UpdateUsersForm form) {
 		PASTAUser user = getUser();
-	
-		if(user != null && user.isTutor()){
-			// replace classlist
-			Scanner in = new Scanner(list);
-			List<PASTAUser> users = new LinkedList<PASTAUser>();
-			
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				String[] split = line.split(",");
-				if(split.length == 3){
-					PASTAUser currUser = new PASTAUser();
-					currUser.setUsername(split[0]);
-					currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					currUser.setStream(split[1]);
-					currUser.setTutorial(split[2]);
-					
-					users.add(currUser);
-				}
-			}
-			in.close();
-			userManager.replaceStudents(users);
+		if(user == null || user.getPermissionLevel() == UserPermissionLevel.STUDENT || 
+				(form.isUpdateTutors() && user.getPermissionLevel() == UserPermissionLevel.TUTOR)) {
+			return "redirect:" + request.getHeader("Referer");
 		}
 		
-		return "redirect:" + request.getHeader("Referer");
-	}
-	
-	/**
-	 * $PASTAUrl$/admin/updateStudents/ - POST
-	 * <p>
-	 * Update the list of students with a new one. 
-	 * Parse the csv format that is passed in (e.g. username,stream,class), turn into
-	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#updateStudents(List)}.
-	 * <p>
-	 * Ensure user exists and has authenticated against the system.
-	 * If they have not, redirect them to the referring url.
-	 * <p>
-	 * <b>REQUIRES: Tutor or higher permission</b>
-	 * 
-	 * @param model the model
-	 * @param request the http request object, used to send the user back to the page that referred them
-	 * @param list the list of students which will be used to replace (csv format).
-	 * @return redirect to the referrer url
-	 */
-	@RequestMapping(value = "/updateStudents/", method = RequestMethod.POST)
-	public String updateStudents(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String list) {
-				
-		PASTAUser user = getUser();
-	
-		if(user != null && user.isTutor()){
-			// update classlist
-			Scanner in = new Scanner(list);
-			List<PASTAUser> users = new LinkedList<PASTAUser>();
-			
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				String[] split = line.split(",");
-				if(split.length == 3){
-					PASTAUser currUser = new PASTAUser();
-					currUser.setUsername(split[0]);
-					currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					currUser.setStream(split[1]);
-					currUser.setTutorial(split[2]);
-					
-					users.add(currUser);
-				}
-			}
-			in.close();
-			userManager.updateStudents(users);
-		}
-				
-		return "redirect:" + request.getHeader("Referer");
-	}
-
-	/**
-	 * $PASTAUrl$/admin/replaceTutors/ - POST
-	 * <p>
-	 * Replace the list of teaching staff with a new one. 
-	 * Parse the csv format that is passed in (e.g. username,permissionlevel,class1,class2,...,classN), turn into
-	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#replaceTutors(List)}.
-	 * <p>
-	 * Ensure user exists and has authenticated against the system.
-	 * If they have not, redirect them to the referring url.
-	 * <p>
-	 * <b>REQUIRES: Tutor or higher permission</b>
-	 * 
-	 * @param model the model
-	 * @param request the http request object, used to send the user back to the page that referred them
-	 * @param list the list of teaching staff which will be used to replace (csv format).
-	 * @return redirect to the referrer url
-	 */
-	@RequestMapping(value = "/replaceTutors/", method = RequestMethod.POST)
-	public String replaceTutors(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String list) {
-				
-		PASTAUser user = getUser();
-
-		if(user != null && user.isTutor()){
-			// replace classlist
-			Scanner in = new Scanner(list);
-			List<PASTAUser> users = new LinkedList<PASTAUser>();
-			
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				String[] split = line.split(",");
-				if(split.length >= 3){
-					PASTAUser currUser = new PASTAUser();
-					String classes = new String(line);
-					currUser.setUsername(split[0]);
-					currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					classes = classes.replaceFirst(split[0]+",", "");
-					if(split[1].trim().toLowerCase().equals("instructor")){
-						currUser.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
-					}
-					else if(split[1].trim().toLowerCase().equals("tutor")){
-						currUser.setPermissionLevel(UserPermissionLevel.TUTOR);
-					}
-					else{
-						currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					}
-					currUser.setStream("");
-					classes = classes.replaceFirst(split[1]+",", "");
-					currUser.setTutorial(classes);
-					
-					users.add(currUser);
-				}
-			}
-			in.close();
-			userManager.replaceStudents(users);
-		}
-				
-		return "redirect:" + request.getHeader("Referer");
-	}
-	
-	/**
-	 * $PASTAUrl$/admin/updateTutors/ - POST
-	 * <p>
-	 * Update the list of teaching staff with a new one. 
-	 * Parse the csv format that is passed in (e.g. username,permissionlevel,class1,class2,...,classN), turn into
-	 * {@link pasta.domain.PASTAUser} and then call {@link pasta.service.UserManager#updateTutors(List)}.
-	 * <p>
-	 * Ensure user exists and has authenticated against the system.
-	 * If they have not, redirect them to the referring url.
-	 * <p>
-	 * <b>REQUIRES: Tutor or higher permission</b>
-	 * 
-	 * @param model the model
-	 * @param request the http request object, used to send the user back to the page that referred them
-	 * @param list the list of teaching staff which will be used to replace (csv format).
-	 * @return redirect to the referrer url
-	 */
-	@RequestMapping(value = "/updateTutors/", method = RequestMethod.POST)
-	public String updateTutors(ModelMap model, HttpServletRequest request,
-			@RequestParam(value="list") String list) {
-				
-		PASTAUser user = getUser();
+		userManager.updateUsers(form);
 		
-		if(user != null && user.isTutor()){
-			// update classlist
-			Scanner in = new Scanner(list);
-			List<PASTAUser> users = new LinkedList<PASTAUser>();
-			
-			while(in.hasNextLine()){
-				String line = in.nextLine();
-				String[] split = line.split(",");
-				if(split.length >= 3){
-					PASTAUser currUser = new PASTAUser();
-					String classes = new String(line);
-					currUser.setUsername(split[0]);
-					currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					classes = classes.replaceFirst(split[0]+",", "");
-					if(split[1].trim().toLowerCase().equals("instructor")){
-						currUser.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
-					}
-					else if(split[1].trim().toLowerCase().equals("tutor")){
-						currUser.setPermissionLevel(UserPermissionLevel.TUTOR);
-					}
-					else{
-						currUser.setPermissionLevel(UserPermissionLevel.STUDENT);
-					}
-					currUser.setStream("");
-					classes = classes.replaceFirst(split[1]+",", "");
-					currUser.setTutorial(classes);
-					
-					users.add(currUser);
-				}
-			}
-			userManager.updateTutors(users);
-		}
-				
 		return "redirect:" + request.getHeader("Referer");
 	}
 	

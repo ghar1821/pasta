@@ -29,10 +29,14 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -45,6 +49,7 @@ import org.springframework.stereotype.Service;
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.template.Assessment;
+import pasta.domain.upload.UpdateUsersForm;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;
 import pasta.util.ProjectProperties;
@@ -166,33 +171,14 @@ public class UserManager {
 	 * @return the user object
 	 */
 	public PASTAUser getOrCreateUser(PASTAUser checkUser) {
-		PASTAUser user = userDao.getUser(checkUser.getId());
+		PASTAUser user = userDao.getUser(checkUser.getUsername());
 		if(user == null){
-			user = new PASTAUser();
-			user.setUsername(checkUser.getUsername());
-			user.setStream("");
-			user.setTutorial("");
-			user.setPermissionLevel(UserPermissionLevel.STUDENT);
+			user = createStudent(checkUser.getUsername(), "", "");
 			userDao.add(user);
+		} else if(!user.isActive()) {
+			userDao.undelete(user);
 		}
 		return user;
-	}
-
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.service.UserManager#giveExtension(PASTAUser, String, Date)
-	 * @param username the username of the student getting an extension
-	 * @param assessmentId the id of the assessment
-	 * @param extension the new due date for the assessment
-	 * @deprecated use the (PASTAUser, long, Date) version
-	 */
-	@Deprecated
-	public void giveExtension(String username, long assessmentId, Date extension) {
-		PASTAUser user = getUser(username);
-		if(user != null){
-			giveExtension(user, assessmentId, extension);
-		}
 	}
 	
 	/**
@@ -229,46 +215,6 @@ public class UserManager {
 	public LoginDAO getLoginDao() {
 		return loginDao;
 	}
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.UserDAO#replaceStudents(List)
-	 * @param users the list of students to replace the current list with
-	 */
-	public void replaceStudents(List<PASTAUser> users){
-		userDao.replaceStudents(users);
-	}
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.UserDAO#updateStudents(List)
-	 * @param users the list of students to update the current list with
-	 */
-	public void updateStudents(List<PASTAUser> users){
-		userDao.updateStudents(users);
-	}
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.UserDAO#replaceTutors(List)
-	 * @param users the list of tutors and instructors to replace the current list with
-	 */
-	public void replaceTutors(List<PASTAUser> users){
-		userDao.replaceTutors(users);
-	}
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.UserDAO#replaceTutors(List)
-	 * @param users the list of tutors and instructors to update the current list with
-	 */
-	public void updateTutors(List<PASTAUser> users){
-		userDao.updateTutors(users);
-	}
 
 	/**
 	 * Helper method
@@ -302,5 +248,96 @@ public class UserManager {
 	
 	public List<String> getStudentUsernameList() {
 		return userDao.getAllStudentUsernames();
+	}
+
+	/**
+	 * Updates the list of either students or tutors/instructors. This may be an update or replace operation.
+	 * If the form contains an uploaded file, then parse it, otherwise use the plain text given.
+	 * Input should be in the form:
+	 * 	<code>username,permission,tutorial{,tutorial}</code> for tutors
+	 * 	<code>username,stream,tutorial</code> for students
+	 * Each line is turned into a {@link pasta.domain.PASTAUser} and then calls either 
+	 * {@link UserDAO#replaceUsers(List, boolean)} or {@link UserDAO#updateUsers(List)}
+	 * 
+	 * @param form the form containing update information
+	 */
+	public void updateUsers(UpdateUsersForm form) {
+		File updateFile = null;
+		Scanner content = null;
+		if(form.getUpdateFile() != null) {
+			updateFile = new File(ProjectProperties.getInstance().getSandboxLocation() + form.getUpdateFile().getOriginalFilename());
+			try {
+				form.getUpdateFile().transferTo(updateFile);
+				content = new Scanner(updateFile);
+			} catch (IllegalStateException | IOException e) {
+				logger.error("Problem saving uploaded file to sandbox: " + updateFile, e);
+			}
+		} else if(form.getUpdateContents() != null) {
+			content = new Scanner(form.getUpdateContents());
+		} else {
+			return;
+		}
+		
+		List<PASTAUser> users = new LinkedList<PASTAUser>();
+		while(content.hasNext()) {
+			String line = content.nextLine();
+			String[] parts = line.split(",", 3);
+			
+			PASTAUser user = null;
+			if(form.isUpdateTutors()) {
+				user = createTutor(parts);
+			} else {
+				user = createStudent(parts);
+			}
+			if(user != null) {
+				users.add(user);
+			}
+		}
+		
+		content.close();
+		if(updateFile != null) {
+			updateFile.delete();
+		}
+		
+		if(form.isReplace()) {
+			userDao.replaceUsers(users, form.isUpdateTutors());
+		} else {
+			userDao.updateUsers(users);
+		}
+	}
+
+	private PASTAUser createStudent(String... parts) {
+		if(parts.length < 1) {
+			return null;
+		}
+		PASTAUser user = new PASTAUser();
+		user.setPermissionLevel(UserPermissionLevel.STUDENT);
+		user.setUsername(parts[0]);
+		if(parts.length > 1) {
+			user.setStream(parts[1]);
+		}
+		if(parts.length > 2) {
+			user.setTutorial(parts[2]);
+		}
+		return user;
+	}
+
+	private PASTAUser createTutor(String... parts) {
+		if(parts.length < 2) {
+			return null;
+		}
+		PASTAUser user = new PASTAUser();
+		user.setUsername(parts[0]);
+		if(parts[1].toUpperCase().equals(UserPermissionLevel.TUTOR.name())) {
+			user.setPermissionLevel(UserPermissionLevel.TUTOR);
+		} else if(parts[1].toUpperCase().equals(UserPermissionLevel.INSTRUCTOR.name())) {
+			user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			return null;
+		}
+		if(parts.length > 2) {
+			user.setTutorial(parts[2]);
+		}
+		return user;
 	}
 }

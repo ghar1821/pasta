@@ -144,16 +144,23 @@ public class AuthenticationController {
 		loginForm.setUnikey(loginForm.getUnikey().trim());
 		
 		ProjectProperties.getInstance().getAuthenticationValidator().validate(loginForm, result);
-		if(!ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin() && 
-				userManager.getUser(loginForm.getUnikey()) == null){
-			result.rejectValue("password", "NotAvailable.loginForm.password");
+		PASTAUser user = userManager.getUser(loginForm.getUnikey());
+		if(user == null || !user.isActive()) {
+			if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
+				user = new PASTAUser();
+				user.setUsername(loginForm.getUnikey());
+				user = userManager.getOrCreateUser(user);
+			} else {
+				result.rejectValue("password", "NotAvailable.loginForm.password");
+			}
 		}
+		
 		if (result.hasErrors()) {
 			return "login";
 		}
-
+		
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
-				loginForm.getUnikey(), RequestAttributes.SCOPE_SESSION);
+				user, RequestAttributes.SCOPE_SESSION);
 
 		// Use the redirect-after-post pattern to reduce double-submits.
 		return "redirect:/home/";
