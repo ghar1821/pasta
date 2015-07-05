@@ -70,6 +70,7 @@ import pasta.testing.AntResults;
 import pasta.testing.ArenaCompetitionRunner;
 import pasta.testing.BlackBoxTestRunner;
 import pasta.testing.CBlackBoxTestRunner;
+import pasta.testing.CPPBlackBoxTestRunner;
 import pasta.testing.GenericScriptRunner;
 import pasta.testing.JUnitTestRunner;
 import pasta.testing.JavaBlackBoxTestRunner;
@@ -519,6 +520,8 @@ public class ExecutionManager {
 							runner = new JavaBlackBoxTestRunner(); break;
 						case C:
 							runner = new CBlackBoxTestRunner(); break;
+						case CPP:
+							runner = new CPPBlackBoxTestRunner(); break;
 						default:
 							finishTesting(test, job, "Language not yet implemented");
 							logger.error("Language not implemented.");
