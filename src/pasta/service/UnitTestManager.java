@@ -67,6 +67,7 @@ import pasta.testing.CBlackBoxTestRunner;
 import pasta.testing.CPPBlackBoxTestRunner;
 import pasta.testing.JUnitTestRunner;
 import pasta.testing.JavaBlackBoxTestRunner;
+import pasta.testing.PythonBlackBoxTestRunner;
 import pasta.testing.Runner;
 import pasta.testing.task.DirectoryCopyTask;
 import pasta.testing.task.FileOrDirectoryDeleteTask;
@@ -287,6 +288,8 @@ public class UnitTestManager {
 				runner = new CBlackBoxTestRunner(); break;
 			case CPP:
 				runner = new CPPBlackBoxTestRunner(); break;
+			case PYTHON:
+				runner = new PythonBlackBoxTestRunner(); break;
 			default:
 				finishTesting(test, "Language not yet implemented");
 				logger.error("Language not implemented.");
