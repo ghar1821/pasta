@@ -42,7 +42,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1445,11 +1444,14 @@ public class SubmissionController {
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentId", assessmentId);
-
-		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
-		for (String tutorial : user.getTutorClasses()) {
-			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
+		
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(assessment == null) {
+			return "redirect:/home/.";
 		}
+		model.addAttribute("assessmentName", assessment.getName());
+
+		Collection<PASTAUser> myUsers = userManager.getTutoredStudents(user);
 		PASTAUser[] myStudents = myUsers.toArray(new PASTAUser[0]);
 
 		// if submitted
@@ -1536,19 +1538,14 @@ public class SubmissionController {
 		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("assessmentId", assessmentId);
 
-		if (assessmentManager.getAssessment(assessmentId) != null) {
-			// find the first student with a submission
-			int i = 0;
-			for (String tutorial : user.getTutorClasses()) {
-				for (PASTAUser student : userManager.getUserListByTutorial(tutorial)) {
-					if (assessmentManager.getLatestAssessmentResult(student, assessmentId) != null) {
-						return "redirect:" + request.getServletPath() + i + "/";
-					}
-					++i;
-				}
+		// find the first student with a submission
+		int i = 0;
+		for (PASTAUser student : userManager.getTutoredStudents(user)) {
+			if (assessmentManager.getLatestAssessmentResult(student, assessmentId) != null) {
+				return "redirect:" + request.getServletPath() + i + "/";
 			}
+			++i;
 		}
 		return "redirect:/home/.";
 	}
@@ -1661,11 +1658,7 @@ public class SubmissionController {
 			return "";
 		}
 
-		Collection<PASTAUser> myUsers = new LinkedList<PASTAUser>();
-		for (String tutorial : currentUser.getTutorClasses()) {
-			myUsers.addAll(userManager.getUserListByTutorial(tutorial));
-		}
-
+		Collection<PASTAUser> myUsers = userManager.getTutoredStudents(currentUser);
 		return generateJSON(myUsers.toArray(new PASTAUser[0]));
 	}
 

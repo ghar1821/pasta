@@ -118,7 +118,6 @@ public class UserDAO extends HibernateDaoSupport{
 	 */
 	public void updateUsers(List<PASTAUser> users){
 		Map<String, PASTAUser> currentUsers = getAllUserMap();
-		logger.warn("Updating...");
 		for(PASTAUser user: users){
 			if(currentUsers.containsKey(user.getUsername())){
 				PASTAUser toUpdate = currentUsers.get(user.getUsername());
@@ -126,11 +125,9 @@ public class UserDAO extends HibernateDaoSupport{
 				toUpdate.setStream(user.getStream());
 				toUpdate.setTutorial(user.getTutorial());
 				toUpdate.setActive(true);
-				logger.warn("Updating: " + user.getUsername());
 				update(toUpdate);
 			}
 			else{
-				logger.warn("Adding: " + user.getUsername());
 				save(user);
 			}
 		}
@@ -293,36 +290,24 @@ public class UserDAO extends HibernateDaoSupport{
 		return userMap;
 	}
 	
-
-	
 	/**
-	 * Get the set of users in a given tutorial
+	 * Get the set of users in a given stream and tutorial
 	 * <p>
 	 * Will never return null.
-	 * @param tutorialName the name of the tutorial	
-	 * @return the collection of students in a given tutorial
-	 */
+	 * @param streamName the name of the stream; null for all streams
+	 * @param tutorialName the name of the tutorial; null for all tutorials
+	 * @return the collection of students in a given stream and tutorial
+	 */	
 	@SuppressWarnings("unchecked")
-	public List<PASTAUser> getUserListByTutorial(String tutorialName){
+	public List<PASTAUser> getUserListByTutorialAndStream(String streamName, String tutorialName) {
 		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
-		cr.add(Restrictions.eq("tutorial", tutorialName));
-		cr.add(Restrictions.eq("active", true));
-		return getHibernateTemplate().findByCriteria(cr);
-	}
-	
-	/**
-	 * Get the set of users in a given stream
-	 * <p>
-	 * Will never return null.
-	 * @param streamName the name of the stream
-	 * @return the collection of users in a given stream
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PASTAUser> getUserListByStream(String streamName){
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
-		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
-		cr.add(Restrictions.eq("stream", streamName));
+		if(streamName != null) {
+			cr.add(Restrictions.eq("stream", streamName));
+		}
+		if(tutorialName != null) {
+			cr.add(Restrictions.eq("tutorial", tutorialName));
+		}
 		cr.add(Restrictions.eq("active", true));
 		return getHibernateTemplate().findByCriteria(cr);
 	}

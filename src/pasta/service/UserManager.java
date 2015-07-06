@@ -128,6 +128,32 @@ public class UserManager {
 	}
 
 	/**
+	 * Gets the collection of all students that this tutor teaches. If the tutor
+	 * teaches "a.c1", all students in the stream "a" and tutorial "c1" are
+	 * included. If the tutor teaches just "c1", all students in the tutorial
+	 * "c1" are included, regardless of stream.
+	 * 
+	 * @param user the tutor
+	 * @return a list of students taught by this tutor
+	 */
+	public Collection<PASTAUser> getTutoredStudents(PASTAUser user) {
+		List<PASTAUser> students = new LinkedList<PASTAUser>();
+		if(!user.isTutor()) {
+			return students;
+		}
+		String[] classes = user.getTutorClasses();
+		for(String tutorial : classes) {
+			String[] parts = tutorial.split("\\.", 2);
+			if(parts.length == 1) {
+				students.addAll(getUserListByTutorial(tutorial));
+			} else {
+				students.addAll(getUserListByTutorialAndStream(parts[0], parts[1]));
+			}
+		}
+		return students;
+	}
+	
+	/**
 	 * Helper method
 	 * 
 	 * @see pasta.repository.UserDAO#getTutorialByStream()
@@ -141,23 +167,35 @@ public class UserManager {
 	/**
 	 * Helper method
 	 * 
-	 * @see pasta.repository.UserDAO#getUserListByTutorial(String)
+	 * @see pasta.repository.UserDAO#getUserListByTutorialAndStream(String, String)
 	 * @param className the name of the tutorial class
 	 * @return the collection of users that belong to a tutorial
 	 */
 	public Collection<PASTAUser> getUserListByTutorial(String className) {
-		return userDao.getUserListByTutorial(className);
+		return getUserListByTutorialAndStream(null, className);
 	}
 	
 	/**
 	 * Helper method
 	 * 
-	 * @see pasta.repository.UserDAO#getUserListByStream(String)
+	 * @see pasta.repository.UserDAO#getUserListByTutorialAndStream(String, String)
 	 * @param stream the name of the stream
 	 * @return the collection of users that belong to a stream
 	 */
 	public Collection<PASTAUser> getUserListByStream(String stream) {
-		return userDao.getUserListByStream(stream);
+		return getUserListByTutorialAndStream(stream, null);
+	}
+	
+	/**
+	 * Helper method
+	 * 
+	 * @see pasta.repository.UserDAO#getUserListByTutorialAndStream(String, String)
+	 * @param stream the name of the stream
+	 * @param tutorial the name of the tutorial class
+	 * @return the collection of users that belong to a stream and tutorial
+	 */
+	public Collection<PASTAUser> getUserListByTutorialAndStream(String stream, String tutorial) {
+		return userDao.getUserListByTutorialAndStream(stream, tutorial);
 	}
 	
 	/**

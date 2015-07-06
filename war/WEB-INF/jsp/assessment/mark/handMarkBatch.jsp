@@ -33,6 +33,8 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<%@ taglib prefix="pasta" uri="pastaTag"%>
+
 <c:set var="nextStudent" value="-1"/>
 <c:forEach var="student" items="${hasSubmission}" varStatus="studentStatus">
 		<c:choose>
@@ -51,7 +53,7 @@ either expressed or implied, of the PASTA Project.
 		</c:choose>
 </c:forEach>
 
-<h1>${assessmentName} - ${student} -  Submitted: ${assessmentResult.submissionDate}</h1>
+<h1>${assessmentName} - ${student} -  Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /></h1>
 
 <jsp:include page="../../recursive/fileWriterRoot.jsp"/>
 
