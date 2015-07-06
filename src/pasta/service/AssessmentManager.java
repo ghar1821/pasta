@@ -354,6 +354,8 @@ public class AssessmentManager {
 		assessment.setDescription(form.getDescription());
 		assessment.setSolutionName(form.getSolutionName());
 		
+		assessment.setSubmissionLanguages(form.getLanguages());
+		
 		for(WeightedUnitTest test : form.getNewUnitTests()) {
 			test.setSecret(false);
 		}

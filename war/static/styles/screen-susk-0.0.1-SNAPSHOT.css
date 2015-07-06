@@ -80,8 +80,19 @@ h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
 	padding:0.5em;
 }
 
-table.alignCellsTop td {
+table.alignCellsTop td, table.alignCellsTop th {
 	vertical-align: top;
+}
+
+table.noGaps {
+	border-collapse: collapse;
+}
+tr.spaceBelow+tr td {
+	padding-top: 1.5em;
+}
+tr.spaceBelow td {
+	border-bottom: 1px solid gray;
+	padding-bottom: 1.5em;
 }
 
 span.help {

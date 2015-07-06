@@ -34,12 +34,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -57,6 +62,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.release.ReleaseRule;
+import pasta.util.Language;
 
 /**
  * Container class for the assessment.
@@ -170,6 +176,12 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedCompetition> competitions = new TreeSet<WeightedCompetition>();
 	
+	@ElementCollection
+	@Enumerated(EnumType.STRING)
+	@JoinTable(name = "assessment_languages", joinColumns = @JoinColumn(name = "assessment_id"))
+	@Column(name = "language")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Set<Language> submissionLanguages = new TreeSet<Language>();
 	
 	public long getId() {
 		return id;
@@ -242,6 +254,44 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	public void setReleaseRule(ReleaseRule releaseRule) {
 		this.releaseRule = releaseRule;
+	}
+	
+	public Set<Language> getSubmissionLanguages() {
+		return submissionLanguages;
+	}
+	public void setSubmissionLanguages(Set<Language> submissionLanguages) {
+		this.submissionLanguages = submissionLanguages;
+	}
+	public boolean isAllowed(Language thisLanguage) {
+		return submissionLanguages.isEmpty() || submissionLanguages.contains(thisLanguage);
+	}
+	public String getSampleSubmissionName() {
+		String sample = getSolutionName();
+		if(sample == null) {
+			return "";
+		}
+		if(getSubmissionLanguages().isEmpty()) {
+			return sample;
+		}
+		Language sampleLang = getSubmissionLanguages().iterator().next();
+		if(sampleLang.getExtensions().isEmpty()) {
+			return sample;
+		}
+		return sample + "." + sampleLang.getExtensions().iterator().next();
+	}
+	
+	public List<String> getExpectedDirectories() {
+		if(!isAutoMarked()) {
+			return null;
+		}
+		List<String> dirs = new LinkedList<String>();
+		for(WeightedUnitTest weightedTest : getAllUnitTests()) {
+			String dir = weightedTest.getTest().getSubmissionCodeRoot();
+			if(dir != null && !dir.isEmpty()) {
+				dirs.add(dir);
+			}
+		}
+		return dirs;
 	}
 	
 	public Set<WeightedUnitTest> getUnitTests() {
@@ -352,6 +402,10 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		}
 	}
 	
+	public boolean isAutoMarked() {
+		return !this.getAllUnitTests().isEmpty();
+	}
+	
 	public void removeUnitTests(Collection<WeightedUnitTest> weightedUnitTests) {
 		for(WeightedUnitTest test : weightedUnitTests) {
 			removeUnitTest(test);
@@ -380,6 +434,10 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		for(WeightedHandMarking handMarking : weightedHandMarkings) {
 			removeHandMarking(handMarking);
 		}
+	}
+	
+	public boolean isHandMarked() {
+		return !this.getHandMarking().isEmpty();
 	}
 
 	public void addCompetition(WeightedCompetition weightedComp) {

@@ -77,6 +77,7 @@ import pasta.service.ReleaseManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
+import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -295,6 +296,9 @@ public class AssessmentController {
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("otherHandMarking", otherHandMarking);
 		model.addAttribute("otherCompetitions", otherCompetitions);
+		
+		model.addAttribute("allLanguages", Language.values());
+		
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}

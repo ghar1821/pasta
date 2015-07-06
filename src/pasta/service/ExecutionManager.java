@@ -31,7 +31,6 @@ package pasta.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -451,10 +450,6 @@ public class ExecutionManager {
 		
 		Assessment currAssessment = assDao.getAssessment(job.getAssessmentId());
 		
-		logger.warn("submissionLoc: " + submissionLoc);
-		logger.warn("sandboxLoc: " + sandboxLoc);
-		logger.warn("currAssessment: " + currAssessment.getId());
-		
 		try {
 			logger.info("Running unit test " + currAssessment.getName()
 					+ " for " + job.getUser().getUsername() + " with ExecutionScheduler - " + this);
@@ -466,8 +461,6 @@ public class ExecutionManager {
 			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
 				try {
 					UnitTest test = weightedTest.getTest();
-					logger.warn("weightedTest: " + weightedTest);
-					logger.warn("test: " + test.getName());
 					
 					String mainClass = test.getMainClassName();
 					if(mainClass == null || mainClass.isEmpty()) {
@@ -478,10 +471,8 @@ public class ExecutionManager {
 					
 					File testSandboxLoc = new File(sandboxLoc, test.getFileAppropriateName());
 					testSandboxLoc.mkdirs();
-					logger.warn("testSandboxLoc: " + testSandboxLoc);
 					
 					File testLoc = test.getCodeLocation();
-					logger.warn("testLoc: " + testLoc);
 					
 					Runner runner = null;
 					String[] targets = null;
@@ -494,25 +485,25 @@ public class ExecutionManager {
 							continue;
 						}
 						String base = test.getSubmissionCodeRoot();
-						logger.warn("base: " + base);
 						
 						String[] submissionContents = PASTAUtil.listDirectoryContents(submissionLoc);
-						logger.warn("submissionContents: " + Arrays.toString(submissionContents));
 						String shortest = null;
+						Language subLanguage = null;
 						for(String filename : submissionContents) {
 							if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
-								if(Language.getLanguage(filename) != null) {
+								Language thisLanguage = Language.getLanguage(filename);
+								if(thisLanguage != null && currAssessment.isAllowed(thisLanguage)) {
 									if(shortest == null || filename.length() < shortest.length()) {
 										shortest = filename;
+										subLanguage = thisLanguage;
 									}
 								}
 							}
 						}
-						Language subLanguage = Language.getLanguage(shortest);
 						
 						if(subLanguage == null) {
 							finishTesting(test, job, "No suitable language recognised");
-							logger.error("Language not recognised.");
+							logger.error("No suitable language recognised.");
 							continue;
 						}
 						

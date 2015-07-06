@@ -44,14 +44,47 @@ either expressed or implied, of the PASTA Project.
 	${assessment.name}
 </h1>
 
-<table>
+<table class='alignCellsTop'>
 	<tr><th>Due Date</th><td><pasta:readableDate date="${assessment.dueDate}" /></td></tr>
 	<tr><th>Possible Marks</th><td>${assessment.marks}</td></tr>
+	<c:if test="${not empty assessment.submissionLanguages}">
+		<tr><th>Allowed Languages</th><td>
+			<c:forEach var="language" items="${assessment.submissionLanguages}">
+				<div><code>${language.description}</code></div>
+			</c:forEach>
+		</td></tr>
+	</c:if>
 </table>
 
 <c:if test="${not empty assessment.description}">
-	<h6>Description</h6>
+	<h4>Assessment Description</h4>
 	${assessment.description}
+</c:if>
+
+<c:if test="${assessment.autoMarked}">
+	<h4>General Submission Instructions</h4>
+	<c:if test="${not empty assessment.solutionName}">
+	<c:choose>
+		<c:when test="${empty assessment.submissionLanguages}">
+			<p>Your submission must be in a file named <code>${assessment.solutionName}</code>.
+		</c:when>
+		<c:otherwise>
+			<p>Your submission must be written in one of the languages listed above. It must include a main file named <code>${assessment.solutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
+		</c:otherwise>
+	</c:choose>
+	</c:if>
+	<c:choose>
+		<c:when test="${fn:length(assessment.expectedDirectories) == 1}">
+			<p>Your code submission must be in a directory called <code>${assessment.expectedDirectories[0]}</code>.
+		</c:when>
+		<c:when test="${not empty assessment.expectedDirectories}">
+			<p>Your code submission must contain the following code directories:
+			<c:forEach var="dir" items="${assessment.expectedDirectories}" varStatus="loop">
+				<code>${dir}</code><c:if test="${!loop.last}">, </c:if>
+			</c:forEach>
+		</c:when>
+	</c:choose>
+	<p><c:if test="${empty assessment.expectedDirectories}">If your submission contains multiple files, </c:if><strong>zip</strong> your submission into a <code>.zip</code> file and submit that. Do not use any other zip format (e.g. <code>.rar</code> or <code>.7z</code>).
 </c:if>
 
 <c:choose>

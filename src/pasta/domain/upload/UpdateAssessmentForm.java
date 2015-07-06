@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.collections4.FactoryUtils;
 import org.apache.commons.collections4.list.LazyList;
@@ -46,6 +48,7 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.util.Language;
 
 /**
  * Form object for updating assessments.
@@ -67,6 +70,8 @@ public class UpdateAssessmentForm {
 	private String description;
 	private String solutionName;
 	
+	private Set<Language> languages;
+	
 	private List<WeightedUnitTest> newUnitTests;
 	private List<WeightedUnitTest> newSecretUnitTests;
 	private List<WeightedHandMarking> newHandMarking;
@@ -87,6 +92,8 @@ public class UpdateAssessmentForm {
 		this.countUncompilable = base.isCountUncompilable();
 		this.description = base.getDescription();
 		this.solutionName = base.getSolutionName();
+		
+		this.languages = new TreeSet<Language>(base.getSubmissionLanguages());
 		
 		/*
 		 * The assessment modules have to be in a lazy list for the drag and drop
@@ -165,6 +172,13 @@ public class UpdateAssessmentForm {
 	}
 	public void setSolutionName(String solutionName) {
 		this.solutionName = solutionName;
+	}
+
+	public Set<Language> getLanguages() {
+		return languages;
+	}
+	public void setLanguages(Set<Language> languages) {
+		this.languages = languages;
 	}
 
 	public ReleaseRule getReleaseRule() {

@@ -10,10 +10,12 @@ import java.util.TreeSet;
  * @since 27 Jun 2015
  */
 public enum Language {
-	JAVA("java"), C("c"), CPP("cpp", "cc"), PYTHON("py"), MATLAB("m");
+	JAVA("Java", "java"), C("C", "c"), CPP("C++", "cpp", "cc"), PYTHON("Python", "py");
 	
+	private String name;
 	private TreeSet<String> extensions;
-	private Language(String... extensions) {
+	private Language(String name, String... extensions) {
+		this.name = name;
 		this.extensions = new TreeSet<String>(Arrays.asList(extensions));
 	}
 	public boolean isLanguage(File file) {
@@ -36,5 +38,24 @@ public enum Language {
 			}
 		}
 		return null;
+	}
+	public String getDescription() {
+		return toString();
+	}
+	public TreeSet<String> getExtensions() {
+		return extensions;
+	}
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(name).append(" [");
+		for(String ext : extensions) {
+			 sb.append("\".").append(ext).append("\", ");
+		}
+		sb.delete(sb.length() - 2, sb.length());
+		if(extensions.size() > 0) {
+			sb.append("]");
+		}
+		return sb.toString();
 	}
 }
