@@ -107,7 +107,7 @@ either expressed or implied, of the PASTA Project.
 <c:if test="${unikey.tutor}">
 
 	<h1>Tutors</h1>
-		<table class='dataTable'>
+		<table class='dataTable hover row-border'>
 			<thead>
 				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><th></th></tr>
 			</thead>
@@ -133,7 +133,7 @@ either expressed or implied, of the PASTA Project.
 		
 	
 	<h1>Students</h1>
-		<table class='dataTable'>
+		<table class='dataTable hover row-border'>
 			<thead>
 				<tr><th>Username</th><th>Stream</th><th>Tutorial</th><th></th></tr>
 			</thead>
