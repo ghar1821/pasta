@@ -40,6 +40,7 @@ import java.util.TreeMap;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -48,12 +49,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.PASTAUser;
@@ -63,6 +67,7 @@ import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
 import pasta.domain.upload.TestUnitTestForm;
 import pasta.domain.upload.UpdateUnitTestForm;
+import pasta.domain.upload.validate.UpdateUnitTestFormValidator;
 import pasta.service.UnitTestManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -131,6 +136,16 @@ public class UnitTestController {
 	@ModelAttribute("unitTest")
 	public UnitTest loadUnitTest(@PathVariable("testId") long testId) {
 		return unitTestManager.getUnitTest(testId);
+	}
+	
+	// ///////////////////////////////////////////////////////////////////////////
+	// Init Binder //
+	// ///////////////////////////////////////////////////////////////////////////
+
+
+	@InitBinder("updateUnitTest")
+	protected void initBinder(WebDataBinder binder) {
+		binder.addValidators(new UpdateUnitTestFormValidator());
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -296,15 +311,21 @@ public class UnitTestController {
 	 */
 	@RequestMapping(value = "{testId}/", method = RequestMethod.POST)
 	public String updateUnitTest(@PathVariable("testId") long testId,
-			@ModelAttribute(value = "updateUnitTest") UpdateUnitTestForm updateForm,
+			@Valid @ModelAttribute(value = "updateUnitTest") UpdateUnitTestForm updateForm, BindingResult result,
 			@ModelAttribute(value = "unitTest") UnitTest test,
-			BindingResult result, Model model) {
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
 			return "redirect:/home/";
+		}
+		
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("updateUnitTest", updateForm);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateUnitTest", result);
+			return "redirect:.";
 		}
 		
 		if(updateForm != null && getUser().isInstructor()) {

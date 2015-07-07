@@ -51,7 +51,7 @@ either expressed or implied, of the PASTA Project.
 			</c:choose><span class='help'>If an assessment is to run student submissions as code using this test, these are the languages that can be run using this test type.</span>
 		</td></tr>
 		<tr><td colspan='2'><hr /></td></tr>
-		<tr><td>Name:</td><td><form:input path="name" /></td></tr>
+		<tr><td>Name:</td><td><form:input path="name" /> <form:errors path="name" /></td></tr>
 		<tr><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
 		
 		<c:if test="${unitTest['class'].simpleName == 'UnitTest'}">
@@ -84,6 +84,7 @@ either expressed or implied, of the PASTA Project.
 	</table> 
 	<c:if test="${unitTest['class'].simpleName == 'BlackBoxTest'}">
 		<div id='allTestCases' class='vertical-block'>
+			<form:errors path="testCases" element="div" />
 			<c:forEach var="testCase" items="${updateUnitTest.testCases}" varStatus="testStatus">
 				<div class='testCase boxCard vertical-block'>
 					<form:hidden path="testCases[${testStatus.index}].id"/>
@@ -93,13 +94,13 @@ either expressed or implied, of the PASTA Project.
 						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
 					</div>
 					<div class='vertical-block showHide'>
-						<p>Test Name: <form:input path="testCases[${testStatus.index}].testName"/>
+						<p>Test Name: <form:input path="testCases[${testStatus.index}].testName"/> <form:errors path="testCases[${testStatus.index}].testName" />
 					</div>
 					<div class='vertical-block'>
 						<table class='alignCellsTop'>
 							<tr>
 								<td>Timeout (ms):</td>
-								<td><form:input path="testCases[${testStatus.index}].timeout"/></td>
+								<td><form:input path="testCases[${testStatus.index}].timeout"/> <form:errors path="testCases[${testStatus.index}].timeout" /></td>
 								<td></td>
 							</tr>
 							<tr>
@@ -318,7 +319,8 @@ either expressed or implied, of the PASTA Project.
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
             });
             
-            $("#addTest").on("click", function() {
+            $("#addTest").on("click", function(e) {
+            	e.preventDefault();
             	var newIndex = $("#allTestCases").children(".testCase").length;
             	var $emptyTest = $("#emptyTest").children().first().clone();
             	if(newIndex > 0) {
@@ -329,7 +331,6 @@ either expressed or implied, of the PASTA Project.
             	}
             	$emptyTest.insertBefore($("#emptyTest"));
             	$emptyTest.find("a.showHide").trigger("click");
-            	e.preventDefault();
             });
             
             $("form").on("submit", function() {
@@ -378,7 +379,19 @@ either expressed or implied, of the PASTA Project.
         		}
         	});
          	
-         	$("a.showHide").trigger("click");
+        	<spring:hasBindErrors name='updateUnitTest'>
+				<c:set var='errorsPresent' value='true' />
+				var offset = $("[id$='.errors']").first().offset();
+				offset.left -= 20;
+				offset.top -= 20;
+				$('html, body').animate({
+				    scrollTop: offset.top,
+				    scrollLeft: offset.left
+				});
+         	</spring:hasBindErrors>
+         	<c:if test='${empty errorsPresent}'>
+	         	$("a.showHide").trigger("click");
+         	</c:if>
  
         	$(".console").allowTabChar();
          	$(".console").each(function() {

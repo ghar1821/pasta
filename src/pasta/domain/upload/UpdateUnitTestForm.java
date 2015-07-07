@@ -32,6 +32,10 @@ package pasta.domain.upload;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.Min;
+
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.template.BlackBoxTest;
@@ -48,7 +52,13 @@ import pasta.domain.template.UnitTest;
  */
 public class UpdateUnitTestForm {
 	
+	private Class<? extends UnitTest> formType;
+	
+	@Min(0)
 	private long id;
+	
+	@NotEmpty
+	@Length(max=256)
 	private String name;
 	
 	private CommonsMultipartFile file;
@@ -59,6 +69,8 @@ public class UpdateUnitTestForm {
 	private List<BlackBoxTestCaseForm> testCases;
 	
 	public UpdateUnitTestForm(UnitTest base) {
+		this.formType = base.getClass();
+		
 		this.id = base.getId();
 		this.name = base.getName();
 		this.mainClassName = base.getMainClassName();
@@ -75,6 +87,10 @@ public class UpdateUnitTestForm {
 			forms.add(new BlackBoxTestCaseForm(testCase));
 		}
 		return forms;
+	}
+	
+	public Class<? extends UnitTest> getFormType() {
+		return formType;
 	}
 	
 	public long getId() {
