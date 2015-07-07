@@ -29,6 +29,9 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * Form object for a new competition.
  * 
@@ -38,7 +41,10 @@ package pasta.domain.upload;
  *
  */
 public class NewCompetitionForm {
+	@NotEmpty
+	@Length(max=256)
 	private String name;
+	@NotEmpty
 	private String type;
 	
 	public String getName() {

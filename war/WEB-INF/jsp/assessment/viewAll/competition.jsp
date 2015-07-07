@@ -131,13 +131,19 @@ either expressed or implied, of the PASTA Project.
 		<h1> New Competition </h1>
 		<form:form commandName="newCompetitionModel" enctype="multipart/form-data" method="POST">
 			<table>
-				<tr><td>Competition Name:</td><td><form:input autocomplete="off" type="text" path="name" value=""/></td></tr>
+				<tr><td>Competition Name:</td>
+					<td>
+						<form:input path="name"/> 
+						<form:errors path="name" />
+					</td>
+				</tr>
 				<tr><td>Competition Type:</td>
 					<td>
 						<form:select path="type">
 							<option value="calculated">Calculated</option>
 							<option value="arena">Arena</option>
-						</form:select>
+						</form:select> 
+						<form:errors path="type" />
 					</td>
 				</tr>
 			</table>
@@ -147,24 +153,15 @@ either expressed or implied, of the PASTA Project.
 	
 		
 	<script>
-		;(function($) {
-	
-	         // DOM Ready
-	        $(function() {
-
-	            // Binding a click event
-	            // From jQuery v.1.7.0 use .on() instead of .bind()
-	            $('#newPopup').bind('click', function(e) {
-	
-	                // Prevents the default action to be triggered. 
-	                e.preventDefault();
-	
-	                // Triggering bPopup when click event is fired
-	                $('.popup').bPopup();
-	
-	            });
-	        });
-	
-	    })(jQuery);
+        $(function() {
+            $('#newPopup').on('click', function(e) {
+                e.preventDefault();
+                $('.popup').bPopup();
+            });
+            
+	        <spring:hasBindErrors name='newCompetitionModel'>
+				$('.popup').bPopup();
+	    	</spring:hasBindErrors>
+        });
 	</script>
 </c:if>

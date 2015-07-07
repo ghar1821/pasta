@@ -29,16 +29,20 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import javax.validation.Valid;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.template.Competition;
@@ -152,8 +156,9 @@ public class AllCompetitionsController {
 	 * @return "redirect:/login" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newCompetition(Model model,
-			@ModelAttribute(value = "newCompetitionModel") NewCompetitionForm form) {
+	public String newCompetition(
+			@Valid @ModelAttribute(value = "newCompetitionModel") NewCompetitionForm form, BindingResult result,
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -161,6 +166,13 @@ public class AllCompetitionsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("newCompetitionModel", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.newCompetitionModel", result);
+			return "redirect:.";
+		}
+		
 		if(user.isInstructor()){
 			Competition newComp = competitionManager.addCompetition(form);
 			if(newComp != null) {
