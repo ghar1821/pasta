@@ -32,6 +32,8 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.validation.Valid;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
@@ -182,14 +185,20 @@ public class AllHandMarkingsController {
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newHandMarking(
-			@ModelAttribute(value = "newHandMarkingModel") NewHandMarkingForm form,
-			BindingResult result, Model model) {
+			@Valid @ModelAttribute(value = "newHandMarkingModel") NewHandMarkingForm form, BindingResult result,
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
 			return "redirect:/home/";
+		}
+		
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("newHandMarkingModel", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.newHandMarkingModel", result);
+			return "redirect:.";
 		}
 
 		// add it to the system

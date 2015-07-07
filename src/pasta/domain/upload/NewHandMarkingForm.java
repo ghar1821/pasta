@@ -29,6 +29,9 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * Form object for a new hand marking assessment module.
  * 
@@ -38,6 +41,8 @@ package pasta.domain.upload;
  *
  */
 public class NewHandMarkingForm {
+	@NotEmpty
+	@Length(max=256)
 	private String name;
 
 	public String getName() {

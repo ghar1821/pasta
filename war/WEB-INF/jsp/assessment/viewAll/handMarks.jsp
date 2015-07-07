@@ -68,7 +68,7 @@ either expressed or implied, of the PASTA Project.
 	<h1> New Hand Marking </h1>
 	<form:form commandName="newHandMarkingModel" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Hand Marking template name:</td><td><form:input autocomplete="off" type="text" path="name" value=""/></td></tr>
+			<tr><td>Hand Marking template name:</td><td><form:input path="name"/> <form:errors path="name"/></td></tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>
 	</form:form>
@@ -76,16 +76,13 @@ either expressed or implied, of the PASTA Project.
 
 	
 <script>
-	;(function($) {
-
-         // DOM Ready
-        $(function() {
-            $('#newPopup').on('click', function(e) {
-                // Prevents the default action to be triggered. 
-                e.preventDefault();
-                $('#newHandMarking').bPopup();
-            });
-        });
-
-    })(jQuery);
+	$(function() {
+	    $('#newPopup').on('click', function(e) {
+	        e.preventDefault();
+	        $('#newHandMarking').bPopup();
+	    });
+	    <spring:hasBindErrors name='newHandMarkingModel'>
+	    	$('#newHandMarking').bPopup();
+		</spring:hasBindErrors>
+	});
 </script>
