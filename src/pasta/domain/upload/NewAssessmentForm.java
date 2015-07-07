@@ -33,6 +33,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * Form object for a new assessment.
  * 
@@ -44,9 +50,17 @@ import java.util.Date;
 public class NewAssessmentForm {
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	
+	@NotEmpty
+	@Length(max=256)
 	private String name;
+	
+	@Min(0)
 	private double marks;
+	
+	@NotNull
 	private Date dueDate;
+	
+	@Min(0)
 	private int maxSubmissions;
 	
 	public NewAssessmentForm() {

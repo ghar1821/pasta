@@ -137,19 +137,19 @@ ${fn:length(assessment.competitions)} Competitions <br />
 		<table>
 			<tr>
 				<td>Assessment Name:</td>
-				<td><form:input autocomplete="off" type="text" path="name" /></td>
+				<td><form:input autocomplete="off" type="text" path="name" /> <form:errors path="name" /></td>
 			</tr>
 			<tr>
 				<td>Assessment Marks:</td>
-				<td><form:input type="text" path="marks" /></td>
+				<td><form:input type="text" path="marks" /> <form:errors path="marks" /></td>
 			</tr>
 			<tr>
 				<td>Assessment DueDate:</td>
-				<td><form:input type="text" path="strDate"/></td>
+				<td><form:input type="text" path="strDate"/> <form:errors path="dueDate" /></td>
 			</tr>
 			<tr>
 				<td>Maximum Number of allowed submissions:</td>
-				<td><form:input type="text" path="maxSubmissions" /></td>
+				<td><form:input type="text" path="maxSubmissions" /> <form:errors path="maxSubmissions" /></td>
 			</tr>
 		</table>
 		<input type="submit" value="Create" id="submit" />
@@ -183,6 +183,8 @@ ${fn:length(assessment.competitions)} Competitions <br />
 
 		});
 
-		$('ul.tristate').tristate();
+		<spring:hasBindErrors name='newAssessmentForm'>
+			$('#newAssessment').bPopup();
+	    </spring:hasBindErrors>
 	})(jQuery);
 </script>

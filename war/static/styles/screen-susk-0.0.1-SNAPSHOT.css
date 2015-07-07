@@ -37,6 +37,10 @@ a:not([href]) {
 	overflow: auto;
 }
 
+[id$=".errors"] {
+	color: red;
+}
+
 h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
 	margin-top: 0px;
 }

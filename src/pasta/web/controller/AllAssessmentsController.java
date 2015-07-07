@@ -32,6 +32,8 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.validation.Valid;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
-import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.upload.NewAssessmentForm;
 import pasta.service.AssessmentManager;
@@ -109,11 +111,7 @@ public class AllAssessmentsController {
 	public NewAssessmentForm loadNewAssessmentForm() {
 		return new NewAssessmentForm();
 	}
-	
-	@ModelAttribute("assessmentReleaseForm")
-	public AssessmentReleaseForm loadAssessmentReleaseForm() {
-		return new AssessmentReleaseForm();
-	}
+
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
@@ -195,8 +193,8 @@ public class AllAssessmentsController {
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String newAssessmentAssessment(
-			@ModelAttribute(value = "newAssessmentForm") NewAssessmentForm form,
-			BindingResult result, Model model) {
+			@Valid @ModelAttribute(value = "newAssessmentForm") NewAssessmentForm form,
+			BindingResult result, RedirectAttributes attr, Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -205,13 +203,16 @@ public class AllAssessmentsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
+		
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("newAssessmentForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.newAssessmentForm", result);
+			return "redirect:.";
+		}
+		
 		if (getUser().isInstructor()) {
-			if (form.getName() == null || form.getName().isEmpty()) {
-				result.reject("Assessment.new.noname");
-			} else {
-				Assessment newAssessment = assessmentManager.addAssessment(form);
-				return "redirect:./" + newAssessment.getId() + "/";
-			}
+			Assessment newAssessment = assessmentManager.addAssessment(form);
+			return "redirect:./" + newAssessment.getId() + "/";
 		}
 		return "redirect:.";
 	}
