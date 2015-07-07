@@ -32,6 +32,8 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.validation.Valid;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.template.UnitTest;
@@ -183,9 +186,9 @@ public class AllUnitTestsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String home(
-			@ModelAttribute(value = "newUnitTestModel") NewUnitTestForm form,
-			BindingResult result, Model model) {
+	public String newUnitTest(
+			@Valid @ModelAttribute(value = "newUnitTest") NewUnitTestForm form, BindingResult result,
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -193,13 +196,17 @@ public class AllUnitTestsController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("newUnitTest", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.newUnitTest", result);
+			return "redirect:.";
+		}
 
 		if (getUser().isInstructor()) {
 			// add it.
-			if (!result.hasErrors()) {
-				UnitTest newTest = unitTestManager.addUnitTest(form);
-				return "redirect:" + newTest.getId() + "/";
-			}
+			UnitTest newTest = unitTestManager.addUnitTest(form);
+			return "redirect:" + newTest.getId() + "/";
 		}
 
 		return "redirect:/mirror/";

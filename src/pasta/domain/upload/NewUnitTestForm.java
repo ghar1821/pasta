@@ -29,6 +29,11 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * Form object for a new unit test assessment module.
  * 
@@ -38,7 +43,11 @@ package pasta.domain.upload;
  *
  */
 public class NewUnitTestForm {
+	@NotEmpty
+	@Length(max=256)
 	private String name;
+	
+	@NotNull
 	private UnitTestType type;
 	
 	public String getName() {

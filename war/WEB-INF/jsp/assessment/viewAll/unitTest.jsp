@@ -76,10 +76,10 @@ either expressed or implied, of the PASTA Project.
 	<h1> New Unit Test </h1>
 	<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Unit Test Name:</td><td><form:input autocomplete="off" type="text" path="name"/></td></tr>
+			<tr><td>Unit Test Name:</td><td><form:input path="name"/> <form:errors path="name" /></td></tr>
 			<tr>
 				<td>Unit Test Type:</td>
-				<td><form:select path="type"><form:options itemLabel="description"/></form:select></td>
+				<td><form:select path="type"><form:options itemLabel="description"/></form:select> <form:errors path="type" /></td>
 			</tr>
 		</table>
     	<input type="submit" value="Create" id="submit"/>
@@ -88,24 +88,13 @@ either expressed or implied, of the PASTA Project.
 
 	
 <script>
-	;(function($) {
-
-         // DOM Ready
-        $(function() {
-        
-            // Binding a click event
-            // From jQuery v.1.7.0 use .on() instead of .bind()
-            $('#newPopup').on('click', function(e) {
-
-                // Prevents the default action to be triggered. 
-                e.preventDefault();
-
-                // Triggering bPopup when click event is fired
-                $('#newUnitTestDiv').bPopup();
-
-            });
-            
-        });
-
-    })(jQuery);
+	$(function() {
+	    $('#newPopup').on('click', function(e) {
+	        e.preventDefault();
+	        $('#newUnitTestDiv').bPopup();
+	    });
+	});
+	<spring:hasBindErrors name='newUnitTest'>
+		$('#newUnitTestDiv').bPopup();
+	</spring:hasBindErrors>
 </script>
