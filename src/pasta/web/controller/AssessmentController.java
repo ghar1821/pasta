@@ -44,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.form.AssessmentReleaseForm;
@@ -70,6 +72,7 @@ import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.UpdateAssessmentForm;
+import pasta.domain.upload.validate.UpdateAssessmentFormValidator;
 import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;
 import pasta.service.HandMarkingManager;
@@ -137,6 +140,9 @@ public class AssessmentController {
 	private SubmissionManager submissionManager;
 	@Autowired
 	private ReleaseManager releaseManager;
+	
+	@Autowired
+	private UpdateAssessmentFormValidator updateValidator;
 
 	private Map<String, String> codeStyle;
 
@@ -215,7 +221,7 @@ public class AssessmentController {
 	@RequestMapping(value = "{assessmentId}/")
 	public String viewAssessment(
 			@PathVariable("assessmentId") long assessmentId,
-			@ModelAttribute("updateAssessmentForm") UpdateAssessmentForm updateForm, Model model) {
+			Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -226,14 +232,22 @@ public class AssessmentController {
 		}
 
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
-
+		
 		List<WeightedUnitTest> secretUnitTests = new LinkedList<WeightedUnitTest>();
 		List<WeightedUnitTest> nonSecretUnitTests = new LinkedList<WeightedUnitTest>();
 		List<WeightedUnitTest> otherUnitTests = new LinkedList<WeightedUnitTest>();
-
+		
+		// If the page is returning from a failed validation, the model 
+		// will contain lists of the selected assessment modules.
+		@SuppressWarnings("unchecked")
+		List<WeightedUnitTest> selectedTests = (List<WeightedUnitTest>) model.asMap().get("updatedUnitTests");
+		// Otherwise, just get the selected modules as stored in the database.
+		if(selectedTests == null) {
+			selectedTests = new LinkedList<WeightedUnitTest>(currAssessment.getAllUnitTests());
+		}
 		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
-			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
+			for (WeightedUnitTest weightedTest : selectedTests) {
 				if (weightedTest.getTest().getId() == test.getId()) {
 					contains = true;
 					(weightedTest.isSecret() ? secretUnitTests : nonSecretUnitTests).add(weightedTest);
@@ -255,10 +269,14 @@ public class AssessmentController {
 
 		List<WeightedHandMarking> otherHandMarking = new LinkedList<WeightedHandMarking>();
 
+		@SuppressWarnings("unchecked")
+		List<WeightedHandMarking> selectedHandMarking = (List<WeightedHandMarking>) model.asMap().get("updatedHandMarking");
+		if(selectedHandMarking == null) {
+			selectedHandMarking = new LinkedList<WeightedHandMarking>(currAssessment.getHandMarking());
+		}
 		for (HandMarking test : handMarkingManager.getHandMarkingList()) {
 			boolean contains = false;
-			for (WeightedHandMarking weightedHandMarking : currAssessment
-					.getHandMarking()) {
+			for (WeightedHandMarking weightedHandMarking : selectedHandMarking) {
 				if (weightedHandMarking.getHandMarking().getId() == test.getId()) {
 					contains = true;
 					break;
@@ -272,13 +290,19 @@ public class AssessmentController {
 				otherHandMarking.add(weigthedHM);
 			}
 		}
+		model.addAttribute("handMarkingTemplates", selectedHandMarking);
+		model.addAttribute("otherHandMarking", otherHandMarking);
 
 		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
 
+		@SuppressWarnings("unchecked")
+		List<WeightedCompetition> selectedCompetitions = (List<WeightedCompetition>) model.asMap().get("updatedCompetitions");
+		if(selectedCompetitions == null) {
+			selectedCompetitions = new LinkedList<WeightedCompetition>(currAssessment.getCompetitions());
+		}
 		for (Competition comp : competitionManager.getCompetitionList()) {
 			boolean contains = false;
-			for (WeightedCompetition weightedComp : currAssessment
-					.getCompetitions()) {
+			for (WeightedCompetition weightedComp : selectedCompetitions) {
 				if (weightedComp.getCompetition().getId() == comp.getId()) {
 					contains = true;
 					break;
@@ -292,12 +316,13 @@ public class AssessmentController {
 				otherCompetitions.add(weightedComp);
 			}
 		}
-		
-		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("otherHandMarking", otherHandMarking);
+		model.addAttribute("competitions", selectedCompetitions);
 		model.addAttribute("otherCompetitions", otherCompetitions);
 		
+		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allLanguages", Language.values());
+		
+		logger.warn("Map:" + model.asMap());
 		
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
@@ -327,9 +352,9 @@ public class AssessmentController {
 	@RequestMapping(value = "{assessmentId}/", method = RequestMethod.POST)
 	public String updateAssessment(
 			@PathVariable("assessmentId") long assessmentId,
+			@Valid @ModelAttribute(value = "updateAssessmentForm") UpdateAssessmentForm form, BindingResult result,
 			@ModelAttribute(value = "assessment") Assessment assessment,
-			@ModelAttribute(value = "updateAssessmentForm") UpdateAssessmentForm form,
-			BindingResult result, Model model) {
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -337,6 +362,37 @@ public class AssessmentController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		
+		updateValidator.validate(form, result);
+		if(result.hasErrors()) {
+			logger.warn("Errors: " + result.getAllErrors());
+			attr.addFlashAttribute("updateAssessmentForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateAssessmentForm", result);
+			
+			// Reload the unit tests, hand marking and competitions to that the
+			// page can properly re-display selected tests
+			for(WeightedUnitTest test : form.getNewUnitTests()) {
+				test.setTest(unitTestManager.getUnitTest(test.getTest().getId()));
+				test.setSecret(false);
+			}
+			for(WeightedUnitTest test : form.getNewSecretUnitTests()) {
+				test.setTest(unitTestManager.getUnitTest(test.getTest().getId()));
+				test.setSecret(true);
+			}
+			attr.addFlashAttribute("updatedUnitTests", form.getAllUnitTests());
+			
+			for(WeightedHandMarking template : form.getNewHandMarking()) {
+				template.setHandMarking(handMarkingManager.getHandMarking(template.getHandMarking().getId()));
+			}
+			attr.addFlashAttribute("updatedHandMarking", form.getNewHandMarking());
+			
+			for(WeightedCompetition comp : form.getNewCompetitions()) {
+				comp.setCompetition(competitionManager.getCompetition(comp.getCompetition().getId()));
+			}
+			attr.addFlashAttribute("updatedCompetitions", form.getNewCompetitions());
+			return "redirect:.";
+		}
+		
 		if (user.isInstructor()) {
 			assessmentManager.updateAssessment(assessment, form);
 		}

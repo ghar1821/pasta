@@ -38,10 +38,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.FactoryUtils;
 import org.apache.commons.collections4.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Assessment;
@@ -60,14 +65,31 @@ import pasta.util.Language;
  */
 public class UpdateAssessmentForm {
 	
+	@Min(0)
 	private long id;
+	
+	@NotEmpty
+	@Length(max=256)
 	private String name;
+	
+	@Length(max=256)
 	private String category;
+	
+	@Min(0)
 	private double marks;
+	
+	@NotNull
 	private Date dueDate;
+	
+	@Min(0)
 	private int numSubmissionsAllowed;
+	
 	private boolean countUncompilable;
+	
+	@Length(max=64000)
 	private String description;
+	
+	@Length(max=64)
 	private String solutionName;
 	
 	private Set<Language> languages;

@@ -44,20 +44,27 @@ either expressed or implied, of the PASTA Project.
 <button style="margin-top:1em;float:left;" class="button" onclick="window.location.href=window.location.href+'run/'">Re-Run Assessment</button>
 
 <form:form commandName="updateAssessmentForm" enctype="multipart/form-data" method="POST">
-	
-	<%-- <form:input type="hidden" path="id" value="${assessment.id}"/> --%>
+	<form:input type="hidden" path="id" value="${assessment.id}"/>
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
 	
 	<table class='alignCellsTop noGaps'>
-		<tr><td>Category:</td><td><form:input type="text" path="category"/></td></tr>
-		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/></td></tr>
-		<tr class='spaceBelow'><td>Assessment Due Date:</td><td><form:input type="text" path="strDate" /></td></tr>
-		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/></td></tr>
+		<tr><td>Category:</td><td><form:input type="text" path="category"/> <form:errors path="category"/></td></tr>
+		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/> <form:errors path="marks"/></td></tr>
+		<tr class='spaceBelow'><td>Assessment Due Date:</td><td><form:input type="text" path="strDate" /> <form:errors path="dueDate"/></td></tr>
+		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/> <form:errors path="numSubmissionsAllowed"/></td></tr>
 		<tr class='spaceBelow'><td>Count submissions that have failed to compile:</td><td><form:checkbox path="countUncompilable"/></td></tr>
-		<tr><td>Solution Name:</td><td><form:input path="solutionName"/><span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span></td></tr>
+		<tr>
+			<td>Solution Name:</td>
+			<td>
+				<form:input path="solutionName"/>
+				<span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
+				<form:errors path="solutionName"/>
+			</td>
+		</tr>
 		<tr>
 			<td>Allowed Languages:</td>
 			<td>
+				<form:errors path="languages" element="div"/>
 				<form:select path="languages" multiple="multiple" cssClass="langSelect">
 					<form:options items="${allLanguages}" itemLabel="description"/>
 				</form:select>
@@ -165,7 +172,7 @@ either expressed or implied, of the PASTA Project.
 					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="handMarking" class="sortable newHandMarking">
-							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${assessment.handMarking}">
+							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${handMarkingTemplates}">
 								<tr>
 									<td>
 										<form:input type="hidden" path="newHandMarking[${handMarkingIndex.index}].id" value="${handMarking.id}"/>
@@ -212,7 +219,7 @@ either expressed or implied, of the PASTA Project.
 					<table class='dragRows' style="width:100%;">
 						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
 						<tbody id="competitions" class="sortable newCompetitions">
-							<c:forEach var="competition" varStatus="competitionIndex" items="${assessment.competitions}">
+							<c:forEach var="competition" varStatus="competitionIndex" items="${competitions}">
 								<tr>
 									<td>
 										<form:input type="hidden" path="newCompetitions[${competitionIndex.index}].id" value="${competition.id}"/>
