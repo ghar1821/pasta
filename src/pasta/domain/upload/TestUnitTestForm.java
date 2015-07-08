@@ -29,6 +29,9 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.upload;
 
+import javax.validation.constraints.Min;
+
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.template.UnitTest;
@@ -43,7 +46,10 @@ import pasta.domain.template.UnitTest;
  */
 public class TestUnitTestForm {
 	
+	@Min(0)
 	private long id;
+	
+	@Length(max=64)
 	private String solutionName;
 
 	private CommonsMultipartFile file;

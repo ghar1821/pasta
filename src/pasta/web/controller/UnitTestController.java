@@ -49,8 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +65,7 @@ import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
 import pasta.domain.upload.TestUnitTestForm;
 import pasta.domain.upload.UpdateUnitTestForm;
+import pasta.domain.upload.validate.TestUnitTestFormValidator;
 import pasta.domain.upload.validate.UpdateUnitTestFormValidator;
 import pasta.service.UnitTestManager;
 import pasta.util.PASTAUtil;
@@ -117,6 +116,11 @@ public class UnitTestController {
 	@Autowired
 	private UnitTestManager unitTestManager;
 	
+	@Autowired
+	private UpdateUnitTestFormValidator updateValidator;
+	@Autowired
+	private TestUnitTestFormValidator testValidator;
+	
 	private Map<String, String> codeStyle;
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -136,16 +140,6 @@ public class UnitTestController {
 	@ModelAttribute("unitTest")
 	public UnitTest loadUnitTest(@PathVariable("testId") long testId) {
 		return unitTestManager.getUnitTest(testId);
-	}
-	
-	// ///////////////////////////////////////////////////////////////////////////
-	// Init Binder //
-	// ///////////////////////////////////////////////////////////////////////////
-
-
-	@InitBinder("updateUnitTest")
-	protected void initBinder(WebDataBinder binder) {
-		binder.addValidators(new UpdateUnitTestFormValidator());
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -322,6 +316,7 @@ public class UnitTestController {
 			return "redirect:/home/";
 		}
 		
+		updateValidator.validate(updateForm, result);
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("updateUnitTest", updateForm);
 			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateUnitTest", result);
@@ -363,15 +358,22 @@ public class UnitTestController {
 	 */
 	@RequestMapping(value = "{testId}/test/", method = RequestMethod.POST)
 	public String testUnitTest(@PathVariable("testId") long testId,
-			@ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm,
+			@Valid @ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm, BindingResult result,
 			@ModelAttribute(value = "unitTest") UnitTest test,
-			BindingResult result, Model model) {
+			RedirectAttributes attr, Model model) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
 		if (!user.isTutor()) {
 			return "redirect:/home/";
+		}
+		
+		testValidator.validate(testForm, result);
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("testUnitTest", testForm);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.testUnitTest", result);
+			return "redirect:../.";
 		}
 		
 		if(testForm != null && testForm.getFile() != null && getUser().isInstructor()) {

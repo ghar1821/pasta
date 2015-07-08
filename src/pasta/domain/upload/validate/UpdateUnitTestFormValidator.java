@@ -2,6 +2,7 @@ package pasta.domain.upload.validate;
 
 import java.util.HashSet;
 
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -16,6 +17,7 @@ import pasta.domain.upload.UpdateUnitTestForm;
  * @since 7 Jul 2015
  *
  */
+@Component
 public class UpdateUnitTestFormValidator implements Validator {
 
 	@Override

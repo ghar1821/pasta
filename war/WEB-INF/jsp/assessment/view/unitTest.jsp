@@ -273,9 +273,16 @@ either expressed or implied, of the PASTA Project.
 	<h1> Test Unit Test </h1>
 	<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
 		<table>
-			<tr><td>Test Submission:</td><td><form:input type="file" path="file"/></td></tr>
+			<tr><td>Test Submission:</td><td><form:input type="file" path="file"/> <form:errors path="file" /></td></tr>
 			<c:if test="${unitTest['class'].simpleName == 'BlackBoxTest'}">
-				<tr><td>Solution Name:</td><td><form:input path="solutionName"/><span class='help'>The name of the main solution source code file. If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span></td></tr>
+				<tr>
+					<td>Solution Name:</td>
+					<td>
+						<form:input path="solutionName"/>
+						<span class='help'>The name of the main solution source code file. If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
+						<form:errors path="solutionName" />
+					</td>
+				</tr>
 			</c:if>
 		</table>
     	<input type="submit" value="Upload" id="submit"/>
@@ -301,6 +308,9 @@ either expressed or implied, of the PASTA Project.
                 e.preventDefault();
                 $('#testUnitTestDiv').bPopup();
             });
+            <spring:hasBindErrors name='testUnitTest'>
+            	$('#testUnitTestDiv').bPopup();
+       		</spring:hasBindErrors>
             
             $('#showFullOutput').on('click', function(e) {
                 // Prevents the default action to be triggered. 
