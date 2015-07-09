@@ -2,6 +2,7 @@ package pasta.domain.upload.validate;
 
 import java.util.HashSet;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -10,6 +11,7 @@ import org.springframework.validation.Validator;
 import pasta.domain.template.BlackBoxTest;
 import pasta.domain.upload.BlackBoxTestCaseForm;
 import pasta.domain.upload.UpdateUnitTestForm;
+import pasta.service.UnitTestManager;
 
 /**
  * @author Joshua Stretton
@@ -20,6 +22,9 @@ import pasta.domain.upload.UpdateUnitTestForm;
 @Component
 public class UpdateUnitTestFormValidator implements Validator {
 
+	@Autowired
+	private UnitTestManager unitTestManager;
+	
 	@Override
 	public boolean supports(Class<?> clazz) {
 		return UpdateUnitTestForm.class.equals(clazz);
@@ -28,6 +33,10 @@ public class UpdateUnitTestFormValidator implements Validator {
 	@Override
 	public void validate(Object formObj, Errors errors) {
 		UpdateUnitTestForm form = (UpdateUnitTestForm) formObj;
+		
+		if(unitTestManager.getUnitTest(form.getId()) == null) {
+			errors.reject("NotFound");
+		}
 		
 		if(BlackBoxTest.class.isAssignableFrom(form.getFormType())) {
 			BlackBoxTestCaseFormValidator bbValidator = new BlackBoxTestCaseFormValidator();
