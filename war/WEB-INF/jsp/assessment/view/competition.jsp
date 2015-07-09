@@ -45,11 +45,11 @@ either expressed or implied, of the PASTA Project.
 		<tr>
 			<td>Frequency:</td>
 			<td>
-				<form:input type="number" min=0 path="frequency.years" style="width:3em;"/> years
-				<form:input type="number" min=0 path="frequency.days" style="width:3em;"/> days
-				<form:input type="number" min=0 path="frequency.hours" style="width:3em;"/> hours
-				<form:input type="number" min=0 path="frequency.minutes" style="width:3em;"/> minutes
-				<form:input type="number" min=0 path="frequency.seconds" style="width:3em;"/> seconds
+				<form:input type="number" min="0" path="frequency.years" style="width:3em;"/> years
+				<form:input type="number" min="0" path="frequency.days" style="width:3em;"/> days
+				<form:input type="number" min="0" path="frequency.hours" style="width:3em;"/> hours
+				<form:input type="number" min="0" path="frequency.minutes" style="width:3em;"/> minutes
+				<form:input type="number" min="0" path="frequency.seconds" style="width:3em;"/> seconds
 				<form:errors path="frequency"/>
 			</td>
 		</tr>
