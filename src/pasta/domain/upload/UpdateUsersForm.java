@@ -11,13 +11,13 @@ public class UpdateUsersForm {
 	private boolean updateTutors;
 	private boolean replace;
 	private String updateContents;
-	private CommonsMultipartFile updateFile;
+	private CommonsMultipartFile file;
 	
 	public UpdateUsersForm() {
 		updateTutors = false;
 		replace = false;
 		updateContents = "";
-		updateFile = null;
+		file = null;
 	}
 
 	public boolean isUpdateTutors() {
@@ -44,11 +44,11 @@ public class UpdateUsersForm {
 		this.updateContents = updateContents;
 	}
 
-	public CommonsMultipartFile getUpdateFile() {
-		return updateFile;
+	public CommonsMultipartFile getFile() {
+		return file;
 	}
 
-	public void setUpdateFile(CommonsMultipartFile updateFile) {
-		this.updateFile = updateFile;
+	public void setFile(CommonsMultipartFile file) {
+		this.file = file;
 	}
 }

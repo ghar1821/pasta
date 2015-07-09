@@ -162,13 +162,20 @@ either expressed or implied, of the PASTA Project.
 			</span>
 			<h1 id="updateHeading">Heading</h1>
 			<div id='updateDescription'>Description</div>
-			<form:form commandName="updateUsersForm" action="updateUsers/">
+			<form:form commandName="updateUsersForm" action="updateUsers/" enctype="multipart/form-data" method="post">
 				<form:hidden path="updateTutors" value="false"/>
 				<form:hidden path="replace" value="false"/>
 				<table class='alignCellsTop'>
-					<tr><td>CSV File (no headers):</td><td><form:input type='file' path="updateFile"/></td></tr>
+					<tr><td>CSV File (no headers):</td><td><form:input type='file' path="file"/></td></tr>
 					<tr><td style='text-align:center;'><p><strong>OR</strong></td><td></td></tr>
-					<tr><td>Plain text:</td><td><form:textarea path="updateContents" rows="10" cols="50"/></td></tr>
+					<tr>
+						<td>Plain text:</td>
+						<td>
+							<form:errors element="div"/>
+							<form:errors path="updateContents" element="div"/>
+							<form:textarea path="updateContents" rows="10" cols="50"/>
+						</td>
+					</tr>
 				</table>
 				<div>
 					<button type="submit">Submit</button>
@@ -215,16 +222,21 @@ either expressed or implied, of the PASTA Project.
 				$('#address').val('');
 			}
 			
-			<c:if test="${authType == 'pasta.login.DBAuthValidator' or authType == 'pasta.login.DummyAuthValidator'}">
 			$(function () {
-				$('.addressRow').hide();
 			});
-			</c:if>
 			
 			$(function() {
+				<c:if test="${authType == 'pasta.login.DBAuthValidator' or authType == 'pasta.login.DummyAuthValidator'}">
+					$('.addressRow').hide();
+				</c:if>
+				
 				$('.dataTable').dataTable({
 					"columnDefs" : [ { "orderable" : false, "targets" : -1 } ]
 				});
+				
+				<spring:hasBindErrors name='updateUsersForm'>
+					popup(${updateUsersForm.updateTutors}, ${updateUsersForm.replace});
+				</spring:hasBindErrors>
 			});
 		</script>
 		

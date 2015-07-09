@@ -30,12 +30,15 @@ either expressed or implied, of the PASTA Project.
 package pasta.web.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,11 +47,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
 import pasta.domain.upload.UpdateUsersForm;
+import pasta.domain.upload.validate.UpdateUsersFormValidator;
 import pasta.login.DBAuthValidator;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
@@ -73,12 +78,13 @@ public class AdminController {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	private UserManager userManager;
-
+	
 	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
+	private UserManager userManager;
+	
+	@Autowired
+	private UpdateUsersFormValidator updateValidator;
+
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -214,12 +220,20 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/updateUsers/", method = RequestMethod.POST)
-	public String updateUsers(ModelMap model, HttpServletRequest request,
-			@ModelAttribute("updateStudentsForm") UpdateUsersForm form) {
+	public String updateUsers(
+			@Valid @ModelAttribute("updateUsersForm") UpdateUsersForm form, BindingResult result, 
+			RedirectAttributes attr, Model model, HttpServletRequest request) {
 		PASTAUser user = getUser();
 		if(user == null || user.getPermissionLevel() == UserPermissionLevel.STUDENT || 
 				(form.isUpdateTutors() && user.getPermissionLevel() == UserPermissionLevel.TUTOR)) {
 			return "redirect:" + request.getHeader("Referer");
+		}
+		
+		updateValidator.validate(form, result);
+		if(result.hasErrors()) { 
+			attr.addFlashAttribute("updateUsersForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateUsersForm", result);
+			return "redirect:../.";
 		}
 		
 		userManager.updateUsers(form);

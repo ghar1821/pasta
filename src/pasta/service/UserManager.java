@@ -29,8 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -300,25 +298,21 @@ public class UserManager {
 	 * @param form the form containing update information
 	 */
 	public void updateUsers(UpdateUsersForm form) {
-		File updateFile = null;
-		Scanner content = null;
-		if(form.getUpdateFile() != null) {
-			updateFile = new File(ProjectProperties.getInstance().getSandboxLocation() + form.getUpdateFile().getOriginalFilename());
-			try {
-				form.getUpdateFile().transferTo(updateFile);
-				content = new Scanner(updateFile);
-			} catch (IllegalStateException | IOException e) {
-				logger.error("Problem saving uploaded file to sandbox: " + updateFile, e);
-			}
-		} else if(form.getUpdateContents() != null) {
-			content = new Scanner(form.getUpdateContents());
-		} else {
+		
+		// UpdateUsersFormValidator will have extracted CSV file
+		// and appended it to the end of updateContents already.
+		
+		if(form.getUpdateContents().isEmpty()) {
 			return;
 		}
 		
+		Scanner content = new Scanner(form.getUpdateContents());
 		List<PASTAUser> users = new LinkedList<PASTAUser>();
 		while(content.hasNext()) {
-			String line = content.nextLine();
+			String line = content.nextLine().replaceAll("\\s+", "");
+			if(line.isEmpty()) {
+				continue;
+			}
 			String[] parts = line.split(",", 3);
 			
 			PASTAUser user = null;
@@ -331,11 +325,7 @@ public class UserManager {
 				users.add(user);
 			}
 		}
-		
 		content.close();
-		if(updateFile != null) {
-			updateFile.delete();
-		}
 		
 		if(form.isReplace()) {
 			userDao.replaceUsers(users, form.isUpdateTutors());
