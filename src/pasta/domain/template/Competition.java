@@ -288,6 +288,10 @@ public class Competition implements Serializable, Comparable<Competition> {
 	}
 
 	public void setFirstStartDateStr(String firstStartDateStr) {
+		if(firstStartDateStr == null || firstStartDateStr.isEmpty()) {
+			firstStartDate = null;
+			return;
+		}
 		try {
 			firstStartDate = dateParser.parse(firstStartDateStr);
 		} catch (ParseException e) {

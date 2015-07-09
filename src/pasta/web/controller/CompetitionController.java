@@ -29,6 +29,8 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import javax.validation.Valid;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
@@ -49,6 +52,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewPlayer;
 import pasta.domain.upload.UpdateCompetitionForm;
+import pasta.domain.upload.validate.UpdateCompetitionFormValidator;
 import pasta.service.CompetitionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
@@ -73,15 +77,13 @@ public class CompetitionController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
 	private CompetitionManager competitionManager;
-	
 	@Autowired
 	private UserManager userManager;
-
+	
 	@Autowired
-	public void setMyService(CompetitionManager myService) {
-		this.competitionManager = myService;
-	}
+	private UpdateCompetitionFormValidator updateValidator;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -234,9 +236,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "{competitionId}/", method = RequestMethod.POST)
-	public String updateCompetition(@ModelAttribute(value = "updateCompetitionForm") UpdateCompetitionForm form,
+	public String updateCompetition(
+			@Valid @ModelAttribute(value = "updateCompetitionForm") UpdateCompetitionForm form, BindingResult result,
 			@ModelAttribute(value = "competition") Competition comp,
-			@PathVariable("competitionId") long competitionId, Model model){
+			@PathVariable("competitionId") long competitionId, 
+			RedirectAttributes attr, Model model){
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -245,6 +249,13 @@ public class CompetitionController {
 			return "redirect:/home/";
 		}
 
+		updateValidator.validate(form, result);
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("updateCompetitionForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateCompetitionForm", result);
+			return "redirect:.";
+		}
+		
 		if(user.isInstructor()){
 			// update competition
 			competitionManager.updateCompetition(comp, form);

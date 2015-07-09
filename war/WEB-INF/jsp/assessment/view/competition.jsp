@@ -37,19 +37,20 @@ either expressed or implied, of the PASTA Project.
 
 <form:form commandName="updateCompetitionForm" enctype="multipart/form-data" method="POST">
 	<table>
-		<tr><td>Competition Name:</td><td><form:input path="name"/></td></tr>
+		<tr><td>Competition Name:</td><td><form:input path="name"/> <form:errors path="name"/></td></tr>
 		<tr><td>Is live:</td><td class="pastaTF pastaTF${liveAssessmentCount gt 0}">${liveAssessmentCount gt 0}</td></tr>
 		<tr><td colspan='2'><label><form:checkbox path="hidden" />Hidden competition</label></td></tr>
 		
-		<tr><td>First run:</td><td><form:input path="firstStartDateStr"/></td></tr>
+		<tr><td>First run:</td><td><form:input path="firstStartDateStr"/> <form:errors path="firstStartDateStr"/></td></tr>
 		<tr>
 			<td>Frequency:</td>
 			<td>
-				<form:input type="number" path="frequency.years" style="width:3em;"/> years
-				<form:input type="number" path="frequency.days" style="width:3em;"/> days
-				<form:input type="number" path="frequency.hours" style="width:3em;"/> hours
-				<form:input type="number" path="frequency.minutes" style="width:3em;"/> minutes
-				<form:input type="number" path="frequency.seconds" style="width:3em;"/> seconds
+				<form:input type="number" min=0 path="frequency.years" style="width:3em;"/> years
+				<form:input type="number" min=0 path="frequency.days" style="width:3em;"/> days
+				<form:input type="number" min=0 path="frequency.hours" style="width:3em;"/> hours
+				<form:input type="number" min=0 path="frequency.minutes" style="width:3em;"/> minutes
+				<form:input type="number" min=0 path="frequency.seconds" style="width:3em;"/> seconds
+				<form:errors path="frequency"/>
 			</td>
 		</tr>
 		<tr><td>Next Run:</td>
@@ -66,10 +67,10 @@ either expressed or implied, of the PASTA Project.
 		<c:if test="${not competition.calculated}">
 			<!-- can tutors make repeatable arenas -->
 			<tr><td>Tutor arena permissions:</td>
-			<td><form:select path="tutorPermissions"><form:options /></form:select></td></tr>
+			<td><form:select path="tutorPermissions"><form:options /></form:select> <form:errors path="tutorPermissions"/></td></tr>
 			<!-- can students make arenas -->
 			<tr><td>Student arena permissions:</td>
-			<td><form:select path="studentPermissions"><form:options /></form:select></td></tr>
+			<td><form:select path="studentPermissions"><form:options /></form:select> <form:errors path="studentPermissions"/></td></tr>
 		</c:if>
 	</table> 
 	

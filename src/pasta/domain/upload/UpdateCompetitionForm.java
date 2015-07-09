@@ -32,8 +32,13 @@ package pasta.domain.upload;
 import java.text.ParseException;
 import java.util.Date;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.PASTATime;
@@ -52,9 +57,16 @@ import pasta.testing.options.ScriptOptions;
  */
 public class UpdateCompetitionForm {
 	
+	@Min(0)
 	private long id;
+	
+	@NotEmpty
+	@Length(max=256)
 	private String name;
+	
+	@NotNull
 	private PASTATime frequency;
+	
 	private Date firstStartDate;
 	private boolean hidden;
 	private CompetitionPermissionLevel studentPermissions = CompetitionPermissionLevel.NONE;
@@ -169,6 +181,7 @@ public class UpdateCompetitionForm {
 	public void setFirstStartDateStr(String firstStartDateStr){
 		if(firstStartDateStr == null || firstStartDateStr.isEmpty()) {
 			firstStartDate = null;
+			return;
 		}
 		try {
 			firstStartDate = Competition.dateParser.parse(firstStartDateStr);
