@@ -43,15 +43,20 @@ th, td{
 </style>
 
 <form:form commandName="updateHandMarkingForm" enctype="multipart/form-data" method="POST">
-	<form:input type ="hidden" path="name" value="${handMarking.name}"/>
-	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
+	<div class='vertical-block'>
+		New Name: <form:input path="name" /> <form:errors path="name" />
+	</div>
+	<div class='vertical-block'>
+		<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();"/>
+	</div>
 <div style="width:100%; overflow:auto">
 	<table id="handMarkingTable" >
 		<thead>
 			<tr>
 				<th class="notdraggable"></th> <!-- empty on purpose -->
-				<c:forEach var="column" items="${handMarking.columnHeader}" varStatus="columnStatus">
+				<c:forEach var="column" items="${allColumns}" varStatus="columnStatus">
 					<th>
+						<form:errors path="newColumnHeader[${columnStatus.index}].name" element="div" />
 						<form:input type="text" path="newColumnHeader[${columnStatus.index}].name" value="${column.name}"/><br />
 						<form:input type="text" path="newColumnHeader[${columnStatus.index}].weight" value="${column.weight}"/>
 						<form:input type="hidden" path="newColumnHeader[${columnStatus.index}].id" value="${column.id}"/>
@@ -62,9 +67,10 @@ th, td{
 			</tr>
 		</thead>
 		<tbody class="sortable">
-			<c:forEach var="row" items="${handMarking.rowHeader}" varStatus="rowStatus">
+			<c:forEach var="row" items="${allRows}" varStatus="rowStatus">
 				<tr>
 					<th>
+						<form:errors path="newRowHeader[${rowStatus.index}].name" element="div" />
 						<form:input type="text" path="newRowHeader[${rowStatus.index}].name" value="${row.name}"/><br />
 						<form:input type="text" path="newRowHeader[${rowStatus.index}].weight" value="${row.weight}"/>
 						<form:input type="hidden" path="newRowHeader[${rowStatus.index}].id" value="${row.id}"/>
@@ -91,17 +97,19 @@ th, td{
 	
 	function fillCells() {
 		var cell;
-		<c:forEach var="datum" items="${handMarking.data}" varStatus="datumStatus">
+		<c:forEach var="datum" items="${allData}" varStatus="datumStatus">
 			cell = document.getElementById("cell_${datum.column.id}_${datum.row.id}");
 			<c:choose>
 			<c:when test="${not empty datum.data or datum.data == \"\"}">
+				var errorData = <c:out value="'" escapeXml="false" /><form:errors path="updateHandMarkingForm.newData[${datumStatus.index}].data"/><c:out value="'"  escapeXml="false" />;
 				fillCell(cell, 
 					<fmt:formatNumber type='number' maxIntegerDigits='3' value='${datum.row.weight * datum.column.weight}' />,
 					"${datumStatus.index}",
 					"${datum.id}",
 					"${datum.column.id}",
 					"${datum.row.id}",
-					"${datum.data}");
+					"${datum.data}",
+					$(errorData));
 			</c:when>
 			<c:otherwise>
 				fillEmptyCell(cell);

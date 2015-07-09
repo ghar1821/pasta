@@ -33,8 +33,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+
 import org.apache.commons.collections4.FactoryUtils;
 import org.apache.commons.collections4.list.LazyList;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
@@ -50,11 +55,18 @@ import pasta.domain.template.WeightedField;
  */
 public class UpdateHandMarkingForm {
 	
+	@Min(0)
 	private long id;
+	
+	@NotEmpty
+	@Length(max=256)
 	private String name;
 	
+	@Valid
 	private List<WeightedField> newColumnHeader;
+	@Valid
 	private List<WeightedField> newRowHeader;
+	@Valid
 	private List<HandMarkData> newData;
 	
 	public UpdateHandMarkingForm(HandMarking base) {

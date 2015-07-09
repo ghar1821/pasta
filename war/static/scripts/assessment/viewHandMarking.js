@@ -1,4 +1,4 @@
-function fillCell(cell, weight, index, dataId, column, row, data) {
+function fillCell(cell, weight, index, dataId, column, row, data, error) {
 	$(cell).removeClass("emptyCell");
 	$(cell).empty();
 	
@@ -6,6 +6,10 @@ function fillCell(cell, weight, index, dataId, column, row, data) {
 	var value = document.createTextNode(weight);
 	span.appendChild(value);
 	cell.appendChild(span);
+	if(error) {
+		$(cell).append("&nbsp;");
+		$(cell).append(error);
+	}
 	cell.appendChild(document.createElement("br"));
 	
 	var dataBox = document.createElement("textarea");

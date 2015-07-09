@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,11 +50,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.upload.UpdateHandMarkingForm;
+import pasta.domain.upload.validate.UpdateHandMarkingFormValidator;
 import pasta.service.HandMarkingManager;
 import pasta.util.ProjectProperties;
 
@@ -77,6 +80,7 @@ public class HandMarkingController {
 	 * Initializes the codeStyle tag mapping of file endings to 
 	 * javascript tag requirements for syntax highlighting.
 	 */
+	private Map<String, String> codeStyle;
 	public HandMarkingController() {
 		codeStyle = new TreeMap<String, String>();
 		codeStyle.put("c", "ccode");
@@ -99,13 +103,11 @@ public class HandMarkingController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private HandMarkingManager handMarkingManager;
-	private Map<String, String> codeStyle;
-
 	@Autowired
-	public void setMyService(HandMarkingManager myService) {
-		this.handMarkingManager = myService;
-	}
+	private HandMarkingManager handMarkingManager;
+	
+	@Autowired
+	private UpdateHandMarkingFormValidator updateValidator;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -174,6 +176,17 @@ public class HandMarkingController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		
+		if(model.containsAttribute("hasValidationErrors")) {
+			UpdateHandMarkingForm form = (UpdateHandMarkingForm) model.asMap().get("updateHandMarkingForm");
+			model.addAttribute("allData", form.getNewData());
+			model.addAttribute("allRows", form.getNewRowHeader());
+			model.addAttribute("allColumns", form.getNewColumnHeader());
+		} else {
+			model.addAttribute("allData", template.getData());
+			model.addAttribute("allRows", template.getRowHeader());
+			model.addAttribute("allColumns", template.getColumnHeader());
+		}
 
 		model.addAttribute("unikey", user);
 		return "assessment/view/handMarks";
@@ -199,10 +212,10 @@ public class HandMarkingController {
 	 */
 	@RequestMapping(value = "{handMarkingId}/", method = RequestMethod.POST)
 	public String updateHandMarking(
+			@PathVariable("handMarkingId") Long handMarkingId, 
 			@ModelAttribute(value = "handMarking") HandMarking template,
-			@ModelAttribute(value = "updateHandMarkingForm") UpdateHandMarkingForm form,
-			BindingResult result,
-			@PathVariable("handMarkingId") Long handMarkingId, Model model,HttpServletRequest request) {
+			@Valid @ModelAttribute(value = "updateHandMarkingForm") UpdateHandMarkingForm form, BindingResult result,
+			RedirectAttributes attr, Model model,HttpServletRequest request) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -210,6 +223,15 @@ public class HandMarkingController {
 		if (!user.isTutor()) {
 			return "redirect:/home/.";
 		}
+		
+		updateValidator.validate(form, result);
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("updateHandMarkingForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateHandMarkingForm", result);
+			attr.addFlashAttribute("hasValidationErrors", Boolean.TRUE);
+			return "redirect:.";
+		}
+		
 		if (getUser().isInstructor()) {
 			handMarkingManager.updateHandMarking(template, form);
 		}

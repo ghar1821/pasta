@@ -9,7 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table (name = "hand_marking_data")
@@ -30,7 +31,7 @@ public class HandMarkData implements Serializable, Comparable<HandMarkData> {
     private WeightedField row;
 	
 	@Column (length = 4096)
-	@Size (max = 4096)
+	@Length(max = 4096)
 	private String data;
 
 	public HandMarkData() {
