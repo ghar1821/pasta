@@ -276,7 +276,7 @@ either expressed or implied, of the PASTA Project.
     	});
     	
     	$(".langSelect").chosen({
-    		placeholder_text_multiple: "Leave blank for ANY", 
+    		placeholder_text_multiple: "Leave blank to allow ANY language", 
     		width: "22em"
     	});
     	
