@@ -100,6 +100,7 @@ public class RatingController {
 	// RATINGS //
 	// ///////////////////////////////////////////////////////////////////////////
 	
+	//This is an example of how to get the results of an async task
 	@RequestMapping("/ratingStatus")  
 	@ResponseBody  
 	public String reportStatus(HttpSession session) {  

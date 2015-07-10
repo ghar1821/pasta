@@ -50,21 +50,27 @@ h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
 .horizontal-block {
 	display: inline-block;
 }
+.horizontal:not(.float-right)+.horizontal:not(.float-right), 
 .horizontal-block:not(.float-right) + .horizontal-block:not(.float-right) {
 	margin-left: 1em;
 }
+.horizontal.float-right + .horizontal.float-right,
 .horizontal-block.float-right + .horizontal-block.float-right {
 	margin-right: 1em;
 }
+.vertical+.vertical,
 .vertical-block+.vertical-block {
 	margin-top: 1em;
 }
+.horizontal:not(.float-right) + .horizontal:not(.float-right).small-gap,
 .horizontal-block:not(.float-right) + .horizontal-block:not(.float-right).small-gap {
 	margin-left: 0.5em;
 }
+.horizontal.float-right + .horizontal.float-right.small-gap,
 .horizontal-block.float-right + .horizontal-block.float-right.small-gap {
 	margin-right: 0.5em;
 }
+.vertical+.vertical.small-gap,
 .vertical-block+.vertical-block.small-gap {
 	margin-top: 0.5em;
 }
@@ -180,33 +186,33 @@ div.star-medal + div.float-left {
 	max-width:85%;
 }
 
-div.fullStar, div.emptyStar {
+div.ratingDot {
 	background-repeat: no-repeat;
 	cursor: pointer;
 	display: inline-block;
-	height: 22px;
+	height: 24px;
 	margin-left: 0 !important;
 	margin-right: 0 !important;
 	padding: 0 !important;
 	width: 26px;
 }
-div.fullStar {
-	background-image: url("../images/rating_star_full.png");
+div.ratingDot.empty {
+	background-image: url("../images/rating_dot_empty.png");
 }
-div.emptyStar {
-	background-image: url("../images/rating_star_empty.png");
+div.ratingDot.full.r1 {
+	background-image: url("../images/rating_dot_1.png");
 }
-
-div.tooHardDiv {
-	background-repeat: no-repeat;
-	background-image: url("../images/too-hard.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 32px;
-	width: 48px;
+div.ratingDot.full.r2 {
+	background-image: url("../images/rating_dot_2.png");
 }
-div.tooHardDiv.selected, div.tooHardDiv:hover {
-	background-image: url("../images/too-hard-selected.png");
+div.ratingDot.full.r3 {
+	background-image: url("../images/rating_dot_3.png");
+}
+div.ratingDot.full.r4 {
+	background-image: url("../images/rating_dot_4.png");
+}
+div.ratingDot.full.r5 {
+	background-image: url("../images/rating_dot_5.png");
 }
 
 textarea.ratingComment {
@@ -554,6 +560,15 @@ td.pastaTable{
 
 .pastaUnitTestResulterror,.pastaUnitTestResultfailure {
 	color: red;
+}
+
+.labelEasy {
+	color: #080;
+	font-weight: bold;
+}
+.labelHard {
+	color: #D00;
+	font-weight: bold;
 }
 
 .pastaUnitTestBoxResultSecretpass{

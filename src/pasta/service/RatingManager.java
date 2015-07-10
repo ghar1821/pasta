@@ -97,7 +97,6 @@ public class RatingManager {
 			rating = new AssessmentRating(assessment, user);
 		}
 		rating.setRating(form.getRating());
-		rating.setTooHard(form.isTooHard());
 		rating.setComment(form.getComment());
 		
 		ratingDAO.saveOrUpdate(rating);

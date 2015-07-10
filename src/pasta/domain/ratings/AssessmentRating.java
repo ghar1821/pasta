@@ -2,7 +2,6 @@ package pasta.domain.ratings;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -23,14 +22,14 @@ public class AssessmentRating implements Serializable {
 	@GeneratedValue
 	private long id;
 	
+	@ManyToOne
+	@JoinColumn(name = "user_id")
 	private PASTAUser user;
 	
 	@ManyToOne
 	@JoinColumn(name = "assessment_id")
 	private Assessment assessment;
 	
-	@Column(name = "too_hard")
-	private boolean tooHard;
 	private int rating;
 	private String comment;
 	
@@ -63,13 +62,6 @@ public class AssessmentRating implements Serializable {
 		this.assessment = assessment;
 	}
 	
-	public boolean isTooHard() {
-		return tooHard;
-	}
-	public void setTooHard(boolean tooHard) {
-		this.tooHard = tooHard;
-	}
-	
 	public int getRating() {
 		return rating;
 	}
@@ -87,6 +79,6 @@ public class AssessmentRating implements Serializable {
 	@Override
 	public String toString() {
 		return "AssessmentRating [id=" + id + ", user=" + user.getUsername() + ", assessment=" + assessment
-				+ ", tooHard=" + tooHard + ", rating=" + rating + ", comment=" + comment + "]";
+				+ ", rating=" + rating + ", comment=" + comment + "]";
 	}
 }

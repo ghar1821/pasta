@@ -1,24 +1,32 @@
-function setStars($starDiv, rating) {
-	$starDiv.children("div").each(function() {
-		$(this).toggleClass('emptyStar', $(this).attr('rating') > rating)
-		$(this).toggleClass('fullStar', $(this).attr('rating') <= rating)
+function setDots($dotDiv, rating) {
+	$dotDiv.children("div").each(function() {
+		$(this).toggleClass('empty', $(this).attr('rating') > rating)
+		$(this).toggleClass('full', $(this).attr('rating') <= rating)
 	});
 }
 
-function resetStars($starDiv) {
-	var $ratingInput = $starDiv.children("input");
+function resetDots($dotDiv) {
+	var $ratingInput = $dotDiv.children("input");
 	var rating = $ratingInput.val();
 	rating = Math.max(0, Math.min(rating, 5));
-	setStars($starDiv, rating)
+	setDots($dotDiv, rating);
 }
 
-function updateTooHard($tooHardDiv) {
-	$tooHardDiv.toggleClass('selected', $tooHardDiv.children('.ratingTooHard').is(':checked'));
+function askForRating() {
+	var $first = $(".ratingControls").has("#rating[value=0]").first();
+	$first.tipsy({
+		gravity : 'e',
+		fade : true,
+		trigger: 'manual',
+		fallback: "How difficult did you find this assessment?",
+		offset: 10,
+		css: {width: 40}
+	});
+	$first.tipsy('show');
+	$first.on("mouseover", function() {$(this).tipsy('hide');});
 }
 
 function sendRating($form) {
-	var $tooHard = $form.find(".tooHardDiv").children(".ratingTooHard");
-	$form.children('#tooHard').val($tooHard.is(':checked'));
 	$.ajax({
 		headers : {
 			'Accept' : 'application/json',
@@ -34,21 +42,27 @@ function sendRating($form) {
 		success : function() {
 			var $confirm = $form.find("#confirmRating");
 			$confirm.show();
-			$confirm.html("<span style='color:green;'>&#10004;</span>");
-			$confirm.fadeOut(2000);
+			$confirm.html("<span style='color:green;'>&#10004; Thanks!</span>");
+			$confirm.fadeOut(2000, function() {
+				$form.find(".ratingVisToggle").toggleClass("hidden");
+			});
 		}
 	});
 }
 
+$(".ratingVisToggle").on("click", "a", function() {
+	$(this).parents("form").find(".ratingVisToggle").toggleClass("hidden");
+});
+
 $(document).ready(function() {
 	$("[class^='ratingForm']").each(function() {
 		var $form = $(this);
-		var $starDiv = $form.children(".ratingControls").children(".ratingStars");
-		var $ratingInput = $starDiv.children("input");
+		var $dotDiv = $form.find(".ratingControls").children(".ratingDots");
+		var $ratingInput = $dotDiv.children("input");
 		for(var i = 1; i <= 5; i++) {
 			var $newDiv = 
 				jQuery('<div/>', {
-				    class: "emptyStar",
+				    class: "ratingDot empty r" + i,
 				    rating: i
 				});
 			$newDiv.on('click', function() {
@@ -56,14 +70,14 @@ $(document).ready(function() {
 				sendRating($form);
 			});
 			$newDiv.on('mouseover', function() {
-				setStars($starDiv, $(this).attr('rating'));
+				setDots($dotDiv, $(this).attr('rating'));
 			});
 			$newDiv.on('mouseout', function() {
-				resetStars($starDiv);
+				resetDots($dotDiv);
 			});
-			$starDiv.append($newDiv);
+			$dotDiv.append($newDiv);
 		}
-		resetStars($starDiv);
+		resetDots($dotDiv);
 	});
 	
 	$(".ratingForm").on('submit', function() {
@@ -85,10 +99,5 @@ $(document).ready(function() {
 		sendRating($form);
 	});
 	
-	$(".tooHardDiv").on('click', function() {
-		$checkbox = $(this).children('.ratingTooHard');
-		$checkbox.prop('checked', !$checkbox.prop('checked'));
-		updateTooHard($(this));
-		sendRating($(this).parents("#ratingForm"));
-	});
+	askForRating();
 });

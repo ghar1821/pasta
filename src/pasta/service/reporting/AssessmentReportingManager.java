@@ -92,15 +92,11 @@ public class AssessmentReportingManager {
 		List<AssessmentRating> ratings = ratingManager.getRatingsForAssessment(assessment);
 		List<String> comments = new ArrayList<String>();
 		List<Integer> ratingValues = new ArrayList<Integer>();
-		int tooHardCount = 0;
 		int ratingCount = 0;
 		for(AssessmentRating rating : ratings) {
 			comments.add(rating.getComment());
 			ratingValues.add(rating.getRating());
 			ratingCount++;
-			if(rating.isTooHard()) {
-				tooHardCount++;
-			}
 		}
 		Collections.shuffle(comments);
 		Collections.shuffle(ratingValues);
@@ -119,7 +115,6 @@ public class AssessmentReportingManager {
 		}
 		ratingsNode.set("ratings", valuesNode);
 		ratingsNode.put("ratingCount", ratingCount);
-		ratingsNode.put("tooHardCount", tooHardCount);
 		return ratingsNode.toString();
 	}
 }

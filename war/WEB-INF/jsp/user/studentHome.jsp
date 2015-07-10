@@ -121,14 +121,24 @@ either expressed or implied, of the PASTA Project.
 								<div class='horizontal-block float-right'>
 									<form:form commandName="ratingForm" cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
 										<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
-										<form:hidden path="tooHard" />
-										<div class='ratingControls float-container'>
-											<div class='ratingStars horizontal-block float-left'>
-												<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
+										<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
+										<div class='vertical'>
+											<div class='ratingVisToggle <c:if test="${!rated}">hidden</c:if>'>
+												<a>Change rating</a>
 											</div>
-											<div class='tooHardDiv horizontal-block float-left <c:if test="${ratingForms[assessment.id].tooHard}">selected</c:if>'><input type="checkbox" class="hidden ratingTooHard" <c:if test="${ratingForms[assessment.id].tooHard}">checked="checked"</c:if>/></div>
+											<div class='ratingControls float-container ratingVisToggle <c:if test="${rated}">hidden</c:if>'>
+												<div class='horizontal-block float-left'>
+													<p><span class='labelEasy'>Easy</span>
+												</div>
+												<div class='ratingDots horizontal-block float-left'>
+													<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
+												</div>
+												<div class='horizontal-block float-left'>
+													<p><span class='labelHard'>Hard</span>
+												</div>
+											</div>
 										</div>
-										<div class='float-container'>
+										<div class='vertical small-gap float-container'>
 											<div class='float-left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
 											<div class='float-right' id='confirmRating'></div>
 										</div>
