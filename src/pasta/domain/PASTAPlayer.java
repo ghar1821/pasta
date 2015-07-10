@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import pasta.domain.user.PASTAUser;
+
 @Entity
 @Table (name = "pasta_players")
 public class PASTAPlayer implements Serializable, Comparable<PASTAPlayer> {

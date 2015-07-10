@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 
 /**
  * A rule that is met if the given user is in one of the valid streams.

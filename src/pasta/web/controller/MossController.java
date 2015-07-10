@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 import pasta.service.MossManager;
 
 /**

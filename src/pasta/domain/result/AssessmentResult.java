@@ -54,11 +54,11 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 /**
  * Container for the results of an assessment.

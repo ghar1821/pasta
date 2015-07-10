@@ -41,8 +41,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.form.LoginForm;
+import pasta.domain.user.PASTAUser;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 

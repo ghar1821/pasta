@@ -50,10 +50,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.form.LoginForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;

@@ -56,7 +56,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTAPlayer;
 import pasta.domain.PASTATime;
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 /**
  * Container class for the Arena information.
  * <p>

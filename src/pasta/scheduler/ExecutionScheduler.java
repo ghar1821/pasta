@@ -41,12 +41,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
+import pasta.domain.user.PASTAUser;
 import pasta.util.PASTAUtil;
 
 /**

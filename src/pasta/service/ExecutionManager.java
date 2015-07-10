@@ -46,7 +46,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.PASTAPlayer;
-import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.domain.result.CompetitionMarks;
@@ -59,6 +58,7 @@ import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.Competition;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.AssessmentJob;

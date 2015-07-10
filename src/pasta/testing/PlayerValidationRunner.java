@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
 public class PlayerValidationRunner extends Runner {

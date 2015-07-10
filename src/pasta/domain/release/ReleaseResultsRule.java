@@ -8,9 +8,9 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
 /**

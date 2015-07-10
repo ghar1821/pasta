@@ -52,11 +52,11 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.upload.UpdateHandMarkingForm;
 import pasta.domain.upload.validate.UpdateHandMarkingFormValidator;
+import pasta.domain.user.PASTAUser;
 import pasta.service.HandMarkingManager;
 import pasta.util.ProjectProperties;
 

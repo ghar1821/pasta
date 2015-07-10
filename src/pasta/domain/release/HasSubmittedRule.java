@@ -5,8 +5,8 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.user.PASTAUser;
 
 /**
  * A rule that is met if the user has submitted the given assessment at least

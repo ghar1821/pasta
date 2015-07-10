@@ -44,10 +44,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.template.Assessment;
 import pasta.domain.upload.UpdateUsersForm;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;
 import pasta.util.ProjectProperties;
@@ -292,7 +292,7 @@ public class UserManager {
 	 * Input should be in the form:
 	 * 	<code>username,permission,tutorial{,tutorial}</code> for tutors
 	 * 	<code>username,stream,tutorial</code> for students
-	 * Each line is turned into a {@link pasta.domain.PASTAUser} and then calls either 
+	 * Each line is turned into a {@link pasta.domain.user.PASTAUser} and then calls either 
 	 * {@link UserDAO#replaceUsers(List, boolean)} or {@link UserDAO#updateUsers(List)}
 	 * 
 	 * @param form the form containing update information

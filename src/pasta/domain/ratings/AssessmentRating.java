@@ -9,8 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 
 @Entity
 @Table(name = "assessment_ratings")

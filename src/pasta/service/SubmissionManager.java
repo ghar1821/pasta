@@ -42,10 +42,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.upload.Submission;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.AssessmentJob;

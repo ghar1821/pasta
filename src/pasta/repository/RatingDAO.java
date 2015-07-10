@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 
 @Repository("ratingDAO")
 public class RatingDAO extends HibernateDaoSupport {

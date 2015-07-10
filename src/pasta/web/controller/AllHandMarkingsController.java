@@ -47,9 +47,9 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.HandMarking;
 import pasta.domain.upload.NewHandMarkingForm;
+import pasta.domain.user.PASTAUser;
 import pasta.service.HandMarkingManager;
 
 /**

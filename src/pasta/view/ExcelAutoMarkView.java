@@ -42,9 +42,9 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.web.servlet.view.document.AbstractExcelView;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 
 /**
  * Class to generate an excel document of everyone's automatic marks that can be downloaded by a tutor.

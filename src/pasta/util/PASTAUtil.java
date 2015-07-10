@@ -62,9 +62,9 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
-import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.template.Competition;
+import pasta.domain.user.PASTAUser;
 
 /**
  * Groups together commonly used methods.

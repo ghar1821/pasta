@@ -8,8 +8,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.user.PASTAUser;
 
 /**
  * <p>

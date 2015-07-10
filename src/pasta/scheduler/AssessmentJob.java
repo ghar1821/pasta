@@ -39,8 +39,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.user.PASTAUser;
 
 /**
  * Class that holds the details of jobs.

@@ -27,7 +27,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-package pasta.domain;
+package pasta.domain.user;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -47,6 +47,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import pasta.domain.UserPermissionLevel;
 
 @Entity
 @Table(name = "users")

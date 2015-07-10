@@ -22,10 +22,10 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.release.form.AssessmentReleaseForm;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.ReleaseManager;
 import pasta.service.UserManager;

@@ -48,9 +48,9 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
+import pasta.domain.user.PASTAUser;
 import pasta.util.PASTAUtil;
 
 /**

@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.service.RatingManager;

@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 
 /**
  * A rule that is met once the date reaches the given release date.

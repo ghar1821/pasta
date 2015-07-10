@@ -47,7 +47,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.domain.result.CompetitionMarks;
@@ -58,6 +57,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewPlayer;
 import pasta.domain.upload.UpdateCompetitionForm;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.ExecutionScheduler;

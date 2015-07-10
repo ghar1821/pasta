@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.ResultDAO;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;

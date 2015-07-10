@@ -47,9 +47,9 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTestForm;
+import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
 
 /**
@@ -140,7 +140,7 @@ public class AllUnitTestsController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} for the currently logged in user.</td></tr>
+	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.user.PASTAUser} for the currently logged in user.</td></tr>
 	 * 	<tr><td>allUnitTests</td><td>A collection of all {@link pasta.domain.template.UnitTest} of all unit tests on the system.</td></tr>
 	 * </table>
 	 * 

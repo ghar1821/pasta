@@ -69,7 +69,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
@@ -79,6 +78,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.upload.Submission;
+import pasta.domain.user.PASTAUser;
 import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
@@ -477,7 +477,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessment</td>
@@ -725,7 +725,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>location</td>
@@ -802,11 +802,11 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} for the currently logged in user</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} for the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>viewedUser</td>
-	 * <td>{@link pasta.domain.PASTAUser} for the viewed user</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} for the viewed user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessments</td>
@@ -964,11 +964,11 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
 	 * </tr>
 	 * <tr>
 	 * <td>viewedUser</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the user being viewed</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the user being viewed</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessment</td>
@@ -1193,11 +1193,11 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} the user logged in</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} the user logged in</td>
 	 * </tr>
 	 * <tr>
 	 * <td>student</td>
-	 * <td>{@link pasta.domain.PASTAUser} the user being viewed</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} the user being viewed</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentName</td>
@@ -1365,7 +1365,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the user logged in</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentId</td>
@@ -1373,7 +1373,7 @@ public class SubmissionController {
 	 * </tr>
 	 * <tr>
 	 * <td>student</td>
-	 * <td>{@link pasta.domain.PASTAUser} of the student being viewed</td>
+	 * <td>{@link pasta.domain.user.PASTAUser} of the student being viewed</td>
 	 * </tr>
 	 * <tr>
 	 * <td>node</td>
@@ -1401,7 +1401,7 @@ public class SubmissionController {
 	 * </tr>
 	 * <tr>
 	 * <td>myStudents</td>
-	 * <td>The list of {@link pasta.domain.PASTAUser} of the users that belong
+	 * <td>The list of {@link pasta.domain.user.PASTAUser} of the users that belong
 	 * in your class(es)</td>
 	 * </tr>
 	 * </table>
@@ -1793,7 +1793,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentList</td>
@@ -1841,7 +1841,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentList</td>
@@ -1888,7 +1888,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentList</td>
@@ -1935,7 +1935,7 @@ public class SubmissionController {
 	 * <table>
 	 * <tr>
 	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.PASTAUser} of the currently logged in user</td>
+	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
 	 * </tr>
 	 * <tr>
 	 * <td>assessmentList</td>

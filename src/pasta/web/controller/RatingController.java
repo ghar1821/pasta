@@ -46,10 +46,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.RatingManager;
 import pasta.service.UserManager;

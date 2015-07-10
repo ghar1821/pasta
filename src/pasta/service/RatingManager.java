@@ -42,10 +42,10 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.RatingDAO;
 
 /**

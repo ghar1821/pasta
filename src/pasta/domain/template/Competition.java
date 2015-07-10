@@ -58,7 +58,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.PASTATime;
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
 /**

@@ -9,8 +9,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.user.PASTAUser;
 
 /**
  * A rule that is met if the user has submitted the given assessment as many times 

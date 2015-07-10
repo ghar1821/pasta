@@ -60,8 +60,8 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.release.ReleaseRule;
+import pasta.domain.user.PASTAUser;
 import pasta.util.Language;
 
 /**

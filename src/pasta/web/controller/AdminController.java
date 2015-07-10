@@ -49,11 +49,11 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
 import pasta.domain.upload.UpdateUsersForm;
 import pasta.domain.upload.validate.UpdateUsersFormValidator;
+import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
@@ -136,7 +136,7 @@ public class AdminController {
 	 * Attributes:
 	 * <table>
 	 * 	<tr><td>authType</td><td>ProjectProperties.getInstance().getAuthenticationValidator().getClass().getName()</td></tr>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.PASTAUser} currently logged in user</td></tr>
+	 * 	<tr><td>unikey</td><td>{@link pasta.domain.user.PASTAUser} currently logged in user</td></tr>
 	 * 	<tr><td>people</td><td><b>Only if tutor or instructor!</b> - the list of users (both students and teaching staff)</td></tr>
 	 * 	<tr><td>addresses</td><td><b>Only if tutor or instructor!</b> - the list of sever addresses for which to authenticate against</td></tr>
 	 * </table>

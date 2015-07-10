@@ -58,7 +58,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.FileTreeNode;
-import pasta.domain.PASTAUser;
 import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.UnitTest;
 import pasta.domain.upload.NewUnitTestForm;
@@ -67,6 +66,7 @@ import pasta.domain.upload.TestUnitTestForm;
 import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.domain.upload.validate.TestUnitTestFormValidator;
 import pasta.domain.upload.validate.UpdateUnitTestFormValidator;
+import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -173,7 +173,7 @@ public class UnitTestController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.PASTAUser} for the logged in user</td></tr>
+	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.user.PASTAUser} for the logged in user</td></tr>
 	 * 	<tr><td>unitTest</td><td>The {@link pasta.domain.template.UnitTest} for this test</td></tr>
 	 * 	<tr><td>latestResult</td><td>The {@link pasta.domain.result.UnitTestResult} for the execution of the test run of the unit testing code.</td></tr>
 	 * 	<tr><td>node</td><td>The root {@link pasta.domain.FileTreeNode} for the root of the unit test code.</td></tr>

@@ -46,8 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.user.PASTAUser;
 
 /**
  * The Data access object for the User class.

@@ -43,7 +43,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
@@ -54,6 +53,7 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewAssessmentForm;
 import pasta.domain.upload.UpdateAssessmentForm;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
@@ -265,7 +265,7 @@ public class AssessmentManager {
 	 * Gets all of the cached assessment results for every assessment on the system, for the
 	 * collection of users given.
 	 * 
-	 * @param allUsers the collection of {@link pasta.domain.PASTAUser} that are being queried
+	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
 	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
 	 */
 	public Map<PASTAUser, Map<Long, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){

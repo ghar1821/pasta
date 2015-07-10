@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
-import pasta.domain.PASTAUser;
 import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
 /**

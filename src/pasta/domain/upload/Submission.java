@@ -31,7 +31,7 @@ package pasta.domain.upload;
 
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import pasta.domain.PASTAUser;
+import pasta.domain.user.PASTAUser;
 
 /**
  * Form object for a submission.
