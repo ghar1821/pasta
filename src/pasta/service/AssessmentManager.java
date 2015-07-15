@@ -82,6 +82,9 @@ public class AssessmentManager {
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
 	@Autowired
+	private GroupManager groupManager;
+	
+	@Autowired
 	private UnitTestDAO unitTestDAO;
 	
 	private ExecutionScheduler scheduler;
@@ -355,6 +358,17 @@ public class AssessmentManager {
 		assessment.setSolutionName(form.getSolutionName());
 		
 		assessment.setSubmissionLanguages(form.getLanguages());
+		
+		if(form.getGroupCount() != -1) {
+			int groupCount = groupManager.getGroupCount(assessment);
+			if(groupCount > form.getGroupCount()) {
+				groupManager.removeExtraGroups(assessment, groupCount - form.getGroupCount());
+			}
+		}
+		
+		assessment.setGroupCount(form.getGroupCount());
+		assessment.setGroupSize(form.getGroupSize());
+		assessment.setStudentsManageGroups(form.isStudentsManageGroups());
 		
 		for(WeightedUnitTest test : form.getNewUnitTests()) {
 			test.setSecret(false);

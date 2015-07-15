@@ -112,6 +112,7 @@
 				<value>pasta.domain.template.WeightedField</value>
 				<value>pasta.domain.template.WeightedHandMarking</value>
 				<value>pasta.domain.template.WeightedUnitTest</value>
+				<value>pasta.domain.user.PASTAGroup</value>
 				<value>pasta.domain.user.PASTAUser</value>
 			</list>
 	    </property>

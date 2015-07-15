@@ -206,6 +206,10 @@ either expressed or implied, of the PASTA Project.
 									</c:otherwise>
 								</c:choose>
 							</div>
+							<c:if test="${assessment.groupWork}">
+								<div id="editGroup" class='horizontal-block float-right icon-edit-group' 
+								title='Group Details' assessment='${assessment.id}'></div>
+							</c:if>
 						</div>
 					</div>
 				</c:forEach>
@@ -252,6 +256,10 @@ either expressed or implied, of the PASTA Project.
 					setTimeout(checkQueue, 3000);
 				}
 			})();
+		});
+		
+		$("#editGroup").on('click', function() {
+			location.href = '../groups/' + $(this).attr('assessment') + '/';
 		});
 	});
 </script>

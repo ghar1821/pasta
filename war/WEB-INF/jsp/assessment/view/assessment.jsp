@@ -48,13 +48,68 @@ either expressed or implied, of the PASTA Project.
 	<input type="submit" value="Save Assessment" id="submit" style="margin-top:1em;"/>
 	
 	<table class='alignCellsTop noGaps'>
-		<tr><td>Category:</td><td><form:input type="text" path="category"/> <form:errors path="category"/></td></tr>
-		<tr><td>Assessment Marks:</td><td><form:input type="text" path="marks"/> <form:errors path="marks"/></td></tr>
-		<tr class='spaceBelow'><td>Assessment Due Date:</td><td><form:input type="text" path="strDate" /> <form:errors path="dueDate"/></td></tr>
-		<tr><td>Maximum Number of allowed submissions:</td><td><form:input type="text" path="numSubmissionsAllowed"/> <form:errors path="numSubmissionsAllowed"/></td></tr>
-		<tr class='spaceBelow'><td>Count submissions that have failed to compile:</td><td><form:checkbox path="countUncompilable"/></td></tr>
 		<tr>
-			<td>Solution Name:</td>
+			<td>Category:</td>
+			<td>
+				<form:input type="text" path="category"/>
+				<form:errors path="category"/>
+			</td>
+		</tr>
+		<tr>
+			<td>Assessment marks:</td>
+			<td>
+				<form:input type="text" path="marks"/>
+				<form:errors path="marks"/>
+			</td>
+		</tr>
+		<tr class='spaceBelow'>
+			<td>Assessment due date:</td>
+			<td>
+				<form:input type="text" path="strDate" />
+				<form:errors path="dueDate"/>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<label>
+					<input type="checkbox" id='toggleGroups' <c:if test="${assessment.groupWork}">checked='checked'</c:if> />
+					Allow group work
+				</label>
+			</td>
+		</tr>
+		<tr class='groupData'>
+			<td>Number of groups:</td>
+			<td>
+				<form:input type="number" min="0" path="groupCount" />
+				<label><input type="checkbox" id='unlimitedGroups' <c:if test="${assessment.groupCount == -1}">checked='checked'</c:if> />No limit</label>
+				<form:errors path="groupCount"/>
+			</td>
+		</tr>
+		<tr class='groupData'>
+			<td>Maximum group size:</td>
+			<td>
+				<form:input type="number" min="2" path="groupSize" />
+				<label><input type="checkbox" id='unlimitedSize' <c:if test="${assessment.groupSize == -1}">checked='checked'</c:if> />No limit</label>
+				<form:errors path="groupSize"/>
+			</td>
+		</tr>
+		<tr class='spaceBelow groupData'>
+			<td><label for="studentsManageGroups1">Allow students to manage group membership:</label></td>
+			<td><form:checkbox path="studentsManageGroups"/></td>
+		</tr>
+		<tr>
+			<td>Maximum number of allowed submissions:</td>
+			<td>
+				<form:input type="text" path="numSubmissionsAllowed"/>
+				<form:errors path="numSubmissionsAllowed"/>
+			</td>
+		</tr>
+		<tr class='spaceBelow'>
+			<td><label for="countUncompilable1">Count submissions that have failed to compile:</label></td>
+			<td><form:checkbox path="countUncompilable"/></td>
+		</tr>
+		<tr>
+			<td>Solution name:</td>
 			<td>
 				<form:input path="solutionName"/>
 				<span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
@@ -62,7 +117,7 @@ either expressed or implied, of the PASTA Project.
 			</td>
 		</tr>
 		<tr>
-			<td>Allowed Languages:</td>
+			<td>Allowed languages:</td>
 			<td>
 				<form:errors path="languages" element="div"/>
 				<form:select path="languages" multiple="multiple" cssClass="langSelect">
@@ -279,6 +334,28 @@ either expressed or implied, of the PASTA Project.
     		placeholder_text_multiple: "Leave blank to allow ANY language", 
     		width: "22em"
     	});
+    	
+    	$("#toggleGroups").on("change", function() {
+    		var groupWork = $(this).is(":checked");
+    		$("tr.groupData").toggle(groupWork);
+    		$(this).parents("tr").toggleClass("spaceBelow", !groupWork)
+    		if(!groupWork) {
+    			$("#groupCount").val(0);
+    		}
+    	});
+    	$("#unlimitedGroups").on("change", function() {
+    		$("#groupCount").prop("disabled", $(this).is(":checked"));
+    		$("#groupCount").val($(this).is(":checked") ? -1 : $("#groupCount").val() == -1 ? 0 : $("#groupCount").val());
+    	});
+    	$("#unlimitedSize").on("change", function() {
+    		$("#groupSize").prop("disabled", $(this).is(":checked"));
+    		$("#groupSize").val($(this).is(":checked") ? -1 : $("#groupSize").val() == -1 ? 2 : $("#groupSize").val());
+    	});
+    	$('#updateAssessmentForm').on('submit', function() {
+    		$("#groupCount").removeAttr('disabled');
+    		$("#groupSize").removeAttr('disabled');
+        });
+    	$("#toggleGroups,#unlimitedGroups,#unlimitedSize").trigger("change");
     	
         $( "#unitTest.sortable" ).sortable({
             connectWith: "tbody",

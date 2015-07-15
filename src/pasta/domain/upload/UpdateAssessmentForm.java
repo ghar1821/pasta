@@ -92,6 +92,10 @@ public class UpdateAssessmentForm {
 	@Length(max=64)
 	private String solutionName;
 	
+	private int groupCount;
+	private int groupSize;
+	private boolean studentsManageGroups;
+	
 	private Set<Language> languages;
 	
 	private List<WeightedUnitTest> newUnitTests;
@@ -114,6 +118,9 @@ public class UpdateAssessmentForm {
 		this.countUncompilable = base.isCountUncompilable();
 		this.description = base.getDescription();
 		this.solutionName = base.getSolutionName();
+		this.groupCount = base.getGroupCount();
+		this.groupSize = base.getGroupSize();
+		this.studentsManageGroups = base.isStudentsManageGroups();
 		
 		this.languages = new TreeSet<Language>(base.getSubmissionLanguages());
 		
@@ -194,6 +201,27 @@ public class UpdateAssessmentForm {
 	}
 	public void setSolutionName(String solutionName) {
 		this.solutionName = solutionName;
+	}
+
+	public int getGroupCount() {
+		return groupCount;
+	}
+	public void setGroupCount(int groupCount) {
+		this.groupCount = groupCount;
+	}
+
+	public int getGroupSize() {
+		return groupSize;
+	}
+	public void setGroupSize(int groupSize) {
+		this.groupSize = groupSize;
+	}
+	
+	public boolean isStudentsManageGroups() {
+		return studentsManageGroups;
+	}
+	public void setStudentsManageGroups(boolean studentsManageGroups) {
+		this.studentsManageGroups = studentsManageGroups;
 	}
 
 	public Set<Language> getLanguages() {

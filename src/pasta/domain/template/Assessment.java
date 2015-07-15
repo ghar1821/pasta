@@ -183,6 +183,15 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<Language> submissionLanguages = new TreeSet<Language>();
 	
+	@Column (name="group_count")
+	private int groupCount = 0;
+	
+	@Column (name="group_size")
+	private int groupSize = 2;
+	
+	@Column (name="students_manage_groups")
+	private boolean studentsManageGroups = true;
+	
 	public long getId() {
 		return id;
 	}
@@ -293,6 +302,37 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		}
 		return dirs;
 	}
+	
+	public int getGroupCount() {
+		return groupCount;
+	}
+	public void setGroupCount(int groupCount) {
+		this.groupCount = groupCount;
+	}
+	public boolean isGroupWork() {
+		return this.groupCount != 0;
+	}
+	public boolean isUnlimitedGroupCount() {
+		return groupCount == -1;
+	}
+	
+	public int getGroupSize() {
+		return groupSize;
+	}
+	public void setGroupSize(int groupSize) {
+		this.groupSize = groupSize;
+	}
+	public boolean isUnlimitedGroupSize() {
+		return groupSize == -1;
+	}
+	
+	public boolean isStudentsManageGroups() {
+		return studentsManageGroups;
+	}
+	public void setStudentsManageGroups(boolean studentsManageGroups) {
+		this.studentsManageGroups = studentsManageGroups;
+	}
+	
 	
 	public Set<WeightedUnitTest> getUnitTests() {
 		Set<WeightedUnitTest> unitTests = new TreeSet<>();

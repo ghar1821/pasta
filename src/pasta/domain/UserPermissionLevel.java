@@ -63,5 +63,5 @@ package pasta.domain;
  * @since 2012-12-10
  */
 public enum UserPermissionLevel {
-	STUDENT, TUTOR, INSTRUCTOR;
+	STUDENT, TUTOR, INSTRUCTOR, GROUP;
 }

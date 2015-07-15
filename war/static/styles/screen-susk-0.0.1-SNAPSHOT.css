@@ -222,6 +222,38 @@ textarea.ratingComment {
 	min-height: 100px;
 }
 
+div.icon-edit-group {
+	background-repeat: no-repeat;
+	background-image: url("../images/group-edit.png");
+	cursor: pointer;
+	height: 32px;
+	width: 32px;
+}
+
+div.group.allStudents {
+	vertical-align: top;
+	width: 30%;
+}
+div.group.allGroups {
+	vertical-align: top;
+	width: 60%;
+}
+div.group.allGroups div.overFull {
+	background-color: #FCC;
+}
+div.group.allGroups div.full {
+	background-color: #FFC;
+}
+div.group.separator {
+	display: inline-block;
+	font-size: 4em;
+	padding-top: 2em;
+	text-align: center;
+}
+div.group td.dataTables_empty {
+	font-weight: bold;
+}
+
 .handMarkingStudent.didnotsubmit{
 	background-color: lightgray;
 	cursor: default;

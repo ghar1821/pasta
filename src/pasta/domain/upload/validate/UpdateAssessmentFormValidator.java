@@ -9,7 +9,9 @@ import pasta.domain.template.Assessment;
 import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.UpdateAssessmentForm;
+import pasta.domain.user.PASTAGroup;
 import pasta.service.AssessmentManager;
+import pasta.service.GroupManager;
 import pasta.service.UnitTestManager;
 
 /**
@@ -25,6 +27,8 @@ public class UpdateAssessmentFormValidator implements Validator {
 	private AssessmentManager assessmentManager;
 	@Autowired
 	private UnitTestManager unitTestManager;
+	@Autowired
+	private GroupManager groupManager;
 	
 	@Override
 	public boolean supports(Class<?> clazz) {
@@ -57,6 +61,29 @@ public class UpdateAssessmentFormValidator implements Validator {
 			}
 			if(form.getLanguages() != null && !form.getLanguages().isEmpty()) {
 				errors.rejectValue("languages", "BlackBox.Empty");
+			}
+		}
+		
+		// Group count not less than -1
+		if(form.getGroupCount() < -1) {
+			errors.rejectValue("groupCount", "Min");
+		}
+		// Group count not falling below currently used group count
+		if(form.getGroupCount() != -1 && form.getGroupCount() < groupManager.getUsedGroupCount(base)) {
+			errors.rejectValue("groupCount", "CannotDeleteUsedGroups", new Object[] {form.getGroupCount()}, "");
+		}
+		
+		// Group size in range {-1, [2,Inf)}
+		if(form.getGroupSize() < 2 && form.getGroupSize() != -1) {
+			errors.rejectValue("groupSize", "Min");
+		}
+		// Group size not falling below current group sizes
+		if(form.getGroupSize() != -1) {
+			for(PASTAGroup group : groupManager.getGroups(base)) {
+				if(group.getSize() > form.getGroupSize()) {
+					errors.rejectValue("groupSize", "CannotShrinkUsedGroups", new Object[] {form.getGroupSize()}, "");
+					break;
+				}
 			}
 		}
 		

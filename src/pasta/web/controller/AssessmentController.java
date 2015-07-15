@@ -322,8 +322,6 @@ public class AssessmentController {
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allLanguages", Language.values());
 		
-		logger.warn("Map:" + model.asMap());
-		
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}
@@ -365,7 +363,6 @@ public class AssessmentController {
 		
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) {
-			logger.warn("Errors: " + result.getAllErrors());
 			attr.addFlashAttribute("updateAssessmentForm", form);
 			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateAssessmentForm", result);
 			

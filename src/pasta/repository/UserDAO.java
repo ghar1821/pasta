@@ -43,10 +43,13 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.template.Assessment;
+import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -97,8 +100,15 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being deleted
 	 */
 	public void delete(PASTAUser user) {
-		user.setActive(false);
-		update(user);
+		if(user instanceof PASTAGroup) {
+			((PASTAGroup) user).setAssessment(null);
+			((PASTAGroup) user).getMembers().clear();
+			update(user);
+			getHibernateTemplate().delete(user);
+		} else {
+			user.setActive(false);
+			update(user);
+		}
 	}
 	
 	/**
@@ -379,5 +389,38 @@ public class UserDAO extends HibernateDaoSupport{
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.setProjection(Projections.distinct(Projections.property("username")));
 		return getHibernateTemplate().findByCriteria(cr);
+	}
+
+	public PASTAGroup getGroup(long id) {
+		return getHibernateTemplate().get(PASTAGroup.class, id);
+	}
+	
+	public int getGroupCount() {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.setProjection(Projections.rowCount());
+		return DataAccessUtils.intResult(getHibernateTemplate().findByCriteria(cr));
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PASTAGroup> getGroups(Assessment assessment) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.add(Restrictions.eq("assessment", assessment));
+		return getHibernateTemplate().findByCriteria(cr);
+	}
+
+	public PASTAGroup getGroup(PASTAUser user, Assessment assessment) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.add(Restrictions.eq("assessment", assessment));
+		cr.createAlias("members", "user");
+		cr.add(Restrictions.eq("user.id", user.getId()));
+		@SuppressWarnings("unchecked")
+		List<PASTAGroup> results = getHibernateTemplate().findByCriteria(cr);
+		if(results.isEmpty()) {
+			return null;
+		}
+		if(results.size() > 1) {
+			logger.warn("Ignoring multiple groups for user " + user.getId() + ", assessment " + assessment.getId());
+		}
+		return results.get(0);
 	}
 }

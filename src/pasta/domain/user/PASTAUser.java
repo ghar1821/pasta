@@ -43,34 +43,52 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import pasta.domain.UserPermissionLevel;
 
-@Entity
-@Table(name = "users")
 /**
  * @author Alex Radu
  * @version 2.0
  * @since 2012-10-12
  */
+@Entity
+@Table(name = "users")
+@Inheritance(strategy=InheritanceType.JOINED)
 public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 
 	private static final long serialVersionUID = -9070027568016757820L;
 	
-	private long id;
-	private String username = "";
-	private String tutorial = "";
-	private String stream = "";
-	private UserPermissionLevel permissionLevel;
-	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
-	private boolean active = true;
-	
 	@Id
 	@GeneratedValue
+	private long id;
+	
+	@Column(name = "username", nullable = false)
+	private String username = "";
+	
+	@Column(name = "tutorial", nullable = false)
+	private String tutorial = "";
+	
+	@Column(name = "stream", nullable = false)
+	private String stream = "";
+	
+	@Column(name = "permission_level", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private UserPermissionLevel permissionLevel;
+	
+	@ElementCollection (fetch=FetchType.EAGER)
+	@MapKeyColumn(name="assessment_id")
+	@Column(name="due_date")
+	@CollectionTable(name="student_assessment_extensions", joinColumns=@JoinColumn(name="pasta_user_id"))
+	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
+	
+	@Column(name="active")
+	private boolean active = true;
+	
 	public long getId() {
 		return id;
 	}
@@ -78,7 +96,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.id = id;
 	}
 
-	@Column(name = "username", nullable = false)
 	public String getUsername() {
 		return username;
 	}
@@ -89,7 +106,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.username = username.trim();
 	}
 	
-	@Column(name = "tutorial", nullable = false)
 	public String getTutorial() {
 		return tutorial;
 	}
@@ -100,7 +116,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.tutorial = tutorial.trim();
 	}
 	
-	@Column(name = "stream", nullable = false)
 	public String getStream() {
 		return stream;
 	}
@@ -111,8 +126,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.stream = stream.trim();
 	}
 	
-	@Column(name = "permission_level", nullable = false)
-	@Enumerated(EnumType.STRING)
 	public UserPermissionLevel getPermissionLevel() {
 		return permissionLevel;
 	}
@@ -120,23 +133,19 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.permissionLevel = permissionLevel;
 	}
 	
-	@Transient
 	public String getFullTutorial() {
 		return this.getStream() + "." + this.getTutorial();
 	}
 	
-	@Transient
 	public boolean isTutor(){
 		return (permissionLevel == UserPermissionLevel.TUTOR) 
 				|| permissionLevel == UserPermissionLevel.INSTRUCTOR; 
 	}
 	
-	@Transient
 	public boolean isInstructor(){
 		return permissionLevel == UserPermissionLevel.INSTRUCTOR; 
 	}
 	
-	@Transient
 	public String[] getTutorClasses(){
 		if ((permissionLevel == UserPermissionLevel.TUTOR)  
 				|| permissionLevel == UserPermissionLevel.INSTRUCTOR){
@@ -145,10 +154,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return new String[0];
 	}
 	
-	@ElementCollection (fetch=FetchType.EAGER)
-    @MapKeyColumn(name="assessment_id")
-    @Column(name="due_date")
-    @CollectionTable(name="student_assessment_extensions", joinColumns=@JoinColumn(name="pasta_user_id"))
 	public Map<Long, Date> getExtensions(){
 		return extensions;
 	}
@@ -156,12 +161,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.extensions = extensions;
 	}
 	
-	@Transient
 	public void giveExtension(Long assessmentId, Date newDueDate){
 		extensions.put(assessmentId, newDueDate);
 	}
 	
-	@Column(name="active")
 	public boolean isActive() {
 		return active;
 	}
@@ -169,12 +172,11 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.active = active;
 	}
 	
-	@Transient
 	public boolean equals(PASTAUser user){
 		if(user == null) {
 			return false;
 		}
-		return id == user.getId();
+		return this.id == user.id;
 	}
 	
 	@Override
@@ -189,5 +191,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
+	}
+	
+	@Override
+	public String toString() {
+		return username;
 	}
 }
