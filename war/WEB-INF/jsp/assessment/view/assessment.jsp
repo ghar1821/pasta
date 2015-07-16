@@ -35,9 +35,16 @@ either expressed or implied, of the PASTA Project.
 
 <h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
 
+<spring:hasBindErrors name="updateAssessmentForm">
+	<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.5em;">
+		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+		<b>ERROR: Please check your form for indicated errors, and try again.</b>
+	</div>
+</spring:hasBindErrors>
+
 <c:if test="${not assessment.completelyTested}" >
-	<div class="ui-state-error ui-corner-all" style="font-size: 1.5em;">
-		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span><b>WARNING: This assessment contains untested unit tests</b>
+	<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.5em;">
+		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span><b>WARNING:</b> This assessment contains untested unit tests
 	</div>
 </c:if>
 
@@ -150,168 +157,108 @@ either expressed or implied, of the PASTA Project.
 		<form:textarea path="description" cols="110" rows="10" /><br/>
 	</div>
 	
+	<div class='vertical-block'>
+		<h2>Unit Tests</h2>
+		<form:errors path="selectedUnitTests" element="p" />
+		<table class='moduleTable'>
+			<thead>
+				<tr><th>Selected</th><th>Name</th><th>Weighting</th><th>Secret</th><th>Group Work</th><th>Tested</th></tr>
+			</thead>
+			<tbody>
+				<c:forEach var='module' items="${allUnitTests}" varStatus="index">
+					<tr>
+						<form:input type="hidden" path="selectedUnitTests[${index.index}].id" value="${module.id}"/>
+						<form:input type="hidden" path="selectedUnitTests[${index.index}].test.id" value="${module.test.id}"/>
+						<td>
+							<input class='custom-check select-check' id="selectedUnitTests${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<label for="selectedUnitTests${index.index}.selected"></label>
+						</td>
+						<td>
+							<a href="../../unitTest/${module.test.id}/">${module.test.name}</a>
+						</td>
+						<td>
+							<form:input size="5" type="text" path="selectedUnitTests[${index.index}].weight" value="${module.weight}"/>
+						</td>
+						<td>
+							<form:checkbox cssClass="custom-check" path="selectedUnitTests[${index.index}].secret" checked="${module.secret ? 'checked' : ''}"  />
+							<label for="selectedUnitTests${index.index}.secret1"></label>
+						</td>
+						<td>
+							<form:checkbox cssClass="custom-check" path="selectedUnitTests[${index.index}].groupWork" checked="${module.groupWork ? 'checked' : ''}"  />
+							<label for="selectedUnitTests${index.index}.groupWork1"></label>
+						</td>
+						<td class="pastaTF pastaTF${module.test.tested}">
+							${module.test.tested}
+						</td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+	</div>
 	
-	<table style="margin-bottom:2em;width:90%">
-		<tr>
-			<td valign="top" >
-				<div style="float:left; width:100%;">
-					<h2> Unit Tests </h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody id="unitTest" class="sortable newUnitTests">
-							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${nonSecretUnitTests}">
-								<tr>
-									<td>
-										<form:input type="hidden" path="newUnitTests[${unitTestIndex.index}].id" value="${unitTest.id}"/>
-										<form:input type="hidden" path="newUnitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
-										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
-									</td>
-									<td><form:input size="5" type="text" path="newUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
-									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				
-					<h2> Secret Unit Tests </h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody id="unitTest" class="sortable newSecretUnitTests">
-							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${secretUnitTests}">
-								<tr>
-									<td>
-										<form:input type="hidden" path="newSecretUnitTests[${unitTestIndex.index}].id" value="${unitTest.id}"/>
-										<form:input type="hidden" path="newSecretUnitTests[${unitTestIndex.index}].test.id" value="${unitTest.test.id}"/>
-										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
-									</td>
-									<td><form:input size="5" type="text" path="newSecretUnitTests[${unitTestIndex.index}].weight" value="${unitTest.weight}"/></td>
-									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-			<td valign="top">
-				<div style="float:left; width:100%;">
-					<h2> Available Unit Tests </h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th><th>Tested</th></tr>
-						<tbody id="unitTest" class="sortable unusedUnitTest">
-							<c:forEach var="unitTest" varStatus="unitTestIndex" items="${otherUnitTests}">
-								<tr>
-									<td>
-										<input type="hidden" id="unusedUnitTest${unitTestIndex.index}.id" value="${unitTest.id}"/>
-										<input type="hidden" id="unusedUnitTest${unitTestIndex.index}.test.id" value="${unitTest.test.id}"/>
-										<a href="../../unitTest/${unitTest.test.id}/">${unitTest.test.name}</a>
-									</td>
-									<td><input size="5" type="text" id="unusedUnitTest${unitTestIndex.index}.weight" value="${unitTest.weight}"/></td>
-									<td class="pastaTF pastaTF${unitTest.test.tested}">${unitTest.test.tested}</td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-		</tr>
-	</table>
+	<div class='vertical-block'>
+		<h2>Hand Marking</h2>
+		<form:errors path="selectedHandMarking" element="p" />
+		<table class='moduleTable'>
+			<thead>
+				<tr><th>Selected</th><th>Name</th><th>Weighting</th><th>Group Work</th></tr>
+			</thead>
+			<tbody>
+				<c:forEach var='module' items="${allHandMarking}" varStatus="index">
+					<tr>
+						<form:input type="hidden" path="selectedHandMarking[${index.index}].id" value="${module.id}"/>
+						<form:input type="hidden" path="selectedHandMarking[${index.index}].handMarking.id" value="${module.handMarking.id}"/>
+						<td>
+							<input class='custom-check select-check' id="selectedHandMarking${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<label for="selectedHandMarking${index.index}.selected"></label>
+						</td>
+						<td>
+							<a href="../../handMarking/${module.handMarking.id}/">${module.handMarking.name}</a>
+						</td>
+						<td>
+							<form:input size="5" type="text" path="selectedHandMarking[${index.index}].weight" value="${module.weight}"/>
+						</td>
+						<td>
+							<form:checkbox cssClass="custom-check" path="selectedHandMarking[${index.index}].groupWork" checked="${module.groupWork ? 'checked' : ''}"  />
+							<label for="selectedHandMarking${index.index}.groupWork1"></label>
+						</td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+	</div>
 	
-	<table style="margin-bottom:2em;width:90%">
-		<tr>
-			<td valign="top" >
-				<div style="float:left; width:100%;">
-					<h2> Hand Marking </h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
-						<tbody id="handMarking" class="sortable newHandMarking">
-							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${handMarkingTemplates}">
-								<tr>
-									<td>
-										<form:input type="hidden" path="newHandMarking[${handMarkingIndex.index}].id" value="${handMarking.id}"/>
-										<form:input type="hidden" path="newHandMarking[${handMarkingIndex.index}].handMarking.id" value="${handMarking.handMarking.id}"/>
-										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
-									</td>
-									<td><form:input size="5" type="text" path="newHandMarking[${handMarkingIndex.index}].weight" value="${handMarking.weight}"/></td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-			<td valign="top">
-				<div style="float:left; width:100%;">
-					<h2> Available Hand Marking</h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
-						<tbody id="handMarking" class="sortable unusedHandMarking">
-							<c:forEach var="handMarking" varStatus="handMarkingIndex" items="${otherHandMarking}">
-								<tr>
-									<td>
-										<input type="hidden" id="unusedHandMarking${handMarkingIndex.index}.id" value="${handMarking.id}"/>
-										<input type="hidden" id="unusedHandMarking${handMarkingIndex.index}.handMarking.id" value="${handMarking.handMarking.id}"/>
-										<a href="../../handMarking/${handMarking.handMarking.id}/">${handMarking.handMarking.name}</a>
-									</td>
-									<td><input size="5" type="text" id="unusedHandMarking${handMarkingIndex.index}.weight" value="${handMarking.weight}"/></td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-		</tr>
-	</table>
-	
-	<table style="margin-bottom:2em;width:90%">
-		<tr>
-			<td valign="top" >
-				<div style="float:left; width:100%;">
-					<h2> Competitions </h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
-						<tbody id="competitions" class="sortable newCompetitions">
-							<c:forEach var="competition" varStatus="competitionIndex" items="${competitions}">
-								<tr>
-									<td>
-										<form:input type="hidden" path="newCompetitions[${competitionIndex.index}].id" value="${competition.id}"/>
-										<form:input type="hidden" path="newCompetitions[${competitionIndex.index}].competition.id" value="${competition.competition.id}"/>
-										<a href="../../competition/${competition.competition.id}/">${competition.competition.name}</a>
-									</td>
-									<td><form:input size="5" type="text" path="newCompetitions[${competitionIndex.index}].weight" value="${competition.weight}"/></td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-			<td valign="top">
-				<div style="float:left; width:100%;">
-					<h2> Available Competitions</h2>
-					<table class='dragRows' style="width:100%;">
-						<tr class="sortableDisabled"><th>Name</th><th>Weighting</th></tr>
-						<tbody id="competitions" class="sortable unusedCompetition">
-							<c:forEach var="competition" varStatus="competitionIndex" items="${otherCompetitions}">
-								<tr>
-									<td>
-										<input type="hidden" id="unusedCompetition${competitionIndex.index}.id" value="${competition.id}"/>
-										<input type="hidden" id="unusedCompetition${competitionIndex.index}.competition.id" value="${competition.competition.id}"/>
-										<a href="../../competition/${competition.competition.id}/">${competition.competition.name}</a>
-									</td>
-									<td><input size="5" type="text" id="unusedCompetition${competitionIndex.index}.weight" value="${competition.weight}"/></td>
-								</tr>
-							</c:forEach>
-							<tr id="buffer" class="dragBuffer sortableDisabled"></tr>
-						</tbody>
-					</table>
-				</div>
-			</td>
-		</tr>
-	</table>
+	<div class='vertical-block'>
+		<h2>Competitions</h2>
+		<form:errors path="selectedCompetitions" element="p" />
+		<table class='moduleTable'>
+			<thead>
+				<tr><th>Selected</th><th>Name</th><th>Weighting</th><th>Group Work</th></tr>
+			</thead>
+			<tbody>
+				<c:forEach var='module' items="${allCompetitions}" varStatus="index">
+					<tr>
+						<form:input type="hidden" path="selectedCompetitions[${index.index}].id" value="${module.id}"/>
+						<form:input type="hidden" path="selectedCompetitions[${index.index}].competition.id" value="${module.competition.id}"/>
+						<td>
+							<input class='custom-check select-check' id="selectedCompetitions${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<label for="selectedCompetitions${index.index}.selected"></label>
+						</td>
+						<td>
+							<a href="../../competition/${module.competition.id}/">${module.competition.name}</a>
+						</td>
+						<td>
+							<form:input size="5" type="text" path="selectedCompetitions[${index.index}].weight" value="${module.weight}"/>
+						</td>
+						<td>
+							<form:checkbox cssClass="custom-check" path="selectedCompetitions[${index.index}].groupWork" checked="${module.groupWork ? 'checked' : ''}"  />
+							<label for="selectedCompetitions${index.index}.groupWork1"></label>
+						</td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+	</div>
 	
 	<input type="submit" value="Save Assessment" id="submit"/>
 </form:form>
@@ -320,11 +267,11 @@ either expressed or implied, of the PASTA Project.
     $(function() {
     	$( "#strDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
     	
-    	$( "input:text" ).each(function() {
+    	$( ".moduleTable input:text" ).each(function() {
     		$textBox = $(this);
-    		$textBox.tipsy({trigger: 'focus', gravity: 'w', title: function() {
-    			if($(this).is("[id^='unused']")) {
-    				return "Drag this row to the table on the left to select it.";
+    		$textBox.tipsy({trigger: 'focus', gravity: 'n', title: function() {
+    			if(!$(this).parents("tr").is(".selected")) {
+    				return "Don't forget to select the row.";
     			}
     			return "";
     		}});
@@ -357,105 +304,7 @@ either expressed or implied, of the PASTA Project.
         });
     	$("#toggleGroups,#unlimitedGroups,#unlimitedSize").trigger("change");
     	
-        $( "#unitTest.sortable" ).sortable({
-            connectWith: "tbody",
-            dropOnEmpty: true,
-            
-            stop: function(event, ui){
-            	var tables = $("#unitTest.sortable");
-            	// for each table
-            	for(var i=0; i<tables.length; i++){
-            		// for each child
-            		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
-            		var childrenNodes = tables[i].children;
-            		for(var j=0; j<childrenNodes.length; ++j){
-            			
-						if(childrenNodes[j].getAttribute("id") != "buffer"){
-							// td -> input - id
-							childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".id");
-							childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".id");
-							
-							// td -> input - unitTest - id
-							childrenNodes[j].children[0].children[1].setAttribute("id", prefix+j+".test.id");
-							childrenNodes[j].children[0].children[1].setAttribute("name", prefix+"["+j+"]"+".test.id");
-							
-							// td -> input - weight
-							childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-							childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
-						}
-            		}
-            	}
-            	refreshDragBuffers();
-            }
-        });
         
-        $( "#handMarking.sortable" ).sortable({
-            connectWith: "tbody",
-            dropOnEmpty: true,
-            
-            stop: function(event, ui){
-            	var tables = $("#handMarking.sortable");
-            	// for each table
-            	for(var i=0; i<tables.length; i++){
-            		// for each child
-            		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
-            		var childrenNodes = tables[i].children;
-            		for(var j=0; j<childrenNodes.length; ++j){
-            			
-						if(childrenNodes[j].getAttribute("id") != "buffer"){
-	            			// td -> input - id
-	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".id");
-	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".id");
-	            			
-	            			// td -> input - handMarking - id
-	            			childrenNodes[j].children[0].children[1].setAttribute("id", prefix+j+".handMarking.id");
-	            			childrenNodes[j].children[0].children[1].setAttribute("name", prefix+"["+j+"]"+".handMarking.id");
-	            			
-	            			// td -> input - weight
-	            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-	            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
-						}
-            		}
-            	}
-            	refreshDragBuffers();
-            }
-        
-        });
-        
-        $( "#competitions.sortable" ).sortable({
-            connectWith: "tbody",
-            dropOnEmpty: true,
-            
-            stop: function(event, ui){
-            	var tables = $("#competitions.sortable");
-            	// for each table
-            	for(var i=0; i<tables.length; i++){
-            		// for each child
-            		var prefix = $.trim(tables[i].className.replace("sortable", "").replace("ui-sortable", ""));
-            		var childrenNodes = tables[i].children;
-            		for(var j=0; j<childrenNodes.length; ++j){
-
-            			if(childrenNodes[j].getAttribute("id") != "buffer"){
-	            			// td -> input - id
-	            			childrenNodes[j].children[0].children[0].setAttribute("id", prefix+j+".id");
-	            			childrenNodes[j].children[0].children[0].setAttribute("name", prefix+"["+j+"]"+".id");
-	            			
-	            			// td -> input - competition - id
-	            			childrenNodes[j].children[0].children[1].setAttribute("id", prefix+j+".competition.id");
-	            			childrenNodes[j].children[0].children[1].setAttribute("name", prefix+"["+j+"]"+".competition.id");
-	            			
-	            			// td -> input - weight
-	            			childrenNodes[j].children[1].children[0].setAttribute("id", prefix+j+".weight");
-	            			childrenNodes[j].children[1].children[0].setAttribute("name", prefix+"["+j+"]"+".weight");
-            			}
-            		}
-            	}
-            	refreshDragBuffers();
-            }
-        });
-        
-        $( "tbody.sortable").disableSelection();
-        $('ul.tristate').tristate();
         
         $("#modifyDescription").bind('click', function(e) {
         	$("#description").parents('div').show();
@@ -480,13 +329,56 @@ either expressed or implied, of the PASTA Project.
         	}
         });
         
-        refreshDragBuffers();
+        // When you click on a selected checkbox, mark the row as selected
+        $("input.select-check").on('click', function() {
+        	$(this).parents("tr").toggleClass("selected", $(this).is(":checked"));
+        	sortBySelected($(this).parents("table.moduleTable"));
+        });
+        
+        // When submitting, ignore non-selected module rows
+        $("#updateAssessmentForm").on("submit", function() {
+        	$("input.select-check").parents("tr").not(".selected").find("input").prop("disabled", true);
+        });
+        
+        // Initialise module tables
+        $("input.select-check:checked").parents("tr").addClass("selected");
+        $("table.moduleTable").each(function() {
+        	sortBySelected($(this));
+        	$(this).addClass("compact");
+        	$(this).attr("width", "60em");
+        	$(this).DataTable({
+    			"paging" : false,
+    			"info" : false,
+    			"searching" : false,
+    			"ordering" : false,
+    			"language": {
+    			    "emptyTable": "None available."
+    			}
+    		});
+        });
+        
+        function sortBySelected($table) {
+        	$rows = $('tbody>tr', $table);
+        	
+        	$rows.sort(function(row1, row2) {
+        		var ch1 = $(row1).find(".select-check").is(":checked");
+        		var ch2 = $(row2).find(".select-check").is(":checked");
+        		if(ch1 && !ch2) {
+        			return -1;
+        		} else if(ch2 && !ch1) {
+        			return 1;
+        		}
+        		// Sort on column 1: name
+        		var name1 = $("td", $(row1)).eq(1).text();
+        		var name2 = $("td", $(row2)).eq(1).text();
+        		return (name1 > name2 ? 1 : -1);
+        	});
+        	
+        	$rows.each(function () {
+        		$table.append($(this));
+        	});
+        	
+        	$rows.removeClass("lastSelected").filter(".selected").last().addClass("lastSelected");
+        }
     });
-    
-    function refreshDragBuffers() {
-    	$(".dragBuffer").each(function() {
-    		var visible = $(this).siblings().length == 0;
-    		$(this).toggle(visible);
-    	});
-    }
 </script>

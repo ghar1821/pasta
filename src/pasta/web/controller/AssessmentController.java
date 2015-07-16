@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -233,10 +234,6 @@ public class AssessmentController {
 
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
 		
-		List<WeightedUnitTest> secretUnitTests = new LinkedList<WeightedUnitTest>();
-		List<WeightedUnitTest> nonSecretUnitTests = new LinkedList<WeightedUnitTest>();
-		List<WeightedUnitTest> otherUnitTests = new LinkedList<WeightedUnitTest>();
-		
 		// If the page is returning from a failed validation, the model 
 		// will contain lists of the selected assessment modules.
 		@SuppressWarnings("unchecked")
@@ -245,79 +242,73 @@ public class AssessmentController {
 		if(selectedTests == null) {
 			selectedTests = new LinkedList<WeightedUnitTest>(currAssessment.getAllUnitTests());
 		}
+		List<WeightedUnitTest> allUnitTests = new LinkedList<WeightedUnitTest>(selectedTests);
 		for (UnitTest test : unitTestManager.getUnitTestList()) {
 			boolean contains = false;
 			for (WeightedUnitTest weightedTest : selectedTests) {
 				if (weightedTest.getTest().getId() == test.getId()) {
 					contains = true;
-					(weightedTest.isSecret() ? secretUnitTests : nonSecretUnitTests).add(weightedTest);
 					break;
 				}
 			}
-
 			if (!contains) {
 				WeightedUnitTest weightedTest = new WeightedUnitTest();
 				weightedTest.setTest(test);
 				weightedTest.setWeight(0);
 				weightedTest.setSecret(false);
-				otherUnitTests.add(weightedTest);
+				weightedTest.setGroupWork(false);
+				allUnitTests.add(weightedTest);
 			}
 		}
-		model.addAttribute("secretUnitTests", secretUnitTests);
-		model.addAttribute("nonSecretUnitTests", nonSecretUnitTests);
-		model.addAttribute("otherUnitTests", otherUnitTests);
-
-		List<WeightedHandMarking> otherHandMarking = new LinkedList<WeightedHandMarking>();
-
+		model.addAttribute("allUnitTests", allUnitTests);
+		
 		@SuppressWarnings("unchecked")
 		List<WeightedHandMarking> selectedHandMarking = (List<WeightedHandMarking>) model.asMap().get("updatedHandMarking");
 		if(selectedHandMarking == null) {
 			selectedHandMarking = new LinkedList<WeightedHandMarking>(currAssessment.getHandMarking());
 		}
-		for (HandMarking test : handMarkingManager.getHandMarkingList()) {
+		List<WeightedHandMarking> allHandMarking = new LinkedList<WeightedHandMarking>(selectedHandMarking);
+		for(HandMarking template : handMarkingManager.getHandMarkingList()) {
 			boolean contains = false;
-			for (WeightedHandMarking weightedHandMarking : selectedHandMarking) {
-				if (weightedHandMarking.getHandMarking().getId() == test.getId()) {
+			for(WeightedHandMarking weighted : selectedHandMarking) {
+				if(weighted.getHandMarking().getId() == template.getId()) {
 					contains = true;
 					break;
 				}
 			}
-
-			if (!contains) {
-				WeightedHandMarking weigthedHM = new WeightedHandMarking();
-				weigthedHM.setHandMarking(test);
-				weigthedHM.setWeight(0);
-				otherHandMarking.add(weigthedHM);
+			if(!contains) {
+				WeightedHandMarking weightedTemplate = new WeightedHandMarking();
+				weightedTemplate.setHandMarking(template);
+				weightedTemplate.setWeight(0);
+				weightedTemplate.setGroupWork(false);
+				allHandMarking.add(weightedTemplate);
 			}
 		}
-		model.addAttribute("handMarkingTemplates", selectedHandMarking);
-		model.addAttribute("otherHandMarking", otherHandMarking);
-
-		List<WeightedCompetition> otherCompetitions = new LinkedList<WeightedCompetition>();
-
+		model.addAttribute("allHandMarking", allHandMarking);
+		
 		@SuppressWarnings("unchecked")
 		List<WeightedCompetition> selectedCompetitions = (List<WeightedCompetition>) model.asMap().get("updatedCompetitions");
 		if(selectedCompetitions == null) {
 			selectedCompetitions = new LinkedList<WeightedCompetition>(currAssessment.getCompetitions());
 		}
-		for (Competition comp : competitionManager.getCompetitionList()) {
+		List<WeightedCompetition> allCompetitions = new LinkedList<WeightedCompetition>(selectedCompetitions);
+		for(Competition comp : competitionManager.getCompetitionList()) {
 			boolean contains = false;
-			for (WeightedCompetition weightedComp : selectedCompetitions) {
-				if (weightedComp.getCompetition().getId() == comp.getId()) {
+			for(WeightedCompetition weighted : selectedCompetitions) {
+				if(weighted.getCompetition().getId() == comp.getId()) {
 					contains = true;
 					break;
 				}
 			}
-
-			if (!contains) {
+			if(!contains) {
 				WeightedCompetition weightedComp = new WeightedCompetition();
 				weightedComp.setCompetition(comp);
 				weightedComp.setWeight(0);
-				otherCompetitions.add(weightedComp);
+				weightedComp.setGroupWork(false);
+				allCompetitions.add(weightedComp);
 			}
 		}
-		model.addAttribute("competitions", selectedCompetitions);
-		model.addAttribute("otherCompetitions", otherCompetitions);
+		model.addAttribute("allCompetitions", allCompetitions);
 		
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allLanguages", Language.values());
@@ -361,6 +352,28 @@ public class AssessmentController {
 			return "redirect:/home/";
 		}
 		
+		// Form modules may contain dummy elements as list may have "holes" in it from form
+		// Remove these dummy elements by checking for default properties
+		Iterator<?> it = form.getSelectedUnitTests().iterator();
+		while(it.hasNext()) {
+			if(((WeightedUnitTest) it.next()).getTest() == null) {
+				// Test wasn't set by form, when it has to be, so this was a default-created element to fill holes.
+				it.remove();
+			}
+		}
+		it = form.getSelectedHandMarking().iterator();
+		while(it.hasNext()) {
+			if(((WeightedHandMarking) it.next()).getHandMarking() == null) {
+				it.remove();
+			}
+		}
+		it = form.getSelectedCompetitions().iterator();
+		while(it.hasNext()) {
+			if(((WeightedCompetition) it.next()).getCompetition() == null) {
+				it.remove();
+			}
+		}
+		
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("updateAssessmentForm", form);
@@ -368,25 +381,20 @@ public class AssessmentController {
 			
 			// Reload the unit tests, hand marking and competitions to that the
 			// page can properly re-display selected tests
-			for(WeightedUnitTest test : form.getNewUnitTests()) {
+			for(WeightedUnitTest test : form.getSelectedUnitTests()) {
 				test.setTest(unitTestManager.getUnitTest(test.getTest().getId()));
-				test.setSecret(false);
 			}
-			for(WeightedUnitTest test : form.getNewSecretUnitTests()) {
-				test.setTest(unitTestManager.getUnitTest(test.getTest().getId()));
-				test.setSecret(true);
-			}
-			attr.addFlashAttribute("updatedUnitTests", form.getAllUnitTests());
+			attr.addFlashAttribute("updatedUnitTests", form.getSelectedUnitTests());
 			
-			for(WeightedHandMarking template : form.getNewHandMarking()) {
+			for(WeightedHandMarking template : form.getSelectedHandMarking()) {
 				template.setHandMarking(handMarkingManager.getHandMarking(template.getHandMarking().getId()));
 			}
-			attr.addFlashAttribute("updatedHandMarking", form.getNewHandMarking());
+			attr.addFlashAttribute("updatedHandMarking", form.getSelectedHandMarking());
 			
-			for(WeightedCompetition comp : form.getNewCompetitions()) {
+			for(WeightedCompetition comp : form.getSelectedCompetitions()) {
 				comp.setCompetition(competitionManager.getCompetition(comp.getCompetition().getId()));
 			}
-			attr.addFlashAttribute("updatedCompetitions", form.getNewCompetitions());
+			attr.addFlashAttribute("updatedCompetitions", form.getSelectedCompetitions());
 			return "redirect:.";
 		}
 		

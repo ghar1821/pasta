@@ -32,6 +32,7 @@ package pasta.domain.template;
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -66,6 +67,9 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 	
 	private double weight;
 	
+	@Column(name= "group_work")
+	private boolean groupWork;
+	
 	@ManyToOne
 	@JoinColumn(name = "hand_marking_id")
 	private HandMarking handMarking;
@@ -88,6 +92,13 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		this.weight = weight;
 	}
 	
+	public boolean isGroupWork() {
+		return groupWork;
+	}
+	public void setGroupWork(boolean groupWork) {
+		this.groupWork = groupWork;
+	}
+	
 	public HandMarking getHandMarking() {
 		return handMarking;
 	}
@@ -107,6 +118,12 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		if(other == null) {
 			return 1;
 		}
+		if(other.groupWork && !this.groupWork) {
+			return 1;
+		}
+		if(this.groupWork && !other.groupWork) {
+			return -1;
+		}
 		int diff;
 		if(this.getHandMarking() != null) {
 			diff = this.getHandMarking().compareTo(other.getHandMarking());
@@ -120,10 +137,12 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		}
 		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + (groupWork ? 1231 : 1237);
 		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
 		result = prime * result + (int) (id ^ (id >>> 32));
 		long temp;
@@ -140,6 +159,8 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		if (getClass() != obj.getClass())
 			return false;
 		WeightedHandMarking other = (WeightedHandMarking) obj;
+		if (groupWork != other.groupWork)
+			return false;
 		if (handMarking == null) {
 			if (other.handMarking != null)
 				return false;

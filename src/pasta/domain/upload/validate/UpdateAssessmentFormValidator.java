@@ -7,6 +7,8 @@ import org.springframework.validation.Validator;
 
 import pasta.domain.template.Assessment;
 import pasta.domain.template.BlackBoxTest;
+import pasta.domain.template.WeightedCompetition;
+import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.domain.user.PASTAGroup;
@@ -47,7 +49,7 @@ public class UpdateAssessmentFormValidator implements Validator {
 		
 		// Ensure solution name is present only if it needs to be
 		boolean hasBlackBox = false;
-		for(WeightedUnitTest wTest : form.getAllUnitTests()) {
+		for(WeightedUnitTest wTest : form.getSelectedUnitTests()) {
 			hasBlackBox = hasBlackBox || (unitTestManager.getUnitTest(wTest.getTest().getId()) instanceof BlackBoxTest);
 		}
 		boolean emptySolutionName = (form.getSolutionName() == null || form.getSolutionName().isEmpty());
@@ -92,33 +94,34 @@ public class UpdateAssessmentFormValidator implements Validator {
 		// (currently you can hack penalties by making negative weight components 
 		// balanced by empty positive weight components)
 		
-//		for(int i = 0; i < form.getNewUnitTests().size(); i++) {
-//			if(form.getNewUnitTests().get(i).getWeight() < 0) {
-//				errors.pushNestedPath("newUnitTests[" + i + "]");
-//				errors.rejectValue("weight", "NotNegative");
-//				errors.popNestedPath();
+		boolean isGroupWork = form.getGroupCount() != 0;
+		
+		for(int i = 0; i < form.getSelectedUnitTests().size(); i++) {
+			WeightedUnitTest module = form.getSelectedUnitTests().get(i);
+			if(!isGroupWork && module.isGroupWork()) {
+				errors.rejectValue("selectedUnitTests", "NotGroupWork");
+			}
+//			if(module.getWeight() < 0) {
+//				errors.rejectValue("selectedUnitTests", "NotNegative");
 //			}
-//		}
-//		for(int i = 0; i < form.getNewSecretUnitTests().size(); i++) {
-//			if(form.getNewSecretUnitTests().get(i).getWeight() < 0) {
-//				errors.pushNestedPath("newSecretUnitTests[" + i + "]");
-//				errors.rejectValue("weight", "NotNegative");
-//				errors.popNestedPath();
+		}
+		for(int i = 0; i < form.getSelectedHandMarking().size(); i++) {
+			WeightedHandMarking module = form.getSelectedHandMarking().get(i);
+			if(!isGroupWork && module.isGroupWork()) {
+				errors.rejectValue("selectedHandMarking", "NotGroupWork");
+			}
+//			if(module.getWeight() < 0) {
+//				errors.rejectValue("selectedHandMarking", "NotNegative");
 //			}
-//		}
-//		for(int i = 0; i < form.getNewHandMarking().size(); i++) {
-//			if(form.getNewHandMarking().get(i).getWeight() < 0) {
-//				errors.pushNestedPath("newHandMarking[" + i + "]");
-//				errors.rejectValue("weight", "NotNegative");
-//				errors.popNestedPath();
+		}
+		for(int i = 0; i < form.getSelectedCompetitions().size(); i++) {
+			WeightedCompetition module = form.getSelectedCompetitions().get(i);
+			if(!isGroupWork && module.isGroupWork()) {
+				errors.rejectValue("selectedCompetitions", "NotGroupWork");
+			}
+//			if(module.getWeight() < 0) {
+//				errors.rejectValue("selectedCompetitions", "NotNegative");
 //			}
-//		}
-//		for(int i = 0; i < form.getNewCompetitions().size(); i++) {
-//			if(form.getNewCompetitions().get(i).getWeight() < 0) {
-//				errors.pushNestedPath("newCompetitions[" + i + "]");
-//				errors.rejectValue("weight", "NotNegative");
-//				errors.popNestedPath();
-//			}
-//		}
+		}
 	}
 }

@@ -32,6 +32,7 @@ package pasta.domain.template;
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -64,6 +65,9 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 	private long id;
 	
 	private double weight;
+	
+	@Column(name= "group_work")
+	private boolean groupWork;
 	
 	@ManyToOne
 	@JoinColumn(name = "competition_id")
@@ -98,10 +102,23 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 		this.weight = weight;
 	}
 
+	public boolean isGroupWork() {
+		return groupWork;
+	}
+	public void setGroupWork(boolean groupWork) {
+		this.groupWork = groupWork;
+	}
+	
 	@Override
 	public int compareTo(WeightedCompetition other) {
 		if(other == null) {
 			return 1;
+		}
+		if(other.groupWork && !this.groupWork) {
+			return 1;
+		}
+		if(this.groupWork && !other.groupWork) {
+			return -1;
 		}
 		int diff;
 		if(this.getCompetition() != null) {
@@ -116,12 +133,12 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 		}
 		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((competition == null) ? 0 : competition.hashCode());
+		result = prime * result + (groupWork ? 1231 : 1237);
 		result = prime * result + (int) (id ^ (id >>> 32));
 		long temp;
 		temp = Double.doubleToLongBits(weight);
@@ -141,6 +158,8 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 			if (other.competition != null)
 				return false;
 		} else if (!competition.equals(other.competition))
+			return false;
+		if (groupWork != other.groupWork)
 			return false;
 		if (id != other.id)
 			return false;

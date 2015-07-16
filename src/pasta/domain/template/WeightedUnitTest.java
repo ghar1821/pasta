@@ -32,6 +32,7 @@ package pasta.domain.template;
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -68,6 +69,9 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	
 	private boolean secret;
 	
+	@Column(name= "group_work")
+	private boolean groupWork;
+	
 	@ManyToOne
 	@JoinColumn(name = "unit_test_id")
 	private UnitTest test;
@@ -96,6 +100,13 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		this.secret = secret;
 	}
 	
+	public boolean isGroupWork() {
+		return groupWork;
+	}
+	public void setGroupWork(boolean groupWork) {
+		this.groupWork = groupWork;
+	}
+	
 	public UnitTest getTest() {
 		return test;
 	}
@@ -114,6 +125,12 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	public int compareTo(WeightedUnitTest other) {
 		if(other == null) {
 			return 1;
+		}
+		if(other.groupWork && !this.groupWork) {
+			return 1;
+		}
+		if(this.groupWork && !other.groupWork) {
+			return -1;
 		}
 		if(other.secret && !this.secret) {
 			return 1;
@@ -144,6 +161,7 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + (groupWork ? 1231 : 1237);
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + (secret ? 1231 : 1237);
 		result = prime * result + ((test == null) ? 0 : test.hashCode());
@@ -161,6 +179,8 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		if (getClass() != obj.getClass())
 			return false;
 		WeightedUnitTest other = (WeightedUnitTest) obj;
+		if (groupWork != other.groupWork)
+			return false;
 		if (id != other.id)
 			return false;
 		if (secret != other.secret)

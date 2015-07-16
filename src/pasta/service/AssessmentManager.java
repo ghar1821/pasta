@@ -370,33 +370,26 @@ public class AssessmentManager {
 		assessment.setGroupSize(form.getGroupSize());
 		assessment.setStudentsManageGroups(form.isStudentsManageGroups());
 		
-		for(WeightedUnitTest test : form.getNewUnitTests()) {
-			test.setSecret(false);
-		}
-		for(WeightedUnitTest test : form.getNewSecretUnitTests()) {
-			test.setSecret(true);
-		}
-		
 		// unlink any unnecessary unit tests
 		{
-			Collection<WeightedUnitTest> toRemove = CollectionUtils.subtract(assessment.getAllUnitTests(), form.getAllUnitTests());
-			Collection<WeightedUnitTest> toAdd = CollectionUtils.subtract(form.getAllUnitTests(), assessment.getAllUnitTests());	
+			Collection<WeightedUnitTest> toRemove = CollectionUtils.subtract(assessment.getAllUnitTests(), form.getSelectedUnitTests());
+			Collection<WeightedUnitTest> toAdd = CollectionUtils.subtract(form.getSelectedUnitTests(), assessment.getAllUnitTests());	
 			assessment.removeUnitTests(toRemove);
 			assessment.addUnitTests(toAdd);
 		}
 		
 		// unlink any unnecessary hand marking templates
 		{
-			Collection<WeightedHandMarking> toRemove = CollectionUtils.subtract(assessment.getHandMarking(), form.getNewHandMarking());	
-			Collection<WeightedHandMarking> toAdd = CollectionUtils.subtract(form.getNewHandMarking(), assessment.getHandMarking());
+			Collection<WeightedHandMarking> toRemove = CollectionUtils.subtract(assessment.getHandMarking(), form.getSelectedHandMarking());	
+			Collection<WeightedHandMarking> toAdd = CollectionUtils.subtract(form.getSelectedHandMarking(), assessment.getHandMarking());
 			assessment.removeHandMarkings(toRemove);
 			assessment.addHandMarkings(toAdd);
 		}
 		
 		// unlink any unnecessary competitions
 		{
-			Collection<WeightedCompetition> toRemove = CollectionUtils.subtract(assessment.getCompetitions(), form.getNewCompetitions());	
-			Collection<WeightedCompetition> toAdd = CollectionUtils.subtract(form.getNewCompetitions(), assessment.getCompetitions());
+			Collection<WeightedCompetition> toRemove = CollectionUtils.subtract(assessment.getCompetitions(), form.getSelectedCompetitions());	
+			Collection<WeightedCompetition> toAdd = CollectionUtils.subtract(form.getSelectedCompetitions(), assessment.getCompetitions());
 			assessment.removeCompetitions(toRemove);
 			assessment.addCompetitions(toAdd);
 		}

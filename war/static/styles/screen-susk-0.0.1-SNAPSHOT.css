@@ -149,6 +149,37 @@ span.icon_undo, div.icon_undo {
 	width: 16px;
 }
 
+input[type=checkbox].custom-check {
+	display:none;
+}
+input[type=checkbox].custom-check + label,
+input[type=checkbox].custom-check + input[type=hidden] + label { 
+	background-image: url("../images/check_box_unchecked.png");
+	height: 32px;
+	width: 32px;
+	display:inline-block;
+	padding: 0 0 0 0px;
+}
+input[type=checkbox].custom-check + label:active,
+input[type=checkbox].custom-check + input[type=hidden] + label:active { 
+	background-image: url("../images/check_box_unchecked_pressed.png");
+}
+input[type=checkbox]:checked.custom-check + label,
+input[type=checkbox]:checked.custom-check + input[type=hidden] + label {
+	background-image: url("../images/check_box_checked.png");
+}
+input[type=checkbox]:checked.custom-check + label:active,
+input[type=checkbox]:checked.custom-check + input[type=hidden] + label:active {
+	background-image: url("../images/check_box_checked_pressed.png");
+}
+
+table.moduleTable tr.selected {
+	background-color:#DDF;
+}
+table.moduleTable tr.lastSelected td {
+	border-bottom: 2px dotted gray;
+}
+
 div.boxCard, .box-shadow, div.unitTestResult {
 	box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.1),
 				0px 2px 10px 0px rgba(0, 0, 0, 0.1);
@@ -565,7 +596,7 @@ td.pastaShortTable{
 	height: 2em;
 }
 
-td.pastaTable{
+td.cellCenter{
 	text-align: center;
 }
 

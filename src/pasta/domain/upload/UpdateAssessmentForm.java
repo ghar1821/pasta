@@ -31,9 +31,7 @@ package pasta.domain.upload;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,8 +39,6 @@ import java.util.TreeSet;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.FactoryUtils;
-import org.apache.commons.collections4.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.validator.constraints.Length;
@@ -98,10 +94,9 @@ public class UpdateAssessmentForm {
 	
 	private Set<Language> languages;
 	
-	private List<WeightedUnitTest> newUnitTests;
-	private List<WeightedUnitTest> newSecretUnitTests;
-	private List<WeightedHandMarking> newHandMarking;
-	private List<WeightedCompetition> newCompetitions;
+	private List<WeightedUnitTest> selectedUnitTests;
+	private List<WeightedHandMarking> selectedHandMarking;
+	private List<WeightedCompetition> selectedCompetitions;
 	
 	// TODO: check if 0.5 or 50% when submitting percentages -- only allow one
 	private ReleaseRule releaseRule;
@@ -124,20 +119,9 @@ public class UpdateAssessmentForm {
 		
 		this.languages = new TreeSet<Language>(base.getSubmissionLanguages());
 		
-		/*
-		 * The assessment modules have to be in a lazy list for the drag and drop
-		 * Functionality on the web front end. Without this, there would be errors
-		 * when adding assessment modules.
-		 * TODO: not actually true any more -- normal lists should be able to be used
-		 */
-		this.newUnitTests = LazyList.lazyList(new ArrayList<WeightedUnitTest>(),
-				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-		this.newSecretUnitTests = LazyList.lazyList(new ArrayList<WeightedUnitTest>(),
-				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-		this.newHandMarking = LazyList.lazyList(new ArrayList<WeightedHandMarking>(),
-				FactoryUtils.instantiateFactory(WeightedHandMarking.class));
-		this.newCompetitions = LazyList.lazyList(new ArrayList<WeightedCompetition>(),
-				FactoryUtils.instantiateFactory(WeightedCompetition.class));
+		this.selectedUnitTests = new ArrayList<WeightedUnitTest>();
+		this.selectedHandMarking = new ArrayList<WeightedHandMarking>();
+		this.selectedCompetitions = new ArrayList<WeightedCompetition>();
 	}
 	
 	public long getId() {
@@ -238,38 +222,6 @@ public class UpdateAssessmentForm {
 		this.releaseRule = releaseRule;
 	}
 
-	public List<WeightedUnitTest> getNewUnitTests() {
-		return newUnitTests;
-	}
-	public void setNewUnitTests(Collection<WeightedUnitTest> unitTests) {
-		this.newUnitTests.clear();
-		this.newUnitTests.addAll(unitTests);
-	}
-
-	public List<WeightedUnitTest> getNewSecretUnitTests() {
-		return newSecretUnitTests;
-	}
-	public void setNewSecretUnitTests(Collection<WeightedUnitTest> secretUnitTests) {
-		this.newSecretUnitTests.clear();
-		this.newSecretUnitTests.addAll(secretUnitTests);
-	}
-
-	public List<WeightedHandMarking> getNewHandMarking() {
-		return newHandMarking;
-	}
-	public void setNewHandMarking(Collection<WeightedHandMarking> handMarking) {
-		this.newHandMarking.clear();
-		this.newHandMarking.addAll(handMarking);
-	}
-
-	public List<WeightedCompetition> getNewCompetitions() {
-		return newCompetitions;
-	}
-	public void setNewCompetitions(Collection<WeightedCompetition> competitions) {
-		this.newCompetitions.clear();
-		this.newCompetitions.addAll(competitions);
-	}
-
 	public String getStrDate() {
 		if(dueDate == null) {
 			return "";
@@ -286,11 +238,16 @@ public class UpdateAssessmentForm {
 			dueDate = null;
 		}
 	}
-
-	public List<WeightedUnitTest> getAllUnitTests() {
-		List<WeightedUnitTest> allTests = new LinkedList<WeightedUnitTest>();
-		allTests.addAll(getNewUnitTests());
-		allTests.addAll(getNewSecretUnitTests());
-		return allTests;
+	
+	public List<WeightedUnitTest> getSelectedUnitTests() {
+		return selectedUnitTests;
+	}
+	
+	public List<WeightedHandMarking> getSelectedHandMarking() {
+		return selectedHandMarking;
+	}
+	
+	public List<WeightedCompetition> getSelectedCompetitions() {
+		return selectedCompetitions;
 	}
 }
