@@ -67,6 +67,14 @@ public class GroupManager {
 	public PASTAGroup getGroup(PASTAUser user, Assessment assessment) {
 		return userDAO.getGroup(user, assessment);
 	}
+	
+	public PASTAGroup getGroup(PASTAUser user, long assessmentId) {
+		return userDAO.getGroup(user, assessmentId);
+	}
+	
+	public List<PASTAGroup> getAllUserGroups(PASTAUser user) {
+		return userDAO.getAllUserGroups(user);
+	}
 
 	public int getUsedGroupCount(Assessment assessment) {
 		List<PASTAGroup> groups = userDAO.getGroups(assessment);
@@ -80,6 +88,9 @@ public class GroupManager {
 	}
 
 	public boolean leaveCurrentGroup(PASTAUser user, Assessment assessment) {
+		if(assessment.isGroupsLocked()) {
+			return false;
+		}
 		PASTAGroup myGroup = getGroup(user, assessment);
 		if(myGroup == null) {
 			return true;
@@ -92,6 +103,9 @@ public class GroupManager {
 	}
 
 	public boolean joinGroup(PASTAUser user, Assessment assessment, PASTAGroup group) {
+		if(assessment.isGroupsLocked()) {
+			return false;
+		}
 		if(assessment.isUnlimitedGroupSize() || group.getSize() < assessment.getGroupSize()) {
 			if(leaveCurrentGroup(user, assessment)) {
 				if(group.addMember(user)) {
@@ -182,5 +196,9 @@ public class GroupManager {
 		for(PASTAGroup group : toUpdate) {
 			userDAO.update(group);
 		}
+	}
+
+	public List<PASTAGroup> getGroups(Collection<PASTAUser> users, long assessmentId) {
+		return userDAO.getGroups(users, assessmentId);
 	}
 }

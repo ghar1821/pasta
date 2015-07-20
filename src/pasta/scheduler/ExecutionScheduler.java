@@ -47,6 +47,7 @@ import pasta.domain.result.CompetitionResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAUser;
+import pasta.service.ResultManager;
 import pasta.util.PASTAUtil;
 
 /**
@@ -67,11 +68,16 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	private Date lastQueueUpdate;
 	
 	@Autowired
+	private ResultManager resultManager;
+	
+	@Autowired
 	public void setMySession(SessionFactory sessionFactory) {
 		setSessionFactory(sessionFactory);
 	}
 	
 	public void scheduleJob(PASTAUser user, long assessmentId, AssessmentResult result, Date runDate) {
+		result.setWaitingToRun(true);
+		resultManager.update(result);
 		save(new AssessmentJob(user, assessmentId, runDate, result));
 	}
 	

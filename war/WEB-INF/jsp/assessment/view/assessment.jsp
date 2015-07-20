@@ -100,6 +100,14 @@ either expressed or implied, of the PASTA Project.
 				<form:errors path="groupSize"/>
 			</td>
 		</tr>
+		<tr class='groupData'>
+			<td>Groups finalised:</td>
+			<td>
+				<form:input type="text" path="strGroupLock" />
+				<span class='help'>The date when students will no longer be able to move between groups. Tutors will still be able to assign groups after this date.</span>
+				<form:errors path="groupLockDate"/>
+			</td>
+		</tr>
 		<tr class='spaceBelow groupData'>
 			<td><label for="studentsManageGroups1">Allow students to manage group membership:</label></td>
 			<td><form:checkbox path="studentsManageGroups"/></td>
@@ -266,6 +274,7 @@ either expressed or implied, of the PASTA Project.
 <script>
     $(function() {
     	$( "#strDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
+    	$( "#strGroupLock" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
     	
     	$( ".moduleTable input:text" ).each(function() {
     		$textBox = $(this);

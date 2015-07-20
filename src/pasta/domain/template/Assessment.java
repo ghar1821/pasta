@@ -183,6 +183,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<Language> submissionLanguages = new TreeSet<Language>();
 	
+	@Column (name="group_lock_date")
+	private Date groupLockDate;
+	
 	@Column (name="group_count")
 	private int groupCount = 0;
 	
@@ -333,6 +336,18 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.studentsManageGroups = studentsManageGroups;
 	}
 	
+	public Date getGroupLockDate() {
+		return groupLockDate;
+	}
+	public void setGroupLockDate(Date groupLockDate) {
+		this.groupLockDate = groupLockDate;
+	}
+	public boolean isGroupsLocked() {
+		if(groupLockDate == null) {
+			return false;
+		}
+		return new Date().after(groupLockDate);
+	}
 	
 	public Set<WeightedUnitTest> getUnitTests() {
 		Set<WeightedUnitTest> unitTests = new TreeSet<>();
@@ -360,6 +375,22 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	public Set<WeightedHandMarking> getHandMarking() {
 		return handMarking;
+	}
+	public Set<WeightedHandMarking> getIndividualHandMarking() {
+		Set<WeightedHandMarking> results = new TreeSet<WeightedHandMarking>();
+		for(WeightedHandMarking hm : getHandMarking()) {
+			if(!hm.isGroupWork())
+				results.add(hm);
+		}
+		return results;
+	}
+	public Set<WeightedHandMarking> getGroupHandMarking() {
+		Set<WeightedHandMarking> results = new TreeSet<WeightedHandMarking>();
+		for(WeightedHandMarking hm : getHandMarking()) {
+			if(hm.isGroupWork())
+				results.add(hm);
+		}
+		return results;
 	}
 	public void setHandMarking(Collection<WeightedHandMarking> handMarking) {
 		for(WeightedHandMarking template : this.handMarking) {
@@ -533,7 +564,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	public double getWeighting(UnitTest test){
 		for(WeightedUnitTest myTest: unitTests){
-			if(test == myTest.getTest()){
+			if(test.getId() == myTest.getTest().getId()){
 				return myTest.getWeight();
 			}
 		}
@@ -542,7 +573,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	public double getWeighting(HandMarking test){
 		for(WeightedHandMarking myTest: handMarking){
-			if(test == myTest.getHandMarking()){
+			if(test.getId() == myTest.getHandMarking().getId()){
 				return myTest.getWeight();
 			}
 		}

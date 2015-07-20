@@ -78,6 +78,7 @@ import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;
 import pasta.service.HandMarkingManager;
 import pasta.service.ReleaseManager;
+import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
@@ -131,6 +132,8 @@ public class AssessmentController {
 	private UserManager userManager;
 	@Autowired
 	private AssessmentManager assessmentManager;
+	@Autowired
+	private ResultManager resultManager;
 	@Autowired
 	private UnitTestManager unitTestManager;
 	@Autowired
@@ -435,51 +438,10 @@ public class AssessmentController {
 			return "redirect:/home/";
 		}
 		if (user.isInstructor()) {
-			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentId), userManager.getUserList());
+			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentId), userManager.getUserListIncludingGroups());
 		}
 		return "redirect:" + request.getHeader("Referer");
 	}
-
-//	/**
-//	 * $PASTAUrl$/assessments/release/{assessmentId}/ - POST
-//	 * <p>
-//	 * Release the assessment to some students.
-//	 * <p>
-//	 * If the user has not authenticated: redirect to login.
-//	 * 
-//	 * If the user is not a tutor: redirect to home
-//	 * 
-//	 * If the user is an instructor: release assessment using 
-//	 * {@link pasta.service.AssessmentManager#releaseAssessment(String, AssessmentReleaseForm)}.
-//	 * redirect to $PASTAUrl$/assessments/
-//	 * 
-//	 * @param assessmentId the id of the assessment
-//	 * @param form the release form
-//	 * @param model the model used
-//	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
-//	 */
-//	@RequestMapping(value = "release/{assessmentId}/", method = RequestMethod.POST)
-//	public String releaseAssessment(
-//			@PathVariable("assessmentId") long assessmentId,
-//			@ModelAttribute(value = "assessment") Assessment assessment,
-//			@ModelAttribute(value = "assessmentReleaseForm") AssessmentReleaseForm form,
-//			Model model) {
-//
-//		PASTAUser user = getUser();
-//		if (user == null) {
-//			return "redirect:/login/";
-//		}
-//		if (!user.isTutor()) {
-//			return "redirect:/home/";
-//		}
-//		if (getUser().isInstructor()) {
-//
-//			if (assessmentManager.getAssessment(assessmentId) != null) {
-//				assessmentManager.releaseAssessment(assessment, form);
-//			}
-//		}
-//		return "redirect:../../";
-//	}
 
 	/**
 	 * $PASTAUrl$/assessments/delete/{assessmentId}/
@@ -548,7 +510,7 @@ public class AssessmentController {
 				+ assessment.getFileAppropriateName() + "-latest.zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
-		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = assessmentManager.getLatestResults(userManager.getStudentList());
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager.getLatestResults(userManager.getStudentList());
 		try {
 			for(Entry<PASTAUser, Map<Long, AssessmentResult> > entry : allResults.entrySet()){
 				if(entry.getValue() != null && 
@@ -626,7 +588,7 @@ public class AssessmentController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
-		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = assessmentManager
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager
 				.getLatestResults(userManager.getUserList());
 		TreeMap<Integer, Integer> submissionDistribution = new TreeMap<Integer, Integer>();
 

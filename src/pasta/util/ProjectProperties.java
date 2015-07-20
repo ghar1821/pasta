@@ -61,6 +61,7 @@ import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.repository.UserDAO;
+import pasta.service.ResultManager;
 
 /**
  * The project properties.
@@ -105,6 +106,8 @@ public class ProjectProperties {
 	private AssessmentDAO assessmentDAO;
 	@Autowired
 	private ResultDAO resultDAO;
+	@Autowired
+	private ResultManager resultManager;
 	@Autowired
 	private UnitTestDAO unitTestDAO;
 	@Autowired
@@ -350,6 +353,9 @@ public class ProjectProperties {
 
 	public ResultDAO getResultDAO() {
 		return resultDAO;
+	}
+	public ResultManager getResultManager() {
+		return resultManager;
 	}
 
 	public PlayerDAO getPlayerDAO() {

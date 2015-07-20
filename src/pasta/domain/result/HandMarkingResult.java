@@ -113,6 +113,9 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 		return weightedHandMarking.getHandMarking();
 	}
 	
+	public boolean isGroupWork() {
+		return weightedHandMarking.isGroupWork();
+	}
 
 	public double getPercentage(){
 		double percentage = 0;

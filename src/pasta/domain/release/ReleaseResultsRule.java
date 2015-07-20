@@ -32,8 +32,8 @@ public abstract class ReleaseResultsRule extends ReleaseRule implements Serializ
 	
 	@Override
 	protected boolean isMet(PASTAUser user) {
-		AssessmentResult result = ProjectProperties.getInstance().getResultDAO()
-				.getLatestResultsForUserAssessment(user, compareAssessment.getId());
+		AssessmentResult result = ProjectProperties.getInstance().getResultManager()
+				.getLatestResultIncludingGroup(user, compareAssessment.getId());
 		return isMet(user, result);
 	}
 	

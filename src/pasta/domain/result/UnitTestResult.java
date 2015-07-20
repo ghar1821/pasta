@@ -75,6 +75,9 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	
 	private boolean secret;
 	
+	@Column(name="group_work")
+	private boolean groupWork;
+	
 	@Column (name = "files_compiled", length = 64000)
 	@Size (max = 64000)
 	private String filesCompiled;
@@ -116,6 +119,14 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 
 	public void setSecret(boolean secret) {
 		this.secret = secret;
+	}
+
+	public boolean isGroupWork() {
+		return groupWork;
+	}
+
+	public void setGroupWork(boolean groupWork) {
+		this.groupWork = groupWork;
 	}
 
 	public String getCompileErrors() {

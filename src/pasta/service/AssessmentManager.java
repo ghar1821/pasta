@@ -29,12 +29,9 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
-import java.text.ParseException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -43,7 +40,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -53,12 +49,9 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.upload.NewAssessmentForm;
 import pasta.domain.upload.UpdateAssessmentForm;
-import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 /**
@@ -79,20 +72,16 @@ import pasta.util.ProjectProperties;
 public class AssessmentManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
+	@Autowired
+	private ResultManager resultManager;
 	@Autowired
 	private GroupManager groupManager;
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
-	
-	private ExecutionScheduler scheduler;
-	
 	@Autowired
-	public void setMyScheduler(ExecutionScheduler myScheduler) {
-		this.scheduler = myScheduler;
-	}
+	private ExecutionScheduler scheduler;
 	
 	@Autowired
 	private ApplicationContext context;
@@ -121,18 +110,6 @@ public class AssessmentManager {
 	 */
 	public Assessment getAssessment(long assessmentId) {
 		return assDao.getAssessment(assessmentId);
-	}
-	
-	/**
-	 * Helper method.
-	 * 
-	 * @see pasta.repository.ResultDAO#getAssessmentHistory(String, Assessment)
-	 * @param user the user
-	 * @param assessmentId the id of the assessment
-	 * @return the collection of submission history for a user for a given assessment
-	 */
-	public Collection<AssessmentResult> getAssessmentHistory(PASTAUser user, long assessmentId){
-		return resultDAO.getAllResultsForUserAssessment(user, assessmentId);
 	}
 	
 	/**
@@ -250,62 +227,6 @@ public class AssessmentManager {
 		
 		ProjectProperties.getInstance().getAssessmentDAO().merge(assessmentToAdd);
 	}
-
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.ResultDAO#getLatestResults(String)
-	 * @param user the user
-	 * @return all of the cached assessment results.
-	 */
-	public Map<Long, AssessmentResult> getLatestResultsForUser(PASTAUser user){
-		return resultDAO.getLatestResults(user);
-	}
-	
-	/**
-	 * Get the latest result for the collection of users.
-	 * <p>
-	 * Gets all of the cached assessment results for every assessment on the system, for the
-	 * collection of users given.
-	 * 
-	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
-	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.AssessmentResult} assessmentResults) 
-	 */
-	public Map<PASTAUser, Map<Long, AssessmentResult>> getLatestResults(Collection<PASTAUser> allUsers){
-		Map<PASTAUser, Map<Long, AssessmentResult>> results = new TreeMap<>();
-		
-		for(PASTAUser user: allUsers){
-			Map<Long, AssessmentResult> currResultMap = resultDAO.getLatestResults(user);
-			results.put(user, currResultMap);
-		}
-		
-		return results;
-	}
-	
-	/**
-	 * Gets an assessment result given a user, assessment and formatted submission date.
-	 * 
-	 * @param user the user
-	 * @param assessmentId the id of the assessment 
-	 * @param assessmentDate the date (formatted "yyyy-MM-dd'T'hh-mm-ss")
-	 * @return the queried assessment result or null if not available.
-	 */
-	public AssessmentResult loadAssessmentResult(PASTAUser user, long assessmentId,
-			String assessmentDate) {
-		AssessmentResult result;
-		try {
-			result = resultDAO.getAssessmentResult(user, assessmentId, PASTAUtil.parseDate(assessmentDate));
-		} catch (ParseException e) {
-			logger.error("Error parsing date", e);
-			return null;
-		}
-		
-		return result;
-	}
-	
-	public AssessmentResult getAssessmentResult(long id) {
-		return ProjectProperties.getInstance().getResultDAO().getAssessmentResult(id);
-	}
 	
 	/**
 	 * Helper method.
@@ -315,25 +236,6 @@ public class AssessmentManager {
 	 */
 	public Map<String, Set<Assessment>> getAllAssessmentsByCategory() {
 		return assDao.getAllAssessmentsByCategory();
-	}
-
-	public void updateComment(long resultId, String newComment) {
-		AssessmentResult result = getAssessmentResult(resultId);
-		result.setComments(newComment);
-		ProjectProperties.getInstance().getResultDAO().update(result);
-	}
-
-	public void updateAssessmentResults(AssessmentResult result) {
-		ProjectProperties.getInstance().getResultDAO().update(result);
-	}
-
-	public AssessmentResult getLatestAssessmentResult(PASTAUser user, long assessmentId) {
-		List<AssessmentResult> allResults = ProjectProperties.getInstance().getResultDAO()
-				.getAllResultsForUserAssessment(user, assessmentId);
-		if(allResults == null || allResults.isEmpty()) {
-			return null;
-		}
-		return allResults.get(0);
 	}
 
 	public Assessment addAssessment(NewAssessmentForm form) {
@@ -366,6 +268,7 @@ public class AssessmentManager {
 			}
 		}
 		
+		assessment.setGroupLockDate(form.getGroupLockDate());
 		assessment.setGroupCount(form.getGroupCount());
 		assessment.setGroupSize(form.getGroupSize());
 		assessment.setStudentsManageGroups(form.isStudentsManageGroups());
@@ -431,5 +334,35 @@ public class AssessmentManager {
 		}
 		
 		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+	}
+
+	public boolean hasGroupWork(Assessment assessment) {
+		return checkForGroupWork(assessment, true);
+	}
+
+	public boolean isAllGroupWork(Assessment assessment) {
+		return checkForGroupWork(assessment, false);
+	}
+	
+	private boolean checkForGroupWork(Assessment assessment, boolean checkForAny) {
+		for(WeightedUnitTest module : assessment.getAllUnitTests()) {
+			if((module.isGroupWork() && checkForAny) 
+					|| (!module.isGroupWork() && !checkForAny)) {
+				return checkForAny;
+			}
+		}
+		for(WeightedHandMarking module : assessment.getHandMarking()) {
+			if((module.isGroupWork() && checkForAny) 
+					|| (!module.isGroupWork() && !checkForAny)) {
+				return checkForAny;
+			}
+		}
+		for(WeightedCompetition module : assessment.getCompetitions()) {
+			if((module.isGroupWork() && checkForAny) 
+					|| (!module.isGroupWork() && !checkForAny)) {
+				return checkForAny;
+			}
+		}
+		return !checkForAny;
 	}
 }

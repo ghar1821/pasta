@@ -32,30 +32,44 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="tag" tagdir="/WEB-INF/tags"%>
 
 <%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <c:set var="nextStudent" value="-1"/>
-<c:forEach var="student" items="${hasSubmission}" varStatus="studentStatus">
-		<c:choose>
-			<c:when test="${student && savingStudentIndex == studentStatus.index}">
-				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted${completedMarking[studentStatus.index]} current">&nbsp;</div></a>
-			</c:when>
-			<c:when test="${student}">
-				<a href="../${studentStatus.index}/" ><div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent submitted${completedMarking[studentStatus.index]}">&nbsp;</div></a>
-				<c:if test="${savingStudentIndex < studentStatus.index && nextStudent == -1}">
-					<c:set var="nextStudent" value="${studentStatus.index}"/>
-				</c:if>
-			</c:when>
-			<c:otherwise>
-				<div title="${myStudents[studentStatus.index].username}" class="handMarkingStudent didnotsubmit">&nbsp;</div>
-			</c:otherwise>
-		</c:choose>
-</c:forEach>
+<div class='vertical-block float-container'>
+	<c:if test="${not empty myStudents}">
+		<h3 class='compact'>Individual Submissions</h3>
+	</c:if>
+	<c:forEach var='user' items="${allUsers}" varStatus="loop">
+		<c:set var="name" value="${loop.index < fn:length(myStudents) ? user.username : user.name}" />
+		<c:set var="submission" value="${hasSubmission[loop.index]}" />
+		<c:set var="completed" value="${completedMarking[loop.index]}" />
+		<c:set var="current" value="${loop.index == savingStudentIndex}" />
+		<c:set var="divClass" value="handMarkingStudent ${submission ? 'submitted' : 'didnotsubmit'}${submission ? completed : ''} ${current ? 'current' : ''}" />
+		<c:if test="${loop.index == fn:length(myStudents)}">
+			</div>
+			<div class='vertical-block float-container'>
+				<h3 class='compact'>Group Submissions</h3>
+		</c:if>
+		<c:if test="${submission}">
+			<c:if test="${savingStudentIndex < loop.index && nextStudent == -1}">
+				<c:set var="nextStudent" value="${loop.index}"/>
+			</c:if>
+			<a href="../${loop.index}/" >
+		</c:if>
+		<div title="${name}" class="${divClass}">&nbsp;</div>
+		<c:if test="${submission}">
+			</a>
+		</c:if>
+	</c:forEach>
+</div>
 
 <h1>${assessmentName} - ${student} -  Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /></h1>
 
-<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
+<jsp:include page="../../recursive/fileWriterRoot.jsp">
+	<jsp:param name="owner" value="${student}"/>
+</jsp:include>
 
 <style>
 th, td{
@@ -65,105 +79,75 @@ th, td{
 <c:choose>
 	<c:when test="${not empty student}">
 		<form:form commandName="assessmentResult" action="../${nextStudent}/" enctype="multipart/form-data" method="POST">
-		<input type="hidden" name="student" value="${student}"/>
-		<c:choose>
-				<c:when test="${assessmentResult.compileError}">
-					<div style="width:100%; text-align:right;">
-						<button type="button" onclick='$("#details").slideToggle("slow")'>Details</button>
-					</div>
-					<h5>Compile Errors</h5>
-					<div id="details" class="ui-state-error ui-corner-all" style="font-size: 1em;display:none;">
-						<pre>
-							${assessmentResult.compilationError}
-						</pre>
-					</div>
-				</c:when>
-				<c:otherwise>
-					<h3>Automatic Marking Results</h3>
-					<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
-						<div class='float-container'>
-							<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
-								<c:set var="secret" value="${allUnitTests.secret}"/>
-								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-									<div class="unitTestResult ${unitTestCase.testResult} <c:if test="${secret}">revealed</c:if>"
-									 title="${unitTestCase.testName}">&nbsp;</div>
-								</c:forEach>
-							</c:forEach>
-						</div>
-					</c:if>
-					<div style="width:100%; text-align:right;">
-						<button type=button onclick='$("#details").slideToggle("slow")'>Details</button>
-					</div>
-					<div id="details" style="display:none">
-						<c:if test="${not empty assessmentResult.assessment.unitTests or not empty assessmentResult.assessment.secretUnitTests}">
-							<table class="pastaTable" >
-								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-								<c:forEach var="allUnitTests" items="${assessmentResult.unitTests}">
-									<c:forEach var="testCase" items="${allUnitTests.testCases}">
-										<tr>
-											<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-											<td style="text-align:left;">${testCase.testName}</td>
-											<td>${testCase.time}</td>
-											<td>
-												<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
+			<input type="hidden" name="student" value="${student}"/>
+			<div class='vertical-block boxCard'>
+				<h3 class='compact'>Automatic Marking Results</h3>
+				<div class='vertical-block'>
+					<h4 class='compact'>Summary</h4>
+					<tag:assessmentResult closedAssessment="false" user="${unikey}" results="${assessmentResult}" summary="true" />
+				</div>
+						
+				<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
+					<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
+					<tag:assessmentResult closedAssessment="false" 
+						user="${unikey}" results="${assessmentResult}" />
+				</div>
+			</div>
 
-											</td>
-										</tr>
-									</c:forEach>
-								</c:forEach>
-							</table>
-						</c:if>
-					</div>
-				</c:otherwise>
-			</c:choose>
-
-			<h3>Hand Marking Guidelines</h3>
-			<c:set var="totalHandMarkingCategories" value="0" />
-			<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
-				<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
-				<h4>${weightedHandMarking.handMarking.name}</h4>
-				<c:choose>
-					<c:when test="${empty last}">
-						<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
-					</c:when>
-					<c:otherwise>
-						<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
-					</c:otherwise>
-				</c:choose>
-				<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].id" value="${handMarkingResult.id}"/>
-				<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].weightedHandMarking.id" value="${weightedHandMarking.id}" />
-				<div style="width:100%; overflow:auto">
-					<table id="handMarkingTable${handMarkingResultStatus.index}" style="table-layout:fixed; overflow:auto">
-						<thead>
-							<tr>
-								<th></th> <%-- empty on purpose --%>
-								<c:forEach items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
-									<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingResultStatus.index})">
-										${weightedHandMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-										${weightedHandMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
-									</th>
-								</c:forEach>
-							</tr>
-						</thead>
-						<tbody>
-							<c:forEach var="row" items="${weightedHandMarking.handMarking.rowHeader}" varStatus="rowStatus">
-								<c:set var="totalHandMarkingCategories" value="${totalHandMarkingCategories + 1}" />
-								<tr class='handMarkRow'>
-									<th>
-										${weightedHandMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-										${weightedHandMarking.weight * weightedHandMarking.handMarking.rowHeader[rowStatus.index].weight}
-									</th>
-									<c:forEach var="column" items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
-										<td id="cell_${weightedHandMarking.id}_${weightedHandMarking.handMarking.columnHeader[columnStatus.index].id}_${weightedHandMarking.handMarking.rowHeader[rowStatus.index].id}"><%-- To be filled by javascript --%></td>
+			<div class='vertical-block boxCard'>
+				<h3 class='compact'>Hand Marking Guidelines</h3>
+				<c:if test="${empty handMarkingResultList}">
+					<p>No hand marking templates for <c:out value="${assessmentResult.groupResult ? 'group' : 'individual'}" /> work submissions.
+				</c:if>
+				<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
+					<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
+					<div class='vertical-block' style="width:100%; overflow:auto">
+						<h4 class='compact'>${weightedHandMarking.handMarking.name}</h4>
+						<c:choose>
+							<c:when test="${empty last}">
+								<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
+							</c:when>
+							<c:otherwise>
+								<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
+							</c:otherwise>
+						</c:choose>
+						<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].id" value="${handMarkingResult.id}"/>
+						<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].weightedHandMarking.id" value="${weightedHandMarking.id}" />
+						
+						<table id="handMarkingTable${handMarkingResultStatus.index}" style="table-layout:fixed; overflow:auto">
+							<thead>
+								<tr>
+									<th></th> <%-- empty on purpose --%>
+									<c:forEach items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
+										<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingResultStatus.index})">
+											${weightedHandMarking.handMarking.columnHeader[columnStatus.index].name}<br />
+											${weightedHandMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
+										</th>
 									</c:forEach>
 								</tr>
-							</c:forEach>
-						</tbody>
-					</table>
-				</div>
-			</c:forEach>
+							</thead>
+							<tbody>
+								<c:forEach var="row" items="${weightedHandMarking.handMarking.rowHeader}" varStatus="rowStatus">
+									<tr class='handMarkRow'>
+										<th>
+											${weightedHandMarking.handMarking.rowHeader[rowStatus.index].name}<br />
+											${weightedHandMarking.weight * weightedHandMarking.handMarking.rowHeader[rowStatus.index].weight}
+										</th>
+										<c:forEach var="column" items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
+											<td id="cell_${weightedHandMarking.id}_${weightedHandMarking.handMarking.columnHeader[columnStatus.index].id}_${weightedHandMarking.handMarking.rowHeader[rowStatus.index].id}"><%-- To be filled by javascript --%></td>
+										</c:forEach>
+									</tr>
+								</c:forEach>
+							</tbody>
+						</table>
+					</div>
+				</c:forEach>
+			</div>
 			
-			<form:textarea style="height:200px; width:95%" path="comments" />
+			<div class='vertical-block boxCard'>
+				<form:textarea style="height:200px; width:95%" path="comments" />
+			</div>
+			
 			<c:choose>
 				<c:when test="${empty last}">
 					<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>

@@ -55,6 +55,7 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
+import pasta.service.ResultManager;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 
@@ -74,19 +75,13 @@ public class APIController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
 	private AssessmentManager assessmentManager;
+	@Autowired
 	private UserManager userManager;
-
 	@Autowired
-	public void setMyService(AssessmentManager myService) {
-		this.assessmentManager = myService;
-	}
+	private ResultManager resultManager;
 
-	@Autowired
-	public void setMyService(UserManager myService) {
-		this.userManager = myService;
-	}
-	
 	/**
 	 * Get the latest marks
 	 * <p>
@@ -127,7 +122,7 @@ public class APIController {
 				out.println();
 
 				// username, assessment name, result
-				Map<PASTAUser, Map<Long, AssessmentResult>> latestResults = assessmentManager
+				Map<PASTAUser, Map<Long, AssessmentResult>> latestResults = resultManager
 						.getLatestResults(userManager.getUserList());
 
 				for (Entry<PASTAUser, Map<Long, AssessmentResult>> entry : latestResults

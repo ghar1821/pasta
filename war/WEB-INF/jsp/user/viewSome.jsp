@@ -92,7 +92,7 @@ either expressed or implied, of the PASTA Project.
 					  "mRender": function ( data, type, full ) {
 						// assessment
 						if (data.mark >= 0) {
-							return '<span style="display:none">'+data.percentage+'</span><a href="../../student/'+full.name+'/info/'+data.assessmentname+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
+							return '<span style="display:none">'+data.percentage+'</span><a href="../../student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
 						}
 						// name
 						if(data == full.name){

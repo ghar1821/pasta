@@ -126,6 +126,10 @@ public class PASTAGroup extends PASTAUser implements Comparable<PASTAUser> {
 	public int getSize() {
 		return members.size();
 	}
+	
+	public String getName() {
+		return assessment.getName() + " - Group " + number; 
+	}
 
 	@Override
 	public int compareTo(PASTAUser o) {

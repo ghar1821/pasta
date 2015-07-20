@@ -440,11 +440,14 @@ public class ExecutionManager {
 	
 	private void executeNormalJob(AssessmentJob job) {
 		// TODO: remove /submission
-		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + job.getUser().getUsername() + "/assessments/"
+		PASTAUser user = job.getUser();
+		boolean userIsGroup = user.isGroup();
+		
+		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
 		File submissionLoc = new File(submissionHome);
 		
-		String sandboxHome = ProjectProperties.getInstance().getSandboxLocation() + job.getUser().getUsername() + "/"
+		String sandboxHome = ProjectProperties.getInstance().getSandboxLocation() + user.getUsername() + "/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate());
 		File sandboxLoc = new File(sandboxHome);	
 		
@@ -452,13 +455,17 @@ public class ExecutionManager {
 		
 		try {
 			logger.info("Running unit test " + currAssessment.getName()
-					+ " for " + job.getUser().getUsername() + " with ExecutionScheduler - " + this);
+					+ " for " + user.getUsername() + " with ExecutionScheduler - " + this);
 			
 			if (sandboxLoc.exists()) {
 				FileUtils.deleteDirectory(sandboxLoc);
 			}
 			
 			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
+				if(weightedTest.isGroupWork() != userIsGroup) {
+					continue;
+				}
+				
 				try {
 					UnitTest test = weightedTest.getTest();
 					
@@ -502,8 +509,8 @@ public class ExecutionManager {
 						}
 						
 						if(subLanguage == null) {
-							finishTesting(test, job, "No suitable language recognised");
-							logger.error("No suitable language recognised.");
+							finishTesting(test, job, "No suitable main file recognised");
+							logger.error("No suitable main file recognised.");
 							continue;
 						}
 						
@@ -585,6 +592,7 @@ public class ExecutionManager {
 					}
 					
 					currentResult.setSecret(weightedTest.isSecret());
+					currentResult.setGroupWork(weightedTest.isGroupWork());
 					
 					currentResult.setFilesCompiled(runner.extractFilesCompiled(results));
 					if(!results.isSuccess("build")) {
@@ -599,7 +607,7 @@ public class ExecutionManager {
 					ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 				} catch(Exception e2) {
 					logger.error(
-							"Error executing test " + weightedTest.getTest().getName() + " for " + job.getUser().getUsername()
+							"Error executing test " + weightedTest.getTest().getName() + " for " + user.getUsername()
 									+ " - " + job.getAssessmentId(), e2);
 				}
 			}
@@ -607,17 +615,18 @@ public class ExecutionManager {
 			//TODO FileUtils.deleteDirectory(sandboxLoc);
 		}
 		catch (Exception e) {
-			logger.error("Execution error for " + job.getUser().getUsername() + " - "
+			logger.error("Execution error for " + user.getUsername() + " - "
 					+ job.getAssessmentId(), e);
 		}
+		
+		job.getResults().setWaitingToRun(false);
+		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 		
 		scheduler.delete(job);
 	}
 	private void finishTesting(UnitTest test, AssessmentJob job, String errorMessage) {
 		UnitTestResult currentResult = null;
 		for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
-			logger.warn("existingResult: " + existingResult.getId() + " | " + existingResult.getTest());
-			
 			if(existingResult == null || existingResult.getTest() == null) {
 				continue;
 			}

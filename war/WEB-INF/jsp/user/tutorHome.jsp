@@ -32,6 +32,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <h1>${unikey.username}</h1>
 
@@ -88,39 +89,13 @@ either expressed or implied, of the PASTA Project.
 						</div>
 						
 						<div class='float-clear float-container vertical-block small-gap'>
-							<div class='horizontal-block float-left'>
-								<c:choose>
-									<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
-										No attempts on record.
-									</c:when>
-									<c:when test="${results[assessment.id].compileError}">
-										<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
-											<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-											<b>Compilation errors - <a href="../info/${assessment.id}/">More details </a></b>
-										</div>
-									</c:when>
-									<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
-										<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
-											<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-											<b><span class='queueInfo' assessment='${assessment.id}'>Submission is queued for testing.</span></b>
-										</div>
-									</c:when>
-									<c:otherwise>
-										<strong>Latest results:</strong><br />
-										<div class='float-container'>
-											<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
-												<c:set var="secret" value="${allUnitTests.secret}"/>
-												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-													<div class="unitTestResult ${unitTestCase.testResult} <c:if test="${secret}">revealed</c:if>"
-													 title="${unitTestCase.testName}">&nbsp;</div>
-												</c:forEach>
-											</c:forEach>
-										</div>
-									</c:otherwise>
-								</c:choose>
+							<div class='horizontal-block float-left' style='width:90%'>
+								<tag:assessmentResult user="${user}" results="${results[assessment.id]}" 
+									closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
+									detailsLink="../info/${assessment.id}/"/>
 							</div>
 							<c:if test="${assessment.groupWork}">
-								<div id="editGroup" class='horizontal-block float-right icon-edit-group' 
+								<div id="" class='horizontal-block float-right editGroup icon-edit-group' 
 								title='Group Details' assessment='${assessment.id}'></div>
 							</c:if>
 						</div>
@@ -165,7 +140,9 @@ either expressed or implied, of the PASTA Project.
 				$.ajax({
 					url : '../checkJobQueue/' + $span.attr("assessment") + '/',
 					success : function(data) {
-						if (data) {
+						if (data == "error") {
+							$span.html("There was an error while running your submission.");
+						} else if(data) {
 							$span.html(data);
 						} else {
 							$span.html("Refresh for results.");
@@ -179,7 +156,7 @@ either expressed or implied, of the PASTA Project.
 			})();
 		});
 		
-		$("#editGroup").on('click', function() {
+		$(".editGroup").on('click', function() {
 			location.href = '../groups/' + $(this).attr('assessment') + '/';
 		});
 	});

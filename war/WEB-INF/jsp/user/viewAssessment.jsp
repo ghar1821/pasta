@@ -34,14 +34,15 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%@ taglib prefix="pasta" uri="pastaTag"%>
+<%@ taglib prefix="tag" tagdir="/WEB-INF/tags"%>
+
 
 <jsp:useBean id="now" class="java.util.Date"/>
 
+<c:set var="user" value="${not empty viewedUser ? viewedUser : unikey}" />
+
 <h1>
-	<c:if test="${not empty viewedUser}">
-		${viewedUser.username} -
-	</c:if>
-	${assessment.name}
+	${user.username} - ${assessment.name}
 </h1>
 
 <table class='alignCellsTop'>
@@ -69,7 +70,7 @@ either expressed or implied, of the PASTA Project.
 			<p>Your submission must be in a file named <code>${assessment.solutionName}</code>.
 		</c:when>
 		<c:otherwise>
-			<p>Your submission must be written in one of the languages listed above. It must include a main file named <code>${assessment.solutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
+			<p>Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.solutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
 		</c:otherwise>
 	</c:choose>
 	</c:if>
@@ -92,14 +93,15 @@ either expressed or implied, of the PASTA Project.
 		<h2>Submission History</h2>
 		
 		<c:forEach var="result" items="${history}" varStatus="resultStatus">
-		<div class='vertical-block boxCard'>
+		<c:set var='groupResult' value="${result.user.id != user.id}" />
+		<div class='vertical-block boxCard <c:if test="${groupResult}">group-highlight</c:if>'>
 			<%--Heading and button panel--%>
 			<div class='vertical-block float-container'>
 				<div class='float-left'>
 					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /></h4>
 				</div>
 				<c:if test="${ unikey.tutor }" >
-					<div id='buttonPanel' class='float-right'>
+					<div id='buttonPanel' class='float-right horizontal-block'>
 						<c:set var="pathPrefix" value="../.." />
 						<c:if test="${not empty viewedUser}">
 							<c:set var="pathPrefix" value="../../../.." />
@@ -109,12 +111,21 @@ either expressed or implied, of the PASTA Project.
 							<c:if test="${result.finishedHandMarking}">
 								<c:set var="markButtonText" value="Edit attempt marks" />
 							</c:if>
-							<button onclick="window.location.href='${pathPrefix}/mark/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
+							<button onclick="window.location.href='${pathPrefix}/mark/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
 						</c:if>
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<button onclick="window.location.href='${pathPrefix}/runAssessment/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+							<button onclick="window.location.href='${pathPrefix}/runAssessment/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 						</c:if>
-						<button onclick="window.location.href='${pathPrefix}/download/${viewedUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+						<button onclick="window.location.href='${pathPrefix}/download/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+					</div>
+				</c:if>
+				<c:if test="${groupResult}">
+					<div class='submitted-by-panel float-right'>
+						<div class='align-contents-middle horizontal-block'>
+							<div class='horizontal-block small-gap'><h4 class='alt compact'>Group Submission</h4></div>
+							<div class='horizontal-block small-gap icon-group'></div>
+							<div class='horizontal-block small-gap'><p>Submitted by ${result.submittedBy}.</div>
+						</div>
 					</div>
 				</c:if>
 			</div>
@@ -128,103 +139,36 @@ either expressed or implied, of the PASTA Project.
 			</c:if>
 			
 			<%--Summary of results--%>
-			<div class='vertical-block float-container'>
-				<c:choose>
-					<c:when test="${result.compileError}">
-						<h4 class='compact'>Compile Errors</h4>
-					</c:when>
-					<c:when test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-						<div class='float-container'>
-							<c:forEach var="allUnitTests" items="${result.unitTests}">
-								<c:set var="secret" value="${allUnitTests.secret}"/>
-								<c:set var="revealed" value="${secret and (unikey.tutor or ((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now)))}" />
-								<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-									<div class="unitTestResult <c:if test="${not secret or revealed}">${unitTestCase.testResult}</c:if>
-									<c:if test="${revealed}">revealed</c:if> <c:if test="${secret}">secret</c:if>" 
-									title="<c:choose><c:when test="${revealed or not secret}">${unitTestCase.testName}</c:when><c:otherwise>???</c:otherwise></c:choose>">&nbsp;</div>
-								</c:forEach>
-							</c:forEach>
-						</div>
-					</c:when>
-					<c:otherwise>
-						<h3 class='compact'>Result Error</h3>
-					</c:otherwise>
-				</c:choose>
-			</div>
-			
-			<%--Files compiled--%>
-			<c:if test="${ unikey.tutor }" >
-				<div class='vertical-block'>
-					<p class='showHide' showhide="files_${resultStatus.index}"><strong>Files Compiled</strong>
-					<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
-						<c:forEach var="unitTest" items="${result.unitTests}">
-							<div class='vertical-block'>
-								<h6 class='compact'>${unitTest.test.name}</h6>
-								<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
-							</div>
-						</c:forEach>
-					</div>
-				</div>
-			</c:if>
+			<h5 class='compact'>Summary</h5>
+			<c:set var="closed" value="${((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}" />
+			<tag:assessmentResult closedAssessment="${closed}" user="${user}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>
 			<div id="${result.id}" class='resultDetails vertical-block'>
-				<c:choose>
-					<c:when test="${result.compileError}">
-						<div class="ui-state-error ui-corner-all" style="font-size: 1em;padding:1em;">
-							<c:forEach var="compError" items="${result.compilationErrors}">
-								<div style="margin-top:1em;"><pre><c:out value="${compError}" escapeXml="true"/></pre></div>
+				<h5 class='compact'>Details</h5>
+				<%--Files compiled--%>
+				<c:if test="${ unikey.tutor }" >
+					<div class='vertical-block'>
+						<p class='showHide' showhide="files_${resultStatus.index}"><strong>Files Compiled</strong>
+						<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
+							<c:forEach var="unitTest" items="${result.unitTests}">
+								<div class='vertical-block'>
+									<h6 class='compact'>${unitTest.test.name}</h6>
+									<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
+								</div>
 							</c:forEach>
 						</div>
-					</c:when>
-					<c:otherwise>
-						<div class='vertical-block'>
-							<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-								<table class="pastaTable" style='margin:0px'>
-									<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-									<c:forEach var="allUnitTests" items="${result.unitTests}">
-										<c:forEach var="testCase" items="${allUnitTests.testCases}">
-											<tr>
-												<c:choose>
-													<c:when test="${allUnitTests.secret}">
-														<c:choose>
-															<c:when test="${unikey.tutor or ((assessment.dueDate lt now) and (empty unikey.extensions[assessment.id] or unikey.extensions[assessment.id] lt now))}">
-																<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-																<td style="text-align:left;">Secret - ${testCase.testName}</td>
-																<td>${testCase.time}</td>
-																<td>
-																	<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}"/></pre>
-																</td>
-															</c:when>
-															<c:otherwise>
-																<td><span class="pastaUnitTestResult pastaUnitTestResultSecret">hidden</span></td>
-																<td style="text-align:left;">???</td>
-																<td>???</td>
-																<td>???</td>
-															</c:otherwise>
-														</c:choose>
-													</c:when>
-													<c:otherwise>
-														<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-														<td style="text-align:left;">${testCase.testName}</td>
-														<td>${testCase.time}</td>
-														<td>
-															<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}"/></pre>
-														</td>
-													</c:otherwise>
-												</c:choose>
-											</tr>
-										</c:forEach>
-									</c:forEach>
-								</table>
-							</c:if>
-						</div>
-					</c:otherwise>
-				</c:choose>
-				<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
+					</div>
+				</c:if>
+				
+				<tag:assessmentResult closedAssessment="${closed}" 
+					user="${user}" results="${result}" />
+
+				<c:set var="relevantHandMarking" value="${groupResult ? result.assessment.groupHandMarking : result.assessment.individualHandMarking}" />
+				<c:if test="${not empty relevantHandMarking and result.finishedHandMarking}">
 					<div class='vertical-block'>
 						<h5 class='compact'>Hand Marking</h5>
-						<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
+						<c:forEach var="handMarking" items="${relevantHandMarking}" varStatus="handMarkingStatus">
 							<div style="width:100%; overflow:auto">
 								<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
 									<thead>
@@ -277,7 +221,7 @@ either expressed or implied, of the PASTA Project.
 									<button type="submit" >Save Comments</button>
 								</form>
 							</div>
-							<button type="button" onclick="$('div#updateComments${result.id}').show();$(this).hide()">Modify Comments</button>
+							<button type="button" class='modifyCommentsBtn'>Modify Comments</button>
 						</div>
 					</c:if>
 				</div>
@@ -289,8 +233,8 @@ either expressed or implied, of the PASTA Project.
 			function fillCells() {
 				var cell;
 				<c:forEach var="result" items="${history}" varStatus="resultStatus">
-					<c:if test="${not empty result.assessment.handMarking and result.finishedHandMarking}">
-						<c:forEach var="handMarking" items="${result.assessment.handMarking}" varStatus="handMarkingStatus">
+					<c:if test="${not empty relevantHandMarking and result.finishedHandMarking}">
+						<c:forEach var="handMarking" items="${relevantHandMarking}" varStatus="handMarkingStatus">
 							<c:forEach var="datum" items="${handMarking.handMarking.data}" varStatus="datumStatus">
 								cell = document.getElementById("cell_${result.id}_${handMarking.id}_${datum.column.id}_${datum.row.id}");
 								<c:if test="${not empty datum.data or datum.data == \"\"}">

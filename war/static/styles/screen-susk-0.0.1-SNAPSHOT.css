@@ -44,6 +44,9 @@ a:not([href]) {
 h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
 	margin-top: 0px;
 }
+h1.alt,h2.alt,h3.alt,h4.alt,h5.alt,h6.alt {
+	color: #12416C;
+}
 .vertical-block {
 	display: block;
 }
@@ -88,6 +91,19 @@ h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
 }
 .padded {
 	padding:0.5em;
+}
+.align-contents-bottom .horizontal-block {
+	vertical-align: bottom;
+}
+.align-contents-middle .horizontal-block {
+	vertical-align: middle;
+}
+.align-contents-top .horizontal-block {
+	vertical-align: top;
+}
+
+span.expanded-icon {
+	font-size: 1.5em;
 }
 
 table.alignCellsTop td, table.alignCellsTop th {
@@ -188,6 +204,12 @@ div.boxCard, .box-shadow, div.unitTestResult {
 div.boxCard {
 	padding: 0.6em;
 }
+div.group-highlight {
+   -moz-box-shadow: inset 0 0 1em #12416c;
+   -webkit-box-shadow: inset 0 0 1em #12416c;
+   box-shadow: inset 0 0 1em #12416c;
+   padding: 1em;
+}
 
 table.dragRows {
 	border-collapse: collapse;
@@ -205,7 +227,6 @@ table.dragRows td:last-child {
 }
 
 div.star-medal {
-	height: 1px;
 	width: 44px;
 }
 div.star-medal img {
@@ -257,6 +278,12 @@ div.icon-edit-group {
 	background-repeat: no-repeat;
 	background-image: url("../images/group-edit.png");
 	cursor: pointer;
+	height: 32px;
+	width: 32px;
+}
+div.icon-group {
+	background-repeat: no-repeat;
+	background-image: url("../images/group.png");
 	height: 32px;
 	width: 32px;
 }

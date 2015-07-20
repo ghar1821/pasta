@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.repository;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +39,10 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,7 +201,18 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all active users registered in the system
 	 */
 	public List<PASTAUser> getUserList(){
-		return getUserList(false, null);
+		return getUserList(false, false, null);
+	}
+	
+	/**
+	 * Get the collection of all active users and groups.
+	 * <p>
+	 * This list includes students, tutors, instructors and potentially groups.
+	 * @param includingGroups whether to include groups in the list.
+	 * @return the collection of all active users registered in the system
+	 */
+	public List<PASTAUser> getUserList(boolean includingGroups){
+		return getUserList(false, includingGroups, null);
 	}
 	
 	/**
@@ -208,7 +222,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all users registered in the system
 	 */
 	public List<PASTAUser> getAllUserList(){
-		return getUserList(true, null);
+		return getUserList(true, false, null);
 	}
 	
 	/**
@@ -217,7 +231,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all active students registered in the system
 	 */
 	public List<PASTAUser> getStudentList(){
-		return getUserList(false, UserPermissionLevel.STUDENT);
+		return getUserList(false, false, UserPermissionLevel.STUDENT);
 	}
 	
 	/**
@@ -226,7 +240,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all active students registered in the system
 	 */
 	public List<PASTAUser> getAllStudentList(){
-		return getUserList(true, UserPermissionLevel.STUDENT);
+		return getUserList(true, false, UserPermissionLevel.STUDENT);
 	}
 	
 	/**
@@ -235,7 +249,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all active tutors and instructors registered in the system
 	 */
 	public List<PASTAUser> getTutorList(){
-		return getUserList(false, UserPermissionLevel.TUTOR);
+		return getUserList(false, false, UserPermissionLevel.TUTOR);
 	}
 	
 	/**
@@ -244,17 +258,19 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the collection of all tutors and instructors registered in the system
 	 */
 	public List<PASTAUser> getAllTutorList(){
-		return getUserList(true, UserPermissionLevel.TUTOR);
+		return getUserList(true, false, UserPermissionLevel.TUTOR);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private List<PASTAUser> getUserList(boolean includeInactive, UserPermissionLevel permissionLevel) {
-		if(includeInactive && permissionLevel == null) {
+	private List<PASTAUser> getUserList(boolean includeInactive, boolean includeGroups, UserPermissionLevel permissionLevel) {
+		if(includeInactive && includeGroups && permissionLevel == null) {
 			return getHibernateTemplate().loadAll(PASTAUser.class);
 		} else {
 			DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
 			if(!includeInactive)
 				cr.add(Restrictions.eq("active", true));
+			if(!includeGroups)
+				cr.add(Restrictions.ne("permissionLevel", UserPermissionLevel.GROUP));
 			if(permissionLevel != null) {
 				switch(permissionLevel) {
 				case TUTOR:
@@ -273,27 +289,27 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public Map<String, PASTAUser> getUserMap(){
-		return getUserMap(false, null);
+		return getUserMap(false, false, null);
 	}
 	public Map<String, PASTAUser> getAllUserMap(){
-		return getUserMap(true, null);
+		return getUserMap(true, false, null);
 	}
 	public Map<String, PASTAUser> getStudentMap(){
-		return getUserMap(false, UserPermissionLevel.STUDENT);
+		return getUserMap(false, false, UserPermissionLevel.STUDENT);
 	}
 	public Map<String, PASTAUser> getAllStudentMap(){
-		return getUserMap(true, UserPermissionLevel.STUDENT);
+		return getUserMap(true, false, UserPermissionLevel.STUDENT);
 	}
 	public Map<String, PASTAUser> getTutorMap(){
-		return getUserMap(false, UserPermissionLevel.TUTOR);
+		return getUserMap(false, false, UserPermissionLevel.TUTOR);
 	}
 	public Map<String, PASTAUser> getAllTutorMap(){
-		return getUserMap(true, UserPermissionLevel.TUTOR);
+		return getUserMap(true, false, UserPermissionLevel.TUTOR);
 	}
 	
-	private Map<String, PASTAUser> getUserMap(boolean includeInactive, UserPermissionLevel permissionLevel) {
+	private Map<String, PASTAUser> getUserMap(boolean includeInactive, boolean includeGroups, UserPermissionLevel permissionLevel) {
 		Map<String, PASTAUser> userMap = new HashMap<String, PASTAUser>();
-		List<PASTAUser> users = getUserList(includeInactive, permissionLevel);
+		List<PASTAUser> users = getUserList(includeInactive, includeGroups, permissionLevel);
 		for(PASTAUser user : users) {
 			userMap.put(user.getUsername(), user);
 		}
@@ -422,5 +438,44 @@ public class UserDAO extends HibernateDaoSupport{
 			logger.warn("Ignoring multiple groups for user " + user.getId() + ", assessment " + assessment.getId());
 		}
 		return results.get(0);
+	}
+
+	public PASTAGroup getGroup(PASTAUser user, long assessmentId) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		cr.createAlias("members", "user");
+		cr.add(Restrictions.eq("user.id", user.getId()));
+		@SuppressWarnings("unchecked")
+		List<PASTAGroup> results = getHibernateTemplate().findByCriteria(cr);
+		if(results.isEmpty()) {
+			return null;
+		}
+		if(results.size() > 1) {
+			logger.warn("Ignoring multiple groups for user " + user.getId() + ", assessment " + assessmentId);
+		}
+		return results.get(0);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PASTAGroup> getAllUserGroups(PASTAUser user) {
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.createAlias("members", "user");
+		cr.add(Restrictions.eq("user.id", user.getId()));
+		return getHibernateTemplate().findByCriteria(cr);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PASTAGroup> getGroups(Collection<PASTAUser> users, long assessmentId) {
+		Set<Long> ids = new HashSet<Long>();
+		for(PASTAUser user : users) {
+			ids.add(user.getId());
+		}
+		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		cr.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		cr.createAlias("members", "user");
+		cr.add(Restrictions.in("user.id", ids));
+		cr.addOrder(Order.asc("number"));
+		return getHibernateTemplate().findByCriteria(cr);
 	}
 }

@@ -45,8 +45,8 @@ public class Submission {
 	private CommonsMultipartFile file;
 	private Long assessment;
 	private PASTAUser submittingUser;
-	private PASTAUser submittingForUser;
-	
+	private boolean groupSubmission;
+
 	public CommonsMultipartFile getFile() {
 		return file;
 	}
@@ -66,10 +66,11 @@ public class Submission {
 	public void setSubmittingUser(PASTAUser submittingUser) {
 		this.submittingUser = submittingUser;
 	}
-	public PASTAUser getSubmittingForUser() {
-		return submittingForUser;
+	
+	public boolean isGroupSubmission() {
+		return groupSubmission;
 	}
-	public void setSubmittingForUser(PASTAUser submittingForUser) {
-		this.submittingForUser = submittingForUser;
+	public void setGroupSubmission(boolean groupSubmission) {
+		this.groupSubmission = groupSubmission;
 	}
 }

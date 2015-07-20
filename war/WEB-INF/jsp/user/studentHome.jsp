@@ -32,7 +32,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<jsp:useBean id="now" class="java.util.Date"/>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <c:set var="username" value="${ not empty viewedUser ? viewedUser.username : unikey.username }"/>
 <h1>${username}</h1>
@@ -113,7 +113,7 @@ either expressed or implied, of the PASTA Project.
 									<button onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
 								</c:if>
 								<c:if test="${unikey.tutor or not closedAssessment}">
-									<button onclick="submitAssessment('${assessment.id}');">Submit</button>
+									<button onclick="submitAssessment('${assessment.id}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
 								</c:if>
 							</div>
 							
@@ -173,41 +173,15 @@ either expressed or implied, of the PASTA Project.
 									 />
 								</c:if>
 							</div>
-							<div class='horizontal-block float-left'>
-								<c:choose>
-									<c:when test="${results[assessment.id].submissionsMade == 0 or empty results[assessment.id]}">
-										No attempts on record.
-									</c:when>
-									<c:when test="${results[assessment.id].compileError}">
-										<div class="ui-state-error ui-corner-all" style="font-size: 1em;">
-											<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-											<b>Compilation errors - <a href="../info/${assessment.id}/">More details </a></b>
-										</div>
-									</c:when>
-									<c:when test="${empty results[assessment.id].unitTests[0].testCases and (not empty assessment.unitTests or not empty assessment.secretUnitTests) and not empty results[assessment.id]}">
-										<div class="ui-state-highlight ui-corner-all" style="font-size: 1em;">
-											<span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-											<b><span class='queueInfo' assessment='${assessment.id}'>Submission is queued for testing.</span></b>
-										</div>
-									</c:when>
-									<c:otherwise>
-										<strong>Latest results:</strong><br />
-										<div class='float-container'>
-											<c:forEach var="allUnitTests" items="${results[assessment.id].unitTests}">
-												<c:set var="secret" value="${allUnitTests.secret}"/>
-												<c:set var="revealed" value="${secret and (unikey.tutor or closedAssessment)}" />
-												<c:forEach var="unitTestCase" items="${allUnitTests.testCases}">
-													<div class="unitTestResult <c:if test="${not secret or revealed}">${unitTestCase.testResult}</c:if>
-													<c:if test="${revealed}">revealed</c:if> <c:if test="${secret}">secret</c:if>" 
-													title="<c:choose><c:when test="${revealed or not secret}">${unitTestCase.testName}</c:when><c:otherwise>???</c:otherwise></c:choose>">&nbsp;</div>
-												</c:forEach>
-											</c:forEach>
-										</div>
-									</c:otherwise>
-								</c:choose>
+							
+							<div class='horizontal-block float-left' style='width:90%'>
+								<tag:assessmentResult user="${user}" results="${results[assessment.id]}" 
+									closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
+									detailsLink="../info/${assessment.id}/"/>
 							</div>
-							<c:if test="${assessment.groupWork}">
-								<div id="editGroup" class='horizontal-block float-right icon-edit-group' 
+							
+							<c:if test="${assessment.groupWork && empty viewedUser}">
+								<div class='horizontal-block float-right editGroup icon-edit-group' 
 								title='Group Details' assessment='${assessment.id}'></div>
 							</c:if>
 						</div>
@@ -221,19 +195,35 @@ either expressed or implied, of the PASTA Project.
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
-		<div style="font-size:150%">
-			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
-		</div>
-		<form:input path="file" type="file" />
 		<form:input type="hidden" path="assessment" value=""/>
-	   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+		
+		<div class='vertical-block' style="font-size:150%">
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a>
+		</div>
+		<div id='groupDeclaration' class='vertical-block' style="font-size:150%">
+			By submitting I also declare that all group members have paticipated to a satisfactory level in completing this assessment.
+		</div>
+		<div class='vertical-block'>
+			<form:input path="file" type="file" />
+		</div>
+		<div id='groupCheckDiv' class='vertical-block'>
+			<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
+			<label for='groupCheck' style="vertical-align: middle;"></label>
+			<span style="font-size:150%; vertical-align: middle;">I am submitting on behalf of my group.</span>
+		</div>
+		<div class='vertical-block'>
+		   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+		</div>
    	</form:form>
 </div>
 
 <script>
-	function submitAssessment(assessment){
+	function submitAssessment(assessment, hasGroup, allGroup){
 		document.getElementById('assessment').value=assessment;
-		$('#submitPopup').bPopup();
+		var $popup = $('#submitPopup');
+		$popup.find("#groupCheckDiv").toggle(hasGroup);
+		$popup.find("#groupCheck").prop("checked", allGroup).trigger("change");
+		$popup.bPopup();
 	}
 
 	$(document).ready(function() {
@@ -244,7 +234,9 @@ either expressed or implied, of the PASTA Project.
 				$.ajax({
 					url : '../checkJobQueue/' + $span.attr("assessment") + '/',
 					success : function(data) {
-						if (data) {
+						if (data == "error") {
+							$span.html("There was an error while running your submission.");
+						} else if(data) {
 							$span.html(data);
 						} else {
 							$span.html("Refresh for results.");
@@ -258,9 +250,14 @@ either expressed or implied, of the PASTA Project.
 			})();
 		});
 		
-		$("#editGroup").on('click', function() {
+		$(".editGroup").on('click', function() {
 			location.href = '../groups/' + $(this).attr('assessment') + '/';
 		});
+		
+		$("#groupCheck").on("change", function() {
+			$("#groupDeclaration").toggle($(this).is(":checked"));
+		});
+		
 	});
 </script>
 <script src='<c:url value="/static/scripts/home/assessmentRatings.js"/>'></script>

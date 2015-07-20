@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
@@ -108,11 +109,15 @@ public class UserManager {
 	/**
 	 * Helper method
 	 * 
-	 * @see pasta.repository.UserDAO#getUserList()
+	 * @see pasta.repository.UserDAO#getUserList(boolean)
 	 * @return the collection of all users (students, tutors and instructors)
 	 */
 	public Collection<PASTAUser> getUserList() {
-		return userDao.getUserList();
+		return userDao.getUserList(false);
+	}
+	
+	public Collection<PASTAUser> getUserListIncludingGroups() {
+		return userDao.getUserList(true);
 	}
 	
 	/**
@@ -135,7 +140,7 @@ public class UserManager {
 	 * @return a list of students taught by this tutor
 	 */
 	public Collection<PASTAUser> getTutoredStudents(PASTAUser user) {
-		List<PASTAUser> students = new LinkedList<PASTAUser>();
+		Set<PASTAUser> students = new TreeSet<PASTAUser>();
 		if(!user.isTutor()) {
 			return students;
 		}

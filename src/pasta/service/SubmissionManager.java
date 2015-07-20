@@ -34,7 +34,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +46,6 @@ import pasta.domain.template.Assessment;
 import pasta.domain.upload.Submission;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.ResultDAO;
-import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -71,17 +68,15 @@ import pasta.util.ProjectProperties;
 public class SubmissionManager {
 	
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
-	
-	private ExecutionScheduler scheduler;
-	
-	@Autowired
-	public void setMyScheduler(ExecutionScheduler myScheduler) {
-		this.scheduler = myScheduler;
-	}
 	
 	@Autowired
 	private ApplicationContext context;
+	
+	@Autowired
+	private ExecutionScheduler scheduler;
+	@Autowired
+	private ResultManager resultManager;
+	
 
 	// Validator for the submission
 
@@ -124,6 +119,8 @@ public class SubmissionManager {
 		AssessmentResult result = new AssessmentResult();
 		result.setAssessment(currAssessment);
 		result.setUser(user);
+		result.setSubmittedBy(form.getSubmittingUser());
+		result.setGroupResult(user.isGroup());
 		
 		try {
 			result.setSubmissionDate(sdf.parse(currDate));
@@ -131,7 +128,7 @@ public class SubmissionManager {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		resultDAO.save(result);
+		resultManager.save(result);
 
 		(new File(location)).mkdirs();
 		try {
@@ -277,29 +274,6 @@ public class SubmissionManager {
 	}
 	
 	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.ResultDAO#getLatestResults(String)
-	 * @param user the user
-	 * @return a map containing the latest results for a given user.
-	 */
-	public Map<Long, AssessmentResult> getLatestResultsForUser(PASTAUser user){
-		return resultDAO.getLatestResults(user);
-	}
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.ResultDAO#getLatestResultsForUserAssessment(String, long)
-	 * @param user the user
-	 * @param assessmentId the id of the assessment
-	 * @return the latest results for a given user for a given assessment.
-	 */
-	public AssessmentResult getLatestResultsForUserAssessment(PASTAUser user, long assessmentId){
-		return resultDAO.getLatestResultsForUserAssessment(user, assessmentId);
-	}
-	
-	/**
 	 * Schedule an assessment attempt for a given user for execution
 	 * 
 	 * @param user the user
@@ -309,7 +283,7 @@ public class SubmissionManager {
 	 */
 	public void runAssessment(PASTAUser user, long assessmentId, String assessmentDate, AssessmentResult result){
 		try {
-			scheduler.save(new AssessmentJob(user, assessmentId, PASTAUtil.parseDate(assessmentDate), result));
+			scheduler.scheduleJob(user, assessmentId, result, PASTAUtil.parseDate(assessmentDate));
 		} catch (ParseException e) {
 			logger.error("Unable to re-run assessment "
 					+ assessmentId + " for " + user.getUsername()
@@ -327,12 +301,10 @@ public class SubmissionManager {
 	public void runAssessment(Assessment assessment, Collection<PASTAUser> allUsers){
 		for(PASTAUser user: allUsers){
 			// scan to see all who made a submission
-			AssessmentResult currResult = resultDAO.getLatestResults(user).get(assessment.getId());
+			AssessmentResult currResult = resultManager.getLatestResults(user).get(assessment.getId());
 			if(currResult != null){
 				// add them to the queue
-				scheduler.save(new AssessmentJob(user, 
-						assessment.getId(), 
-						currResult.getSubmissionDate(), currResult));
+				scheduler.scheduleJob(user, assessment.getId(), currResult, currResult.getSubmissionDate());
 			}
 		}
 	}

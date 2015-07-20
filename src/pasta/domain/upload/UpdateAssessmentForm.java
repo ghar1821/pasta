@@ -88,6 +88,7 @@ public class UpdateAssessmentForm {
 	@Length(max=64)
 	private String solutionName;
 	
+	private Date groupLockDate;
 	private int groupCount;
 	private int groupSize;
 	private boolean studentsManageGroups;
@@ -113,6 +114,7 @@ public class UpdateAssessmentForm {
 		this.countUncompilable = base.isCountUncompilable();
 		this.description = base.getDescription();
 		this.solutionName = base.getSolutionName();
+		this.groupLockDate = base.getGroupLockDate();
 		this.groupCount = base.getGroupCount();
 		this.groupSize = base.getGroupSize();
 		this.studentsManageGroups = base.isStudentsManageGroups();
@@ -206,6 +208,29 @@ public class UpdateAssessmentForm {
 	}
 	public void setStudentsManageGroups(boolean studentsManageGroups) {
 		this.studentsManageGroups = studentsManageGroups;
+	}
+
+	public Date getGroupLockDate() {
+		return groupLockDate;
+	}
+	public void setGroupLockDate(Date groupLockDate) {
+		this.groupLockDate = groupLockDate;
+	}
+	public String getStrGroupLock() {
+		if(groupLockDate == null) {
+			return "";
+		}
+		return NewAssessmentForm.sdf.format(groupLockDate);
+	}
+	public void setStrGroupLock(String groupLock) {
+		if(groupLock == null || groupLock.isEmpty()) {
+			groupLockDate = null;
+		}
+		try {
+			groupLockDate = NewAssessmentForm.sdf.parse(groupLock);
+		} catch (ParseException e) {
+			groupLockDate = null;
+		}
 	}
 
 	public Set<Language> getLanguages() {

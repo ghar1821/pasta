@@ -290,7 +290,7 @@ public class PASTAUtil {
 	 * @return the map of file tree nodes for each submission with the submission
 	 * date as a key.
 	 */
-	public static Map<String, FileTreeNode> genereateFileTree(PASTAUser user, long assessmentId) {
+	public static Map<String, FileTreeNode> generateFileTree(PASTAUser user, long assessmentId) {
 		Map<String, FileTreeNode> allsubmissions = new TreeMap<String, FileTreeNode>();
 		
 		String[] allSubs = (new File(ProjectProperties.getInstance().getSubmissionsLocation()

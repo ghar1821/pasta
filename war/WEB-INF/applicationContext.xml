@@ -138,7 +138,8 @@
     <bean id="submissionManager" class="pasta.service.SubmissionManager" />
     <bean id="unitTestManager" class="pasta.service.UnitTestManager" />
     <bean id="userManager" class="pasta.service.UserManager" />
+    <bean id="groupManager" class="pasta.service.GroupManager" />
+    <bean id="resultManager" class="pasta.service.ResultManager" />
     
-    <context:component-scan base-package="pasta.service"/>
 	<task:annotation-driven />
 </beans>

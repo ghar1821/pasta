@@ -23,10 +23,16 @@ public class BlackBoxTestCaseFormValidator implements Validator {
 	public void validate(Object formObj, Errors errors) {
 		BlackBoxTestCaseForm form = (BlackBoxTestCaseForm) formObj;
 		
+		if(form.isDeleteMe()) {
+			return;
+		}
+		
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "testName", "NotEmpty");
 		
-		if(!form.getTestName().isEmpty() && !form.getTestName().toLowerCase().matches("[a-z][a-z0-9_]*[a-z0-9]*")) {
-			errors.rejectValue("testName", "NotValid");
+		if(form.getTestName() != null && !form.getTestName().isEmpty()) {
+			if(!form.getTestName().toLowerCase().matches("[a-z][a-z0-9_]*[a-z0-9]*")) {
+				errors.rejectValue("testName", "NotValid");
+			}
 		}
 		
 		if(form.getTimeout() < 0) {

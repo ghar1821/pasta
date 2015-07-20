@@ -146,6 +146,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		return permissionLevel == UserPermissionLevel.INSTRUCTOR; 
 	}
 	
+	public boolean isGroup() {
+		return permissionLevel == UserPermissionLevel.GROUP;
+	}
+	
 	public String[] getTutorClasses(){
 		if ((permissionLevel == UserPermissionLevel.TUTOR)  
 				|| permissionLevel == UserPermissionLevel.INSTRUCTOR){

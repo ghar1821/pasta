@@ -77,7 +77,15 @@ function registerEvents() {
 	$(document).on('click', '#submit', function() {
 		changed = false;
 	});
+	
+	$('#detailsToggle').on('click', function() {
+		$("div.unitTestDetails").slideToggle('fast');
+		$(this).text($(this).text() == "Show Details" ? "Hide Details" : "Show Details");
+	});
 }
+
+$("div.unitTestDetails").hide();
+$("table.unitTestDetailsTable").css("width", "100%");
 
 (function($) {
 	$(document).ready(function() {	

@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -96,6 +97,10 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	@JoinColumn(name="user_id", nullable = false)
 	private PASTAUser user;
 	
+	@ManyToOne
+	@JoinColumn(name="submitted_by", nullable = false)
+	private PASTAUser submittedBy;
+	
 	@OneToMany (cascade = CascadeType.ALL)
 	@JoinTable(name="assessment_result_unit_test_joins",
 		joinColumns=@JoinColumn(name = "assessment_result_id"),
@@ -120,7 +125,12 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	@Column (length=64000)
 	@Size (max = 64000)
 	private String comments;
+
+	@Column(name="waiting_to_run")
+	private boolean waitingToRun = true;
 	
+	@Column(name="group_result")
+	private boolean groupResult;
 	
 	public long getId() {
 		return id;
@@ -136,8 +146,51 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		this.user = user;
 	}
 	
+	public PASTAUser getSubmittedBy() {
+		return submittedBy;
+	}
+	public void setSubmittedBy(PASTAUser submittedBy) {
+		this.submittedBy = submittedBy;
+	}
+	
 	public Collection<UnitTestResult> getUnitTests() {
 		return unitTests;
+	}
+	public List<UnitTestResult> getGroupUnitTests() {
+		List<UnitTestResult> tests = new LinkedList<UnitTestResult>();
+		for(UnitTestResult result : getUnitTests()) {
+			if(result.isGroupWork()) {
+				tests.add(result);
+			}
+		}
+		return tests;
+	}
+	public List<UnitTestResult> getNonGroupUnitTests() {
+		List<UnitTestResult> tests = new LinkedList<UnitTestResult>();
+		for(UnitTestResult result : getUnitTests()) {
+			if(!result.isGroupWork()) {
+				tests.add(result);
+			}
+		}
+		return tests;
+	}
+	public List<HandMarkingResult> getGroupHandMarkingResults() {
+		List<HandMarkingResult> tests = new LinkedList<HandMarkingResult>();
+		for(HandMarkingResult result : getHandMarkingResults()) {
+			if(result.isGroupWork()) {
+				tests.add(result);
+			}
+		}
+		return tests;
+	}
+	public List<HandMarkingResult> getNonGroupHandMarkingResults() {
+		List<HandMarkingResult> tests = new LinkedList<HandMarkingResult>();
+		for(HandMarkingResult result : getHandMarkingResults()) {
+			if(!result.isGroupWork()) {
+				tests.add(result);
+			}
+		}
+		return tests;
 	}
 	public void setUnitTests(List<UnitTestResult> unitTests) {
 		this.unitTests.clear();
@@ -152,12 +205,20 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		this.assessment = assessment;
 	}
 	
+	public int getIndividualSubmissionsMade() {
+		if(user == null || assessment == null) {
+			return 0;
+		}
+		return ProjectProperties.getInstance().getResultDAO()
+				.getSubmissionCount(user, assessment.getId(), false);
+	}
+	
 	public int getSubmissionsMade() {
 		if(user == null || assessment == null) {
 			return 0;
 		}
 		return ProjectProperties.getInstance().getResultDAO()
-				.getSubmissionCount(user, assessment.getId());
+				.getSubmissionCount(user, assessment.getId(), true);
 	}
 
 	public Date getSubmissionDate() {
@@ -371,10 +432,30 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		this.comments = comments;
 	}
 	
+	public boolean isWaitingToRun() {
+		return waitingToRun;
+	}
+	public void setWaitingToRun(boolean waitingToRun) {
+		this.waitingToRun = waitingToRun;
+	}
+	
+	public boolean isGroupResult() {
+		return groupResult;
+	}
+	public void setGroupResult(boolean groupResult) {
+		this.groupResult = groupResult;
+	}
 	public boolean isFinishedHandMarking(){
-		if(handMarkingResults.size() < assessment.getHandMarking().size()){
-			return false;
+		try {
+			if(handMarkingResults.size() < (isGroupResult() ? assessment.getGroupHandMarking() : assessment.getIndividualHandMarking()).size()){
+				return false;
+			}
+		} catch(IllegalAccessError e) { 
+			if(handMarkingResults.size() < assessment.getHandMarking().size()){
+				return false;
+			}
 		}
+		
 		if(handMarkingResults != null){
 			for(HandMarkingResult res : handMarkingResults){
 				if(res == null || !res.isFinishedMarking()){

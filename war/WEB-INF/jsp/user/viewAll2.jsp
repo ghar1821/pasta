@@ -67,14 +67,14 @@ either expressed or implied, of the PASTA Project.
 	}
 </style>
 
-<table id="gradeCentreTable"  class="display" cellspacing="0" width="100%">
+<table id="gradeCentreTable" class="display">
 	<thead>
 		<tr>
-			<th>Username&nbsp;&nbsp;&nbsp;&nbsp;</th>
-			<th>Stream&nbsp;&nbsp;&nbsp;&nbsp;</th>
-			<th>Class&nbsp;&nbsp;&nbsp;&nbsp;</th>
+			<th>Username</th>
+			<th>Stream</th>
+			<th>Class</th>
 			<c:forEach var="assessment" items="${assessmentList}">
-				<th>${assessment.name}&nbsp;&nbsp;&nbsp;&nbsp;</th>
+				<th>${assessment.name}</th>
 			</c:forEach>
 		</tr>
 	</thead>
@@ -101,7 +101,7 @@ either expressed or implied, of the PASTA Project.
 					  "mRender": function ( data, type, full ) {
 						// assessment
 						if (data.mark >= 0) {
-							return '<span style="display:none">'+data.percentage+'</span><a href="../student/'+full.name+'/info/'+data.assessmentname+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
+							return '<span style="display:none">'+data.percentage+'</span><a href="../student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
 						}
 						// name
 						if(data == full.name){
