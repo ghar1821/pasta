@@ -14,12 +14,19 @@
 	<div class='vertical-block float-container'>
 		<c:choose>
 			<c:when test="${empty results or empty results.submissionsMade or results.submissionsMade == 0}">
-					No attempts on record.
+				No attempts on record.
 			</c:when>
-			<c:when test="${results.compileError}">
+			<c:when test="${results.error}">
 				<div class="ui-state-error ui-corner-all">
-					<span class="ui-icon ui-icon-alert float-left"></span>&nbsp;
-					<b>Compilation errors<c:if test="${not empty detailsLink}"> - <a href="${detailsLink}">More details </a></c:if></b>
+					<div class='vertical-block align-contents-middle'>
+						<div class='horizontal-block float-container'><span class="ui-icon ui-icon-alert float-left"></span></div>
+						<div class='horizontal-block'>
+							<strong>
+								<c:out value="${results.errorReason}" default="No error details available" />
+								<c:if test="${not empty detailsLink and (results.compileError or results.validationError)}"> - <a href="${detailsLink}">More details </a></c:if>
+							</strong>
+						</div>
+					</div>
 				</div>
 			</c:when>
 			<c:when test="${not empty results.assessment.allUnitTests and results.waitingToRun}">
@@ -65,13 +72,35 @@
 			<c:when test="${empty results or empty results.submissionsMade or results.submissionsMade == 0}">
 					No attempts on record.
 			</c:when>
-			<c:when test="${results.compileError}">
-				<div class="ui-state-error">
-					<c:forEach var="compError" items="${results.compilationErrors}">
-						<div class="vertical-block">
-							<pre><c:out value="${compError}" escapeXml="true"/></pre>
-						</div>
-					</c:forEach>
+			<c:when test="${results.error}">
+				<div class="ui-state-error ui-corner-all">
+					<div class='vertical-block align-contents-middle'>
+						<div class='horizontal-block float-container'><span class="ui-icon ui-icon-alert float-left"></span></div>
+						<div class='horizontal-block'><strong><c:out value="${results.errorReason}" default="No error details available" /></strong></div>
+					</div>
+					<c:choose>
+						<c:when test="${results.validationError}">
+							<div class='vertical-block'>
+								<c:forEach var="errorList" items="${results.validationErrors}">
+									<c:if test="${not empty errorList.key}">
+										<p><strong><c:out value="${errorList.key}" /></strong>
+									</c:if>
+									<ul>
+										<c:forEach var="error" items="${errorList.value}">
+											<li><c:out value="${error}" />
+										</c:forEach>
+									</ul>
+								</c:forEach>
+							</div>
+						</c:when>
+						<c:when test="${results.compileError}">
+							<c:forEach var="compError" items="${results.compilationErrors}">
+								<div class="vertical-block">
+									<pre><c:out value="${compError}" escapeXml="true"/></pre>
+								</div>
+							</c:forEach>
+						</c:when>
+					</c:choose>
 				</div>
 			</c:when>
 			<c:when test="${not empty results.assessment.allUnitTests and results.waitingToRun}">

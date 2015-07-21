@@ -597,7 +597,7 @@ public class ExecutionManager {
 					currentResult.setFilesCompiled(runner.extractFilesCompiled(results));
 					if(!results.isSuccess("build")) {
 						currentResult.setBuildError(true);
-						currentResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
+						currentResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testSandboxLoc.getAbsolutePath()), ""));
 					}
 					
 					currentResult.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
@@ -624,6 +624,7 @@ public class ExecutionManager {
 		
 		scheduler.delete(job);
 	}
+	
 	private void finishTesting(UnitTest test, AssessmentJob job, String errorMessage) {
 		UnitTestResult currentResult = null;
 		for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
@@ -644,8 +645,7 @@ public class ExecutionManager {
 		}
 		
 		currentResult.setTest(test);
-		currentResult.setBuildError(true);
-		currentResult.setRuntimeOutput(errorMessage);
+		currentResult.addValidationError(errorMessage);
 		
 		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
 	}

@@ -35,9 +35,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -254,12 +258,25 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	/**
+	 * Check if there is any error in any of the unit test results
+	 * @return if any of the unit test results have errors
+	 */
+	public boolean isError() {
+		for(UnitTestResult result : unitTests){
+			if(result.isError()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Check if there is a compile error in any of the unit test results
 	 * @return if any of the unit test results have compilation errors
 	 */
 	public boolean isCompileError() {
 		for(UnitTestResult result : unitTests){
-			if(result.getCompileErrors()!= null && !result.getCompileErrors().isEmpty()){
+			if(result.isCompileError()){
 				return true;
 			}
 		}
@@ -297,7 +314,51 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		}
 		return uniqueErrors;
 	}
+	
+	/**
+	 * Check if there is a validation error in any of the unit test results
+	 * @return if any of the unit test results have validation errors
+	 */
+	public boolean isValidationError() {
+		for(UnitTestResult result : unitTests){
+			if(result.isValidationError()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Map<String, Set<String>> getValidationErrors() {
+		Map<String, Set<String>> errors = new HashMap<String, Set<String>>();
+		for(UnitTestResult result : unitTests){
+			for(ResultFeedback error : result.getValidationErrors()) {
+				Set<String> categoryErrors = errors.get(error.getCategory());
+				if(categoryErrors == null) {
+					categoryErrors = new TreeSet<String>();
+					errors.put(error.getCategory(), categoryErrors);
+				}
+				categoryErrors.add(error.getFeedback());
+			}
+		}
+		return errors;
+	}
 
+	/**
+	 * Get the reason that the test has errors.
+	 * 
+	 * @return the first error reason encountered when looking through the unit
+	 *         test results; null if none are found
+	 */
+	public String getErrorReason() {
+		for(UnitTestResult result : unitTests){
+			String reason = result.getErrorReason();
+			if(reason != null) {
+				return reason;
+			}
+		}
+		return null;
+	}
+	
 	public double getMarks(){
 		return getPercentage() * assessment.getMarks();
 	}

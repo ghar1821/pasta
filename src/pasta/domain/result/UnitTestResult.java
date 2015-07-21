@@ -30,11 +30,17 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.result;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -57,7 +63,6 @@ import pasta.domain.template.UnitTest;
  * @author Alex Radu
  * @version 2.0
  * @since 2012-11-13
- * 
  */
 @Entity
 @Table (name = "unit_test_results")
@@ -78,20 +83,28 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Column(name="group_work")
 	private boolean groupWork;
 	
-	@Column (name = "files_compiled", length = 64000)
-	@Size (max = 64000)
-	private String filesCompiled;
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn (name = "test_case_id")
+	@OrderBy ("testName")
+	@LazyCollection (LazyCollectionOption.FALSE)
+	private List<UnitTestCaseResult> testCases;
+	
+	@Column (name = "internal_error")
+	private boolean internalError;
+	
+	@Column (name = "build_error")
+	private boolean buildError;
+	
+	@ElementCollection
+	@CollectionTable(name = "unit_test_results_validation_errors", 
+		joinColumns = @JoinColumn(name = "unit_test_result_id"))
+	@Column(name = "error")
+	@LazyCollection (LazyCollectionOption.FALSE)
+	private Set<ResultFeedback> validationErrors = new TreeSet<ResultFeedback>();
 	
 	@Column (name = "compile_errors", length = 64000)
 	@Size (max = 64000)
 	private String compileErrors;
-	
-	@Column (name = "runtime_output", length = 128000)
-	@Size (max = 128000)
-	private String runtimeOutput;
-	
-	@Column (name = "build_error")
-	private boolean buildError;
 	
 	@Column (name = "runtime_error")
 	private boolean runtimeError;
@@ -99,16 +112,24 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Column (name = "clean_error")
 	private boolean cleanError;
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn (name = "test_case_id")
-	@OrderBy ("testName")
-	@LazyCollection (LazyCollectionOption.FALSE)
-	private List<UnitTestCaseResult> testCases;
+	@Column (name = "files_compiled", length = 64000)
+	@Size (max = 64000)
+	private String filesCompiled;
+	
+	@Column (name = "runtime_output", length = 128000)
+	@Size (max = 128000)
+	private String runtimeOutput;
+
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public UnitTest getTest() {
 		return test;
 	}
-
 	public void setTest(UnitTest test) {
 		this.test = test;
 	}
@@ -116,7 +137,6 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	public boolean isSecret() {
 		return secret;
 	}
-
 	public void setSecret(boolean secret) {
 		this.secret = secret;
 	}
@@ -124,9 +144,64 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	public boolean isGroupWork() {
 		return groupWork;
 	}
-
 	public void setGroupWork(boolean groupWork) {
 		this.groupWork = groupWork;
+	}
+
+	public List<UnitTestCaseResult> getTestCases() {
+		return testCases;
+	}
+	public void setTestCases(List<UnitTestCaseResult> testCases) {
+		this.testCases = testCases;
+	}
+
+	public boolean isInternalError() {
+		return internalError;
+	}
+	public void setInternalError(boolean internalError) {
+		this.internalError = internalError;
+	}
+
+	public boolean isBuildError() {
+		return buildError;
+	}
+	public void setBuildError(boolean buildError) {
+		this.buildError = buildError;
+	}
+
+	public Set<ResultFeedback> getValidationErrors() {
+		return validationErrors;
+	}
+	public Map<String, Set<String>> getValidationErrorsMap() {
+		Map<String, Set<String>> errors = new HashMap<String, Set<String>>();
+		for(ResultFeedback error : getValidationErrors()) {
+			Set<String> categoryErrors = errors.get(error.getCategory());
+			if(categoryErrors == null) {
+				categoryErrors = new TreeSet<String>();
+				errors.put(error.getCategory(), categoryErrors);
+			}
+			categoryErrors.add(error.getFeedback());
+		}
+		return errors;
+	}
+	public boolean addValidationError(ResultFeedback error) {
+		return validationErrors.add(error);
+	}
+	public boolean addValidationError(String category, String feedback) {
+		return addValidationError(new ResultFeedback(category, feedback));
+	}
+	public boolean addValidationError(String feedback) {
+		return addValidationError(new ResultFeedback("", feedback));
+	}
+	public void clearValidationErrors() {
+		this.validationErrors.clear();
+	}
+	public boolean addAllValidationErrors(Collection<ResultFeedback> feedback) {
+		return validationErrors.addAll(feedback);
+	}
+	public void setValidationErrors(Set<ResultFeedback> validationErrors) {
+		clearValidationErrors();
+		addAllValidationErrors(validationErrors);
 	}
 
 	public String getCompileErrors() {
@@ -135,30 +210,6 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 
 	public void setCompileErrors(String compileErrors) {
 		this.compileErrors = compileErrors;
-	}
-
-	public String getRuntimeOutput() {
-		return runtimeOutput;
-	}
-
-	public void setRuntimeOutput(String runtimeOutput) {
-		this.runtimeOutput = runtimeOutput;
-	}
-	
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public boolean isBuildError() {
-		return buildError;
-	}
-
-	public void setBuildError(boolean buildError) {
-		this.buildError = buildError;
 	}
 
 	public boolean isRuntimeError() {
@@ -185,13 +236,12 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.filesCompiled = filesCompiled;
 	}
 
-	public List<UnitTestCaseResult> getTestCases() {
-		return testCases;
+	public String getRuntimeOutput() {
+		return runtimeOutput;
 	}
 
-	public void setTestCases(List<UnitTestCaseResult> testCases) {
-		this.testCases = testCases;
-		Collections.sort(this.testCases);
+	public void setRuntimeOutput(String runtimeOutput) {
+		this.runtimeOutput = runtimeOutput;
 	}
 
 	public double getPercentage(){
@@ -206,10 +256,9 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		}
 		return passed/testCases.size(); 	
 	}
-
-	@Override
-	public int compareTo(UnitTestResult target) {
-		return test.getName().compareTo(target.getTest().getName());
+	
+	public boolean isCompileError() {
+		return compileErrors != null && !compileErrors.isEmpty();
 	}
 	
 	public boolean isTestCrashed() {
@@ -218,5 +267,40 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		}
 		return testCases.get(0).getTestName().equals("BeforeFirstTest") &&
 				testCases.get(0).isError();
+	}
+	
+	public boolean isValidationError() {
+		return !validationErrors.isEmpty();
+	}
+	
+	public boolean isError() {
+		return internalError || buildError || 
+				runtimeError || cleanError || 
+				isCompileError() || isTestCrashed() ||
+				isValidationError();
+	}
+	
+	public String getErrorReason() {
+		if(isValidationError()) {
+			return "Submission not valid";
+		}
+		if(isCompileError()) {
+			return "Error compiling submission";
+		}
+		if(buildError) {
+			return "Error building submission";
+		}
+		if(runtimeError) {
+			return "Error running submission";
+		}
+		if(internalError || cleanError || isTestCrashed()) {
+			return "Internal error - contact administrator";
+		}
+		return null;
+	}
+
+	@Override
+	public int compareTo(UnitTestResult target) {
+		return test.getName().compareTo(target.getTest().getName());
 	}
 }

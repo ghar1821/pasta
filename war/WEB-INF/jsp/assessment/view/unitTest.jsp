@@ -180,20 +180,8 @@ either expressed or implied, of the PASTA Project.
 <c:if test="${not empty latestResult}">
 	<h2>Latest Test results
 		<c:choose>
-			<c:when test="${latestResult.testCrashed}">
-				- Unit Test Crashed
-			</c:when>
-			<c:when test="${not empty latestResult.compileErrors}">
-				- Compilation Errors Detected
-			</c:when>
-			<c:when test="${latestResult.buildError}">
-				- Build Error
-			</c:when>
-			<c:when test="${latestResult.runtimeError}">
-				- Runtime Error
-			</c:when>
-			<c:when test="${latestResult.cleanError}">
-				- Cleanup Error
+			<c:when test="${latestResult.error}">
+				- ${latestResult.errorReason}
 			</c:when>
 			<c:otherwise>
 				- Execution Successful
@@ -209,6 +197,23 @@ either expressed or implied, of the PASTA Project.
 			</div>
 		</div>
 	</c:if>
+	<c:if test="${latestResult.validationError}">
+		<div class='vertical-block'>
+			<h3>Validation Errors:</h3>
+			<div class="ui-state-error">
+				<c:forEach var="errorList" items="${latestResult.validationErrorsMap}">
+					<c:if test="${not empty errorList.key}">
+						<p><strong><c:out value="${errorList.key}" /></strong>
+					</c:if>
+					<ul>
+						<c:forEach var="error" items="${errorList.value}">
+							<li><c:out value="${error}" />
+						</c:forEach>
+					</ul>
+				</c:forEach>
+			</div>
+		</div>
+	</c:if>
 	<c:if test="${not empty latestResult.compileErrors}">
 		<div class='vertical-block'>
 			<h3>Compile Errors:</h3>
@@ -217,27 +222,29 @@ either expressed or implied, of the PASTA Project.
 			</div>
 		</div>
 	</c:if>
-	<c:choose>
-		<c:when test="${latestResult.testCrashed or (empty latestResult.compileErrors and latestResult.buildError) or latestResult.runtimeError or latestResult.cleanError}">
-			<div class='vertical-block'>
-				<h3>Full Output:</h3>
-				<div class="ui-state-error">
-					<pre>${latestResult.runtimeOutput}</pre>
+	<c:if test='${not empty latestResult.runtimeOutput}'>
+		<c:choose>
+			<c:when test="${latestResult.error}">
+				<div class='vertical-block'>
+					<h3>Full Output:</h3>
+					<div class="ui-state-error">
+						<pre>${latestResult.runtimeOutput}</pre>
+					</div>
 				</div>
-			</div>
-		</c:when>
-		<c:otherwise>
-			<div class='vertical-block'>
-				<button id="showFullOutput">Show full output</button>
-			</div>
-			<div id='fullOutputPopup' class='popup'>
-				<h3>Full Output:</h3>
-				<div class="ui-state-highlight largeOutputBox">
-					<pre>${latestResult.runtimeOutput}</pre>
+			</c:when>
+			<c:otherwise>
+				<div class='vertical-block'>
+					<button id="showFullOutput">Show full output</button>
 				</div>
-			</div>
-		</c:otherwise>
-	</c:choose>
+				<div id='fullOutputPopup' class='popup'>
+					<h3>Full Output:</h3>
+					<div class="ui-state-highlight largeOutputBox">
+						<pre>${latestResult.runtimeOutput}</pre>
+					</div>
+				</div>
+			</c:otherwise>
+		</c:choose>
+	</c:if>
 	<c:if test="${not empty latestResult.testCases}">
 		<div class='vertical-block'>
 			<h3>Test Results</h3>
@@ -247,7 +254,7 @@ either expressed or implied, of the PASTA Project.
 				</c:forEach>
 			</div>
 			<div class='vertical-block' style='clear:both;'>
-				<button id="acceptUnitTest">Working as intended</button>
+				<button id="acceptUnitTest">Mark as working and tested</button>
 			</div>
 			<div class='vertical-block' style='overflow:hidden;'>
 				<table class="pastaTable">

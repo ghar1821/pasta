@@ -343,7 +343,7 @@ public class UnitTestManager {
 		utResults.setFilesCompiled(runner.extractFilesCompiled(results));
 		if(!results.isSuccess("build")) {
 			utResults.setBuildError(true);
-			utResults.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testLoc.getAbsolutePath()), ""));
+			utResults.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
 		}
 		
 		utResults.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
@@ -363,8 +363,7 @@ public class UnitTestManager {
 	}
 	private void finishTesting(UnitTest test, String errorMessage) {
 		UnitTestResult results = new UnitTestResult();
-		results.setBuildError(true);
-		results.setRuntimeOutput(errorMessage);
+		results.addValidationError(errorMessage);
 		test.setTestResult(results);
 		ProjectProperties.getInstance().getResultDAO().save(results);
 		ProjectProperties.getInstance().getUnitTestDAO().update(test);
