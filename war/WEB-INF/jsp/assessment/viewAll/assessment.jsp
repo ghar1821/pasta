@@ -95,10 +95,6 @@ ${fn:length(assessment.competitions)} Competitions <br />
 				</div>
 				<div style="float: left">
 					<button style="float: left; text-align: center;"
-						onclick="location.href='./stats/${assessment.id}/'">Statistics</button>
-				</div>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
 						onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
 				</div>
 				<div style="float: left">
