@@ -578,7 +578,10 @@ public class SubmissionController {
 	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadMarks/")
-	public ModelAndView viewExcel(HttpServletRequest request, HttpServletResponse response) {
+	public ModelAndView viewExcel(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="myClasses", required=false) Boolean useMyClasses,
+			@RequestParam(value="tutorial", required=false) String tutorial,
+			@RequestParam(value="stream", required=false) String stream) {
 		PASTAUser user = getUser();
 		ModelAndView model = new ModelAndView();
 
@@ -593,8 +596,19 @@ public class SubmissionController {
 		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
-		data.put("userList", userManager.getUserList());
-		data.put("latestResults", resultManager.getLatestResults(userManager.getUserList()));
+		
+		Collection<PASTAUser> userList;
+		if(useMyClasses != null) {
+			userList = userManager.getTutoredStudents(user);
+		} else if(stream != null) {
+			userList = userManager.getUserListByStream(stream);
+		} else if(tutorial != null) {
+			userList = userManager.getUserListByTutorial(tutorial);
+		} else {
+			userList = userManager.getUserList();
+		}
+		data.put("userList", userList);
+		data.put("latestResults", resultManager.getLatestResultsIncludingGroup(userList));
 
 		return new ModelAndView(new ExcelMarkView(), data);
 	}
@@ -617,7 +631,10 @@ public class SubmissionController {
 	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadAutoMarks/")
-	public ModelAndView viewAutoExcel(HttpServletRequest request, HttpServletResponse response) {
+	public ModelAndView viewAutoExcel(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="myClasses", required=false) Boolean useMyClasses,
+			@RequestParam(value="tutorial", required=false) String tutorial,
+			@RequestParam(value="stream", required=false) String stream) {
 		PASTAUser user = getUser();
 		ModelAndView model = new ModelAndView();
 
@@ -632,8 +649,20 @@ public class SubmissionController {
 		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
-		data.put("userList", userManager.getUserList());
-		data.put("latestResults", resultManager.getLatestResults(userManager.getUserList()));
+		
+		
+		Collection<PASTAUser> userList;
+		if(useMyClasses != null) {
+			userList = userManager.getTutoredStudents(user);
+		} else if(stream != null) {
+			userList = userManager.getUserListByStream(stream);
+		} else if(tutorial != null) {
+			userList = userManager.getUserListByTutorial(tutorial);
+		} else {
+			userList = userManager.getUserList();
+		}
+		data.put("userList", userList);
+		data.put("latestResults", resultManager.getLatestResultsIncludingGroup(userList));
 
 		return new ModelAndView(new ExcelAutoMarkView(), data);
 	}
@@ -1810,7 +1839,7 @@ public class SubmissionController {
 			// stream
 			userData += "      \"stream\": \"" + user.getStream() + "\",\r\n";
 			// class
-			userData += "      \"class\": \"" + user.getTutorial() + "\"";
+			userData += "      \"class\": \"" + user.getFullTutorial() + "\"";
 					
 			if(allAssessments.length > 0) {
 				userData += ",";
@@ -1899,6 +1928,7 @@ public class SubmissionController {
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
+		model.addAttribute("pathBack", "..");
 
 		return "user/viewAll";
 	}
@@ -1946,8 +1976,10 @@ public class SubmissionController {
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
+		model.addAttribute("pathBack", "../..");
+		model.addAttribute("tutorial", className);
 
-		return "user/viewSome";
+		return "user/viewAll";
 	}
 
 	/**
@@ -1993,8 +2025,10 @@ public class SubmissionController {
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
+		model.addAttribute("pathBack", "../..");
+		model.addAttribute("stream", streamName);
 
-		return "user/viewSome";
+		return "user/viewAll";
 	}
 
 	/**
@@ -2040,6 +2074,8 @@ public class SubmissionController {
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
+		model.addAttribute("pathBack", "..");
+		model.addAttribute("myClasses", true);
 
 		return "user/viewAll";
 	}

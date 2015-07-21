@@ -32,7 +32,6 @@ package pasta.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +41,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.web.servlet.view.document.AbstractExcelView;
 
-import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 
@@ -68,7 +67,7 @@ public class ExcelAutoMarkView extends AbstractExcelView{
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		// get data
-		Map<String, Map<String, AssessmentResult>> resultList = (Map<String, Map<String, AssessmentResult>>) map.get("latestResults");
+		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> resultList = (Map<PASTAUser, Map<Long, CombinedAssessmentResult>>) map.get("latestResults");
 		ArrayList<Assessment> assList = new ArrayList<Assessment>((Collection<Assessment>) map.get("assessmentList"));
 		Collection<PASTAUser> userList = (Collection<PASTAUser>)map.get("userList");
 		
@@ -97,11 +96,11 @@ public class ExcelAutoMarkView extends AbstractExcelView{
 				currRow.createCell(2).setCellValue(student.getTutorial());
 				double total = 0;
 				for(int j=0; j<assList.size(); ++j){
-					if(resultList.get(student.getUsername()) == null || resultList.get(student.getUsername()).get(assList.get(j).getId()) == null){
+					if(resultList.get(student) == null || resultList.get(student).get(assList.get(j).getId()) == null){
 						currRow.createCell(j+3).setCellValue("N/A");
 					}
 					else{
-						double mark = resultList.get(student.getUsername()).get(assList.get(j).getId()).getAutoMarks();
+						double mark = resultList.get(student).get(assList.get(j).getId()).getAutoMarks();
 						currRow.createCell(j+3).setCellValue(mark);
 						total += mark;
 					}
@@ -110,6 +109,8 @@ public class ExcelAutoMarkView extends AbstractExcelView{
 				++rowNum;
 			}
 		}
+		
+		response.setHeader( "Content-Disposition", "filename=\"pasta-auto-marks.xls\"" );
 	}
 
 }

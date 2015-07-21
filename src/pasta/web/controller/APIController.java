@@ -51,7 +51,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import pasta.domain.form.LoginForm;
-import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
@@ -122,10 +122,10 @@ public class APIController {
 				out.println();
 
 				// username, assessment name, result
-				Map<PASTAUser, Map<Long, AssessmentResult>> latestResults = resultManager
-						.getLatestResults(userManager.getUserList());
+				Map<PASTAUser, Map<Long, CombinedAssessmentResult>> latestResults = resultManager
+						.getLatestResultsIncludingGroup(userManager.getUserList());
 
-				for (Entry<PASTAUser, Map<Long, AssessmentResult>> entry : latestResults
+				for (Entry<PASTAUser, Map<Long, CombinedAssessmentResult>> entry : latestResults
 						.entrySet()) {
 					PASTAUser user = entry.getKey();
 					if (user != null) {

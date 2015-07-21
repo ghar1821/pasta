@@ -98,6 +98,23 @@ public class ResultManager {
 	}
 	
 	/**
+	 * Get the latest result for the collection of users, including their marks from the group.
+	 * 
+	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
+	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.CombinedAssessmentResult} assessmentResults) 
+	 */
+	public Map<PASTAUser, Map<Long, CombinedAssessmentResult>> getLatestResultsIncludingGroup(Collection<PASTAUser> allUsers){
+		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> results = new TreeMap<>();
+		
+		for(PASTAUser user: allUsers){
+			Map<Long, CombinedAssessmentResult> currResultMap = getLatestResultsIncludingGroups(user);
+			results.put(user, currResultMap);
+		}
+		
+		return results;
+	}
+	
+	/**
 	 * Get the latest result for a user.
 	 * 
 	 * @param user the user

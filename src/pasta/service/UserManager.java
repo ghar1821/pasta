@@ -146,12 +146,7 @@ public class UserManager {
 		}
 		String[] classes = user.getTutorClasses();
 		for(String tutorial : classes) {
-			String[] parts = tutorial.split("\\.", 2);
-			if(parts.length == 1) {
-				students.addAll(getUserListByTutorial(tutorial));
-			} else {
-				students.addAll(getUserListByTutorialAndStream(parts[0], parts[1]));
-			}
+			students.addAll(getUserListByTutorial(tutorial));
 		}
 		return students;
 	}
@@ -175,7 +170,12 @@ public class UserManager {
 	 * @return the collection of users that belong to a tutorial
 	 */
 	public Collection<PASTAUser> getUserListByTutorial(String className) {
-		return getUserListByTutorialAndStream(null, className);
+		String[] parts = className.split("\\.", 2);
+		if(parts.length == 1) {
+			return getUserListByTutorialAndStream(null, className);
+		} else {
+			return getUserListByTutorialAndStream(parts[0], parts[1]);
+		}
 	}
 	
 	/**

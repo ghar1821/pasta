@@ -50,36 +50,49 @@ either expressed or implied, of the PASTA Project.
 	var xb = parseFloat(clrBad.split(",")[2]);
 </script>
 
-<div style="float: left; width:100%">
-	<button style="float: left; text-align: center;"
-		onclick="window.location = '../downloadMarks/'">Download Marks</button>
+<c:if test="${pathBack == null}">
+	<c:set var="pathBack" value=".." />
+</c:if>
+<c:if test="${not empty stream}">
+	<c:set var="streamQuery" value="stream=${stream}&" />
+</c:if>
+<c:if test="${not empty tutorial}">
+	<c:set var="tutorialQuery" value="tutorial=${tutorial}&" />
+</c:if>
+<c:if test="${not empty myClasses}">
+	<c:set var="myClassesQuery" value="myClasses=true&" />
+</c:if>
+
+<div class='vertical-block'>
+	<div class='horizontal-block'>
+		<button onclick="window.location = '${pathBack}/downloadMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Marks</button>
+	</div>
+	<div class='horizontal-block'>
+		<button onclick="window.location = '${pathBack}/downloadAutoMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Auto Marks ONLY</button>
+	</div>
 </div>
-<div style="float: left; width:100%">
-	<button style="float: left; text-align: center;"
-		onclick="window.location = '../downloadAutoMarks/'">Download Auto Marks ONLY</button>
+<div class='vertical-block'>
+	<table id="gradeCentreTable" class="display compact">
+		<thead>
+			<tr>
+				<th>Username</th>
+				<th>Stream</th>
+				<th>Class</th>
+				<c:forEach var="assessment" items="${assessmentList}">
+					<th>${assessment.name}</th>
+				</c:forEach>
+			</tr>
+		</thead>
+	</table>
 </div>
 
 <style>
 	th, td { white-space: nowrap; }
 	div.dataTables_wrapper {
-		width: 800px;
+		width: 100%;
 		margin: 0 auto;
 	}
 </style>
-
-<table id="gradeCentreTable" class="display">
-	<thead>
-		<tr>
-			<th>Username</th>
-			<th>Stream</th>
-			<th>Class</th>
-			<c:forEach var="assessment" items="${assessmentList}">
-				<th>${assessment.name}</th>
-			</c:forEach>
-		</tr>
-	</thead>
-</table>
-
 <script>
 	$(document).ready(function() 
 	    { 			
@@ -101,19 +114,19 @@ either expressed or implied, of the PASTA Project.
 					  "mRender": function ( data, type, full ) {
 						// assessment
 						if (data.mark >= 0) {
-							return '<span style="display:none">'+data.percentage+'</span><a href="../student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
+							return '<span style="display:none">'+data.percentage+'</span><a href="${pathBack}/student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
 						}
 						// name
 						if(data == full.name){
-							return '<a href="../student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="${pathBack}/student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
 						}
 						// stream
 						if(data == full.stream){
-							return '<a href="../stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="${pathBack}/stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
 						}
 						// class
 						if(data == full.class){
-							return '<a href="../tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+							return '<a href="${pathBack}/tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.substring(data.indexOf('.')+1)+'</a>';
 						}
 						return data;
 					  },
