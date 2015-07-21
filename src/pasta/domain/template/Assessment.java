@@ -343,6 +343,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.groupLockDate = groupLockDate;
 	}
 	public boolean isGroupsLocked() {
+		if(isClosed()) {
+			return true;
+		}
 		if(groupLockDate == null) {
 			return false;
 		}
