@@ -35,4 +35,9 @@
 		<function-class>pasta.tag.ELPASTAFunctions</function-class>
 		<function-signature>boolean isPlainText(java.lang.String)</function-signature>
 	</function>
+	<function>
+		<name>contains</name>
+		<function-class>pasta.tag.ELPASTAFunctions</function-class>
+		<function-signature>boolean contains(java.util.Collection, java.lang.Object)</function-signature>
+	</function>
 </taglib> 

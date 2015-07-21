@@ -1,5 +1,7 @@
 package pasta.tag;
 
+import java.util.Collection;
+
 import pasta.util.PASTAUtil;
 
 /**
@@ -14,5 +16,12 @@ public class ELPASTAFunctions {
 	
 	public static boolean isPlainText(String fileLocation) {
 		return PASTAUtil.canDisplayFile(fileLocation);
+	}
+	
+	public static boolean contains(Collection<?> collection, Object item) {
+		if(collection == null) {
+			return false;
+		}
+		return collection.contains(item);
 	}
 }
