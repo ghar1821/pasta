@@ -32,6 +32,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
 
@@ -178,7 +179,7 @@ either expressed or implied, of the PASTA Project.
 						<form:input type="hidden" path="selectedUnitTests[${index.index}].id" value="${module.id}"/>
 						<form:input type="hidden" path="selectedUnitTests[${index.index}].test.id" value="${module.test.id}"/>
 						<td>
-							<input class='custom-check select-check' id="selectedUnitTests${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<input class='custom-check select-check' id="selectedUnitTests${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
 							<label for="selectedUnitTests${index.index}.selected"></label>
 						</td>
 						<td>
@@ -217,7 +218,7 @@ either expressed or implied, of the PASTA Project.
 						<form:input type="hidden" path="selectedHandMarking[${index.index}].id" value="${module.id}"/>
 						<form:input type="hidden" path="selectedHandMarking[${index.index}].handMarking.id" value="${module.handMarking.id}"/>
 						<td>
-							<input class='custom-check select-check' id="selectedHandMarking${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<input class='custom-check select-check' id="selectedHandMarking${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
 							<label for="selectedHandMarking${index.index}.selected"></label>
 						</td>
 						<td>
@@ -249,7 +250,7 @@ either expressed or implied, of the PASTA Project.
 						<form:input type="hidden" path="selectedCompetitions[${index.index}].id" value="${module.id}"/>
 						<form:input type="hidden" path="selectedCompetitions[${index.index}].competition.id" value="${module.competition.id}"/>
 						<td>
-							<input class='custom-check select-check' id="selectedCompetitions${index.index}.selected" type='checkbox' <c:if test="${module.id != 0}">checked="checked"</c:if> />
+							<input class='custom-check select-check' id="selectedCompetitions${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
 							<label for="selectedCompetitions${index.index}.selected"></label>
 						</td>
 						<td>
