@@ -1879,12 +1879,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewAll2</li>
+	 * <li>user/viewAll</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll2"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll"
 	 */
 	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre2(Model model) {
@@ -1900,7 +1900,7 @@ public class SubmissionController {
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
-		return "user/viewAll2";
+		return "user/viewAll";
 	}
 
 	/**
@@ -2021,12 +2021,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewAll2</li>
+	 * <li>user/viewAll</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll2"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll"
 	 */
 	@RequestMapping(value = "myTutorials/")
 	public String viewMyTutorials(Model model) {
@@ -2041,7 +2041,7 @@ public class SubmissionController {
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
 
-		return "user/viewAll2";
+		return "user/viewAll";
 	}
 
 }

@@ -62,7 +62,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -163,12 +162,6 @@ public class AssessmentController {
 	public UpdateAssessmentForm loadUpdateForm(@PathVariable("assessmentId") long assessmentId) {
 		return new UpdateAssessmentForm(assessmentManager.getAssessment(assessmentId));
 	}
-	
-	@ModelAttribute("assessmentReleaseForm")
-	public AssessmentReleaseForm loadAssessmentReleaseForm(@PathVariable("assessmentId") long assessmentId) {
-		return new AssessmentReleaseForm(assessmentManager.getAssessment(assessmentId));
-	}
-
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Helper Methods //
