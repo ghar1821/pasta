@@ -1916,7 +1916,7 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "gradeCentre/")
-	public String viewGradeCentre2(Model model) {
+	public String viewGradeCentre(Model model) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
