@@ -38,6 +38,18 @@ either expressed or implied, of the PASTA Project.
 <div style="display:none" class="gradeCentreMarkBad"></div>
 <div style="display:none" class="gradeCentreMarkNoSub"></div>
 
+<script>
+	var clr = $("div.gradeCentreMarkGood").css("backgroundColor").replace("rgb(","").replace(")","");
+	var yr = parseFloat(clr.split(",")[0]);
+	var yg = parseFloat(clr.split(",")[1]);
+	var yb = parseFloat(clr.split(",")[2]);
+		
+	var clrBad = $("div.gradeCentreMarkBad").css("backgroundColor").replace("rgb(","").replace(")","");
+	var xr = parseFloat(clrBad.split(",")[0]);
+	var xg = parseFloat(clrBad.split(",")[1]);
+	var xb = parseFloat(clrBad.split(",")[2]);
+</script>
+
 <div style="float: left; width:100%">
 	<button style="float: left; text-align: center;"
 		onclick="window.location = '../downloadMarks/'">Download Marks</button>
@@ -55,7 +67,7 @@ either expressed or implied, of the PASTA Project.
 	}
 </style>
 
-<table id="gradeCentreTable"  class="display" cellspacing="0" width="100%">
+<table id="gradeCentreTable" class="display">
 	<thead>
 		<tr>
 			<th>Username</th>
@@ -66,25 +78,6 @@ either expressed or implied, of the PASTA Project.
 			</c:forEach>
 		</tr>
 	</thead>
-	<tbody>
-		<c:forEach var="user" items="${userList}">
-			<c:if test="${not user.tutor}">
-				<tr>
-					<td><a href="../student/${user.username}/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.username}</a></td>
-					<td><a href="../stream/${user.stream}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.stream}</a></td>
-					<td><a href="../tutorial/${user.tutorial}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">${user.tutorial}</a></td>
-					<c:forEach var="assessment" items="${assessmentList}">
-						<td class="gradeCentreMark" >
-							<a href="../student/${user.username}/info/${assessment.id}/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">
-							<span style="display:none">${latestResults[user][assessment.id].percentage}</span>
-							<fmt:formatNumber type="number" maxIntegerDigits="3" value="${latestResults[user][assessment.id].marks}" />
-							</a>
-						</td>
-					</c:forEach>
-				</tr>
-			</c:if>
-		</c:forEach>
-	</tbody>
 </table>
 
 <script>
@@ -92,38 +85,59 @@ either expressed or implied, of the PASTA Project.
 	    { 			
 			var oTable = $('#gradeCentreTable').dataTable({
 				"scrollX": true,
-				"iDisplayLength": 25
+				"iDisplayLength": 25,
+				"ajax": "DATA/",
+				"deferRender": true,
+		        "columns": [
+					{ "mData": "name" },
+					{ "mData": "stream" },
+					{ "mData": "class" },
+					<c:forEach var="assessment" items="${assessmentList}" varStatus="assessmentStatus">
+					{ "mData": {_: "${assessment.id}", sort: "${assessment.id}.percentage"}}<c:if test="${assessmentStatus.index < (fn:length(assessmentList)-1)}">,</c:if>
+					</c:forEach>
+		         ],
+				 "aoColumnDefs": [ {
+					  "aTargets": ["_all"],
+					  "mRender": function ( data, type, full ) {
+						// assessment
+						if (data.mark >= 0) {
+							return '<span style="display:none">'+data.percentage+'</span><a href="../student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
+						}
+						// name
+						if(data == full.name){
+							return '<a href="../student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+						}
+						// stream
+						if(data == full.stream){
+							return '<a href="../stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+						}
+						// class
+						if(data == full.class){
+							return '<a href="../tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
+						}
+						return data;
+					  },
+					  "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+						if(iCol > 2){
+							if ( nTd.getElementsByTagName("span")[0].innerHTML == "" ) {
+							  $(nTd).css('background-color', $("div.gradeCentreMarkNoSub").css("backgroundColor"));
+							}
+							else{
+								var pos = parseFloat(nTd.getElementsByTagName("span")[0].innerHTML);
+								
+								n = 100; // number of color groups
+								
+								red = parseInt((xr + (( pos * (yr - xr)))).toFixed(0));
+								green = parseInt((xg + (( pos * (yg - xg)))).toFixed(0));
+								blue = parseInt((xb + (( pos * (yb - xb)))).toFixed(0));
+
+								$(nTd).css('background-color', 'rgb('+red+','+green+','+blue+')');
+							}
+						}
+					  }
+					} ]
 			} );
 	    } 
 	); 
 
-	var clr = $("div.gradeCentreMarkGood").css("backgroundColor").replace("rgb(","").replace(")","");
-	var yr = parseFloat(clr.split(",")[0]);
-	var yg = parseFloat(clr.split(",")[1]);
-	var yb = parseFloat(clr.split(",")[2]);
-		
-	var clrBad = $("div.gradeCentreMarkBad").css("backgroundColor").replace("rgb(","").replace(")","");
-	var xr = parseFloat(clrBad.split(",")[0]);
-	var xg = parseFloat(clrBad.split(",")[1]);
-	var xb = parseFloat(clrBad.split(",")[2]);
-	
-	$("td.gradeCentreMark").each(function(){
-	
-		// change them according to the percentage
-		if(this.getElementsByTagName("span")[0].innerHTML == ""){
-			$(this).css({backgroundColor:$("div.gradeCentreMarkNoSub").css("backgroundColor")});
-		}
-		else{
-			var pos = parseFloat(this.getElementsByTagName("span")[0].innerHTML);
-			
-			n = 100; // number of color groups
-			
-			red = parseInt((xr + (( pos * (yr - xr)))).toFixed(0));
-			green = parseInt((xg + (( pos * (yg - xg)))).toFixed(0));
-			blue = parseInt((xb + (( pos * (yb - xb)))).toFixed(0));
-
-			$(this).css({backgroundColor:'rgb('+red+','+green+','+blue+')'});
-		}
-			
-	});
 </script>
