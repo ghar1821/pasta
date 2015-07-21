@@ -108,7 +108,7 @@ either expressed or implied, of the PASTA Project.
 						</c:if>
 						<c:if test="${not empty result.assessment.handMarking}">
 							<c:set var="markButtonText" value="Mark attempt" />
-							<c:if test="${result.finishedHandMarking}">
+							<c:if test="${not empty result.handMarkingResults and result.finishedHandMarking}">
 								<c:set var="markButtonText" value="Edit attempt marks" />
 							</c:if>
 							<button onclick="window.location.href='${pathPrefix}/mark/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
@@ -134,14 +134,16 @@ either expressed or implied, of the PASTA Project.
 			<c:if test="${unikey.tutor}">
 				<div class='vertical-block'>
 					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-					<jsp:include page="../recursive/fileWriterRoot.jsp"/>
+					<jsp:include page="../recursive/fileWriterRoot.jsp">
+						<jsp:param name="owner" value="${result.user.group ? result.user.name : result.user.username}"/>
+					</jsp:include>
 				</div>
 			</c:if>
 			
 			<%--Summary of results--%>
 			<h5 class='compact'>Summary</h5>
 			<c:set var="closed" value="${((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}" />
-			<tag:assessmentResult closedAssessment="${closed}" user="${user}" results="${result}" summary="true" />
+			<tag:unitTestResult closedAssessment="${closed}" user="${user}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>
 			<div id="${result.id}" class='resultDetails vertical-block'>
@@ -161,9 +163,13 @@ either expressed or implied, of the PASTA Project.
 					</div>
 				</c:if>
 				
-				<tag:assessmentResult closedAssessment="${closed}" 
+				<tag:unitTestResult closedAssessment="${closed}" 
 					user="${user}" results="${result}" />
-
+				
+				<tag:handMarkingResult user="${user}" results="${result}" 
+					marking="false" headingLevel="h5"/>
+				
+				<%--
 				<c:set var="relevantHandMarking" value="${groupResult ? result.assessment.groupHandMarking : result.assessment.individualHandMarking}" />
 				<c:if test="${not empty relevantHandMarking and result.finishedHandMarking}">
 					<div class='vertical-block'>
@@ -190,7 +196,7 @@ either expressed or implied, of the PASTA Project.
 													<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
 												</th>
 												<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-													<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>><%-- To be filled with JavaScript --%></td>
+													<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>></td>
 												</c:forEach>
 											</tr>
 										</c:forEach>
@@ -200,6 +206,7 @@ either expressed or implied, of the PASTA Project.
 						</c:forEach>
 					</div>
 				</c:if>
+				 --%>
 				<div class='vertical-block'>
 					<h5 class='compact'>Comments</h5>
 					<div id="comments${result.id}" class='vertical-block'>
@@ -229,6 +236,7 @@ either expressed or implied, of the PASTA Project.
 		</div>
 		</c:forEach>
 		<script src='<c:url value="/static/scripts/assessment/userViewAssessment.js"/>'></script>
+		<%--
 		<script>		
 			function fillCells() {
 				var cell;
@@ -252,6 +260,7 @@ either expressed or implied, of the PASTA Project.
 				fillCells()
 			});
 		</script>
+		 --%>
 	</c:when>
 	
 	<c:otherwise>

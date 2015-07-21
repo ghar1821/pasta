@@ -175,7 +175,7 @@ either expressed or implied, of the PASTA Project.
 							</div>
 							
 							<div class='horizontal-block float-left' style='width:90%'>
-								<tag:assessmentResult user="${user}" results="${results[assessment.id]}" 
+								<tag:unitTestResult user="${user}" results="${results[assessment.id]}" 
 									closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
 									detailsLink="../info/${assessment.id}/"/>
 							</div>

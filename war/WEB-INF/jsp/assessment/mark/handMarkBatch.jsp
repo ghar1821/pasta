@@ -65,10 +65,11 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </div>
 
-<h1>${assessmentName} - ${student} -  Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /></h1>
+<c:set var="username" value="${student.group ? student.name : student.username}" />
+<h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username} - Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /></h1>
 
 <jsp:include page="../../recursive/fileWriterRoot.jsp">
-	<jsp:param name="owner" value="${student}"/>
+	<jsp:param name="owner" value="${username}"/>
 </jsp:include>
 
 <style>
@@ -79,84 +80,30 @@ th, td{
 <c:choose>
 	<c:when test="${not empty student}">
 		<form:form commandName="assessmentResult" action="../${nextStudent}/" enctype="multipart/form-data" method="POST">
-			<input type="hidden" name="student" value="${student}"/>
+			<input type="hidden" name="student" value="${student.username}"/>
 			<div class='vertical-block boxCard'>
 				<h3 class='compact'>Automatic Marking Results</h3>
 				<div class='vertical-block'>
 					<h4 class='compact'>Summary</h4>
-					<tag:assessmentResult closedAssessment="false" user="${unikey}" results="${assessmentResult}" summary="true" />
+					<tag:unitTestResult closedAssessment="false" user="${unikey}" results="${assessmentResult}" summary="true" />
 				</div>
 						
 				<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
 					<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
-					<tag:assessmentResult closedAssessment="false" 
+					<tag:unitTestResult closedAssessment="false" 
 						user="${unikey}" results="${assessmentResult}" />
 				</div>
 			</div>
 
 			<div class='vertical-block boxCard'>
-				<h3 class='compact'>Hand Marking Guidelines</h3>
-				<c:if test="${empty handMarkingResultList}">
-					<p>No hand marking templates for <c:out value="${assessmentResult.groupResult ? 'group' : 'individual'}" /> work submissions.
-				</c:if>
-				<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
-					<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
-					<div class='vertical-block' style="width:100%; overflow:auto">
-						<h4 class='compact'>${weightedHandMarking.handMarking.name}</h4>
-						<c:choose>
-							<c:when test="${empty last}">
-								<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
-							</c:when>
-							<c:otherwise>
-								<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
-							</c:otherwise>
-						</c:choose>
-						<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].id" value="${handMarkingResult.id}"/>
-						<form:input type="hidden" path="handMarkingResults[${handMarkingResultStatus.index}].weightedHandMarking.id" value="${weightedHandMarking.id}" />
-						
-						<table id="handMarkingTable${handMarkingResultStatus.index}" style="table-layout:fixed; overflow:auto">
-							<thead>
-								<tr>
-									<th></th> <%-- empty on purpose --%>
-									<c:forEach items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
-										<th style="cursor:pointer" onclick="clickAllInColumn(this.cellIndex, ${handMarkingResultStatus.index})">
-											${weightedHandMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-											${weightedHandMarking.handMarking.columnHeader[columnStatus.index].weight}<br />
-										</th>
-									</c:forEach>
-								</tr>
-							</thead>
-							<tbody>
-								<c:forEach var="row" items="${weightedHandMarking.handMarking.rowHeader}" varStatus="rowStatus">
-									<tr class='handMarkRow'>
-										<th>
-											${weightedHandMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-											${weightedHandMarking.weight * weightedHandMarking.handMarking.rowHeader[rowStatus.index].weight}
-										</th>
-										<c:forEach var="column" items="${weightedHandMarking.handMarking.columnHeader}" varStatus="columnStatus">
-											<td id="cell_${weightedHandMarking.id}_${weightedHandMarking.handMarking.columnHeader[columnStatus.index].id}_${weightedHandMarking.handMarking.rowHeader[rowStatus.index].id}"><%-- To be filled by javascript --%></td>
-										</c:forEach>
-									</tr>
-								</c:forEach>
-							</tbody>
-						</table>
-					</div>
-				</c:forEach>
+				<tag:handMarkingResult user="${unikey}" results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines"/>
 			</div>
 			
 			<div class='vertical-block boxCard'>
 				<form:textarea style="height:200px; width:95%" path="comments" />
 			</div>
 			
-			<c:choose>
-				<c:when test="${empty last}">
-					<input type="submit" value="Save and continue" id="submit" style="margin-top:1em;"/>
-				</c:when>
-				<c:otherwise>
-					<input type="submit" value="Save and exit" id="submit" style="margin-top:1em;"/>
-				</c:otherwise>
-			</c:choose>
-			
+			<input type="submit" class='save_hand_marking' value="Save and continue" id="submit" style="margin-top:1em;"/>
 		</form:form>
 	</c:when>
 	<c:otherwise>
@@ -174,27 +121,7 @@ th, td{
 
 <script src='<c:url value="/static/scripts/assessment/markHandMarking.js"/>'></script>
 <script>
-	function fillCells() {
-		var cell;
-		<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="handMarkingResultStatus">
-			<c:set var="weightedHandMarking" value="${handMarkingResult.weightedHandMarking}" />
-			<c:forEach var="datum" items="${weightedHandMarking.handMarking.data}" varStatus="datumStatus">
-				cell = document.getElementById("cell_${weightedHandMarking.id}_${datum.column.id}_${datum.row.id}");
-				<c:if test="${not empty datum.data or datum.data == \"\"}">
-					fillCell(cell, 
-						<fmt:formatNumber type='number' maxIntegerDigits='3' value='${weightedHandMarking.weight * datum.row.weight * datum.column.weight}' />,
-						"${handMarkingResult.result[datum.row.id] == datum.column.id}",
-						"${handMarkingResultStatus.index}",
-						"${datum.column.id}",
-						"${datum.row.id}",
-						"${datum.data}");
-				</c:if>
-			</c:forEach>
-		</c:forEach>
-		registerEvents();
-	}
-	
 	$(function() {
-		fillCells()
+		$(".save_hand_marking").val('${empty last ? "Save and continue" : "Save and exit"}');
 	});
 </script>

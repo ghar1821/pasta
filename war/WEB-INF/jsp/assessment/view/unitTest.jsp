@@ -60,7 +60,9 @@ either expressed or implied, of the PASTA Project.
 				<tr>
 					<td>Current Code</td>
 					<td>
-						<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp">
+							<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
+						</jsp:include>
 					</td>
 				</tr>
 				<tr>

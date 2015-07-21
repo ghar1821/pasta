@@ -113,6 +113,14 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		this.assessment = assessment;
 	}
 	
+	public double getMaxMark() {
+		double total = assessment.getRawTotalWeight();
+		if(total == 0) {
+			return 0;
+		}
+		return (getWeight() / total) * assessment.getMarks();
+	}
+	
 	@Override
 	public int compareTo(WeightedHandMarking other) {
 		if(other == null) {

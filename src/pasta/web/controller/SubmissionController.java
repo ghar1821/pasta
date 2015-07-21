@@ -819,10 +819,9 @@ public class SubmissionController {
 		model.addAttribute("codeStyle", codeStyle);
 		model.addAttribute("fileEnding", fileEnding.toLowerCase());
 		
-
-		if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))) {
+		if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1)) || PASTAUtil.canDisplayFile(location)) {
 			model.addAttribute("fileContents",
-					PASTAUtil.scrapeFile(location).replace(">", "&gt;").replace("<", "&lt;"));
+					PASTAUtil.scrapeFile(location));
 		}
 		return "assessment/mark/viewFile";
 	}
@@ -1370,7 +1369,7 @@ public class SubmissionController {
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate,
 			@ModelAttribute(value = "assessmentResult") AssessmentResult form, BindingResult result,
-			Model model) {
+			Model model, HttpServletRequest request) {
 
 		PASTAUser user = getUser();
 		if (user == null) {
@@ -1393,7 +1392,7 @@ public class SubmissionController {
 			currResult.setWeightedHandMarking(handMarkingManager.getWeightedHandMarking(currResult
 					.getWeightedHandMarking().getId()));
 		}
-
+		
 		assessResult.setComments(form.getComments());
 		assessResult.setHandMarkingResults(results);
 		resultManager.updateAssessmentResults(assessResult);
@@ -1523,7 +1522,7 @@ public class SubmissionController {
 			allUsers[i] = i < myStudents.length ? myStudents[i] : myStudentGroups[i - myStudents.length];
 		}
 		model.addAttribute("allUsers", allUsers);
-
+		
 		// if submitted
 		if (form != null && viewedUser != null) {
 
@@ -1564,8 +1563,7 @@ public class SubmissionController {
 					&& allUsers[i_studentIndex] != null && hasSubmission[i_studentIndex]) {
 
 				PASTAUser currStudent = allUsers[i_studentIndex];
-
-				model.addAttribute("student", currStudent.isGroup() ? ((PASTAGroup)currStudent).getName() : currStudent.getUsername());
+				model.addAttribute("student", currStudent);
 
 				AssessmentResult result = resultManager.getLatestAssessmentResult(
 						currStudent, assessmentId);

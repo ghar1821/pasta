@@ -16,7 +16,7 @@ function fillCell(cell, weight, index, dataId, column, row, data, error) {
 	dataBox.setAttribute("name", "newData[" + index + "].data");
 	dataBox.setAttribute("id", "newData" + index + ".data");
 	dataBox.setAttribute("style", "height:90%; width:95%");
-	dataBox.appendChild(document.createTextNode(data));
+	$(dataBox).append(data);
 	cell.appendChild(dataBox);
 	
 	var dataIdVal = document.createElement("input");
@@ -147,7 +147,23 @@ function registerEvents() {
 			}
 		}
 	});
+	$("form").on("submit", function() {
+		var $table = $("#handMarkingTable");
+		var $rowHeads = $("tbody tr th", $table);
+		var total = 0;
+		$rowHeads.each(function() {
+			total += parseFloat($(this).find("input[id$='weight']").val());
+		});
+		if(Math.abs(total - 1.0) > 0.0001) {
+			var confirmResult = confirm("As hand marking templates work with weights, your row weights will be scaled to be out of 1.0.\n\nClick 'Cancel' if this is not okay.");
+			if(!confirmResult) {
+				return false;
+			}
+		}
+	});
 }
+
+
 
 function rowIdAt(index) {
 	return document.getElementById("newRowHeader" + index + ".id").value;

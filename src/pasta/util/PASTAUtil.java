@@ -31,11 +31,13 @@ package pasta.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -413,5 +415,35 @@ public class PASTAUtil {
 			} catch (ClassNotFoundException e) { }
 		}
 		return subclasses;
+	}
+
+	public static boolean canDisplayFile(String location) {
+		File file = new File(location);
+		if(!file.exists()) {
+			return false;
+		}
+		BufferedReader in = null;
+		try {
+			long num = 0;
+			long ascii = 0;
+			in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
+			int c;
+			while((c = in.read()) > 0) {
+				if (Character.isWhitespace(c) || (c >= 33 && c <= 126)) {
+					ascii++;
+				}
+				num++;
+			}
+			double ratio = (double)ascii / num;
+			return ratio >= 0.95;
+		} catch (Exception e) {
+			return false;
+		} finally {
+			try {
+				in.close();
+			} catch (Exception e) {
+				return false;
+			}
+		}
 	}
 }

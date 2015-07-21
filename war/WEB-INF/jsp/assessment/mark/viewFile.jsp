@@ -32,20 +32,25 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="pasta" uri="pastaTag"%>
+
 <c:set var="dlc" value="${fn:replace(location, '\\\\', '\\\\\\\\')}"/>
+<h1>${owner}</h1>
+<h4><code>${filename}</code></h4>
 <c:choose>
-	
 	<c:when test="${fileEnding == 'jpg' || fileEnding == 'png' || fileEnding == 'bmp' || fileEnding == 'gif'}">
 		<img src='loadFile?file_name="${location}"'/>
-
 	</c:when>
-		<c:when test="${fileEnding == 'pdf'}">
-
-		<object data='loadFile?file_name="${location}"' type="application/pdf" width="90%" height="500">
-   </object>
+	<c:when test="${fileEnding == 'pdf'}">
+		<object data='loadFile?file_name="${location}"' type="application/pdf" width="90%" height="500"></object>
 	</c:when>
 	<c:when test="${not empty codeStyle[fileEnding]}">
-		<pre class="${codeStyle[fileEnding]}"><code>${fileContents}</code></pre>
+		<pre class="${codeStyle[fileEnding]}"><code><c:out value='${fileContents}'/></code></pre>
+	</c:when>
+	<c:when test="${pasta:isPlainText(location)}">
+		<div class='boxCard'>
+			<pre><code><c:out value='${fileContents}'/></code></pre>
+		</div>
 	</c:when>
 	<c:otherwise>
 		<c:redirect url='../downloadFile?file_name="${location}"'/>

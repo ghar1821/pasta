@@ -579,6 +579,20 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		}
 		return 0;
 	}
+	
+	public double getRawTotalWeight() {
+		double weight = 0;
+		for(WeightedUnitTest module: unitTests){
+			weight += module.getWeight();
+		}
+		for(WeightedHandMarking module: handMarking){
+			weight += module.getWeight();
+		}
+		for(WeightedCompetition module : competitions) {
+			weight += module.getWeight();
+		}
+		return weight;
+	}
 
 //	/**
 //	 * See string representation in class description.

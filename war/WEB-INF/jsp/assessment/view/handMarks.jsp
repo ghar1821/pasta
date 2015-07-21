@@ -32,7 +32,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ page import="pasta.domain.template.WeightedField"%>
+<%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <h1> Hand Marking Template - ${handMarking.name}</h1>
 
@@ -108,7 +108,7 @@ th, td{
 					"${datum.id}",
 					"${datum.column.id}",
 					"${datum.row.id}",
-					"${datum.data}",
+					"<c:out value='${pasta:escapeNewLines(datum.data)}' />",
 					$(errorData));
 			</c:when>
 			<c:otherwise>

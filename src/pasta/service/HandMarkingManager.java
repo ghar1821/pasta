@@ -271,6 +271,18 @@ public class HandMarkingManager {
 			template.addData(toAdd);
 		}
 		
+		// Update rows to be out of a total of 1
+		double total = 0;
+		double idealTotal = 1.0;
+		for(WeightedField row : template.getRowHeader()) {
+			total += row.getWeight();
+		}
+		if(Math.abs(total - idealTotal) > 10 * Math.ulp(idealTotal)) {
+			for(WeightedField row : template.getRowHeader()) {
+				row.setWeight(row.getWeight() / total);
+			}
+		}
+		
 		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(template);
 	}
 

@@ -61,7 +61,9 @@ either expressed or implied, of the PASTA Project.
 				<tr>
 					<td>
 						<c:set var="node" value="${nodeList[player.activePlayer.name]}" scope="request"/>
-						<jsp:include page="../../recursive/fileWriterRoot.jsp"/>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp">
+							<jsp:param name="owner" value="${viewedUser.username}"/>
+						</jsp:include>
 					</td>
 				</tr>
 			</c:if>

@@ -34,21 +34,21 @@
 						<c:if test="${not empty results.groupUnitTests}">
 							<div class='horizontal-block' style='max-width:50%'>
 								<strong>Group Work:</strong>
-								<tag:assessmentResultBoxes closedAssessment="${closedAssessment}" 
+								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
 									user="${user}" tests="${results.groupUnitTests}" />
 							</div>
 						</c:if>
 						<c:if test="${not empty results.nonGroupUnitTests}">
 							<div class='horizontal-block' style='max-width:50%'>
 								<strong style='white-space: nowrap'>Individual Work:</strong>
-								<tag:assessmentResultBoxes closedAssessment="${closedAssessment}" 
+								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
 									user="${user}" tests="${results.nonGroupUnitTests}" />
 							</div>
 						</c:if>
 					</div>
 				</c:if>
 				<c:if test="${!separateGroup}">
-					<tag:assessmentResultBoxes closedAssessment="${closedAssessment}" 
+					<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
 						user="${user}" tests="${results.unitTests}" />
 				</c:if>
 			</c:when>
