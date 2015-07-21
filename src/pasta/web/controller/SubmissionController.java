@@ -1908,12 +1908,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewAll</li>
+	 * <li>user/gradeCentre</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "gradeCentre/")
 	public String viewGradeCentre2(Model model) {
@@ -1930,7 +1930,7 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("pathBack", "..");
 
-		return "user/viewAll";
+		return "user/gradeCentre";
 	}
 
 	/**
@@ -1957,12 +1957,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewSome</li>
+	 * <li>user/gradeCentre</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewSome"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "tutorial/{className}/")
 	public String viewClass(@PathVariable("className") String className, Model model) {
@@ -1979,7 +1979,7 @@ public class SubmissionController {
 		model.addAttribute("pathBack", "../..");
 		model.addAttribute("tutorial", className);
 
-		return "user/viewAll";
+		return "user/gradeCentre";
 	}
 
 	/**
@@ -2006,12 +2006,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewSome</li>
+	 * <li>user/gradeCentre</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewSome"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "stream/{streamName}/")
 	public String viewStream(@PathVariable("streamName") String streamName, Model model) {
@@ -2028,7 +2028,7 @@ public class SubmissionController {
 		model.addAttribute("pathBack", "../..");
 		model.addAttribute("stream", streamName);
 
-		return "user/viewAll";
+		return "user/gradeCentre";
 	}
 
 	/**
@@ -2055,12 +2055,12 @@ public class SubmissionController {
 	 * 
 	 * JSP:
 	 * <ul>
-	 * <li>user/viewAll</li>
+	 * <li>user/gradeCentre</li>
 	 * </ul>
 	 * 
 	 * @param model
 	 *            the model being used
-	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAll"
+	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "myTutorials/")
 	public String viewMyTutorials(Model model) {
@@ -2077,7 +2077,7 @@ public class SubmissionController {
 		model.addAttribute("pathBack", "..");
 		model.addAttribute("myClasses", true);
 
-		return "user/viewAll";
+		return "user/gradeCentre";
 	}
 
 }
