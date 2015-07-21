@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +76,7 @@ import pasta.domain.upload.validate.UpdateAssessmentFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;
+import pasta.service.GroupManager;
 import pasta.service.HandMarkingManager;
 import pasta.service.ReleaseManager;
 import pasta.service.ResultManager;
@@ -143,6 +145,8 @@ public class AssessmentController {
 	private SubmissionManager submissionManager;
 	@Autowired
 	private ReleaseManager releaseManager;
+	@Autowired
+	private GroupManager groupManager;
 	
 	@Autowired
 	private UpdateAssessmentFormValidator updateValidator;
@@ -503,7 +507,10 @@ public class AssessmentController {
 				+ assessment.getFileAppropriateName() + "-latest.zip\"");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outStream);
-		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager.getLatestResults(userManager.getStudentList());
+		
+		Collection<PASTAUser> allUsers = userManager.getStudentList();
+		allUsers.addAll(groupManager.getGroups(allUsers, assessmentId));
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager.getLatestResults(allUsers);
 		try {
 			for(Entry<PASTAUser, Map<Long, AssessmentResult> > entry : allResults.entrySet()){
 				if(entry.getValue() != null && 
