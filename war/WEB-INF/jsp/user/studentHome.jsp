@@ -53,12 +53,6 @@ either expressed or implied, of the PASTA Project.
 	</form:form>
 </spring:hasBindErrors>
 
-<div class="ui-state-error" style="font-size:1.5em">
-<i><b>NOTE: These marks are provisional, your final marks will appear on eLearning and may differ from these marks.</b></i>
-</div>
-
-<br/><br/>
-
 <div class="padded"> 
 	<c:forEach var="assessmentCategory" items="${assessments}">
 		<c:if test="${not empty assessmentCategory.key}">
