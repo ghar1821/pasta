@@ -1,4 +1,4 @@
-package pasta.domain.release.form;
+package pasta.domain.form;
 
 import java.util.ArrayList;
 import java.util.List;

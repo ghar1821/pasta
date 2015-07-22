@@ -5,11 +5,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.form.AssessmentReleaseForm;
+import pasta.domain.form.validate.AssessmentReleaseFormValidator;
 import pasta.domain.release.ReleaseRule;
-import pasta.domain.release.form.AssessmentReleaseForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
@@ -37,6 +41,7 @@ public class ReleaseController {
 	@Autowired private ReleaseManager releaseManager;
 	@Autowired private UserManager userManager;
 	@Autowired private AssessmentManager assessmentManager;
+	@Autowired private AssessmentReleaseFormValidator updateValidator;
 	
 	@ModelAttribute("newRule")
 	public AssessmentReleaseForm getNewRule(@RequestParam(value="ruleName",required=false) String ruleName) {
@@ -89,19 +94,21 @@ public class ReleaseController {
 		Set<ReleaseRule> allRules = ReleaseManager.getOneOfEach();
 		model.addAttribute("allRules", allRules);
 		
-		if(assessment.isReleased()) {
-			model.addAttribute("releaseRuleForm", new AssessmentReleaseForm(assessment.getReleaseRule()));
-		} else {
-			model.addAttribute("releaseRuleForm", new AssessmentReleaseForm());
+		if(!model.containsAttribute("releaseRuleForm")) {
+			if(assessment.isReleased()) {
+				model.addAttribute("releaseRuleForm", new AssessmentReleaseForm(assessment.getReleaseRule()));
+			} else {
+				model.addAttribute("releaseRuleForm", new AssessmentReleaseForm());
+			}
 		}
 		
 		return "assessment/release/release";
 	}
 	
 	@RequestMapping(value = "{assessmentId}/", method=RequestMethod.POST)
-	public String saveRule(@ModelAttribute("releaseRuleForm") AssessmentReleaseForm form, 
+	public String saveRule(@Valid @ModelAttribute("releaseRuleForm") AssessmentReleaseForm form, BindingResult result,
 			@ModelAttribute("assessment") Assessment assessment,
-			ModelMap model, SessionStatus status, HttpServletRequest request) {
+			ModelMap model, SessionStatus status, RedirectAttributes attr) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
@@ -110,6 +117,13 @@ public class ReleaseController {
 			return "redirect:/home/.";
 		}
 
+		updateValidator.validate(form, result);
+		if(result.hasErrors()) { 
+			attr.addFlashAttribute("releaseRuleForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.releaseRuleForm", result);
+			return "redirect:.";
+		}
+		
 		releaseManager.updateRelease(assessment, form);
 		status.setComplete();
 		model.clear();

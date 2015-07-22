@@ -7,7 +7,14 @@
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <h1>Release Rule - ${assessment.name}</h1>
-<div style='font-size: 1.1em; padding-bottom:20em'>
+<spring:hasBindErrors name="releaseRuleForm">
+	<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.4em;">
+		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+		<b>ERROR:</b> Please check your form for indicated errors, and try again.
+	</div>
+</spring:hasBindErrors>
+
+<div class='vertical-block' style='font-size: 1.1em; padding-bottom:20em'>
 	<form:form commandName="releaseRuleForm">
 		<div>
 			<div class='boxCard vertical-block ruleParent first' pathPrefix='releaseRuleForm'>

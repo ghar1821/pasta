@@ -3,7 +3,7 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
-<%@ attribute name="rule" type="pasta.domain.release.form.AssessmentReleaseForm"%>
+<%@ attribute name="rule" type="pasta.domain.form.AssessmentReleaseForm"%>
 <%@ attribute name="pathPrefix" type="java.lang.String"%>
 
 
@@ -49,6 +49,7 @@
 		<div class='vertical-block'>
 			<strong><c:choose><c:when test="${fn:endsWith(ruleName, 'ReleaseAndRule') or fn:endsWith(ruleName, 'ReleaseOrRule')}">Sub Rules:</c:when><c:otherwise>Options:</c:otherwise></c:choose></strong>
 		</div>
+		<form:errors element="div" cssClass="vertical-block" />
 	</c:if>
 	<div class='vertical-block'>
 		<div class='vertical-block'>
@@ -65,6 +66,7 @@
 				</c:when>
 				
 				<c:when test="${fn:endsWith(ruleName, 'ClassRule')}">
+					<form:errors path="classes" element="div" />
 					<div class='horizontal-block'>
 						Classes:
 						<form:select cssClass='selectAll chosen' multiple="multiple" path="classes">
@@ -79,6 +81,7 @@
 				
 				<c:when test="${fn:endsWith(ruleName, 'DateRule')}">
 					Date: <form:input path="strDate" cssClass="strDate" />
+					<form:errors path="strDate" />
 				</c:when>
 				
 				<c:when test="${fn:endsWith(ruleName, 'HasSubmittedRule')}">
@@ -87,6 +90,7 @@
 						<option></option>
 						<form:options items="${allAssessments}" itemValue="id" itemLabel="name" />
 					</form:select>
+					<form:errors path="compareAssessment"/>
 				</c:when>		
 				
 				<c:when test="${fn:endsWith(ruleName, 'MarkCompareRule')}">
@@ -98,11 +102,15 @@
 									<option></option>
 									<form:options items="${allAssessments}" itemValue="id" itemLabel="name" />
 								</form:select>
+								<form:errors path="compareAssessment"/>
 							</td>
 						</tr>
 						<tr>
 							<td>Compare Mode:</td>
-							<td><form:select path="compareMode"><form:options itemLabel="text"/></form:select></td>
+							<td>
+								<form:select path="compareMode"><form:options itemLabel="text"/></form:select>
+								<form:errors path="compareMode"/>
+							</td>
 						</tr>
 						<tr>
 							<td>Mark:</td>
@@ -110,12 +118,16 @@
 						</tr>
 						<tr>
 							<td>Mark Type:</td>
-							<td><form:select path="markType"><form:options itemLabel="text"/></form:select></td>
+							<td>
+								<form:select path="markType"><form:options itemLabel="text"/></form:select>
+								<form:errors path="markType"/>
+							</td>
 						</tr>
 					</table>
 				</c:when>
 				
 				<c:when test="${fn:endsWith(ruleName, 'ReleaseAndRule') or fn:endsWith(ruleName, 'ReleaseOrRule')}">
+					<form:errors path="rules" element="div"/>
 					<c:set var="firstOne" value="true" />
 					<c:set var="conjunction" value="AND" />
 					<c:if test="${fn:endsWith(ruleName, 'ReleaseOrRule')}"><c:set var="conjunction" value="OR" /></c:if>
@@ -134,6 +146,7 @@
 				</c:when>		
 				
 				<c:when test="${fn:endsWith(ruleName, 'StreamRule')}">
+					<form:errors path="streams" element="div" />
 					<div class='horizontal-block'>
 						Streams:
 						<form:select cssClass='selectAll chosen' multiple="multiple" path="streams">
@@ -155,11 +168,15 @@
 									<option></option>
 									<form:options items="${allAssessments}" itemValue="id" itemLabel="name" />
 								</form:select>
+								<form:errors path="compareAssessment" />
 							</td>
 						</tr>
 						<tr>
 							<td>Compare Mode:</td>
-							<td><form:select path="compareMode"><form:options itemLabel="text"/></form:select></td>
+							<td>
+								<form:select path="compareMode"><form:options itemLabel="text"/></form:select>
+								<form:errors path="compareMode" />
+							</td>
 						</tr>
 						<tr>
 							<td>Submission Count:</td>
@@ -169,6 +186,7 @@
 				</c:when>
 				
 				<c:when test="${fn:endsWith(ruleName, 'UsernameRule')}">
+					<form:errors path="usernames" element="div" />
 					<div class='horizontal-block'>
 						Users:
 						<form:select cssClass='selectAll chosen' multiple="multiple" path="usernames">
@@ -182,7 +200,7 @@
 				</c:when>			
 				
 				<c:otherwise>
-					Unimplemented: ${ruleName}
+					Error: Invalid rule - ${ruleName}
 				</c:otherwise>
 			</c:choose>
 		</div>

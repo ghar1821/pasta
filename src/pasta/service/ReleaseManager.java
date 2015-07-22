@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.release.ClassRule;
 import pasta.domain.release.DateRule;
 import pasta.domain.release.MarkCompareRule;
@@ -26,7 +27,6 @@ import pasta.domain.release.ReleaseRule;
 import pasta.domain.release.StreamRule;
 import pasta.domain.release.SubmissionCountRule;
 import pasta.domain.release.UsernameRule;
-import pasta.domain.release.form.AssessmentReleaseForm;
 import pasta.domain.template.Assessment;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ReleaseDAO;
