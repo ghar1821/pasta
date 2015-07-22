@@ -13,13 +13,19 @@
 	<c:if test="${not empty rule and not empty ruleName}">
 		<form:hidden path="ruleId" value="${rule.ruleId}"/>
 		<form:hidden path="ruleName" value="${ruleName}"/>
+		<c:forEach var="ruleType" items="${allRules}">
+			<c:if test="${ruleType['class'].name == ruleName}">
+				<c:set var="description" value="${ruleType.description}" />
+				<c:set var="shortDescription" value="${ruleType.shortDescription}" />
+			</c:if>
+		</c:forEach>
 		<div class='float-right'>
 			<a class='deleteRule'>Delete Rule</a>
 		</div>
 		<div class='vertical-block'>
 			<div class='vertical-block'>
 				<div class='horizontal-block'>
-					<strong>${rule.shortDescription}<span id="deleteMessage"></span></strong>
+					<strong>${shortDescription}<span id="deleteMessage"></span></strong>
 				</div>
 				<div class='horizontal-block'>
 					<a class='showChangeRule'>(change)</a>
@@ -37,7 +43,7 @@
 				</div>
 			</div>
 			<div class='vertical-block'>
-				<p>${rule.description}
+				<p>${description}
 			</div>
 		</div>
 		<div class='vertical-block'>

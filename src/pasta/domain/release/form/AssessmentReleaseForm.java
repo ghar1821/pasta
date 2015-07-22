@@ -29,8 +29,6 @@ import pasta.service.ReleaseManager;
 public class AssessmentReleaseForm {
 	private long ruleId;
 	private String ruleName;
-	private String shortDescription;
-	private String description;
 	
 	// For rules types with sub-rules
 	private List<AssessmentReleaseForm> rules;
@@ -57,8 +55,6 @@ public class AssessmentReleaseForm {
 	public AssessmentReleaseForm(ReleaseRule base) {
 		this.ruleId = base.getId();
 		this.ruleName = base.getClass().getName();
-		this.description = base.getDescription();
-		this.shortDescription = base.getShortDescription();
 		
 		if(base instanceof ReleaseResultsRule) {
 			compareAssessment = ((ReleaseResultsRule) base).getCompareAssessment();
@@ -192,26 +188,12 @@ public class AssessmentReleaseForm {
 		this.usernames = usernames;
 	}
 
-	public String getShortDescription() {
-		return shortDescription;
-	}
-	public void setShortDescription(String shortDescription) {
-		this.shortDescription = shortDescription;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	@Override
 	public String toString() {
-		return "AssessmentReleaseForm [ruleName=" + ruleName + ", rules=" + rules + ", asPercentage="
-				+ asPercentage + ", classes=" + classes + ", compareAssessment=" + compareAssessment
-				+ ", compareMark=" + compareMark + ", compareMode=" + compareMode + ", markType=" + markType
-				+ ", strDate=" + strDate + ", streams=" + streams + ", submissionCount=" + submissionCount
-				+ ", usernames=" + usernames + "]";
+		return "AssessmentReleaseForm [ruleId=" + ruleId + ", ruleName=" + ruleName + ", rules=" + rules
+				+ ", asPercentage=" + asPercentage + ", classes=" + classes + ", compareAssessment="
+				+ compareAssessment + ", compareMark=" + compareMark + ", compareMode=" + compareMode
+				+ ", markType=" + markType + ", strDate=" + strDate + ", streams=" + streams
+				+ ", submissionCount=" + submissionCount + ", usernames=" + usernames + "]";
 	}
 }
