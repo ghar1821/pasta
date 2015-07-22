@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: auto-generated file. -->
+<project basedir="." default="build" name="assessment">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+	<path id="lib.jars">
+		<fileset dir="${libdirectory}">
+			<include name="**/*.jar"/>
+            <include name="**/*.class"/>
+		</fileset>
+	</path>
+    <path id="assessment.classpath">
+        <pathelement location="bin"/>
+        <path refid="lib.jars"/>
+    </path>
+	<target name="makeBin">
+		<mkdir dir="bin"/>
+	</target>
+	<target name="copyNonJava">
+        <echo message="Copying non-code from '${basedir}' to 'bin'"/>
+		<copy includeemptydirs="false" todir="bin">
+            <fileset dir="${basedir}">
+                <exclude name="**/*.java"/>
+                <exclude name="build.xml"/>
+            </fileset>
+        </copy>
+	</target>
+    <target name="init" depends="makeBin, copyNonJava">
+    </target>
+    <target name="clean">
+        <echo message="Deleting directory 'bin'"/>
+        <!--<delete dir="bin"/>-->
+    </target>
+    <target depends="init" name="build">
+        <echo message="Using javac to compile Java code in 'bin'"/>
+        <javac fork="yes" includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="."/>
+            <classpath refid="assessment.classpath"/>
+        </javac>
+    </target>
+	<target name="test">
+        <echo message="Running JUnit '${testName}'"/>
+        <junit filtertrace="${filterStackTraces}" fork="yes" timeout="${maxtimeallowed}" dir="bin">
+			<formatter type="xml" />
+            <test name="${testName}" outfile="${testOutputFile}" />
+            <classpath refid="assessment.classpath"/>
+        </junit>
+    </target>
+</project>

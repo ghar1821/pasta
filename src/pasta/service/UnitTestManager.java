@@ -97,8 +97,8 @@ public class UnitTestManager {
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
-	private final String BB_TEST_TEMPLATE = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "PASTABlackBoxTest.template";
-	private final String BB_TEST_METHOD_TEMPLATE = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "PASTABlackBoxTestMethod.template";
+	private final String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
+	private final String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
@@ -281,18 +281,24 @@ public class UnitTestManager {
 				return;
 			}
 			
-			switch(subLanguage) {
-			case JAVA:
-				runner = new JavaBlackBoxTestRunner(); break;
-			case C:
-				runner = new CBlackBoxTestRunner(); break;
-			case CPP:
-				runner = new CPPBlackBoxTestRunner(); break;
-			case PYTHON:
-				runner = new PythonBlackBoxTestRunner(); break;
-			default:
-				finishTesting(test, "Language not yet implemented");
-				logger.error("Language not implemented.");
+			try {
+				switch(subLanguage) {
+				case JAVA:
+					runner = new JavaBlackBoxTestRunner(); break;
+				case C:
+					runner = new CBlackBoxTestRunner(); break;
+				case CPP:
+					runner = new CPPBlackBoxTestRunner(); break;
+				case PYTHON:
+					runner = new PythonBlackBoxTestRunner(); break;
+				default:
+					finishTesting(test, "Language not yet implemented");
+					logger.error("Language not implemented.");
+					return;
+				}
+			} catch(FileNotFoundException e) {
+				finishTesting(test, "Internal error - test template not found.");
+				logger.error("Test template not found.", e);
 				return;
 			}
 			
@@ -307,7 +313,13 @@ public class UnitTestManager {
 			((BlackBoxTestRunner) runner).setSolutionName(solutionName);
 			targets = new String[] {"build", "run", "test", "clean"};
 		} else {
-			runner = new JUnitTestRunner();
+			try {
+				runner = new JUnitTestRunner();
+			} catch (FileNotFoundException e) {
+				finishTesting(test, "Internal error - test template not found.");
+				logger.error("Test template not found.", e);
+				return;
+			}
 			((JUnitTestRunner) runner).setMainTestClassname(mainClass);
 			((JUnitTestRunner) runner).setFilterStackTraces(false);
 			targets = new String[] {"build", "test", "clean"};
@@ -410,9 +422,17 @@ public class UnitTestManager {
 	private void updateBlackBoxCode(BlackBoxTest test) {
 		logger.info("Creating black box code for " + test.getName());
 		
+		File bbTemplateFile = null;
+		try {
+			bbTemplateFile = PASTAUtil.getTemplateResource("build_templates/" + BB_TEST_TEMPLATE);
+		} catch (FileNotFoundException e) {
+			logger.error("Could not create black box code.", e);
+			return;
+		}
+		
 		StringBuilder testContent = new StringBuilder();
 		try {
-			Scanner testScn = new Scanner(new File(BB_TEST_TEMPLATE));
+			Scanner testScn = new Scanner(bbTemplateFile);
 			while(testScn.hasNextLine()) {
 				String line = testScn.nextLine();
 				if(line.contains("${tests}")) {
@@ -423,10 +443,10 @@ public class UnitTestManager {
 			}
 			testScn.close();
 		} catch (FileNotFoundException e) {
-			logger.error("Could not read black box template at " + BB_TEST_TEMPLATE);
+			logger.error("Could not read black box template at " + bbTemplateFile);
 		}
 		
-		String filename = BB_TEST_TEMPLATE.substring(BB_TEST_TEMPLATE.lastIndexOf(File.separatorChar) + 1).replace(".template", ".java");
+		String filename = bbTemplateFile.getName().replace(".template", ".java");
 		File testFile = new File(test.getCodeLocation(), filename);
 		if(!testFile.exists()) {
 			testFile.getParentFile().mkdirs();
@@ -439,20 +459,22 @@ public class UnitTestManager {
 			logger.error("Unable to write to " + testFile, e);
 		}
 		
-		test.setMainClassName(BB_TEST_TEMPLATE.substring(BB_TEST_TEMPLATE.lastIndexOf(File.separatorChar), BB_TEST_TEMPLATE.lastIndexOf('.')));
+		test.setMainClassName(bbTemplateFile.getName().substring(0, bbTemplateFile.getName().lastIndexOf('.')));
 		test.setTested(false);
 	}
 	
 	private String getTestsContent(BlackBoxTest test) {
 		StringBuilder methodTemplate = new StringBuilder();
+		File bbMethodTemplateFile = null;
 		try {
-			Scanner methodScn = new Scanner(new File(BB_TEST_METHOD_TEMPLATE));
+			bbMethodTemplateFile = PASTAUtil.getTemplateResource("build_templates/" + BB_TEST_METHOD_TEMPLATE);
+			Scanner methodScn = new Scanner(bbMethodTemplateFile);
 			while(methodScn.hasNextLine()) {
 				methodTemplate.append(methodScn.nextLine()).append(System.lineSeparator());
 			}
 			methodScn.close();
 		} catch (FileNotFoundException e) {
-			logger.error("Could not read black box method template at " + BB_TEST_METHOD_TEMPLATE);
+			logger.error("Could not read black box method template at " + bbMethodTemplateFile);
 		} 
 		
 		StringBuilder allTests = new StringBuilder();

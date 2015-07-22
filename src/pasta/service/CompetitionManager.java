@@ -310,108 +310,113 @@ public class CompetitionManager {
 		String playerCodeLocation = "player";
 		
 		//TODO: make this generic, not just "Validator"
-		PlayerValidationRunner runner = new PlayerValidationRunner(user, "Validator", validateCodeLocation);
-		runner.setMaxRunTime(30000);
-		runner.setPlayerDirectory(playerCodeLocation);
+		try {
+			PlayerValidationRunner runner = new PlayerValidationRunner(user, "Validator", validateCodeLocation);
+			runner.setMaxRunTime(30000);
+			runner.setPlayerDirectory(playerCodeLocation);
+			
+			AntJob antJob = new AntJob(testDir, runner, "build", "validate");
+			antJob.addDependency("validate", "build");
+			
+			// copy over competition
+			antJob.addSetupTask(new DirectoryCopyTask(
+					new File(new File(comp.getFileLocation(), "code"), validateCodeSubmittedLocation), 
+					new File(testDir, validateCodeLocation)));
+			// copy over player
+			antJob.addSetupTask(new DirectoryCopyTask(
+					new File(tempDir, "code"), 
+					new File(testDir, playerCodeLocation)));
+			
+			antJob.run();
 		
-		AntJob antJob = new AntJob(testDir, runner, "build", "validate");
-		antJob.addDependency("validate", "build");
-		
-		// copy over competition
-		antJob.addSetupTask(new DirectoryCopyTask(
-				new File(new File(comp.getFileLocation(), "code"), validateCodeSubmittedLocation), 
-				new File(testDir, validateCodeLocation)));
-		// copy over player
-		antJob.addSetupTask(new DirectoryCopyTask(
-				new File(tempDir, "code"), 
-				new File(testDir, playerCodeLocation)));
-		
-		antJob.run();
-		
-		AntResults results = antJob.getResults();
-		//TODO save full output
-//		logger.warn(results.getFullOutput());
-		
-		String playerName = null;
-		String validationError = null;
-		
-		if(!results.isSuccess("build")) {
-			Scanner scn = new Scanner(results.getOutput("build"));
-			StringBuilder compErrors = new StringBuilder();
-			String line = "";
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				if(line.contains("error")) {
+			AntResults results = antJob.getResults();
+			//TODO save full output
+	//		logger.warn(results.getFullOutput());
+			
+			String playerName = null;
+			String validationError = null;
+			
+			if(!results.isSuccess("build")) {
+				Scanner scn = new Scanner(results.getOutput("build"));
+				StringBuilder compErrors = new StringBuilder();
+				String line = "";
+				while(scn.hasNextLine()) {
+					line = scn.nextLine();
+					if(line.contains("error")) {
+						compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+						break;
+					}
+				}
+				while(scn.hasNextLine()) {
+					line = scn.nextLine();
 					compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-					break;
 				}
-			}
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-			}
-			if(compErrors.length() > 0) {
-				compErrors.replace(compErrors.length()-1, compErrors.length(), "");
-			}
-			scn.close();
-			//TODO maybe store and display properly?
-			result.rejectValue("file", "Player.errors", compErrors.toString());
-		} else {
-			if(results.isSuccess("validate")) {
-				try {
-					Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.playerNameFilename));
-					if(scn.hasNext()) {
-						playerName = scn.next();
-					}
-					scn.close();
-				} catch (FileNotFoundException e) {
-					logger.error("Could not get player name from validator.");
+				if(compErrors.length() > 0) {
+					compErrors.replace(compErrors.length()-1, compErrors.length(), "");
 				}
-				try {
-					Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.validationErrorFilename));
-					StringBuilder sb = new StringBuilder();
-					while(scn.hasNextLine()) {
-						sb.append(scn.nextLine()).append(System.lineSeparator());
-					}
-					scn.close();
-					validationError = sb.toString();
-				} catch (FileNotFoundException e) {
-				}
-			}
-			
-			if(validationError != null) {
+				scn.close();
 				//TODO maybe store and display properly?
-				result.rejectValue("file", "Player.errors", validationError);
+				result.rejectValue("file", "Player.errors", compErrors.toString());
+			} else {
+				if(results.isSuccess("validate")) {
+					try {
+						Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.playerNameFilename));
+						if(scn.hasNext()) {
+							playerName = scn.next();
+						}
+						scn.close();
+					} catch (FileNotFoundException e) {
+						logger.error("Could not get player name from validator.");
+					}
+					try {
+						Scanner scn = new Scanner(new File(testDir, PlayerValidationRunner.validationErrorFilename));
+						StringBuilder sb = new StringBuilder();
+						while(scn.hasNextLine()) {
+							sb.append(scn.nextLine()).append(System.lineSeparator());
+						}
+						scn.close();
+						validationError = sb.toString();
+					} catch (FileNotFoundException e) {
+					}
+				}
+				
+				if(validationError != null) {
+					//TODO maybe store and display properly?
+					result.rejectValue("file", "Player.errors", validationError);
+				}
 			}
-		}
-		
-		if(!result.hasErrors()){
-			PlayerResult newPlayer = new PlayerResult();
-			newPlayer.setFirstUploaded(new Date());
-			newPlayer.setName(playerName);
 			
-			PlayerHistory history = playerDAO.getPlayerHistory(user, competitionId, newPlayer.getName());
-			if(history == null){
-				history = new PlayerHistory(newPlayer.getName());
-				history.setUser(user);
-				history.setCompetitionId(competitionId);
+			if(!result.hasErrors()){
+				PlayerResult newPlayer = new PlayerResult();
+				newPlayer.setFirstUploaded(new Date());
+				newPlayer.setName(playerName);
+				
+				PlayerHistory history = playerDAO.getPlayerHistory(user, competitionId, newPlayer.getName());
+				if(history == null){
+					history = new PlayerHistory(newPlayer.getName());
+					history.setUser(user);
+					history.setCompetitionId(competitionId);
+				}
+				
+				// if no errors and the player has the same name as an existing player
+				// retire the old player.
+				retirePlayer(user, competitionId, newPlayer.getName());
+				history.setActivePlayer(newPlayer);
+				playerDAO.saveOrUpdate(history);
+				
+				File playerDir = new File(submitDir, newPlayer.getName());
+				playerDir.mkdirs();
+				
+				try {
+					FileUtils.copyDirectory(new File(tempDir, "code"),
+							new File(new File(playerDir, "active"), "code"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			
-			// if no errors and the player has the same name as an existing player
-			// retire the old player.
-			retirePlayer(user, competitionId, newPlayer.getName());
-			history.setActivePlayer(newPlayer);
-			playerDAO.saveOrUpdate(history);
-			
-			File playerDir = new File(submitDir, newPlayer.getName());
-			playerDir.mkdirs();
-			
-			try {
-				FileUtils.copyDirectory(new File(tempDir, "code"),
-						new File(new File(playerDir, "active"), "code"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		} catch (FileNotFoundException e1) {
+			result.reject("Internal error");
+			logger.error("Validator templates not found.", e1);
 		}
 		
 		try {

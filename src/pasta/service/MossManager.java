@@ -129,9 +129,9 @@ public class MossManager {
 		// copy moss somewhere safe for it to run (own folder. ->
 		// moss/assessmentId/dateRun)
 		try {
-			FileUtils.copyDirectory(new File(ProjectProperties.getInstance()
-					.getProjectLocation() + "/moss/template"), new File(
-					location + "/"));
+			File template = PASTAUtil.getTemplateResource("moss/template/");
+			FileUtils.copyDirectory(template, new File(location + "/"));
+			
 			// run moss
 			File buildFile = new File(location + "/build.xml");
 
@@ -183,23 +183,28 @@ public class MossManager {
 	        while ((line = br.readLine()) != null) {
 	            webpage += line;
 	        }
+	        
 			
 			is.close();
-
+			
 			// process results (web page - csv)
-			// strip top
-			webpage = webpage.replaceFirst("<HTML>.*?<TD>", "");
-			// strip bottom
-			webpage = webpage.replaceFirst("</TABLE>.*", "");
-			// start tearing into the body
-			webpage = webpage.replaceAll("<A HREF=.*?>", "");
-			webpage = webpage.replaceAll("</A>", "");
-			webpage = webpage.replaceAll(" ALIGN=right", "");
-			webpage = webpage.replaceAll("<TR><TD>", "\r\n");
-			webpage = webpage.replaceAll("<TD>", ",");
-			webpage = webpage.replaceAll("/ \\(", ",");
-			webpage = webpage.replaceAll("%\\)", "");
-			webpage = webpage.replaceAll(" +", "");
+			if(!webpage.contains("<TD>")) {
+				webpage = "";
+			} else {
+				// strip top
+				webpage = webpage.replaceFirst("<HTML>.*?<TD>", "");
+				// strip bottom
+				webpage = webpage.replaceFirst("</TABLE>.*", "");
+				// start tearing into the body
+				webpage = webpage.replaceAll("<A HREF=.*?>", "");
+				webpage = webpage.replaceAll("</A>", "");
+				webpage = webpage.replaceAll(" ALIGN=right", "");
+				webpage = webpage.replaceAll("<TR><TD>", "\r\n");
+				webpage = webpage.replaceAll("<TD>", ",");
+				webpage = webpage.replaceAll("/ \\(", ",");
+				webpage = webpage.replaceAll("%\\)", "");
+				webpage = webpage.replaceAll(" +", "");
+			}
 
 			// save results
 			PrintWriter out = new PrintWriter(new File(location + ".csv"));
@@ -211,8 +216,7 @@ public class MossManager {
 			FileUtils.deleteDirectory(new File(location + "/"));
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error running MOSS", e);
 		}
 
 	}

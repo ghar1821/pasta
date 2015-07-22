@@ -34,34 +34,36 @@ either expressed or implied, of the PASTA Project.
 
 <h2>Moss Result: ${mossResults.date}</h2>
 
-Link: <a href="${mossResults.link}">${mossResults.link}</a> <br/>
+<p>Link: <a href="${mossResults.link}">${mossResults.link}</a> <br/>
 
 <table id="mossTable" class="tablesorter">
-	<tr>
-		<th>Student</th>
-		<th>Percentage</th>
-		<th>Student</th>
-		<th>Percentage</th>
-		<th>Lines</th>
-		<th>Max Percentage</th>
-	</tr>
-	<c:forEach var="pairing" items="${mossResults.pairings}">
+	<thead>
 		<tr>
-			<td>${pairing.student1}</td>
-			<td>${pairing.percentage1}</td>
-			<td>${pairing.student2}</td>
-			<td>${pairing.percentage2}</td>
-			<td>${pairing.lines}</td>
-			<td>${pairing.maxPercentage}</td>
+			<th>Student</th>
+			<th>Percentage</th>
+			<th>Student</th>
+			<th>Percentage</th>
+			<th>Lines</th>
+			<th>Max Percentage</th>
 		</tr>
-	</c:forEach>
+	</thead>
+	<tbody>
+		<c:forEach var="pairing" items="${mossResults.pairings}">
+			<tr>
+				<td>${pairing.student1}</td>
+				<td>${pairing.percentage1}</td>
+				<td>${pairing.student2}</td>
+				<td>${pairing.percentage2}</td>
+				<td>${pairing.lines}</td>
+				<td>${pairing.maxPercentage}</td>
+			</tr>
+		</c:forEach>
+	</tbody>
 </table>
 
 <script>
-$(document).ready(function() 
-    { 
-        $("#mossTable").tablesorter(); 
+$(document).ready(function() { 
+        $("#mossTable").dataTable(); 
     } 
 ); 
-
 </script>

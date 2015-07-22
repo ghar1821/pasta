@@ -1,8 +1,8 @@
 package pasta.testing;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 
-import pasta.util.ProjectProperties;
+import pasta.util.PASTAUtil;
 
 /**
  * @author Joshua Stretton
@@ -11,9 +11,9 @@ import pasta.util.ProjectProperties;
  */
 public class CPPBlackBoxTestRunner extends BlackBoxTestRunner {
 
-	private static String TEMPLATE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "black_box_cpp_template.xml";
+	private static String TEMPLATE_FILENAME = "black_box_cpp_template.xml";
 	
-	public CPPBlackBoxTestRunner() {
-		super(new File(TEMPLATE_FILENAME));
+	public CPPBlackBoxTestRunner() throws FileNotFoundException {
+		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 	}
 }

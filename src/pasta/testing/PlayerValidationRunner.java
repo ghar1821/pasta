@@ -1,18 +1,19 @@
 package pasta.testing;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
 import pasta.domain.user.PASTAUser;
-import pasta.util.ProjectProperties;
+import pasta.util.PASTAUtil;
 
 public class PlayerValidationRunner extends Runner {
 
-	private static String TEMPLATE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "player_validate_template.xml";
-	private static String VALIDATE_BASE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "ValidatePlayerBase.java";
-	private static String VALIDATE_INTERFACE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "PlayerValidator.java";
+	private static String TEMPLATE_FILENAME = "player_validate_template.xml";
+	private static String VALIDATE_BASE_FILENAME = "ValidatePlayerBase.java";
+	private static String VALIDATE_INTERFACE_FILENAME = "PlayerValidator.java";
 	
 	public static final String playerNameFilename = "playername.out";
 	public static final String validationErrorFilename = "validate.out";
@@ -22,13 +23,13 @@ public class PlayerValidationRunner extends Runner {
 	private String codeDirectory = "src";
 	private String playerDirectory = "player";
 	
-	public PlayerValidationRunner() {
-		super(new File(TEMPLATE_FILENAME));
+	public PlayerValidationRunner() throws FileNotFoundException {
+		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 		addOption("validateTimeout", "30000");
 		setValidationDirectory("validate");
 	}
 	
-	public PlayerValidationRunner(PASTAUser user, String validationClassname, String validateCodeLocation) {
+	public PlayerValidationRunner(PASTAUser user, String validationClassname, String validateCodeLocation) throws FileNotFoundException {
 		this();
 		this.user = user;
 		this.validationClassname = validationClassname;
@@ -71,8 +72,10 @@ public class PlayerValidationRunner extends Runner {
 	public File createBuildFile(File file) {
 		File toReturn = super.createBuildFile(file);
 		try {
-			FileUtils.copyFile(new File(VALIDATE_BASE_FILENAME), new File(new File(file.getParentFile(), codeDirectory), new File(VALIDATE_BASE_FILENAME).getName()));
-			FileUtils.copyFile(new File(VALIDATE_INTERFACE_FILENAME), new File(new File(file.getParentFile(), codeDirectory), new File(VALIDATE_INTERFACE_FILENAME).getName()));
+			File baseFile = PASTAUtil.getTemplateResource("build_templates/" + VALIDATE_BASE_FILENAME);
+			File interfaceFile = PASTAUtil.getTemplateResource("build_templates/" + VALIDATE_INTERFACE_FILENAME);
+			FileUtils.copyFile(baseFile, new File(new File(file.getParentFile(), codeDirectory), baseFile.getName()));
+			FileUtils.copyFile(interfaceFile, new File(new File(file.getParentFile(), codeDirectory), interfaceFile.getName()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

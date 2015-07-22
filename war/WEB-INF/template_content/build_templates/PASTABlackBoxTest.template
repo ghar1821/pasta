@@ -1,0 +1,57 @@
+import static org.junit.Assert.*;
+import org.junit.Test;
+import pasta.PASTAJUnitTest;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import java.util.ArrayList;
+
+public class PASTABlackBoxTest extends PASTAJUnitTest {
+${tests}
+
+    private void compareOutput(String testName, File expectedFile, File actualFile) {
+        ArrayList<String> expectedLines = new ArrayList<String>();
+        try {
+            Scanner expectedScn = new Scanner(expectedFile);
+            while(expectedScn.hasNextLine()) {
+                expectedLines.add(expectedScn.nextLine());
+            }
+            expectedScn.close();
+        } catch(FileNotFoundException e) {
+            throw new RuntimeException(new FileNotFoundException("Expected file for test " + testName + " not found."));
+        }
+
+        ArrayList<String> actualLines = new ArrayList<String>();
+        try {
+            Scanner actualScn = new Scanner(actualFile);
+            while(actualScn.hasNextLine()) {
+                actualLines.add(actualScn.nextLine());
+            }
+            actualScn.close();
+        } catch(FileNotFoundException e) {
+            if(expectedLines.size() == 0) {
+                return;
+            }
+            fail("No output produced");
+        }
+
+        int e = expectedLines.size();
+        int a = actualLines.size();
+        boolean plural = Math.abs(a - e) > 1;
+        if(e > a) {
+            String message = "Missing " + (e - a) + " line" + (plural ? "s" : "") + " of output.";
+            fail(message);
+        } else if(a > e) {
+            String message = "You produced " + (a - e) + " line" + (plural ? "s" : "") + " of extra output.";
+            fail(message);
+        }
+
+        for(int i = 0; i < e; i++) {
+            String message = "Line " + (i + 1) + " incorrect;";
+            String expected = expectedLines.get(i);
+            String actual = actualLines.get(i);
+            assertEquals(message, expected, actual);
+        }
+    }
+}

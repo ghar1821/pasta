@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: auto-generated file. -->
+<project basedir="." default="build" name="assessment">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+	<property name="build-full-path" 
+            location="${buildscriptfilename}"/>
+	<property name="run-full-path" 
+            location="${runscriptfilename}"/>
+    <target name="init">
+        <mkdir dir="bin"/>
+    </target>
+	{$?{hasbuild}
+	<target depends="init" name="build">
+		<exec executable="${build-full-path}" 
+			dir="${basedir}"
+			timeout="${buildtimeout}"
+			{$?{buildoutputfilename}output="${buildoutputfilename}"}
+			{$?{builderrorfilename}error="${builderrorfilename}"}
+			{$?{buildinputfilename}input="${buildinputfilename}"}
+			>
+			${buildEnv}
+			${buildArgs}
+		</exec>
+	</target>
+	}
+	{$?{hasrun}
+	<target depends="build" name="execute">
+		<exec executable="${run-full-path}" 
+			dir="${basedir}"
+			timeout="${runtimeout}"
+			{$?{runoutputfilename}output="${runoutputfilename}"}
+			{$?{runerrorfilename}error="${runerrorfilename}"}
+			{$?{runinputfilename}input="${runinputfilename}"}
+			>
+			${runEnv}
+			${runArgs}
+		</exec>
+	</target>
+	}
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+</project>

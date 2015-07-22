@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: auto-generated file. -->
+<project basedir="." default="build" name="assessment">
+
+	<target name="makeBin">
+		<mkdir dir="bin"/>
+	</target>
+	<target name="copyNonC">
+        <echo message="Copying non-code from '${basedir}' to 'bin'"/>
+		<copy includeemptydirs="false" todir="bin">
+            <fileset dir="${basedir}">
+				<exclude name="**/*.cpp"/>
+				<exclude name="**/*.cc"/>
+				<exclude name="**/*.h"/>
+				<exclude name="**/*.java"/>
+                <exclude name="build.xml"/>
+            </fileset>
+        </copy>
+	</target>
+
+    <target name="init">
+        <property environment="env"/>
+		<property name="debuglevel" value="source,lines,vars"/>
+        <property name="target" value="1.7"/>
+        <property name="source" value="1.7"/>
+    	<path id="lib.jars">
+    		<fileset dir="${libdirectory}">
+                <exclude name="ant-contrib/**"/>
+    			<include name="**/*.jar"/>
+                <include name="**/*.class"/>
+    		</fileset>
+    	</path>
+        <path id="assessment.classpath">
+            <pathelement location="bin"/>
+            <path refid="lib.jars"/>
+        </path>
+        <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+          <classpath>
+            <pathelement location="${libdirectory}/ant-contrib/ant-contrib-1.0b3.jar"/>
+          </classpath>
+        </taskdef>
+		<taskdef resource="cpptasks.tasks">
+          <classpath>
+            <pathelement location="${libdirectory}/ant-contrib/cpptasks.jar"/>
+          </classpath>
+        </taskdef>
+		<taskdef resource="cpptasks.types">
+          <classpath>
+            <pathelement location="${libdirectory}/ant-contrib/cpptasks.jar"/>
+          </classpath>
+        </taskdef>
+    </target>
+
+    <target name="setup" depends="makeBin, copyNonC">
+    </target>
+    <target name="clean">
+        <echo message="Deleting directory 'bin'"/>
+        <!--<delete dir="bin"/>-->
+    </target>
+    <target name="build" depends="init, setup">
+        <echo message="Using g++ to compile CPP code"/>
+		<cc
+			name="g++"
+			outtype="executable"
+			subsystem="console"
+			outfile="bin/${solutionName}"
+			objdir="bin">
+        	<fileset dir="${basedir}">
+				<include name="**/*.cpp"/>
+				<include name="**/*.cc"/>
+			</fileset>
+			<syslibset libs="stdc++"/>
+        </cc>
+		<echo message="Using javac to compile Java code"/>
+        <javac
+            fork="yes"
+            includeantruntime="false"
+            debug="true"
+            debuglevel="${debuglevel}"
+            destdir="bin"
+            source="${source}"
+            target="${target}">
+            <src path="."/>
+            <classpath refid="assessment.classpath"/>
+        </javac>
+    </target>
+
+    <target name="run">
+        <echo message="Executing '${testName}'"/>
+        <foreach param="bbTestData" list="${allTestData}" target="doTest"/>
+    </target>
+    <target name="doTest">
+        <script language="javascript"> <![CDATA[
+            arr = project.getProperty('bbTestData').split('\\|');
+            project.setProperty('bbTestName', arr[0]);
+            project.setProperty('bbTestTimeout', arr[1]);
+            if(arr[2] == undefined) {
+                project.setProperty('bbTestCommandLine', "");
+            } else {
+                project.setProperty('bbTestCommandLine', arr[2]);
+            }
+        ]]></script>
+        <echo message="Running ./${solutionName} ${bbTestCommandLine}"/>
+        <exec
+			executable="./${solutionName}"
+			dir="bin"
+			input="bin/bbinput/${bbTestName}"
+            output="bin/userout/${bbTestName}"
+			error="${runErrorsFile}"
+			append="true"
+			timeout="${bbTestTimeout}">
+			<arg line="${bbTestCommandLine}" />
+		</exec>
+    </target>
+
+	<target name="test">
+        <echo message="Running JUnit '${testName}'"/>
+        <junit
+            filtertrace="${filterStackTraces}"
+            fork="yes"
+            timeout="${maxtimeallowed}"
+            dir="bin">
+			<formatter type="xml" />
+            <test name="${testName}" outfile="${testOutputFile}" />
+            <classpath refid="assessment.classpath"/>
+        </junit>
+    </target>
+</project>

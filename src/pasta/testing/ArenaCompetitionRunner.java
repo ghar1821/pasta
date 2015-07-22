@@ -1,15 +1,15 @@
 package pasta.testing;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 
-import pasta.util.ProjectProperties;
+import pasta.util.PASTAUtil;
 
 public class ArenaCompetitionRunner extends Runner {
 
-	private static String TEMPLATE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "arena_comp_template.xml";
+	private static String TEMPLATE_FILENAME = "arena_comp_template.xml";
 	
-	public ArenaCompetitionRunner() {
-		super(new File(TEMPLATE_FILENAME));
+	public ArenaCompetitionRunner() throws FileNotFoundException {
+		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 		setMaxRunTime(1800000);
 		setRepeats(false);
 		setCompetitionCodeLocation("src");

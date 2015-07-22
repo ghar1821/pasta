@@ -32,14 +32,14 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<div style="float: left">
-	<button style="float: left; text-align: center;"
-		onclick="location.href='../../run/${assessmentId}/'">Run
-		MOSS</button>
+<div class='vertical-block'>
+	<button onclick="location.href='../../run/${assessmentId}/'">Run MOSS</button>
 </div>
 
-<c:forEach var="moss" items="${mossList}">
-	<h2>
-		<a href="${moss.key}/">${moss.value}</a>
-	</h2>
-</c:forEach>
+<div class='vertical-block'>
+	<c:forEach var="moss" items="${mossList}">
+		<h2>
+			<a href="${moss.key}/">${moss.value}</a>
+		</h2>
+	</c:forEach>
+</div>

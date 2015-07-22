@@ -1,16 +1,16 @@
 package pasta.testing;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 
 import pasta.testing.options.ScriptOptions;
-import pasta.util.ProjectProperties;
+import pasta.util.PASTAUtil;
 
 public class GenericScriptRunner extends Runner {
 
-	private static String TEMPLATE_FILENAME = ProjectProperties.getInstance().getProjectLocation() + "build_templates" + File.separator + "generic_script.xml";
+	private static String TEMPLATE_FILENAME = "generic_script.xml";
 
-	public GenericScriptRunner() {
-		super(new File(TEMPLATE_FILENAME));
+	public GenericScriptRunner() throws FileNotFoundException {
+		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 	}
 	
 	public void setBuildScript(ScriptOptions script) {

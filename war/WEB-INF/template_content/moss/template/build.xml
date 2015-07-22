@@ -1,0 +1,16 @@
+<project name="MyProject" default="run" basedir=".">
+    <target name="run">
+        <property name="assessment" value=""/>
+        <property name="defaultLocation" value=""/>
+        <chmod file="*.sh" perm="ug+x"/>
+        <chmod file="*" perm="ug+rw"/>    
+	<exec executable="bash" newenvironment="false" dir=".">
+		<arg value="clean.sh"/>
+	</exec> 
+        <exec executable="bash" newenvironment="false" dir=".">
+            <arg value="runMoss.sh"/>
+            <arg value="${defaultLocation}"/>
+            <arg value="${assessment}"/>
+        </exec>
+    </target>
+</project>

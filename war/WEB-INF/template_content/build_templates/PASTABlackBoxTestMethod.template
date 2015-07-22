@@ -1,0 +1,7 @@
+    @Test (timeout=${timeout})
+    public void ${testName}() {
+        File expectedFile = new File("bbexpected/${testName}");
+        File actualFile = new File("userout/${testName}");
+        String testName = "${testName}";
+        compareOutput(testName, expectedFile, actualFile);
+    }

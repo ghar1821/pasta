@@ -56,6 +56,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -443,6 +444,38 @@ public class PASTAUtil {
 				in.close();
 			} catch (Exception e) {
 				return false;
+			}
+		}
+	}
+	
+	public static File getTemplateResource(String pathInProject) throws FileNotFoundException {
+		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);
+		if(file.exists() && !file.isDirectory()) {
+			return file;
+		}
+		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
+		if(copyFile.exists()) {
+			copy(copyFile, file);
+			return file;
+		}
+		throw new FileNotFoundException("Template resource \"" + pathInProject + "\" not found.");
+	}
+	
+	private static void copy(File from, File to) {
+		if(from.isDirectory()) {
+			to.mkdirs();
+			for(File child : from.listFiles()) {
+				copy(child, new File(to, child.getName()));
+			}
+		} else {
+			if(to.exists()) {
+				return;
+			}
+			logger.info("Copying template file " + from + " to " + to);
+			try {
+				FileUtils.copyFile(from, to);
+			} catch (IOException e) {
+				logger.error("Error copying " + from, e);
 			}
 		}
 	}

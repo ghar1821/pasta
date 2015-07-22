@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +120,9 @@ public class ProjectProperties {
 	private CompetitionDAO compDAO;
 	@Autowired
 	private UserDAO userDAO;
+	
+	@Autowired
+	private ServletContext servletContext;
 
 	private ProjectProperties(Map<String, String> settings) {
 		projectLocation = settings.get("location");
@@ -376,5 +381,9 @@ public class ProjectProperties {
 	
 	public UserDAO getUserDAO() {
 		return userDAO;
+	}
+	
+	public ServletContext getServletContext() {
+		return servletContext;
 	}
 }
