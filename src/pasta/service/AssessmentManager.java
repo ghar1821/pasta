@@ -40,6 +40,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.form.NewAssessmentForm;
+import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -47,8 +49,6 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.NewAssessmentForm;
-import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;

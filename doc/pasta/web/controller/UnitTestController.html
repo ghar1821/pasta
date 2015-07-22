@@ -260,7 +260,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../../pasta/web/controller/UnitTestController.html#updateTestCode(java.lang.String, pasta.domain.upload.NewUnitTest, pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model)">updateTestCode</a></strong>(java.lang.String&nbsp;testName,
+<td class="colLast"><code><strong><a href="../../../pasta/web/controller/UnitTestController.html#updateTestCode(java.lang.String, pasta.domain.upload.NewUnitTest, pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model)">updateTestCode</a></strong>(java.lang.String&nbsp;testName,
               <a href="../../../pasta/domain/upload/NewUnitTest.html" title="class in pasta.domain.upload">NewUnitTest</a>&nbsp;form,
               <a href="../../../pasta/domain/upload/Submission.html" title="class in pasta.domain.upload">Submission</a>&nbsp;subForm,
               org.springframework.validation.BindingResult&nbsp;result,
@@ -520,7 +520,7 @@ public&nbsp;void&nbsp;downloadUnitTest(@PathVariable(value="testName")
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>testName</code> - the short name (no whitespace) of the unit test</dd><dd><code>model</code> - the model being used</dd><dd><code>response</code> - the response being used to serve the zip</dd></dl>
 </li>
 </ul>
-<a name="updateTestCode(java.lang.String, pasta.domain.upload.NewUnitTest, pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model)">
+<a name="updateTestCode(java.lang.String, pasta.domain.upload.NewUnitTest, pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -548,7 +548,7 @@ public&nbsp;java.lang.String&nbsp;updateTestCode(@PathVariable(value="testName")
  If the user is an instructor:
  <ul>
         <li><b>updating code</b> - done using <a href="../../../pasta/service/UnitTestManager.html#updateUnitTestCode(pasta.domain.upload.NewUnitTest)"><code>UnitTestManager.updateUnitTestCode(NewUnitTest)</code></a></li>
-        <li><b>testing test code</b> - done using <a href="../../../pasta/service/UnitTestManager.html#testUnitTest(pasta.domain.upload.Submission, java.lang.String)"><code>UnitTestManager.testUnitTest(Submission, String)</code></a></li> 
+        <li><b>testing test code</b> - done using <a href="../../../pasta/service/UnitTestManager.html#testUnitTest(pasta.domain.form.Submission, java.lang.String)"><code>UnitTestManager.testUnitTest(Submission, String)</code></a></li> 
  </ul></div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>testName</code> - the short name (no whitespace) of the test</dd><dd><code>form</code> - used for updating the unit test code</dd><dd><code>subForm</code> - used for testing the unit test code</dd><dd><code>result</code> - binding results used for feedback.</dd><dd><code>model</code> - the model being used.</dd>
 <dt><span class="strong">Returns:</span></dt><dd>"redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"</dd></dl>

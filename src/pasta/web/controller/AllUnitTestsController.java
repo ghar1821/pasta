@@ -47,8 +47,8 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.template.UnitTest;
-import pasta.domain.upload.NewUnitTestForm;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
 

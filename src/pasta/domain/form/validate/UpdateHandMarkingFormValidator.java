@@ -1,11 +1,11 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import pasta.domain.upload.UpdateHandMarkingForm;
+import pasta.domain.form.UpdateHandMarkingForm;
 import pasta.service.HandMarkingManager;
 
 /**

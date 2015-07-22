@@ -44,8 +44,8 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetitionForm;
 import pasta.domain.user.PASTAUser;
 import pasta.service.CompetitionManager;
 

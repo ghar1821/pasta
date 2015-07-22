@@ -46,8 +46,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.form.UpdateUsersForm;
 import pasta.domain.template.Assessment;
-import pasta.domain.upload.UpdateUsersForm;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;

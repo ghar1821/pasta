@@ -44,8 +44,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.form.UpdateGroupsForm;
 import pasta.domain.template.Assessment;
-import pasta.domain.upload.UpdateGroupsForm;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;

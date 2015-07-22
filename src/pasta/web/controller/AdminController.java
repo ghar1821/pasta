@@ -51,8 +51,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
-import pasta.domain.upload.UpdateUsersForm;
-import pasta.domain.upload.validate.UpdateUsersFormValidator;
+import pasta.domain.form.UpdateUsersForm;
+import pasta.domain.form.validate.UpdateUsersFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.UserManager;

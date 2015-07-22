@@ -1,10 +1,10 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import pasta.domain.upload.TestUnitTestForm;
+import pasta.domain.form.TestUnitTestForm;
 
 /**
  * @author Joshua Stretton

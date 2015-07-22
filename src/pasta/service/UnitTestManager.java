@@ -50,13 +50,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.form.NewUnitTestForm;
+import pasta.domain.form.TestUnitTestForm;
+import pasta.domain.form.UpdateUnitTestForm;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
-import pasta.domain.upload.NewUnitTestForm;
-import pasta.domain.upload.TestUnitTestForm;
-import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;

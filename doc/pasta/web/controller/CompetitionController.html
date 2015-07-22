@@ -271,7 +271,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../../pasta/web/controller/CompetitionController.html#submitNewPlayer(org.springframework.ui.Model, java.lang.String, pasta.domain.upload.NewPlayer, org.springframework.validation.BindingResult)">submitNewPlayer</a></strong>(org.springframework.ui.Model&nbsp;model,
+<td class="colLast"><code><strong><a href="../../../pasta/web/controller/CompetitionController.html#submitNewPlayer(org.springframework.ui.Model, java.lang.String, pasta.domain.form.NewPlayer, org.springframework.validation.BindingResult)">submitNewPlayer</a></strong>(org.springframework.ui.Model&nbsp;model,
                java.lang.String&nbsp;competitionName,
                <a href="../../../pasta/domain/upload/NewPlayer.html" title="class in pasta.domain.upload">NewPlayer</a>&nbsp;playerForm,
                org.springframework.validation.BindingResult&nbsp;result)</code>
@@ -845,7 +845,7 @@ public&nbsp;java.lang.String&nbsp;manageMyPlayers(org.springframework.ui.Model&n
 <dt><span class="strong">Returns:</span></dt><dd>"redirect:/login/" or "redirect:/home/" or "assessment/competition/players"</dd></dl>
 </li>
 </ul>
-<a name="submitNewPlayer(org.springframework.ui.Model, java.lang.String, pasta.domain.upload.NewPlayer, org.springframework.validation.BindingResult)">
+<a name="submitNewPlayer(org.springframework.ui.Model, java.lang.String, pasta.domain.form.NewPlayer, org.springframework.validation.BindingResult)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -867,7 +867,7 @@ public&nbsp;java.lang.String&nbsp;submitNewPlayer(org.springframework.ui.Model&n
  
  If the user is not a tutor and the competition isn't live: redirect to home.
  
- Validate the player using <a href="../../../pasta/service/CompetitionManager.html#addPlayer(pasta.domain.upload.NewPlayer, java.lang.String, java.lang.String, org.springframework.validation.BindingResult)"><code>CompetitionManager.addPlayer(NewPlayer, String, String, BindingResult)</code></a>,
+ Validate the player using <a href="../../../pasta/service/CompetitionManager.html#addPlayer(pasta.domain.form.NewPlayer, java.lang.String, java.lang.String, org.springframework.validation.BindingResult)"><code>CompetitionManager.addPlayer(NewPlayer, String, String, BindingResult)</code></a>,
  if the player fails validation, give the feedback to the user.
  
  ATTRIBUTES:

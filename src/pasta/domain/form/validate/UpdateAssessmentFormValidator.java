@@ -1,16 +1,16 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
+import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.UpdateAssessmentForm;
 import pasta.domain.user.PASTAGroup;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;

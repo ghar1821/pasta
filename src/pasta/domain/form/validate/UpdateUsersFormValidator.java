@@ -1,4 +1,4 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import pasta.domain.upload.UpdateUsersForm;
+import pasta.domain.form.UpdateUsersForm;
 import pasta.util.ProjectProperties;
 
 /**

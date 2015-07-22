@@ -45,13 +45,13 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.form.NewCompetitionForm;
+import pasta.domain.form.NewPlayer;
+import pasta.domain.form.UpdateCompetitionForm;
+import pasta.domain.form.validate.UpdateCompetitionFormValidator;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetitionForm;
-import pasta.domain.upload.NewPlayer;
-import pasta.domain.upload.UpdateCompetitionForm;
-import pasta.domain.upload.validate.UpdateCompetitionFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.service.CompetitionManager;
 import pasta.service.UserManager;

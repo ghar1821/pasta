@@ -63,6 +63,8 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.form.UpdateAssessmentForm;
+import pasta.domain.form.validate.UpdateAssessmentFormValidator;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -71,8 +73,6 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.UpdateAssessmentForm;
-import pasta.domain.upload.validate.UpdateAssessmentFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.CompetitionManager;

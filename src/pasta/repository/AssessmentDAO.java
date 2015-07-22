@@ -44,6 +44,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
+import pasta.domain.form.NewHandMarkingForm;
 import pasta.domain.result.DueDateComparator;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarkData;
@@ -52,7 +53,6 @@ import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.domain.upload.NewHandMarkingForm;
 import pasta.util.ProjectProperties;
 
 /**

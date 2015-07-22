@@ -27,89 +27,57 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-package pasta.domain.upload;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+package pasta.domain.form;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import pasta.domain.template.UnitTest;
 
 /**
- * Form object for a new assessment.
+ * Form object to test a unit test assessment module.
  * 
  * @author Joshua Stretton
  * @version 1.0
- * @since 2015-04-07
+ * @since 2015-04-02
  *
  */
-public class NewAssessmentForm {
-	public static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-	
-	@NotEmpty
-	@Length(max=256)
-	private String name;
+public class TestUnitTestForm {
 	
 	@Min(0)
-	private double marks;
+	private long id;
 	
-	@NotNull
-	private Date dueDate;
+	@Length(max=64)
+	private String solutionName;
+
+	private CommonsMultipartFile file;
 	
-	@Min(0)
-	private int maxSubmissions;
-	
-	public NewAssessmentForm() {
-		this.name = "";
-		this.marks = 0.0;
-		this.dueDate = new Date();
-		this.maxSubmissions = 0;
+	public TestUnitTestForm(UnitTest base) {
+		this.id = base.getId();
+		this.solutionName = "";
+		this.file = null;
 	}
 	
-	public String getStrDate() {
-		if(dueDate == null) {
-			return "";
-		}
-		return sdf.format(dueDate);
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
 	}
 	
-	public void setStrDate(String date) {
-		if(date == null || date.isEmpty()) {
-			dueDate = null;
-		}
-		try {
-			dueDate = sdf.parse(date);
-		} catch (ParseException e) {
-			dueDate = null;
-		}
+	public String getSolutionName() {
+		return solutionName;
 	}
-	
-	public String getName() {
-		return name;
+	public void setSolutionName(String solutionName) {
+		this.solutionName = solutionName;
 	}
-	public void setName(String name) {
-		this.name = name;
+
+	public CommonsMultipartFile getFile() {
+		return file;
 	}
-	public double getMarks() {
-		return marks;
-	}
-	public void setMarks(double marks) {
-		this.marks = marks;
-	}
-	public Date getDueDate() {
-		return dueDate;
-	}
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
-	public int getMaxSubmissions() {
-		return maxSubmissions;
-	}
-	public void setMaxSubmissions(int maxSubmissions) {
-		this.maxSubmissions = maxSubmissions;
+	public void setFile(CommonsMultipartFile file) {
+		this.file = file;
 	}
 }

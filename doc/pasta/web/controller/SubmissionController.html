@@ -346,7 +346,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../../pasta/web/controller/SubmissionController.html#submitAssessment(java.lang.String, pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">submitAssessment</a></strong>(java.lang.String&nbsp;username,
+<td class="colLast"><code><strong><a href="../../../pasta/web/controller/SubmissionController.html#submitAssessment(java.lang.String, pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">submitAssessment</a></strong>(java.lang.String&nbsp;username,
                 <a href="../../../pasta/domain/upload/Submission.html" title="class in pasta.domain.upload">Submission</a>&nbsp;form,
                 org.springframework.validation.BindingResult&nbsp;result,
                 org.springframework.ui.Model&nbsp;model,
@@ -356,7 +356,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../../pasta/web/controller/SubmissionController.html#submitAssessment(pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">submitAssessment</a></strong>(<a href="../../../pasta/domain/upload/Submission.html" title="class in pasta.domain.upload">Submission</a>&nbsp;form,
+<td class="colLast"><code><strong><a href="../../../pasta/web/controller/SubmissionController.html#submitAssessment(pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">submitAssessment</a></strong>(<a href="../../../pasta/domain/upload/Submission.html" title="class in pasta.domain.upload">Submission</a>&nbsp;form,
                 org.springframework.validation.BindingResult&nbsp;result,
                 org.springframework.ui.Model&nbsp;model,
                 javax.servlet.http.HttpSession&nbsp;session)</code>
@@ -755,7 +755,7 @@ public&nbsp;java.lang.String&nbsp;home(org.springframework.ui.Model&nbsp;model,
 <dt><span class="strong">Returns:</span></dt><dd>"redirect:/login/" or "user/tutorHome" or "user/studentHome"</dd></dl>
 </li>
 </ul>
-<a name="submitAssessment(pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">
+<a name="submitAssessment(pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -784,7 +784,7 @@ public&nbsp;java.lang.String&nbsp;submitAssessment(@ModelAttribute(value="submis
  
  If the submission is validated correctly and doesn't encounter any
  of the fail conditions, it's submitted using 
- <a href="../../../pasta/service/SubmissionManager.html#submit(java.lang.String, pasta.domain.upload.Submission)"><code>SubmissionManager.submit(String, Submission)</code></a>
+ <a href="../../../pasta/service/SubmissionManager.html#submit(java.lang.String, pasta.domain.form.Submission)"><code>SubmissionManager.submit(String, Submission)</code></a>
  
  Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission buffer such
  that pressing reload has no chance of resubmitting your form.</div>
@@ -999,7 +999,7 @@ public&nbsp;java.lang.String&nbsp;viewStudent(@PathVariable(value="username")
 <dt><span class="strong">Returns:</span></dt><dd>"redirect:/login/" or "redirect:/home/" or "user/studentHome"</dd></dl>
 </li>
 </ul>
-<a name="submitAssessment(java.lang.String, pasta.domain.upload.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">
+<a name="submitAssessment(java.lang.String, pasta.domain.form.Submission, org.springframework.validation.BindingResult, org.springframework.ui.Model, javax.servlet.http.HttpSession)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1030,7 +1030,7 @@ public&nbsp;java.lang.String&nbsp;submitAssessment(@PathVariable(value="username
  
  If the submission is validated correctly and doesn't encounter any
  of the fail conditions, it's submitted using 
- <a href="../../../pasta/service/SubmissionManager.html#submit(java.lang.String, pasta.domain.upload.Submission)"><code>SubmissionManager.submit(String, Submission)</code></a>
+ <a href="../../../pasta/service/SubmissionManager.html#submit(java.lang.String, pasta.domain.form.Submission)"><code>SubmissionManager.submit(String, Submission)</code></a>
  
  Then it's redirected to $PASTAUrl$/mirror/ to clear the form submission buffer such
  that pressing reload has no chance of resubmitting your form.</div>

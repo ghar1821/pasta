@@ -1,4 +1,4 @@
-package pasta.domain.upload;
+package pasta.domain.form;
 
 public enum UnitTestType {
 	JUNIT("JUnit test suite"), BLACK_BOX("Black Box test suite");

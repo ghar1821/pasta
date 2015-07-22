@@ -15,8 +15,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.form.UpdateGroupsForm;
 import pasta.domain.template.Assessment;
-import pasta.domain.upload.UpdateGroupsForm;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.UserDAO;

@@ -1,4 +1,4 @@
-package pasta.domain.upload;
+package pasta.domain.form;
 
 import java.util.HashMap;
 import java.util.List;

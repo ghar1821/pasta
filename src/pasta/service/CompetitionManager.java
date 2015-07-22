@@ -47,6 +47,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import pasta.domain.form.NewCompetitionForm;
+import pasta.domain.form.NewPlayer;
+import pasta.domain.form.UpdateCompetitionForm;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.domain.result.CompetitionMarks;
@@ -54,9 +57,6 @@ import pasta.domain.result.CompetitionResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetitionForm;
-import pasta.domain.upload.NewPlayer;
-import pasta.domain.upload.UpdateCompetitionForm;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.PlayerDAO;
 import pasta.repository.ResultDAO;
@@ -104,7 +104,7 @@ public class CompetitionManager {
 	
 
 	/**
-	 * Add a new competition from {@link pasta.domain.upload.NewCompetitionForm}
+	 * Add a new competition from {@link pasta.domain.form.NewCompetitionForm}
 	 * 
 	 * @param form the new competition form
 	 */
@@ -253,10 +253,10 @@ public class CompetitionManager {
 	/**
 	 * Add a player
 	 * 
-	 * @param playerForm the new player form. See {@link pasta.domain.upload.NewPlayer}
+	 * @param playerForm the new player form. See {@link pasta.domain.form.NewPlayer}
 	 * @param user the user
 	 * @param competitionId the id of the competition
-	 * @param result the BindingResult which can be user to give the user feedback and reject the {@link pasta.domain.upload.NewPlayer}
+	 * @param result the BindingResult which can be user to give the user feedback and reject the {@link pasta.domain.form.NewPlayer}
 	 */
 	public void addPlayer(NewPlayer playerForm, PASTAUser user, 
 			long competitionId, BindingResult result) {

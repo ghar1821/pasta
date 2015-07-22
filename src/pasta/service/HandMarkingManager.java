@@ -48,12 +48,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.form.NewHandMarkingForm;
+import pasta.domain.form.UpdateHandMarkingForm;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.upload.NewHandMarkingForm;
-import pasta.domain.upload.UpdateHandMarkingForm;
 import pasta.repository.AssessmentDAO;
 import pasta.util.ProjectProperties;
 

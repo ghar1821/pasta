@@ -70,15 +70,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.form.NewCompetitionForm;
+import pasta.domain.form.NewUnitTestForm;
+import pasta.domain.form.Submission;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
-import pasta.domain.upload.NewCompetitionForm;
-import pasta.domain.upload.NewUnitTestForm;
-import pasta.domain.upload.Submission;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.scheduler.AssessmentJob;

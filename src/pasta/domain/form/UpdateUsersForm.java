@@ -1,4 +1,4 @@
-package pasta.domain.upload;
+package pasta.domain.form;
 
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 

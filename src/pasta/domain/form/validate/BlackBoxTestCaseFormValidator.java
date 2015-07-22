@@ -1,10 +1,10 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-import pasta.domain.upload.BlackBoxTestCaseForm;
+import pasta.domain.form.BlackBoxTestCaseForm;
 
 /**
  * @author Joshua Stretton

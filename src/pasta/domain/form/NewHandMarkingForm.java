@@ -27,57 +27,29 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the PASTA Project.
  */
 
-package pasta.domain.upload;
-
-import javax.validation.constraints.Min;
+package pasta.domain.form;
 
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
-
-import pasta.domain.template.UnitTest;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * Form object to test a unit test assessment module.
+ * Form object for a new hand marking assessment module.
  * 
- * @author Joshua Stretton
- * @version 1.0
- * @since 2015-04-02
+ * @author Alex Radu
+ * @version 2.0
+ * @since 2012-12-13
  *
  */
-public class TestUnitTestForm {
-	
-	@Min(0)
-	private long id;
-	
-	@Length(max=64)
-	private String solutionName;
+public class NewHandMarkingForm {
+	@NotEmpty
+	@Length(max=256)
+	private String name;
 
-	private CommonsMultipartFile file;
-	
-	public TestUnitTestForm(UnitTest base) {
-		this.id = base.getId();
-		this.solutionName = "";
-		this.file = null;
-	}
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-	
-	public String getSolutionName() {
-		return solutionName;
-	}
-	public void setSolutionName(String solutionName) {
-		this.solutionName = solutionName;
+	public String getName() {
+		return name;
 	}
 
-	public CommonsMultipartFile getFile() {
-		return file;
-	}
-	public void setFile(CommonsMultipartFile file) {
-		this.file = file;
+	public void setName(String name) {
+		this.name = name;
 	}
 }

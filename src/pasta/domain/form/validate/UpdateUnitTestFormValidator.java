@@ -1,4 +1,4 @@
-package pasta.domain.upload.validate;
+package pasta.domain.form.validate;
 
 import java.util.HashSet;
 
@@ -8,9 +8,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import pasta.domain.form.BlackBoxTestCaseForm;
+import pasta.domain.form.UpdateUnitTestForm;
 import pasta.domain.template.BlackBoxTest;
-import pasta.domain.upload.BlackBoxTestCaseForm;
-import pasta.domain.upload.UpdateUnitTestForm;
 import pasta.service.UnitTestManager;
 
 /**
