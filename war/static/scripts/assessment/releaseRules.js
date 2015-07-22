@@ -19,7 +19,58 @@ function reloadEvents($parentDiv) {
 		var $closestParent = $(this).closest('.ruleParent');
 		var ruleName = $(this).children(':selected').val();
 		var pathPrefix = $closestParent.attr('pathPrefix');
-		addRule($closestParent, ruleName, pathPrefix);
+		
+		var confirmResult;
+		if($(this).is(".changeRule")) {
+			var type;
+			if(ruleName.endsWith("ReleaseAndRule")) {
+				type="And";
+			} else if(ruleName.endsWith("ReleaseOrRule")) {
+				type="Or";
+			}	
+			if(type){
+				var confirmMessage = "This will change the current rule into a sub-rule of an " + type.toUpperCase() + " rule.\n\n";
+				var currentRuleName = $closestParent.children("#ruleName").val();
+				var currentConj;
+				if(currentRuleName.endsWith("ReleaseAndRule")) {
+					currentConj = "AND";
+				} else if(currentRuleName.endsWith("ReleaseOrRule")) {
+					currentConj = "OR";
+				}
+				if(currentConj) {
+					confirmMessage += "If you would rather convert this " + currentConj + " rule into an " + type.toUpperCase() + " rule, click 'Cancel'.";
+				} else {
+					confirmMessage += "If you would rather replace the rule entirely, click 'Cancel'.";
+				}
+				
+				confirmResult = confirm(confirmMessage);
+				if(confirmResult || currentConj) {
+					$("#releaseRuleForm").append($("<input />", {
+						type: 'hidden',
+						name: 'basePath',
+						value: pathPrefix
+					}));
+					$("#releaseRuleForm").append($("<input />", {
+						type: 'hidden',
+						name: 'newRuleType',
+						value: type
+					}));
+					if(!confirmResult) {
+						$("#releaseRuleForm").append($("<input />", {
+							type: 'hidden',
+							name: 'changeConjunction',
+							value: true
+						}));
+					}
+					var $form = $("#releaseRuleForm");
+					$form.attr("action", $form.attr("action") + "convertToJoin/");
+					$form.submit();
+				}
+			}
+		}
+		if(!confirmResult) {
+			addRule($closestParent, ruleName, pathPrefix);
+		}
 	});
 	
 	// Adding nested form:form elements should merge the forms, but it doesn't always do so

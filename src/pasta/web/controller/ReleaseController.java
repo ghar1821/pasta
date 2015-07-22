@@ -1,12 +1,15 @@
 package pasta.web.controller;
 
 import java.beans.PropertyEditorSupport;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -128,6 +131,69 @@ public class ReleaseController {
 		status.setComplete();
 		model.clear();
 		return "redirect:../../" + assessment.getId() + "/";
+	}
+	
+	@RequestMapping(value = "{assessmentId}/convertToJoin/", method=RequestMethod.POST)
+	public String changeToJoinRule(@ModelAttribute("releaseRuleForm") AssessmentReleaseForm form,
+			@RequestParam(value="newRuleType") String newRuleType,
+			@RequestParam(value="basePath") String basePath,
+			@RequestParam(value="changeConjunction", required=false) Boolean changeConjunction,
+			RedirectAttributes attr) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/.";
+		}
+		
+		// The newly added form (selected as the "change to" rule)
+		AssessmentReleaseForm newForm = new AssessmentReleaseForm("pasta.domain.release.Release" + newRuleType + "Rule");
+		
+		// The rule being changed
+		AssessmentReleaseForm base;
+		
+		boolean isRoot = basePath.equals("releaseRuleForm");
+		if(isRoot) {
+			base = form;
+		} else {
+			// The parent of the rule being changed
+			AssessmentReleaseForm parent;
+			
+			String parentPath = basePath.substring(0, basePath.lastIndexOf('.'));
+			basePath = basePath.substring("releaseRuleForm.".length());
+			
+			BeanWrapper wrapper = new BeanWrapperImpl(form);
+			
+			base = (AssessmentReleaseForm) wrapper.getPropertyValue(basePath);
+			if(parentPath.equals("releaseRuleForm")) {
+				parent = form;
+			} else {
+				parent = (AssessmentReleaseForm) wrapper.getPropertyValue(parentPath);
+			}
+			
+			Iterator<AssessmentReleaseForm> subRuleIt = parent.getRules().iterator();
+			while(subRuleIt.hasNext()) {
+				if(subRuleIt.next() == base) {
+					subRuleIt.remove();
+					break;
+				}
+			}
+			parent.getRules().add(newForm);
+		}
+		
+		if(changeConjunction != null && changeConjunction) {
+			Iterator<AssessmentReleaseForm> subRuleIt = base.getRules().iterator();
+			while(subRuleIt.hasNext()) {
+				newForm.getRules().add(subRuleIt.next());
+				subRuleIt.remove();
+			}
+		} else {
+			newForm.getRules().add(base);
+		}
+		
+		attr.addFlashAttribute("releaseRuleForm", isRoot ? newForm : form);
+		return "redirect:../";
 	}
 	
 	@RequestMapping(value = "{assessmentId}/load/")
