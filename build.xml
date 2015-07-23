@@ -2,6 +2,7 @@
 
 <project name="PASTA" basedir="." default="usage">
 	<property file="build.properties"/>
+	<property file="war/WEB-INF/classes/database.properties"/>
 
     <property name="src.dir" value="src"/>
     <property name="web.dir" value="war"/>
@@ -46,7 +47,100 @@
 	
 	<target name="cycle" depends="stop,clean,deploy,start">
 	</target>
-	
+
+	<target name="quick-cycle" depends="stop,clean-classes,clean-static,deploy-classes,deploy-static,start">
+	</target>
+
+	<target name="cycle-static" depends="stop,clean-static,deploy-static,start">
+	</target>
+
+	<target name="clean-static">
+		<delete failonerror="false" dir="${deploy.path}/${name}/static/"/>
+		<antcall target="clean-jsp"/>
+	</target>
+
+	<target name="deploy-static">
+		<copy todir="${deploy.path}/${name}/static/" preservelastmodified="true">
+            <fileset dir="${web.dir}/static/">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+		<antcall target="deploy-jsp"/>
+	</target>
+
+	<target name="cycle-messages" depends="stop,clean-messages,deploy-messages,start">
+	</target>
+
+	<target name="clean-messages">
+		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/classes/messages.properties"/>
+	</target>
+
+	<target name="deploy-messages">
+		<copy file="${web.dir}/WEB-INF/classes/messages.properties"
+			tofile="${deploy.path}/${name}/WEB-INF/classes/messages.properties" preservelastmodified="true"/>
+	</target>
+
+	<target name="cycle-templates" depends="stop,clean-templates,deploy-templates,start">
+	</target>
+
+	<target name="clean-templates">
+		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/template_content/"/>
+	</target>
+
+	<target name="deploy-templates">
+		<copy todir="${deploy.path}/${name}/WEB-INF/template_content/" preservelastmodified="true">
+			<fileset dir="${web.dir}/WEB-INF/template_content/" />
+        </copy>
+	</target>
+
+	<target name="cycle-jsp" depends="stop,clean-jsp,deploy-jsp,start">
+	</target>
+
+	<target name="clean-jsp">
+		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/jsp/"/>
+		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/tags/"/>
+		<delete failonerror="false" dir="${deploy.path}/${name}/decorators/"/>
+	</target>
+
+	<target name="deploy-jsp">
+		<copy todir="${deploy.path}/${name}/WEB-INF/jsp/" preservelastmodified="true">
+			<fileset dir="${web.dir}/WEB-INF/jsp/">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+		<copy todir="${deploy.path}/${name}/WEB-INF/tags/" preservelastmodified="true">
+			<fileset dir="${web.dir}/WEB-INF/tags/">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+		<copy todir="${deploy.path}/${name}/decorators/" preservelastmodified="true">
+			<fileset dir="${web.dir}/decorators/">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+	</target>
+
+	<target name="cycle-classes" depends="stop,clean-classes,deploy-classes,start">
+		<antcall target="reload"/>
+	</target>
+
+	<target name="deploy-classes" depends="build" description="Deploy classes only">
+	    <copy todir="${deploy.path}/${name}/WEB-INF/classes/" preservelastmodified="true">
+	        <fileset dir="${build.dir}">
+	            <include name="**/*.*"/>
+	        </fileset>
+	    </copy>
+	</target>
+
+	<target name="clean-classes">
+		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/classes/"/>
+		<delete failonerror="false">
+		    <fileset dir="${build.dir}" includes="**/*.class"/>
+			<fileset dir="${build.dir}" includes="**/*.xml"/>
+			<fileset dir="${build.dir}" includes="**/*.jsp"/>
+		</delete>
+	</target>
+
 	<target name="clean">
 		<delete failonerror="false" dir="${deploy.path}/${name}"/>
 		<delete failonerror="false">
@@ -86,7 +180,243 @@
             </fileset>
         </copy>
     </target>
-    
+
+
+
+	<target name="findFKs">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+			print='true'
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+
+			SELECT CONCAT ('alter table ',
+			               TABLE_SCHEMA,
+			               '.',
+			               TABLE_NAME,
+			               ' DROP FOREIGN KEY ',
+			               CONSTRAINT_NAME,
+			               ';')
+			  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+			 WHERE CONSTRAINT_TYPE = 'FOREIGN KEY'
+			   AND TABLE_NAME = '${tablename}';
+		</sql>
+	</target>
+
+
+	<target name="emptydb">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+
+			DROP TABLE IF EXISTS rules_class_content;
+			DROP TABLE IF EXISTS rules_class;
+			DROP TABLE IF EXISTS rules_date;
+			DROP TABLE IF EXISTS rules_has_submitted;
+			DROP TABLE IF EXISTS rules_mark_compare;
+			DROP TABLE IF EXISTS rules_stream_content;
+			DROP TABLE IF EXISTS rules_stream;
+			DROP TABLE IF EXISTS rules_submission_count;
+			DROP TABLE IF EXISTS rules_usernames_content;
+			DROP TABLE IF EXISTS rules_usernames;
+			DROP TABLE IF EXISTS rules_release_and_content;
+			DROP TABLE IF EXISTS rules_release_and;
+			DROP TABLE IF EXISTS rules_release_or_content;
+			DROP TABLE IF EXISTS rules_release_or;
+
+			DROP TABLE IF EXISTS assessment_result_hand_marking_joins;
+			DROP TABLE IF EXISTS assessment_result_unit_test_joins;
+			DROP TABLE IF EXISTS hand_marking_map_results;
+
+			DROP TABLE IF EXISTS hand_marking_results;
+			DROP TABLE IF EXISTS hand_marking_data_joins;
+			DROP TABLE IF EXISTS hand_marking_data;
+			DROP TABLE IF EXISTS hand_marking_columns;
+			DROP TABLE IF EXISTS hand_marking_rows;
+			DROP TABLE IF EXISTS weighted_hand_markings;
+			DROP TABLE IF EXISTS weighted_fields;
+			DROP TABLE IF EXISTS hand_markings;
+
+			DROP TABLE IF EXISTS unit_test_case_results;
+			DROP TABLE IF EXISTS assessment_secret_unit_tests;
+			DROP TABLE IF EXISTS assessment_unit_tests;
+			DROP TABLE IF EXISTS weighted_unit_tests;
+			DROP TABLE IF EXISTS unit_test_results;
+			DROP TABLE IF EXISTS j_unit_tests;
+			DROP TABLE IF EXISTS black_box_test_cases;
+			DROP TABLE IF EXISTS black_box_tests;
+			DROP TABLE IF EXISTS unit_tests;
+
+			DROP TABLE IF EXISTS player_history_retired_players;
+			DROP TABLE IF EXISTS player_histories;
+			DROP TABLE IF EXISTS player_results;
+			DROP TABLE IF EXISTS pasta_players;
+
+			DROP TABLE IF EXISTS weighted_competitions;
+			DROP TABLE IF EXISTS competition_assessments;
+			DROP TABLE IF EXISTS competition_completed_arenas;
+			DROP TABLE IF EXISTS competition_outstanding_arenas;
+			DROP TABLE IF EXISTS competition_jobs;
+			DROP TABLE IF EXISTS arena_jobs;
+
+			DROP TABLE IF EXISTS competition_user_results;
+			DROP TABLE IF EXISTS competition_positions;
+			DROP TABLE IF EXISTS competition_percentages;
+			DROP TABLE IF EXISTS result_categories;
+			DROP TABLE IF EXISTS competition_result_data;
+			DROP TABLE IF EXISTS competition_results;
+
+			DROP TABLE IF EXISTS arenas;
+			DROP TABLE IF EXISTS competitions;
+			DROP TABLE IF EXISTS pasta_time;
+
+			DROP TABLE IF EXISTS assessment_group_members;
+			DROP TABLE IF EXISTS assessment_groups;
+			DROP TABLE IF EXISTS assessment_languages;
+			DROP TABLE IF EXISTS assessment_ratings;
+			DROP TABLE IF EXISTS student_assessment_extensions;
+			DROP TABLE IF EXISTS assessment_jobs;
+			DROP TABLE IF EXISTS assessment_results;
+			DROP TABLE IF EXISTS assessments;
+
+		</sql>
+	</target>
+
+	<target name="clearRules">
+			<sql
+			    driver="${jdbc.driverClassName}"
+			    url="${jdbc.url}"
+			    userid="${jdbc.username}"
+			    password="${jdbc.password}"
+			    >
+				<classpath>
+	            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+	            </classpath>
+
+				DROP TABLE IF EXISTS rules_class_content;
+				DROP TABLE IF EXISTS rules_class;
+				DROP TABLE IF EXISTS rules_date;
+				DROP TABLE IF EXISTS rules_has_submitted;
+				DROP TABLE IF EXISTS rules_mark_compare;
+				DROP TABLE IF EXISTS rules_stream_content;
+				DROP TABLE IF EXISTS rules_stream;
+				DROP TABLE IF EXISTS rules_usernames_content;
+				DROP TABLE IF EXISTS rules_usernames;
+				DROP TABLE IF EXISTS rules_release_and_content;
+				DROP TABLE IF EXISTS rules_release_and;
+				DROP TABLE IF EXISTS rules_release_or_content;
+				DROP TABLE IF EXISTS rules_release_or;
+			</sql>
+		</target>
+
+	<target name="clearComps">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+
+			DROP TABLE IF EXISTS player_history_retired_players;
+			DROP TABLE IF EXISTS player_histories;
+			DROP TABLE IF EXISTS player_results;
+			DROP TABLE IF EXISTS pasta_players;
+
+			DROP TABLE IF EXISTS weighted_competitions;
+			DROP TABLE IF EXISTS competition_assessments;
+			DROP TABLE IF EXISTS competition_completed_arenas;
+			DROP TABLE IF EXISTS competition_outstanding_arenas;
+			DROP TABLE IF EXISTS competition_jobs;
+			DROP TABLE IF EXISTS arena_jobs;
+			DROP TABLE IF EXISTS arenas;
+			DROP TABLE IF EXISTS competitions;
+			DROP TABLE IF EXISTS pasta_time;
+		</sql>
+	</target>
+
+	<target name="clearResults">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+			DROP TABLE IF EXISTS assessment_result_hand_marking_joins;
+			DROP TABLE IF EXISTS assessment_result_unit_test_joins;
+
+			DROP TABLE IF EXISTS hand_marking_map_results;
+			DROP TABLE IF EXISTS hand_marking_results;
+
+			DROP TABLE IF EXISTS unit_test_case_results;
+			DROP TABLE IF EXISTS unit_test_results;
+
+			DROP TABLE IF EXISTS assessment_jobs;
+			DROP TABLE IF EXISTS assessment_results;
+		</sql>
+	</target>
+
+	<target name="clearUnitTests">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+			DROP TABLE IF EXISTS assessment_result_unit_test_joins;
+
+			DROP TABLE IF EXISTS unit_test_case_results;
+			DROP TABLE IF EXISTS assessment_secret_unit_tests;
+			DROP TABLE IF EXISTS assessment_unit_tests;
+			DROP TABLE IF EXISTS weighted_unit_tests;
+			DROP TABLE IF EXISTS unit_test_results;
+			DROP TABLE IF EXISTS j_unit_tests;
+			DROP TABLE IF EXISTS unit_tests;
+		</sql>
+	</target>
+
+	<target name="clearHandMarking">
+		<sql
+		    driver="${jdbc.driverClassName}"
+		    url="${jdbc.url}"
+		    userid="${jdbc.username}"
+		    password="${jdbc.password}"
+		    >
+			<classpath>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            </classpath>
+			DROP TABLE IF EXISTS assessment_result_hand_marking_joins;
+			DROP TABLE IF EXISTS hand_marking_map_results;
+			DROP TABLE IF EXISTS hand_marking_results;
+			DROP TABLE IF EXISTS hand_marking_data_joins;
+			DROP TABLE IF EXISTS hand_marking_data;
+			DROP TABLE IF EXISTS hand_marking_columns;
+			DROP TABLE IF EXISTS hand_marking_rows;
+			DROP TABLE IF EXISTS weighted_hand_markings;
+			DROP TABLE IF EXISTS weighted_fields;
+			DROP TABLE IF EXISTS hand_markings;
+		</sql>
+	</target>
+
 <!-- ============================================================== -->
 <!-- Tomcat tasks - remove these if you don't have Tomcat installed -->
 <!-- ============================================================== -->
@@ -116,40 +446,40 @@
     </taskdef>
 
     <target name="install" description="Install application in Tomcat">
-    	<taskdef name="install" 
+    	<taskdef name="install"
 	        classname="org.apache.catalina.ant.InstallTask">
 	        <classpath refid="catalina-ant-classpath"/>
 	    </taskdef>
     </target>
 
     <target name="reload" description="Reload application in Tomcat">
-    	<taskdef name="reload" 
+    	<taskdef name="reload"
 	        classname="org.apache.catalina.ant.ReloadTask">
 	        <classpath refid="catalina-ant-classpath"/>
 	    </taskdef>
     </target>
 
     <target name="start" description="Start Tomcat application">
-    	<taskdef name="start" 
+    	<taskdef name="start"
 	        classname="org.apache.catalina.ant.StartTask">
 	        <classpath refid="catalina-ant-classpath"/>
 	    </taskdef>
     </target>
-	
+
     <target name="stop" description="Stop Tomcat application">
-    	<taskdef name="stop" 
+    	<taskdef name="stop"
 	         classname="org.apache.catalina.ant.StopTask">
 	        <classpath refid="catalina-ant-classpath"/>
 	    </taskdef>
     </target>
-	
+
     <target name="list" description="List Tomcat applications">
-    	<taskdef name="list" 
+    	<taskdef name="list"
 	        classname="org.apache.catalina.ant.ListTask">
 	        <classpath refid="catalina-ant-classpath"/>
 	    </taskdef>
     </target>
-	
+
 	<target name="buildtests" description="Compile test tree java files">
         <mkdir dir="${build.dir}"/>
         <javac destdir="${build.dir}" source="1.7" target="1.7" debug="true"
@@ -158,7 +488,7 @@
             <classpath refid="master-classpath"/>
         </javac>
     </target>
-    
+
     <target name="tests" depends="build, buildtests" description="Run tests">
         <junit printsummary="on"
             fork="false"
@@ -167,15 +497,15 @@
             showoutput="true">
             <classpath refid="master-classpath"/>
             <formatter type="brief" usefile="false"/>
-            
+
             <batchtest>
                 <fileset dir="${build.dir}">
                     <include name="**/*Tests.*"/>
                 </fileset>
             </batchtest>
-            
+
         </junit>
-        
+
         <fail if="tests.failed">
             tests.failed=${tests.failed}
             ***********************************************************
