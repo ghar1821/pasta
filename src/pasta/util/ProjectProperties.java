@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
@@ -180,14 +181,17 @@ public class ProjectProperties {
 		logger.info("Competitions Location set to: " + competitionsLocation);
 		logger.info("Sandbox Location set to: " + sandboxLocation);
 		
+		ProjectProperties.properties = this;
+	}
+	
+	@PostConstruct
+	private void afterInit() {
 		// Copy the lib folder to content
 		try {
 			PASTAUtil.getTemplateResource("lib/");
 		} catch (FileNotFoundException e) {
 			// ignore: no lib folder to copy
 		}
-		
-		ProjectProperties.properties = this;
 	}
 	
 	/**
