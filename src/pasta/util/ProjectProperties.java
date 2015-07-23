@@ -144,7 +144,7 @@ public class ProjectProperties {
 		serverAddresses = new LinkedList<String>();
 
 		if (new File(getProjectLocation() + File.separator + "authentication.settings").exists()) {
-			logger.info("exists");
+			logger.info("authentication info exists");
 			decryptAuthContent();
 		}
 		
@@ -179,6 +179,13 @@ public class ProjectProperties {
 		logger.info("Submissions location set to: " + submissionsLocation);
 		logger.info("Competitions Location set to: " + competitionsLocation);
 		logger.info("Sandbox Location set to: " + sandboxLocation);
+		
+		// Copy the lib folder to content
+		try {
+			PASTAUtil.getTemplateResource("lib/");
+		} catch (FileNotFoundException e) {
+			// ignore: no lib folder to copy
+		}
 		
 		ProjectProperties.properties = this;
 	}
