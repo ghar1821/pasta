@@ -164,6 +164,18 @@ span.icon_undo, div.icon_undo {
 	height: 16px;
 	width: 16px;
 }
+span.icon_locked, div.icon_locked {
+	background-image: url("../images/padlock_closed.png");
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_unlocked, div.icon_unlocked {
+	background-image: url("../images/padlock_open.png");
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
 
 input[type=checkbox].custom-check {
 	display:none;

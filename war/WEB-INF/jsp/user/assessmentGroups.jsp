@@ -42,7 +42,10 @@ either expressed or implied, of the PASTA Project.
 <c:if test="${not empty myGroup}">
 	<div class='boxCard vertical-block float-container'>
 		<div class='horizontal-block'>
-			<h4 class='compact'>Group ${myGroup.number}</h4>
+			<h4 class='compact'>
+				<span class='icon_locked lockToggle' group='${myGroup.id}' ${myGroup.locked ? "" : "style='display:none'"}></span>
+				Group ${myGroup.number}
+			</h4>
 			<p><strong>Current members:</strong>
 			<ul>
 				<c:forEach var="member" items="${myGroup.members}">
@@ -56,6 +59,16 @@ either expressed or implied, of the PASTA Project.
 					<button>Leave Group</button>
 				</form>
 			</div>
+			<div class='horizontal-block float-right lockToggle' group='${myGroup.id}' ${myGroup.locked ? "" : "style='display:none'"}>
+				<form class='lockForm async' action="unlockGroup/${myGroup.id}/" method="post">
+					<button>Unlock Group</button>
+				</form>
+			</div>
+			<div class='horizontal-block float-right lockToggle' group='${myGroup.id}' ${myGroup.locked ? "style='display:none'" : ""}>
+				<form class='lockForm async' action="lockGroup/${myGroup.id}/" method="post">
+					<button>Lock Group</button>
+				</form>
+			</div>
 		</c:if>
 	</div>
 </c:if>
@@ -67,7 +80,10 @@ either expressed or implied, of the PASTA Project.
 <c:forEach var="group" items="${otherGroups}">
 	<div class='boxCard vertical-block float-container'>
 		<div class='horizontal-block'>
-			<h4 class='compact'>Group ${group.number}</h4>
+			<h4 class='compact'>
+				<span class='icon_locked lockToggle' group='${group.id}' ${group.locked ? "" : "style='display:none'"}></span>
+				Group ${group.number}
+			</h4>
 			<p><strong>Current members:</strong>
 			<c:choose>
 				<c:when test="${empty group.members}">
@@ -89,7 +105,7 @@ either expressed or implied, of the PASTA Project.
 						<h2 class='compact'>Group Full</h2>
 					</c:when>
 					<c:otherwise>
-						<c:if test="${!user.tutor && !assessment.groupsLocked}">
+						<c:if test="${!user.tutor && !assessment.groupsLocked && !group.locked}">
 							<form class='joinForm' action="joinGroup/${group.id}/" method="post">
 								<button>Join Group</button>
 							</form>
@@ -97,11 +113,23 @@ either expressed or implied, of the PASTA Project.
 					</c:otherwise>
 				</c:choose>
 			</div>
+			<c:if test="${user.tutor}">
+				<div class='horizontal-block float-right lockToggle' group='${group.id}' ${group.locked ? "" : "style='display:none'"}>
+					<form class='lockForm async' action="unlockGroup/${group.id}/" method="post">
+						<button>Unlock Group</button>
+					</form>
+				</div>
+				<div class='horizontal-block float-right lockToggle' group='${group.id}' ${group.locked ? "style='display:none'" : ""}>
+					<form class='lockForm async' action="lockGroup/${group.id}/" method="post">
+						<button>Lock Group</button>
+					</form>
+				</div>
+			</c:if>
 		</c:if>
 	</div>
 </c:forEach>
 
-<c:if test="${assessment.unlimitedGroupCount && (user.tutor || (assessment.studentsManageGroups && !assessment.groupsLocked))}">
+<c:if test="${assessment.unlimitedGroupCount && (user.tutor || (assessment.studentsManageGroups && !assessment.groupsLocked && empty myGroup))}">
 	<div class='vertical-block'>
 		<form class='addGroupForm' action="addGroup/" method="post">
 			<button>Add a New Group</button>
@@ -283,6 +311,30 @@ either expressed or implied, of the PASTA Project.
 					$form.append(input);
 				});
 			});
+		});
+		
+		$("form.lockForm.async").on("submit", function() {
+			var $form = $(this);
+			var group = $(this).parent().attr("group");
+			$.ajax({
+				headers : {
+					'Accept' : 'application/json',
+				},
+				url : $form.attr("action"),
+				data : $form.serialize(),
+				type : "POST",
+				statusCode : {
+					500 : function() {
+						alert("Failed to change lock. Please try again later.");
+					}
+				},
+				success : function(data) {
+					if(!data) {
+						$(".lockToggle[group='" + group + "']").toggle();
+					}
+				}
+			});
+			return false;
 		});
 	});
 </script>

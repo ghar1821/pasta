@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -113,12 +114,12 @@ public class GroupController {
 			Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
-			return "redirect:../../login/";
+			return "redirect:/login/";
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
-			return "redirect:../../home/";
+			return "redirect:/home/";
 		}
 		
 		model.addAttribute("user", user);
@@ -152,12 +153,12 @@ public class GroupController {
 			Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
-			return "redirect:../../../login/";
+			return "redirect:/login/";
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
-			return "redirect:../../../home/";
+			return "redirect:/home/";
 		}
 		
 		groupManager.leaveCurrentGroup(user, assessment);
@@ -172,12 +173,12 @@ public class GroupController {
 			Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
-			return "redirect:../../../../login/";
+			return "redirect:/login/";
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
-			return "redirect:../../../../home/";
+			return "redirect:/home/";
 		}
 		
 		PASTAGroup group = groupManager.getGroup(groupId);
@@ -190,18 +191,57 @@ public class GroupController {
 		return "redirect:../../";
 	}
 	
+	@RequestMapping(value = "/{assessmentId}/lockGroup/{groupId}/", method = RequestMethod.POST)
+	@ResponseBody
+	public String lockGroup(
+			@PathVariable("assessmentId") long assessmentId,
+			@PathVariable("groupId") long groupId,
+			Model model) {
+		return toggleLock(assessmentId, groupId, model, true);
+	}
+	
+	@RequestMapping(value = "/{assessmentId}/unlockGroup/{groupId}/", method = RequestMethod.POST)
+	@ResponseBody
+	public String unlockGroup(
+			@PathVariable("assessmentId") long assessmentId,
+			@PathVariable("groupId") long groupId,
+			Model model) {
+		return toggleLock(assessmentId, groupId, model, false);
+	}
+	
+	private String toggleLock(long assessmentId, long groupId, Model model, boolean lock) {
+		PASTAUser user = getUser();
+		if(user == null) {
+			return "not logged in";
+		}
+		
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(!assessment.isReleasedTo(user)) {
+			return "not released";
+		}
+		
+		PASTAGroup group = groupManager.getGroup(groupId);
+		if(group == null) {
+			return "not in group";
+		}
+		
+		groupManager.toggleLock(user, group, lock);
+		
+		return "";
+	}
+	
 	@RequestMapping(value = "/{assessmentId}/addGroup/", method = RequestMethod.POST)
 	public String addGroup(
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
-			return "redirect:../../../login/";
+			return "redirect:/login/";
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
-			return "redirect:../../../home/";
+			return "redirect:/home/";
 		}
 		
 		groupManager.addGroup(assessment);
@@ -216,12 +256,12 @@ public class GroupController {
 			Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
-			return "redirect:../../../login/";
+			return "redirect:/login/";
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
-			return "redirect:../../../home/";
+			return "redirect:/home/";
 		}
 		
 		groupManager.saveAllGroups(assessment, form);

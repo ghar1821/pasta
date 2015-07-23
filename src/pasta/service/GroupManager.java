@@ -103,7 +103,7 @@ public class GroupManager {
 	}
 
 	public boolean joinGroup(PASTAUser user, Assessment assessment, PASTAGroup group) {
-		if(assessment.isGroupsLocked()) {
+		if(assessment.isGroupsLocked() || group.isLocked()) {
 			return false;
 		}
 		if(assessment.isUnlimitedGroupSize() || group.getSize() < assessment.getGroupSize()) {
@@ -200,5 +200,17 @@ public class GroupManager {
 
 	public List<PASTAGroup> getGroups(Collection<PASTAUser> users, long assessmentId) {
 		return userDAO.getGroups(users, assessmentId);
+	}
+
+	public void toggleLock(PASTAUser user, PASTAGroup group, boolean lock) {
+		boolean isLocked = group.isLocked();
+		if(isLocked == lock) {
+			return;
+		}
+		if(!user.isTutor() && !group.isMember(user)) {
+			return;
+		}
+		group.setLocked(lock);
+		userDAO.update(group);
 	}
 }

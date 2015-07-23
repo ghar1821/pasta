@@ -45,6 +45,8 @@ public class PASTAGroup extends PASTAUser implements Comparable<PASTAUser> {
 	
 	private int number;
 	
+	private boolean locked;
+	
 	public PASTAGroup() {
 		super();
 		super.setPermissionLevel(UserPermissionLevel.GROUP);
@@ -69,6 +71,13 @@ public class PASTAGroup extends PASTAUser implements Comparable<PASTAUser> {
 	public void setNumber(int number) {
 		this.number = number;
 		refreshUsername();
+	}
+
+	public boolean isLocked() {
+		return locked;
+	}
+	public void setLocked(boolean locked) {
+		this.locked = locked;
 	}
 
 	public Assessment getAssessment() {
