@@ -57,6 +57,13 @@ either expressed or implied, of the PASTA Project.
 	
 	<table class='alignCellsTop noGaps'>
 		<tr>
+			<td>Name:</td>
+			<td>
+				<form:input type="text" path="name"/>
+				<form:errors path="name"/>
+			</td>
+		</tr>
+		<tr>
 			<td>Category:</td>
 			<td>
 				<form:input type="text" path="category"/>
