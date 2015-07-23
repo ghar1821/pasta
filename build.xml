@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 
-<project name="Info1103" basedir="." default="usage">
+<project name="PASTA" basedir="." default="usage">
     <property file="build.properties"/>
 
     <property name="src.dir" value="src"/>
     <property name="web.dir" value="war"/>
     <property name="build.dir" value="${web.dir}/WEB-INF/classes"/>
-    <property name="name" value="Info1103"/>
+    <property name="name" value="PASTA"/>
 	<property name="test.dir" value="test"/>
 
     <path id="master-classpath">
@@ -21,6 +21,10 @@
         </fileset>
         <pathelement path="${build.dir}"/>
     </path>
+	
+	<presetdef name="javac">
+		<javac includeantruntime="false" />
+	</presetdef>
 
     <target name="usage">
         <echo message=""/>
