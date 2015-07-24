@@ -67,7 +67,7 @@ either expressed or implied, of the PASTA Project.
 <!-- FOR INSTRUCTORS ONLY!! -->
 <c:if test="${unikey.instructor}">
 
-	<h2>Authentication System</h2>
+	<h1>Authentication System</h1>
 		
 	<form method="get" action="auth/" autocomplete="off">
 		<table>
@@ -103,6 +103,8 @@ either expressed or implied, of the PASTA Project.
 		
 	</form>
 	
+	<h1>Legacy Content</h1>
+	<p>Click <a href="../legacy/convert/">here</a> to go to the legacy content page.
 </c:if>
 <c:if test="${unikey.tutor}">
 
