@@ -68,11 +68,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.Submission;
+import pasta.domain.form.validate.SubmissionValidator;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
@@ -156,6 +158,9 @@ public class SubmissionController {
 	private GroupManager groupManager;
 	@Autowired
 	private ExecutionScheduler scheduler;
+	
+	@Autowired
+	private SubmissionValidator submissionValidator;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -392,45 +397,49 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "home/", method = RequestMethod.POST)
 	public String submitAssessment(@ModelAttribute(value = "submission") Submission form,
-			BindingResult result, Model model, HttpSession session) {
+			BindingResult result, Model model, RedirectAttributes attr) {
+		return doSubmitAssessment(null, form, result, model, attr);
+	}
+	
+	private String doSubmitAssessment(String submitForUsername, Submission form, BindingResult result, Model model, RedirectAttributes attr) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
-		
-		// check if the submission is valid
-		if (form.getFile() == null || form.getFile().isEmpty()) {
-			result.rejectValue("file", "Submission.NoFile");
-		}
-		
-		Assessment assessment = assessmentManager.getAssessment(form.getAssessment());
-		PASTAGroup group = form.isGroupSubmission() ? groupManager.getGroup(user, assessment) : null;
-		if(form.isGroupSubmission() && group == null) {
-			result.reject("NoGroup");
-		}
 		form.setSubmittingUser(user);
-
-		Date now = new Date();
-		if (assessment.isClosed()
-				&& (user.getExtensions() == null // no extension
-						|| user.getExtensions().get(form.getAssessment()) == null || user.getExtensions()
-						.get(form.getAssessment()).before(now)) && (!user.isTutor())) {
-			result.rejectValue("file", "Submission.AfterClosingDate");
+		
+		PASTAUser forUser = user;
+		if(submitForUsername != null) {
+			if(!user.isTutor()) {
+				return "redirect:/home/";
+			}
+			forUser = userManager.getUser(submitForUsername);
+			if(forUser == null) {
+				return "redirect:/home/";
+			}
 		}
-		AssessmentResult latestResult = resultManager.getLatestAssessmentResult(user, form.getAssessment());
-		int maxSubmissions = assessment.getNumSubmissionsAllowed();
-		if ((!user.isTutor()) && latestResult != null && maxSubmissions != 0
-				&& latestResult.getSubmissionsMade() >= maxSubmissions) {
-			result.rejectValue("file", "Submission.NoAttempts");
+		
+		if(form.isGroupSubmission()) {
+			PASTAGroup group = groupManager.getGroup(forUser, form.getAssessment());
+			if(group == null) {
+				result.reject("NoGroup");
+			} else {
+				forUser = group;
+			}
 		}
-		if (!result.hasErrors()) {
-			// accept the submission
-			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment()).getName()
-					+ " submitted by " + user.getUsername());
-			manager.submit(group == null ? user : group, form);
+		
+		submissionValidator.validate(form, result);
+		if(result.hasErrors()) {
+			attr.addFlashAttribute("submission", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.submission", result);
+			return "redirect:.";
 		}
-		session.setAttribute("binding", result);
+		
+		logger.info(ProjectProperties.getInstance().getAssessmentDAO()
+				.getAssessment(form.getAssessment()).getName()
+				+ " submitted for " + forUser.getUsername() + " by " + user.getUsername());
+		manager.submit(forUser, form);
+		
 		return "redirect:/mirror/";
 	}
 	
@@ -997,39 +1006,11 @@ public class SubmissionController {
 	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
 	public String submitAssessment(@PathVariable("username") String username,
 			@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model,
-			HttpSession session) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
+			RedirectAttributes attr) {
+		if(username == null || username.isEmpty()) {
 			return "redirect:/home/";
 		}
-		PASTAUser viewedUser = userManager.getUser(username);
-		if(viewedUser == null) {
-			return "redirect:/home/";
-		}
-		
-		Assessment assessment = assessmentManager.getAssessment(form.getAssessment());
-		PASTAGroup group = form.isGroupSubmission() ? groupManager.getGroup(user, assessment) : null;
-		if(form.isGroupSubmission() && group == null) {
-			result.reject("NoGroup");
-		}
-		form.setSubmittingUser(user);
-		
-		// check if the submission is valid
-		if (form.getFile() == null || form.getFile().isEmpty()) {
-			result.reject("Submission.NoFile");
-		}
-		if (!result.hasErrors()) {
-			// accept the submission
-			logger.info(ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment()).getName()
-					+ " submitted for " + viewedUser.getUsername() + " by " + user.getUsername());
-			manager.submit(group == null ? viewedUser : group, form);
-		}
-		session.setAttribute("binding", result);
-		return "redirect:/mirror/";
+		return doSubmitAssessment(username, form, result, model, attr);
 	}
 
 	/**

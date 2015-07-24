@@ -37,10 +37,12 @@ either expressed or implied, of the PASTA Project.
 <h1>${unikey.username}</h1>
 
 <spring:hasBindErrors name="submission">
-	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
-		<h3>Submission Errors</h3>
-		<form:errors path="file" cssClass="ui-state-error" element="div" />
-	</form:form>
+	<div class='padded'>
+		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+			<h3>Submission Errors</h3>
+			<form:errors path="*" cssClass="ui-state-error" element="div" />
+		</form:form>
+	</div>
 </spring:hasBindErrors>
 
 <div class="padded"> 
