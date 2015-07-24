@@ -352,6 +352,31 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return new Date().after(groupLockDate);
 	}
 	
+	public boolean isOnlyIndividualWork() {
+		return isConsistentGroupWork(false);
+	}
+	public boolean isOnlyGroupWork() {
+		return isConsistentGroupWork(true);
+	}
+	private boolean isConsistentGroupWork(boolean isGroupWork) {
+		for(WeightedUnitTest module : unitTests){
+			if(module.isGroupWork() != isGroupWork) {
+				return false;
+			}
+		}
+		for(WeightedHandMarking module : handMarking){
+			if(module.isGroupWork() != isGroupWork) {
+				return false;
+			}
+		}
+		for(WeightedCompetition module : competitions) {
+			if(module.isGroupWork() != isGroupWork) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public Set<WeightedUnitTest> getUnitTests() {
 		Set<WeightedUnitTest> unitTests = new TreeSet<>();
 		for(WeightedUnitTest test : getAllUnitTests()) {

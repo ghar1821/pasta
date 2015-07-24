@@ -337,32 +337,10 @@ public class AssessmentManager {
 	}
 
 	public boolean hasGroupWork(Assessment assessment) {
-		return checkForGroupWork(assessment, true);
+		return !assessment.isOnlyIndividualWork();
 	}
 
 	public boolean isAllGroupWork(Assessment assessment) {
-		return checkForGroupWork(assessment, false);
-	}
-	
-	private boolean checkForGroupWork(Assessment assessment, boolean checkForAny) {
-		for(WeightedUnitTest module : assessment.getAllUnitTests()) {
-			if((module.isGroupWork() && checkForAny) 
-					|| (!module.isGroupWork() && !checkForAny)) {
-				return checkForAny;
-			}
-		}
-		for(WeightedHandMarking module : assessment.getHandMarking()) {
-			if((module.isGroupWork() && checkForAny) 
-					|| (!module.isGroupWork() && !checkForAny)) {
-				return checkForAny;
-			}
-		}
-		for(WeightedCompetition module : assessment.getCompetitions()) {
-			if((module.isGroupWork() && checkForAny) 
-					|| (!module.isGroupWork() && !checkForAny)) {
-				return checkForAny;
-			}
-		}
-		return !checkForAny;
+		return assessment.isOnlyGroupWork();
 	}
 }
