@@ -548,12 +548,14 @@ public class UnitTestManager {
 				submission.getInputStream().close();
 				File newLocation = new File(codeLocation, updateForm.getFile().getOriginalFilename());
 				submission.transferTo(newLocation);
-				PASTAUtil.extractFolder(newLocation.getAbsolutePath());
-				try{
-					FileUtils.forceDelete(newLocation);
-				} catch (Exception e) {
-					logger.error("Could not delete the zip for "
-							+ test.getName());
+				if(newLocation.getName().endsWith(".zip")) {
+					PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+					try{
+						FileUtils.forceDelete(newLocation);
+					} catch (Exception e) {
+						logger.error("Could not delete the zip for "
+								+ test.getName());
+					}
 				}
 				
 				// Automatically set the main class name according to any *Test.java files.
