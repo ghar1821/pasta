@@ -42,6 +42,8 @@ either expressed or implied, of the PASTA Project.
 	<p>Place the old <code>content</code> folder inside the current <code>content</code> folder, and name the old content folder "<code>legacy</code>", then press "Convert".
 	
 	<p>This requires instructor level access.
+	
+	<p>It is suggested that you delete the legacy content from the legacy folder after running this, as running it again will create duplicate components.
 </div>
 <div id='button-div' class='vertical-block'>
 	<button id='convert-button'>Convert</button>
@@ -54,8 +56,10 @@ either expressed or implied, of the PASTA Project.
 	var statusTimer;
 
     $(function() {
+    	$("#output-div").hide();
     	<c:if test="${started}">
-	    	$("#button-div").hide();	
+	    	$("#button-div").hide();
+	    	$("#output-div").show();
 	    	checkStatus();
     	</c:if>
     	$('#convert-button').on("click", function() {
@@ -64,20 +68,16 @@ either expressed or implied, of the PASTA Project.
     });
     
     function startConvert() {
-    	console.log("Starting...");
     	$("#button-div").hide();
+    	$("#output-div").show();
     	$.ajax({
 			type : "POST",
 			statusCode : {
 				500 : function(jqXHR, textStatus, errorThrown) {
-					console.log(jqXHR);
-					console.log(textStatus);
-					console.log(errorThrown);
 					alert("Failed to start converting.");
 				}
 			},
 			success : function(data) {
-				console.log(data);
 				if(data) {
 					alert("Failed to start converting.");
 				} else {
@@ -88,20 +88,15 @@ either expressed or implied, of the PASTA Project.
     }
     
     function checkStatus() {
-    	console.log("Checking...");
     	$.ajax({
 			url : "status/",
 			type : "POST",
 			statusCode : {
 				500 : function(jqXHR, textStatus, errorThrown) {
-					console.log(jqXHR);
-					console.log(textStatus);
-					console.log(errorThrown);
-					//alert("Failed to read output. Please try again later.");
+					alert("Failed to read output.");
 				}
 			},
 			success : function(data) {
-				console.log(data);
 				if(data == "NOT AUTHORISED" || data == "NOT STARTED" || data == "DONE") {
 					finishConvert();
 				} else {
@@ -113,7 +108,7 @@ either expressed or implied, of the PASTA Project.
     }
     
     function finishConvert() {
-    	updateOutput("Done.");
+    	updateOutput("Finished.");
     	clearTimeout(statusTimer);
     }
     

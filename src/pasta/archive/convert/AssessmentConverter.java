@@ -53,6 +53,9 @@ public class AssessmentConverter {
 	Boolean done = null;
 	
 	public void convertLegacyContent() {
+		if(done != null) {
+			return;
+		}
 		output = Collections.synchronizedList(new LinkedList<String>());
 		done = false;
 		doLoad();
@@ -734,7 +737,7 @@ public class AssessmentConverter {
 						Element handMarkingElement = (Element) handMarkingNode;
 
 						pasta.archive.legacy.WeightedHandMarking weightedHandMarking = new pasta.archive.legacy.WeightedHandMarking();
-						if(!allUnitTests.containsKey(handMarkingElement.getAttribute("name"))) {
+						if(!allHandMarking.containsKey(handMarkingElement.getAttribute("name"))) {
 							output.add("Skipping handMarking " + handMarkingElement.getAttribute("name") + " for assessment " + currentAssessment.getName() + " (not found)");
 							continue;
 						}
@@ -757,7 +760,7 @@ public class AssessmentConverter {
 						Element competitionElement = (Element) competitionNode;
 
 						pasta.archive.legacy.WeightedCompetition weightedComp = new pasta.archive.legacy.WeightedCompetition();
-						if(!allUnitTests.containsKey(competitionElement.getAttribute("name"))) {
+						if(!allCompetitions.containsKey(competitionElement.getAttribute("name"))) {
 							output.add("Skipping competition " + competitionElement.getAttribute("name") + " for assessment " + currentAssessment.getName() + " (not found)");
 							continue;
 						}
@@ -906,9 +909,6 @@ public class AssessmentConverter {
 			for(pasta.archive.legacy.WeightedUnitTest oldTest : old.getUnitTests()) {
 				WeightedUnitTest newTest = new WeightedUnitTest();
 				newTest.setSecret(false);
-				logger.warn("old test name: " + oldTest.getTest().getName());
-				logger.warn("converted test: " + convertedUnitTests.get(oldTest.getTest().getShortName()));
-				logger.warn("allconverted tests: " + convertedUnitTests);
 				newTest.setTest(convertedUnitTests.get(oldTest.getTest().getShortName()));
 				newTest.setWeight(oldTest.getWeight());
 				newAss.addUnitTest(newTest);
