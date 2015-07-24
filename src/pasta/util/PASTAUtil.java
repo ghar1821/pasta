@@ -270,17 +270,28 @@ public class PASTAUtil {
 	 * @return the string content of the file
 	 */
 	public static String scrapeFile(String location) {
-		String file = "";
+		return scrapeFile(new File(location));
+	}
+	
+	/**
+	 * Read a file and store it as a string
+	 * 
+	 * @param file the file to read
+	 * @return the string content of the file
+	 */
+	public static String scrapeFile(File file) {
+		StringBuilder sb = new StringBuilder();
 		try {
-			Scanner in = new Scanner(new File(location));
+			Scanner in = new Scanner(file);
 			while(in.hasNextLine()){
-				file+=in.nextLine() + System.getProperty("line.separator");
+				sb.append(in.nextLine()).append(System.lineSeparator());
 			}
 			in.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			logger.error("Cannot scrape file.", e);
+			return "";
 		}
-		return file;
+		return sb.toString();
 	}
 	
 	/**

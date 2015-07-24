@@ -34,6 +34,14 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <h1> Unit Test - ${unitTest.name}</h1>
+<div class='align-contents-middle float-right'>
+	<div class='horizontal-block'>
+		<h2 class='compact alt'>Help</h2>
+	</div>
+	<div class='horizontal-block'>
+		<a href='../../help/unitTests/'><span class='icon_help'></span></a>
+	</div>
+</div>
 
 <form:form commandName="updateUnitTest" enctype="multipart/form-data" method="POST">
 	<table class='vertical-block'>

@@ -122,7 +122,7 @@ tr.spaceBelow td {
 }
 
 span.help {
-	background-image: url("../images/help.png");
+	background-image: url("../images/help_small.png");
 	cursor: pointer;
 	display: inline-block;
 	height: 16px;
@@ -175,6 +175,13 @@ span.icon_unlocked, div.icon_unlocked {
 	display: inline-block;
 	height: 16px;
 	width: 16px;
+}
+
+span.icon_help, div.icon_help {
+	background-image: url("../images/help.png");
+	display: inline-block;
+	height: 32px;
+	width: 32px;
 }
 
 input[type=checkbox].custom-check {
