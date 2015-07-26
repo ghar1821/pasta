@@ -1,12 +1,14 @@
 package pasta.service;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -74,6 +76,36 @@ public class GroupManager {
 	
 	public List<PASTAGroup> getAllUserGroups(PASTAUser user) {
 		return userDAO.getAllUserGroups(user);
+	}
+	
+	public List<PASTAGroup> getAllGroups() {
+		return userDAO.getAllGroups();
+	}
+	
+	public Map<PASTAUser, Map<Long, PASTAGroup>> getAllUserGroups(Collection<PASTAUser> users) {
+		Map<Long, PASTAGroup> groupLookup = new HashMap<>();
+		for(PASTAGroup group : getAllGroups()) {
+			groupLookup.put(group.getId(), group);
+		}
+		Map<Long, PASTAUser> userLookup = new HashMap<>();
+		for(PASTAUser user : userDAO.getAllStudentList()) {
+			userLookup.put(user.getId(), user);
+		}
+		List<Long[]> joins = userDAO.getAllUserGroups(users);
+		Map<PASTAUser, Map<Long, PASTAGroup>> results = new TreeMap<>();
+		for(Object[] join : joins) {
+			PASTAUser user = userLookup.get(join[0]);
+			PASTAGroup group = groupLookup.get(join[1]);
+			if(user != null) {
+				Map<Long, PASTAGroup> userGroups = results.get(user);
+				if(userGroups == null) {
+					userGroups = new HashMap<>();
+					results.put(user, userGroups);
+				}
+				userGroups.put(group.getAssessment().getId(), group);
+			}
+		}
+		return results;
 	}
 
 	public int getUsedGroupCount(Assessment assessment) {
@@ -200,6 +232,10 @@ public class GroupManager {
 
 	public List<PASTAGroup> getGroups(Collection<PASTAUser> users, long assessmentId) {
 		return userDAO.getGroups(users, assessmentId);
+	}
+	
+	public List<PASTAGroup> getGroups(Collection<PASTAUser> users) {
+		return userDAO.getGroups(users, -1);
 	}
 
 	public void toggleLock(PASTAUser user, PASTAGroup group, boolean lock) {

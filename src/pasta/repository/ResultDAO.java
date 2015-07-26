@@ -35,10 +35,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -238,6 +236,23 @@ public class ResultDAO{
 		return results;
 	}
 	
+    @SuppressWarnings("unchecked")
+	public List<AssessmentResult> getLatestResultsForMultiUser(List<PASTAUser> users) {
+		DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentResult.class);
+		latestSub.setProjection(
+				Projections.projectionList()
+					.add(Projections.groupProperty("user"))
+					.add(Projections.groupProperty("assessment"))
+					.add(Projections.max("submissionDate"))
+		);
+		latestSub.add(Restrictions.in("user", users));
+		
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class)
+				.add(Subqueries.propertiesIn(new String[] {"user", "assessment", "submissionDate"}, latestSub));
+		
+		return cr.list();
+	}
+	
 	private void restrictCriteriaUser(Criteria cr, PASTAUser user, boolean includeGroup, long assessmentId) {
 		if(includeGroup) {
 			DetachedCriteria groupCr = DetachedCriteria.forClass(PASTAGroup.class);
@@ -267,37 +282,6 @@ public class ResultDAO{
 		}
 		Date subDate = results.get(0);
 		return new File(ProjectProperties.getInstance().getSubmissionsLocation() + "assessments/" + assessment.getId() + "/" + subDate + "/submission");
-	}
-	
-	/**
-	 * Get the hand marking result from a location
-	 * 
-	 * @param location the location of the hand marking result
-	 * @return null if there is no hand marking result
-	 * @return the result otherwise
-	 */
-	private HandMarkingResult getHandMarkingResult(String location) {
-		HandMarkingResult result = new HandMarkingResult();
-		
-		try {
-			// read in the file
-			Scanner in = new Scanner(new File(location+"/result.txt"));
-			Map<Long,Long> resultMap = new TreeMap<Long, Long>();
-			while(in.hasNextLine()){
-				String[] currResults = in.nextLine().split(",");
-				if(currResults.length >= 2){
-					resultMap.put(Long.parseLong(currResults[0]),
-							Long.parseLong(currResults[1]));
-				}
-			}
-			in.close();
-			result.setResult(resultMap);
-			
-			return result;
-		} catch (FileNotFoundException e) {
-			// return null if the file doesn't exist
-		}
-		return null;	
 	}
 	
 	/**

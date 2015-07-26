@@ -478,4 +478,26 @@ public class UserDAO {
 		cr.addOrder(Order.asc("number"));
 		return cr.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+    public List<Long[]> getAllUserGroups(Collection<PASTAUser> users) {
+        Set<Long> ids = new HashSet<Long>();
+        for(PASTAUser user : users) {
+            ids.add(user.getId());
+        }
+        Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
+        cr.createAlias("members", "user");
+        cr.add(Restrictions.in("user.id", ids));
+        cr.setProjection(Projections.projectionList()
+                .add(Projections.property("id"))
+                .add(Projections.property("user.id"))
+        );
+        return cr.list();
+    }
+    
+	@SuppressWarnings("unchecked")
+	public List<PASTAGroup> getAllGroups() {
+		return sessionFactory.getCurrentSession()
+				.createCriteria(PASTAGroup.class).list();
+	}
 }

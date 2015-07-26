@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,6 +100,10 @@ public class AssessmentManager {
 	 */
 	public Collection<Assessment> getAssessmentList() {
 		return assDao.getAssessmentList();
+	}
+	
+	public List<Long> getAssessmentIDList() {
+		return assDao.getAssessmentIDList();
 	}
 	
 	/**

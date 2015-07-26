@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ import pasta.domain.form.validate.SubmissionValidator;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -1664,7 +1666,7 @@ public class SubmissionController {
 			return "";
 		}
 
-		return generateJSON(userManager.getUserList().toArray(new PASTAUser[0]));
+		return generateJSON(userManager.getUserList());
 	}
 
 	/**
@@ -1692,7 +1694,7 @@ public class SubmissionController {
 		if (userManager.getUserListByStream(streamName) == null) {
 			return "";
 		}
-		return generateJSON(userManager.getUserListByStream(streamName).toArray(new PASTAUser[0]));
+		return generateJSON(userManager.getUserListByStream(streamName));
 	}
 
 	/**
@@ -1722,7 +1724,7 @@ public class SubmissionController {
 			return "";
 		}
 
-		return generateJSON(userManager.getUserListByTutorial(className).toArray(new PASTAUser[0]));
+		return generateJSON(userManager.getUserListByTutorial(className));
 	}
 
 	/**
@@ -1748,7 +1750,7 @@ public class SubmissionController {
 		}
 
 		Collection<PASTAUser> myUsers = userManager.getTutoredStudents(currentUser);
-		return generateJSON(myUsers.toArray(new PASTAUser[0]));
+		return generateJSON(myUsers);
 	}
 
 	/**
@@ -1804,14 +1806,18 @@ public class SubmissionController {
 	 *            the users for which to generate the JSON
 	 * @return the JSON string
 	 */
-	private String generateJSON(PASTAUser[] allUsers) {
+	private String generateJSON(Collection<PASTAUser> allUsers) {
+		List<PASTAUser> usersList = new ArrayList<>(allUsers);
+		
 		DecimalFormat df = new DecimalFormat("#.###");
 
 		String data = "{\r\n  \"data\": [\r\n";
-
+		
+		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> allResults = resultManager.getLatestResultsIncludingGroupQuick(usersList);
+		
 		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
-		for (int i = 0; i < allUsers.length; ++i) {
-			PASTAUser user = allUsers[i];
+		for (int i = 0; i < usersList.size(); ++i) {
+			PASTAUser user = usersList.get(i);
 
 			String userData = "    {\r\n";
 
@@ -1827,6 +1833,7 @@ public class SubmissionController {
 			}
 			userData += "\r\n";
 
+			Map<Long, CombinedAssessmentResult> userResults = allResults.get(user);
 			// marks
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
@@ -1834,9 +1841,8 @@ public class SubmissionController {
 				userData += "      \"" + currAssessment.getId() + "\": {\r\n";
 				String mark = "";
 				String percentage = "";
-
-				AssessmentResult latestResult = resultManager.getLatestResultIncludingGroup(
-						user, currAssessment.getId());
+				
+				AssessmentResult latestResult = userResults == null ? null : userResults.get(currAssessment.getId());
 				if (latestResult != null) {
 					mark = df.format(latestResult.getMarks());
 					percentage = String.valueOf(latestResult.getPercentage());
@@ -1854,7 +1860,7 @@ public class SubmissionController {
 			}
 
 			userData += "    }";
-			if (i < allUsers.length - 1) {
+			if (i < usersList.size() - 1) {
 				userData += ",";
 			}
 			userData += "\r\n";

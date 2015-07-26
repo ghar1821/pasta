@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CombinedAssessmentResult;
+import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.ResultDAO;
 import pasta.util.PASTAUtil;
@@ -38,6 +40,8 @@ public class ResultManager {
 	
 	@Autowired
 	private GroupManager groupManager;
+	@Autowired
+	private AssessmentManager assessmentManager;
 	
 	public Collection<AssessmentResult> getAllResultsForUserAssessment(PASTAUser user, long assessmentId) {
 		return resultDAO.getAllResults(user, assessmentId, true, false);
@@ -111,6 +115,69 @@ public class ResultManager {
 			results.put(user, currResultMap);
 		}
 		
+		return results;
+	}
+	
+	/**
+	 * Get the latest result for the collection of users, including their marks from the group.
+	 * 
+	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
+	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.CombinedAssessmentResult} assessmentResults) 
+	 */
+	public Map<PASTAUser, Map<Long, CombinedAssessmentResult>> getLatestResultsIncludingGroupQuick(Collection<PASTAUser> allUsers){
+		List<Long> allAssessmentIds = assessmentManager.getAssessmentIDList();
+		Map<PASTAUser, Map<Long, PASTAGroup>> allUserGroups = groupManager.getAllUserGroups(allUsers);
+		
+		List<PASTAUser> groups = new LinkedList<>();
+		groups.addAll(groupManager.getGroups(allUsers));
+		List<AssessmentResult> groupResults = resultDAO.getLatestResultsForMultiUser(groups);
+		Map<PASTAUser, Map<Long, AssessmentResult>> groupResultsMap = new TreeMap<>();
+		for(AssessmentResult groupResult : groupResults) {
+			Map<Long, AssessmentResult> thisGroupResults = groupResultsMap.get(groupResult.getUser());
+			if(thisGroupResults == null) {
+				thisGroupResults = new TreeMap<>();
+				groupResultsMap.put(groupResult.getUser(), thisGroupResults);
+			}
+			thisGroupResults.put(groupResult.getAssessment().getId(), groupResult);
+		}
+		
+		List<PASTAUser> users = new LinkedList<>(allUsers);
+		List<AssessmentResult> userResults = resultDAO.getLatestResultsForMultiUser(users);
+		Map<PASTAUser, Map<Long, AssessmentResult>> userResultsMap = new TreeMap<>();
+		for(AssessmentResult userResult : userResults) {
+			Map<Long, AssessmentResult> thisUserResults = userResultsMap.get(userResult.getUser());
+			if(thisUserResults == null) {
+				thisUserResults = new TreeMap<>();
+				userResultsMap.put(userResult.getUser(), thisUserResults);
+			}
+			thisUserResults.put(userResult.getAssessment().getId(), userResult);
+		}
+		
+		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> results = new TreeMap<>();
+		for(PASTAUser user : allUsers) {
+			Map<Long, AssessmentResult> thisUserResults = userResultsMap.get(user);
+			Map<Long, PASTAGroup> thisUserGroups = allUserGroups.get(user);
+			Map<Long, CombinedAssessmentResult> thisUserCombinedResults = results.get(user);
+			if(thisUserCombinedResults == null) {
+				thisUserCombinedResults = new TreeMap<Long, CombinedAssessmentResult>();
+				results.put(user, thisUserCombinedResults);
+			}
+			for(Long assessmentId : allAssessmentIds) {
+				AssessmentResult individualResult = thisUserResults == null ? null : thisUserResults.get(assessmentId);
+				PASTAGroup group = thisUserGroups == null ? null : thisUserGroups.get(assessmentId);
+				AssessmentResult groupResult = null;
+				if(group != null) {
+					Map<Long, AssessmentResult> thisGroupResults = groupResultsMap.get(group);
+					groupResult = thisGroupResults == null ? null : thisGroupResults.get(assessmentId);
+				}
+				if(individualResult != null || groupResult != null) {
+					CombinedAssessmentResult combined = new CombinedAssessmentResult(user);
+					combined.addResult(individualResult);
+					combined.addResult(groupResult);
+					thisUserCombinedResults.put(assessmentId, combined);
+				}
+			}
+		}
 		return results;
 	}
 	
