@@ -263,13 +263,13 @@ either expressed or implied, of the PASTA Project.
 <script>
 
 	$(function() {
-		$(".icon_delete").on('click', function() {
+		$(document).on('click', "div.icon_delete", function() {
 			$(this).slideToggle(50, function(){$(this).next().slideToggle('fast');});
 		});
-		$(".icon_delete_confirm").on('mouseout', function() {
+		$(document).on('mouseout', "div.icon_delete_confirm", function() {
 			$(this).slideToggle(50, function(){$(this).prev().slideToggle('fast')});
 		});
-		$(".icon_delete_confirm").on('click', function() {
+		$(document).on('click', "div.icon_delete_confirm", function() {
 			window.location.href = 'delete/' + $(this).attr("username") + '/';
 		});
 	});
