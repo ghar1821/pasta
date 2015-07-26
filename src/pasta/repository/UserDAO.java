@@ -41,14 +41,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.template.Assessment;
@@ -68,16 +67,14 @@ import pasta.domain.user.PASTAUser;
  * @since 2012-11-13
  *
  */
+@Transactional
 @Repository("userDAO")
-public class UserDAO extends HibernateDaoSupport{
+public class UserDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 
 	/**
 	 * Save the user to the cache and the database.
@@ -85,7 +82,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being saved
 	 */
 	public void save(PASTAUser user) {
-		getHibernateTemplate().save(user);
+		sessionFactory.getCurrentSession().save(user);
 	}
 
 	/**
@@ -94,7 +91,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @param user the user being updated
 	 */
 	public void update(PASTAUser user) {
-		getHibernateTemplate().update(user);
+		sessionFactory.getCurrentSession().update(user);
 	}
 	
 	/**
@@ -107,7 +104,7 @@ public class UserDAO extends HibernateDaoSupport{
 			((PASTAGroup) user).setAssessment(null);
 			((PASTAGroup) user).getMembers().clear();
 			update(user);
-			getHibernateTemplate().delete(user);
+			sessionFactory.getCurrentSession().delete(user);
 		} else {
 			user.setActive(false);
 			update(user);
@@ -180,10 +177,10 @@ public class UserDAO extends HibernateDaoSupport{
 	 * @return the user or null if the user does not exist
 	 */
 	public PASTAUser getUser(String username){
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 		cr.add(Restrictions.eq("username", username));
 		@SuppressWarnings("unchecked")
-		List<PASTAUser> results = getHibernateTemplate().findByCriteria(cr);
+		List<PASTAUser> results = cr.list();
 		if(results.isEmpty()) {
 			return null;
 		}
@@ -191,7 +188,7 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 	
 	public PASTAUser getUser(long id){
-		return getHibernateTemplate().get(PASTAUser.class, id);
+		return (PASTAUser) sessionFactory.getCurrentSession().get(PASTAUser.class, id);
 	}
 	
 	/**
@@ -264,9 +261,9 @@ public class UserDAO extends HibernateDaoSupport{
 	@SuppressWarnings("unchecked")
 	private List<PASTAUser> getUserList(boolean includeInactive, boolean includeGroups, UserPermissionLevel permissionLevel) {
 		if(includeInactive && includeGroups && permissionLevel == null) {
-			return getHibernateTemplate().loadAll(PASTAUser.class);
+			return sessionFactory.getCurrentSession().createCriteria(PASTAUser.class).list();
 		} else {
-			DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+			Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 			if(!includeInactive)
 				cr.add(Restrictions.eq("active", true));
 			if(!includeGroups)
@@ -284,7 +281,7 @@ public class UserDAO extends HibernateDaoSupport{
 					cr.add(Restrictions.eq("permissionLevel", permissionLevel));
 				}
 			}
-			return getHibernateTemplate().findByCriteria(cr);
+			return cr.list();
 		}
 	}
 	
@@ -326,7 +323,7 @@ public class UserDAO extends HibernateDaoSupport{
 	 */	
 	@SuppressWarnings("unchecked")
 	public List<PASTAUser> getUserListByTutorialAndStream(String streamName, String tutorialName) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		if(streamName != null) {
 			cr.add(Restrictions.eq("stream", streamName));
@@ -335,7 +332,7 @@ public class UserDAO extends HibernateDaoSupport{
 			cr.add(Restrictions.eq("tutorial", tutorialName));
 		}
 		cr.add(Restrictions.eq("active", true));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	/**
@@ -385,52 +382,52 @@ public class UserDAO extends HibernateDaoSupport{
 
 	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentTutorials() {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.setProjection(Projections.distinct(Projections.property("tutorial")));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentStreams() {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.setProjection(Projections.distinct(Projections.property("stream")));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<String> getAllStudentUsernames() {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAUser.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
 		cr.add(Restrictions.eq("permissionLevel", UserPermissionLevel.STUDENT));
 		cr.setProjection(Projections.distinct(Projections.property("username")));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 
 	public PASTAGroup getGroup(long id) {
-		return getHibernateTemplate().get(PASTAGroup.class, id);
+		return (PASTAGroup) sessionFactory.getCurrentSession().get(PASTAGroup.class, id);
 	}
 	
 	public int getGroupCount() {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.setProjection(Projections.rowCount());
-		return DataAccessUtils.intResult(getHibernateTemplate().findByCriteria(cr));
+		return DataAccessUtils.intResult(cr.list());
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PASTAGroup> getGroups(Assessment assessment) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.add(Restrictions.eq("assessment", assessment));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 
 	public PASTAGroup getGroup(PASTAUser user, Assessment assessment) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.add(Restrictions.eq("assessment", assessment));
 		cr.createAlias("members", "user");
 		cr.add(Restrictions.eq("user.id", user.getId()));
 		@SuppressWarnings("unchecked")
-		List<PASTAGroup> results = getHibernateTemplate().findByCriteria(cr);
+		List<PASTAGroup> results = cr.list();
 		if(results.isEmpty()) {
 			return null;
 		}
@@ -441,12 +438,12 @@ public class UserDAO extends HibernateDaoSupport{
 	}
 
 	public PASTAGroup getGroup(PASTAUser user, long assessmentId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		cr.createAlias("members", "user");
 		cr.add(Restrictions.eq("user.id", user.getId()));
 		@SuppressWarnings("unchecked")
-		List<PASTAGroup> results = getHibernateTemplate().findByCriteria(cr);
+		List<PASTAGroup> results = cr.list();
 		if(results.isEmpty()) {
 			return null;
 		}
@@ -458,10 +455,10 @@ public class UserDAO extends HibernateDaoSupport{
 
 	@SuppressWarnings("unchecked")
 	public List<PASTAGroup> getAllUserGroups(PASTAUser user) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.createAlias("members", "user");
 		cr.add(Restrictions.eq("user.id", user.getId()));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -470,12 +467,15 @@ public class UserDAO extends HibernateDaoSupport{
 		for(PASTAUser user : users) {
 			ids.add(user.getId());
 		}
-		DetachedCriteria cr = DetachedCriteria.forClass(PASTAGroup.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
 		cr.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		if(assessmentId > 0) {
+			cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		}
 		cr.createAlias("members", "user");
 		cr.add(Restrictions.in("user.id", ids));
+		cr.addOrder(Order.asc("assessment"));
 		cr.addOrder(Order.asc("number"));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 }

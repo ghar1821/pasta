@@ -38,8 +38,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -112,14 +110,10 @@ public class Assessment implements Comparable<Assessment>{
 	 * Functionality on the web front end. Without this, there would be errors
 	 * when adding assessment modules.
 	 */
-	private List<WeightedUnitTest> unitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-	private List<WeightedUnitTest> secretUnitTests = LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-			FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-	private List<WeightedHandMarking> handMarking = LazyList.decorate(new ArrayList<WeightedHandMarking>(),
-			FactoryUtils.instantiateFactory(WeightedHandMarking.class));
-	private List<WeightedCompetition> competitions = LazyList.decorate(new ArrayList<WeightedCompetition>(),
-			FactoryUtils.instantiateFactory(WeightedCompetition.class));
+	private List<WeightedUnitTest> unitTests = new ArrayList<WeightedUnitTest>();
+	private List<WeightedUnitTest> secretUnitTests = new ArrayList<WeightedUnitTest>();
+	private List<WeightedHandMarking> handMarking = new ArrayList<WeightedHandMarking>();
+	private List<WeightedCompetition> competitions = new ArrayList<WeightedCompetition>();
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -313,67 +307,6 @@ public class Assessment implements Comparable<Assessment>{
 		return (new Date()).after(getDueDate());
 	}  
 	
-	public void setGarbage(List<WeightedUnitTest> unitTests) {
-	}
-
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 * @return returns empty list
-	 */
-	public List<WeightedUnitTest> getGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedUnitTest>(),
-				FactoryUtils.instantiateFactory(WeightedUnitTest.class));
-	}
-	
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public void setCompGarbage(List<WeightedCompetition> comps) {
-	}
-
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 * @return returns empty list
-	 */
-	public List<WeightedCompetition> getCompGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedCompetition>(),
-				FactoryUtils.instantiateFactory(WeightedCompetition.class));
-	}
-	
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public void setHandGarbage(ArrayList<WeightedHandMarking> unitTests) {
-	}
-
-	/**
-	 * Method to allow you to remove unit tests in the
-	 * web front end.
-	 * 
-	 * Doesn't actually do any logic.
-	 * 
-	 */
-	public List<WeightedHandMarking> getHandGarbage() {
-		return LazyList.decorate(new ArrayList<WeightedHandMarking>(),
-				FactoryUtils.instantiateFactory(WeightedHandMarking.class));
-	}
-
 	/**
 	 * See string representation in class description.
 	 */

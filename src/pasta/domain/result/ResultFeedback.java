@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.usertype.UserType;
 
@@ -115,16 +116,16 @@ public class ResultFeedback implements Serializable, UserType, Comparable<Result
 	}
 
 	@Override
-	public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws HibernateException,
-			SQLException {
-		String value = StandardBasicTypes.STRING.nullSafeGet(rs, names[0]);
-        return ((value != null) ? new ResultFeedback(value) : null);
+	public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
+			throws HibernateException, SQLException {
+		String value = StandardBasicTypes.STRING.nullSafeGet(rs, names[0], session);
+		return ((value != null) ? new ResultFeedback(value) : null);
 	}
 
 	@Override
-	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException,
-			SQLException {
-		StandardBasicTypes.STRING.nullSafeSet(st, (value != null) ? value.toString() : null, index);
+	public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)
+			throws HibernateException, SQLException {
+		StandardBasicTypes.STRING.nullSafeSet(st, (value != null) ? value.toString() : null, index, session);
 	}
 
 	@Override

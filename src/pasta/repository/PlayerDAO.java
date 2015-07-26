@@ -40,13 +40,13 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
@@ -63,17 +63,15 @@ import pasta.util.PASTAUtil;
  * @version 2.0
  * @since 2014-05-01
  */
+@Transactional
 @Repository("playerDAO")
 @DependsOn("projectProperties")
-public class PlayerDAO extends HibernateDaoSupport {
+public class PlayerDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public PlayerDAO() {
 	}
@@ -88,10 +86,10 @@ public class PlayerDAO extends HibernateDaoSupport {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<PlayerHistory> getAllPlayerHistories(PASTAUser user, long competitionId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PlayerHistory.class);
 		cr.add(Restrictions.eq("user", user));
 		cr.add(Restrictions.eq("competitionId", competitionId));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 
 	/**
@@ -104,12 +102,12 @@ public class PlayerDAO extends HibernateDaoSupport {
 	 * @return the player history (statistics)
 	 */
 	public PlayerHistory getPlayerHistory(PASTAUser user, long competitionId, String playerName) {
-		DetachedCriteria cr = DetachedCriteria.forClass(PlayerHistory.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PlayerHistory.class);
 		cr.add(Restrictions.eq("user", user));
 		cr.add(Restrictions.eq("competitionId", competitionId));
 		cr.add(Restrictions.eq("playerName", playerName));
 		@SuppressWarnings("unchecked")
-		List<PlayerHistory> results = getHibernateTemplate().findByCriteria(cr);
+		List<PlayerHistory> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -239,6 +237,6 @@ public class PlayerDAO extends HibernateDaoSupport {
 	}
 
 	public void saveOrUpdate(PlayerHistory history) {
-		getHibernateTemplate().saveOrUpdate(history);
+		sessionFactory.getCurrentSession().saveOrUpdate(history);
 	}
 }

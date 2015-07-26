@@ -4,96 +4,76 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
 import pasta.domain.template.WeightedCompetition;
 
+@Transactional
 @Repository("competitionDAO")
-public class CompetitionDAO extends HibernateDaoSupport {
+public class CompetitionDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public Competition saveOrUpdate(Competition comp) {
-		getHibernateTemplate().saveOrUpdate(comp);
+		sessionFactory.getCurrentSession().saveOrUpdate(comp);
 		logger.info("Saved competition " + comp.getName());
 		return comp;
 	}
 	
 	public void delete(Competition comp) {
-		getHibernateTemplate().delete(comp);
+		sessionFactory.getCurrentSession().delete(comp);
 		logger.info("Deleted Competition " + comp.getName());
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Competition> getAllCompetitions() {
-		return getHibernateTemplate().find("FROM Competition");
+		return sessionFactory.getCurrentSession().createCriteria(Competition.class).list();
 	}
 
 	public Competition getCompetition(long id) {
-		return getHibernateTemplate().get(Competition.class, id);
+		return (Competition) sessionFactory.getCurrentSession().get(Competition.class, id);
 	}
 	
 	public WeightedCompetition getWeightedCompetition(long id) {
-		return getHibernateTemplate().get(WeightedCompetition.class, id);
-	}
-	
-	@Deprecated
-	public Competition getCompetition(String name) {
-		@SuppressWarnings("unchecked")
-		List<Competition> results = getHibernateTemplate().find("FROM Competition WHERE name = ?", name);
-		if(results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
+		return (WeightedCompetition) sessionFactory.getCurrentSession().get(WeightedCompetition.class, id);
 	}
 	
 	public void save(Arena arena) {
-		getHibernateTemplate().save(arena);
+		sessionFactory.getCurrentSession().save(arena);
 		logger.info("Created Arena " + arena.getName());
 	}
 	
 	public void update(Arena arena) {
-		getHibernateTemplate().update(arena);
+		sessionFactory.getCurrentSession().update(arena);
 		logger.info("Updated Arena " + arena.getName());
 	}
 	
 	public void delete(Arena arena) {
-		getHibernateTemplate().delete(arena);
+		sessionFactory.getCurrentSession().delete(arena);
 		logger.info("Deleted Arena " + arena.getName());
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Arena> getAllArenas() {
-		return getHibernateTemplate().find("FROM Arena");
+		return sessionFactory.getCurrentSession().createCriteria(Arena.class).list();
 	}
 	
 	public Arena getArena(long id) {
-		return getHibernateTemplate().get(Arena.class, id);
-	}
-	
-	@Deprecated
-	public Arena getArena(String name) {
-		@SuppressWarnings("unchecked")
-		List<Arena> results = getHibernateTemplate().find("FROM Arena WHERE name = ?", name);
-		if(results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
+		return (Arena) sessionFactory.getCurrentSession().get(Arena.class, id);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -102,9 +82,10 @@ public class CompetitionDAO extends HibernateDaoSupport {
 		assessmentIds.createCriteria("competition").add(Restrictions.eq("id", comp.getId()));
 		assessmentIds.setProjection(Property.forName("assessment").getProperty("id"));
 		
-		DetachedCriteria cr = DetachedCriteria.forClass(Assessment.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(Assessment.class);
+		cr.add(Subqueries.propertyIn("id", assessmentIds));
 		cr.add(Property.forName("id").in(assessmentIds));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 
 	public boolean isLive(Competition comp) {

@@ -46,6 +46,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
@@ -54,8 +55,8 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,10 +90,14 @@ import pasta.util.ProjectProperties;
  * @since 2012-11-16
   *
  */
+@Transactional
 @Repository("resultDAO")
-public class ResultDAO extends HibernateDaoSupport{
+public class ResultDAO{
 	
 	protected final Log logger = LogFactory.getLog(getClass());
+	
+	@Autowired
+	private SessionFactory sessionFactory;
 	
 	/**
 	 * Delete the assessment result from the database.
@@ -100,11 +105,11 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result assessment test result being deleted
 	 */
 	public void delete(AssessmentResult result) {
-		getHibernateTemplate().delete(result);
+		sessionFactory.getCurrentSession().delete(result);
 	}
 
 	public void delete(HandMarkingResult result) {
-		getHibernateTemplate().delete(result);
+		sessionFactory.getCurrentSession().delete(result);
 	}
 	
 	/**
@@ -113,29 +118,29 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result the unit test result being deleted
 	 */
 	public void delete(UnitTestResult result) {
-		getHibernateTemplate().delete(result);
+		sessionFactory.getCurrentSession().delete(result);
 	}
 	
 	public AssessmentResult getAssessmentResult(long id) {
-		return getHibernateTemplate().get(AssessmentResult.class, id);
+		return (AssessmentResult) sessionFactory.getCurrentSession().get(AssessmentResult.class, id);
 	}
 	
 	public int getSubmissionCount(PASTAUser user, long assessmentId, boolean includeGroup) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.setProjection(Projections.rowCount())
 		.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		restrictCriteriaUser(cr, user, includeGroup, assessmentId);
-		return DataAccessUtils.intResult(getHibernateTemplate().findByCriteria(cr));
+		return DataAccessUtils.intResult(cr.list());
 	}
 	
 	public AssessmentResult getResult(PASTAUser user, long assessmentId, Date submissionDate, boolean includeGroup) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		cr.add(Restrictions.eq("submissionDate", submissionDate));
 		restrictCriteriaUser(cr, user, includeGroup, assessmentId);
 		
 		@SuppressWarnings("unchecked")
-		AssessmentResult result = DataAccessUtils.<AssessmentResult>uniqueResult(getHibernateTemplate().findByCriteria(cr));
+		AssessmentResult result = (AssessmentResult) DataAccessUtils.uniqueResult(cr.list());
 		if(result != null) {
 			refreshHandMarking(result);
 		}
@@ -143,13 +148,14 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public AssessmentResult getLatestIndividualResult(PASTAUser user, long assessmentId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		cr.addOrder(Order.desc("submissionDate"));
 		restrictCriteriaUser(cr, user, false, assessmentId);
+		cr.setMaxResults(1);
 		
 		@SuppressWarnings("unchecked")
-		AssessmentResult result = DataAccessUtils.<AssessmentResult>uniqueResult(getHibernateTemplate().findByCriteria(cr, 0, 1));
+		AssessmentResult result = (AssessmentResult) DataAccessUtils.uniqueResult(cr.list());
 		if(result != null) {
 			refreshHandMarking(result);
 		}
@@ -158,7 +164,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	
 	@SuppressWarnings("unchecked")
 	public AssessmentResult getLatestGroupResult(PASTAUser user, long assessmentId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		cr.addOrder(Order.desc("submissionDate"));
 		restrictCriteriaUser(cr, user, true, assessmentId);
@@ -170,8 +176,9 @@ public class ResultDAO extends HibernateDaoSupport{
 		groupCr.add(Restrictions.eq("member.id", user.getId()));
 		
 		cr.add(Subqueries.propertyEq("user.id", groupCr));
+		cr.setMaxResults(1);
 		
-		AssessmentResult result = DataAccessUtils.<AssessmentResult>uniqueResult(getHibernateTemplate().findByCriteria(cr, 0, 1));
+		AssessmentResult result = (AssessmentResult) DataAccessUtils.uniqueResult(cr.list());
 		if(result != null) {
 			refreshHandMarking(result);
 		}
@@ -179,7 +186,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public List<AssessmentResult> getAllResults(PASTAUser user, long assessmentId, boolean latestFirst, boolean includeGroup) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		if(user != null) {
 			restrictCriteriaUser(cr, user, includeGroup, assessmentId);
 		}
@@ -192,7 +199,7 @@ public class ResultDAO extends HibernateDaoSupport{
 			cr.addOrder(Order.asc("submissionDate"));
 		}
 		@SuppressWarnings("unchecked")
-		List<AssessmentResult> results = getHibernateTemplate().findByCriteria(cr);
+		List<AssessmentResult> results = cr.list();
 		if(results != null) {
 			for(AssessmentResult result : results) {
 				refreshHandMarking(result);
@@ -203,7 +210,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	
 	public List<AssessmentResult> getResultsForMultiUserAssessment(List<PASTAUser> users,
 			long assessmentId, int resultCount, boolean latestFirst) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		if(users.isEmpty()) {
 			return new LinkedList<AssessmentResult>();
 		}
@@ -220,8 +227,9 @@ public class ResultDAO extends HibernateDaoSupport{
 		} else {
 			cr.addOrder(Order.asc("submissionDate"));
 		}
+		cr.setMaxResults(resultCount);
 		@SuppressWarnings("unchecked")
-		List<AssessmentResult> results = getHibernateTemplate().findByCriteria(cr, 0, resultCount);
+		List<AssessmentResult> results = cr.list();
 		if(results != null) {
 			for(AssessmentResult result : results) {
 				refreshHandMarking(result);
@@ -230,7 +238,7 @@ public class ResultDAO extends HibernateDaoSupport{
 		return results;
 	}
 	
-	private void restrictCriteriaUser(DetachedCriteria cr, PASTAUser user, boolean includeGroup, long assessmentId) {
+	private void restrictCriteriaUser(Criteria cr, PASTAUser user, boolean includeGroup, long assessmentId) {
 		if(includeGroup) {
 			DetachedCriteria groupCr = DetachedCriteria.forClass(PASTAGroup.class);
 			groupCr.setProjection(Projections.property("id"));
@@ -246,13 +254,14 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public File getLastestSubmission(PASTAUser user, Assessment assessment) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.setProjection(Projections.property("submissionDate"));
 		cr.createCriteria("user").add(Restrictions.eq("id", user.getId()));
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessment.getId()));
 		cr.addOrder(Order.desc("submissionDate"));
+		cr.setMaxResults(1);
 		@SuppressWarnings("unchecked")
-		List<Date> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		List<Date> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -299,12 +308,13 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @return the results of a competition
 	 */
 	public CompetitionMarks getLatestArenaMarks(long competitionId, long arenaId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
 		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
 		cr.createCriteria("arena").add(Restrictions.eq("id", arenaId));
 		cr.addOrder(Order.desc("runDate"));
+		cr.setMaxResults(1);
 		@SuppressWarnings("unchecked")
-		List<CompetitionMarks> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		List<CompetitionMarks> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -312,12 +322,13 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public CompetitionResult getLatestArenaResult(long competitionId, long arenaId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
 		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
 		cr.createCriteria("arena").add(Restrictions.eq("id", competitionId));
 		cr.addOrder(Order.desc("runDate"));
+		cr.setMaxResults(1);
 		@SuppressWarnings("unchecked")
-		List<CompetitionResult> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		List<CompetitionResult> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -325,12 +336,13 @@ public class ResultDAO extends HibernateDaoSupport{
 	}
 	
 	public CompetitionResult getLatestCalculatedCompetitionResult(long competitionId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
 		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
 		cr.add(Restrictions.isNull("arena"));
 		cr.addOrder(Order.desc("runDate"));
+		cr.setMaxResults(1);
 		@SuppressWarnings("unchecked")
-		List<CompetitionResult> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		List<CompetitionResult> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -344,12 +356,13 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @return the results of a competition
 	 */
 	public CompetitionMarks getLatestCompetitionMarks(long competitionId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionResult.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
 		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
 		cr.add(Restrictions.isNull("arena"));
 		cr.addOrder(Order.desc("runDate"));
+		cr.setMaxResults(1);
 		@SuppressWarnings("unchecked")
-		List<CompetitionMarks> results = getHibernateTemplate().findByCriteria(cr, 0, 1);
+		List<CompetitionMarks> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -538,7 +551,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result the assessment result being saved
 	 */
 	public void save(AssessmentResult result) {
-		getHibernateTemplate().save(result);
+		sessionFactory.getCurrentSession().save(result);
 	}
 
 	/**
@@ -547,27 +560,21 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result the unit test result being saved
 	 */
 	public void save(UnitTestResult result) {
-		getHibernateTemplate().save(result);
+		sessionFactory.getCurrentSession().save(result);
 	}
 	
 	public void saveOrUpdate(CompetitionMarks compMarks) {
-		getHibernateTemplate().saveOrUpdate(compMarks);
+		sessionFactory.getCurrentSession().saveOrUpdate(compMarks);
 	}
 
 	public void saveOrUpdate(CompetitionResult compResult) {
-		getHibernateTemplate().saveOrUpdate(compResult);
+		sessionFactory.getCurrentSession().saveOrUpdate(compResult);
 	}
 
 	public void saveOrUpdate(HandMarkingResult result) {
 		logger.warn("Saving or updating result: " + result.getId());
-		getHibernateTemplate().saveOrUpdate(result);
+		sessionFactory.getCurrentSession().saveOrUpdate(result);
 		logger.warn("ID after: " + result.getId());
-	}
-
-	// Default required by hibernate
-	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
 	}
 
 	/**
@@ -576,7 +583,7 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result the assessment result being updated
 	 */
 	public void update(AssessmentResult result) {
-		getHibernateTemplate().saveOrUpdate(result);
+		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}
 
 	/**
@@ -585,6 +592,6 @@ public class ResultDAO extends HibernateDaoSupport{
 	 * @param result the unit test result being updated
 	 */
 	public void update(UnitTestResult result) {
-		getHibernateTemplate().update(result);
+		sessionFactory.getCurrentSession().update(result);
 	}
 }

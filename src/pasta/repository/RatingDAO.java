@@ -4,49 +4,48 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 
+@Transactional
 @Repository("ratingDAO")
-public class RatingDAO extends HibernateDaoSupport {
+public class RatingDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
-	
-	// Default required by hibernate
+
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public AssessmentRating saveOrUpdate(AssessmentRating rating) {
-		getHibernateTemplate().saveOrUpdate(rating);
+		sessionFactory.getCurrentSession().saveOrUpdate(rating);
 		logger.info("Saved rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
 		return rating;
 	}
 	
 	public void delete(AssessmentRating rating) {
-		getHibernateTemplate().delete(rating);
+		sessionFactory.getCurrentSession().delete(rating);
 		logger.info("Deleted rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<AssessmentRating> getAllRatings() {
-		return getHibernateTemplate().loadAll(AssessmentRating.class);
+		return sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class).list();
 	}
 
 	public AssessmentRating getRating(Assessment assessment, PASTAUser user) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentRating.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class);
 		cr.add(Restrictions.eq("assessment", assessment));
 		cr.add(Restrictions.eq("user", user));
 		@SuppressWarnings("unchecked")
-		List<AssessmentRating> results = getHibernateTemplate().findByCriteria(cr);
+		List<AssessmentRating> results = cr.list();
 		if(results == null || results.isEmpty()) {
 			return null;
 		}
@@ -55,19 +54,19 @@ public class RatingDAO extends HibernateDaoSupport {
 	
 	@SuppressWarnings("unchecked")
 	public List<AssessmentRating> getAllRatingsForAssessment(Assessment assessment) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentRating.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class);
 		cr.add(Restrictions.eq("assessment", assessment));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<AssessmentRating> getAllRatingsForUser(PASTAUser user) {
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentRating.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class);
 		cr.add(Restrictions.eq("user", user));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	public AssessmentRating getRating(long id) {
-		return getHibernateTemplate().get(AssessmentRating.class, id);
+		return (AssessmentRating) sessionFactory.getCurrentSession().get(AssessmentRating.class, id);
 	}
 }

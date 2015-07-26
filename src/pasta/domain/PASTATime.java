@@ -38,6 +38,7 @@ import java.sql.Types;
 import java.util.Date;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.usertype.UserType;
 /**
@@ -170,6 +171,7 @@ public class PASTATime implements Serializable, UserType, Comparable<PASTATime> 
 		return next;
 	}
 	
+	@Override
 	public String toString(){
 		return years+"y"+days+"d"+hours+"h"+minutes+"m"+seconds+"s"+miliseconds+"ms";
 	}
@@ -245,16 +247,16 @@ public class PASTATime implements Serializable, UserType, Comparable<PASTATime> 
 	}
 
 	@Override
-	public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws HibernateException,
-			SQLException {
-		String value = (String) StandardBasicTypes.STRING.nullSafeGet(rs, names[0]);
-        return ((value != null) ? new PASTATime(value) : null);
+	public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
+			throws HibernateException, SQLException {
+		String value = StandardBasicTypes.STRING.nullSafeGet(rs, names[0], session);
+		return ((value != null) ? new PASTATime(value) : null);
 	}
 
 	@Override
-	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException,
-			SQLException {
-		StandardBasicTypes.STRING.nullSafeSet(st, (value != null) ? value.toString() : null, index);
+	public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)
+			throws HibernateException, SQLException {
+		StandardBasicTypes.STRING.nullSafeSet(st, (value != null) ? value.toString() : null, index, session);
 	}
 
 	@Override

@@ -2,12 +2,12 @@ package pasta.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.release.ReleaseRule;
 
@@ -16,26 +16,24 @@ import pasta.domain.release.ReleaseRule;
  * @version 1.0
  * @since 20 Apr 2015
  */
+@Transactional
 @Repository("releaseDAO")
-public class ReleaseDAO extends HibernateDaoSupport {
+public class ReleaseDAO {
 protected final Log logger = LogFactory.getLog(getClass());
 	
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public ReleaseRule getReleaseRule(long id) {
-		return getHibernateTemplate().get(ReleaseRule.class, id);
+		return (ReleaseRule) sessionFactory.getCurrentSession().get(ReleaseRule.class, id);
 	}
 	
 	public void delete(ReleaseRule rule) {
-		getHibernateTemplate().delete(rule);
+		sessionFactory.getCurrentSession().delete(rule);
 	}
 	
 	public ReleaseRule getReleaseRuleForAssessment(long assessmentId) {
-		DetachedCriteria cr = DetachedCriteria.forClass(ReleaseRule.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(ReleaseRule.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		return null;
 	}

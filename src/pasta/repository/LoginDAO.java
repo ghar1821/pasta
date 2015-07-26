@@ -33,8 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.PASTALoginUser;
 
@@ -45,37 +45,40 @@ import pasta.domain.PASTALoginUser;
  * @version 2.0
  * @since 2013-02-25
  */
+@Transactional
 @Repository("loginDAO")
-public class LoginDAO extends HibernateDaoSupport{
+public class LoginDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 
 	public void save(PASTALoginUser user) {
-		getHibernateTemplate().save(user);
+		sessionFactory.getCurrentSession().save(user);
 	}
 
 	public void update(PASTALoginUser user) {
-		getHibernateTemplate().update(user);
+		sessionFactory.getCurrentSession().update(user);
 	}
 	
 	public void delete(PASTALoginUser user) {
-		getHibernateTemplate().delete(user);
+		sessionFactory.getCurrentSession().delete(user);
 	}
 
 	public boolean authenticate(String username, String hashedPassword) {
-		Object[] parameters = {username, hashedPassword};
-		return !(getHibernateTemplate().find("FROM PASTALoginUser WHERE USERNAME=? AND HASHEDPASSWORD=?", parameters).isEmpty());
+		return !sessionFactory.getCurrentSession()
+				.createQuery("FROM PASTALoginUser WHERE USERNAME=:username AND HASHEDPASSWORD=:password")
+				.setParameter("username",  username)
+				.setParameter("password", hashedPassword)
+				.list().isEmpty();
 	}
 	
 	public boolean hasPassword(String username) {
-		Object[] parameters = {username};
-		return !(getHibernateTemplate().find("FROM PASTALoginUser WHERE USERNAME=?", parameters).isEmpty());
+		return !sessionFactory.getCurrentSession()
+				.createQuery("FROM PASTALoginUser WHERE USERNAME=:username")
+				.setParameter("username",  username)
+				.list().isEmpty();
 	}
 	
 	public void updatePassword(String username, String hashedPassword){
@@ -84,11 +87,11 @@ public class LoginDAO extends HibernateDaoSupport{
 		user.setHashedPassword(hashedPassword);
 		if(hasPassword(username)){
 			logger.info("updated password");
-			getHibernateTemplate().update(user);
+			sessionFactory.getCurrentSession().update(user);
 		}
 		else{
 			logger.info("saved password");
-			getHibernateTemplate().save(user);
+			sessionFactory.getCurrentSession().save(user);
 		}
 	}
 

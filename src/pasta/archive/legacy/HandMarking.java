@@ -30,14 +30,9 @@ either expressed or implied, of the PASTA Project.
 package pasta.archive.legacy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.list.LazyList;
-import org.apache.commons.collections.map.LazyMap;
 
 /**
  * Container class for the hand marking assessment module.
@@ -66,12 +61,9 @@ import org.apache.commons.collections.map.LazyMap;
 public class HandMarking {
 
 	private String name;
-	private List<Tuple> columnHeader = LazyList.decorate(new ArrayList<Tuple>(),
-			FactoryUtils.instantiateFactory(Tuple.class));;
-	private List<Tuple> rowHeader = LazyList.decorate(new ArrayList<Tuple>(),
-			FactoryUtils.instantiateFactory(Tuple.class));
-	private Map<String, Map<String, String>> data = LazyMap.decorate(new TreeMap<String, TreeMap<String, String>>(), 
-			FactoryUtils.instantiateFactory(HashMap.class));
+	private List<Tuple> columnHeader = new ArrayList<Tuple>();
+	private List<Tuple> rowHeader = new ArrayList<Tuple>();
+	private Map<String, Map<String, String>> data = new TreeMap<String, Map<String, String>>();
 	
 	private Map<String, Double> columnHeaderMap = new TreeMap<String, Double>();
 

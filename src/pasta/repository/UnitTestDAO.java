@@ -6,48 +6,46 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 
+@Transactional
 @Repository("unitTestDAO")
-public class UnitTestDAO extends HibernateDaoSupport {
+public class UnitTestDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public void save(UnitTest test) {
-		getHibernateTemplate().save(test);
+		sessionFactory.getCurrentSession().save(test);
 		logger.info("Created unit test " + test.getName());
 	}
 	
 	public void update(UnitTest test) {
-		getHibernateTemplate().update(test);
+		sessionFactory.getCurrentSession().update(test);
 		logger.info("Updated unit test " + test.getName());
 	}
 	
 	public void delete(UnitTest test) {
-		getHibernateTemplate().delete(test);
+		sessionFactory.getCurrentSession().delete(test);
 		logger.info("Deleted unit test " + test.getName());
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<UnitTest> getAllUnitTests() {
-		return getHibernateTemplate().find("FROM UnitTest");
+		return sessionFactory.getCurrentSession().createCriteria(UnitTest.class).list();
 	}
 
 	public UnitTest getUnitTest(long id) {
-		return getHibernateTemplate().get(UnitTest.class, id);
+		return (UnitTest) sessionFactory.getCurrentSession().get(UnitTest.class, id);
 	}
 	
 	public WeightedUnitTest getWeightedUnitTest(long id) {
-		return getHibernateTemplate().get(WeightedUnitTest.class, id);
+		return (WeightedUnitTest) sessionFactory.getCurrentSession().get(WeightedUnitTest.class, id);
 	}
 }

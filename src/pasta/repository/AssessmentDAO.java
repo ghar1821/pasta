@@ -39,10 +39,11 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.form.NewHandMarkingForm;
 import pasta.domain.result.DueDateComparator;
@@ -70,17 +71,15 @@ import pasta.util.ProjectProperties;
  * @since 2012-11-13
  */
 
+@Transactional
 @Repository("assessmentDAO")
 @DependsOn("projectProperties")
-public class AssessmentDAO extends HibernateDaoSupport {
+public class AssessmentDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	// Default required by hibernate
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public AssessmentDAO() {
 	}
@@ -244,7 +243,7 @@ public class AssessmentDAO extends HibernateDaoSupport {
 	
 	public void delete(Assessment assessment) {
 		try {
-			getHibernateTemplate().delete(assessment);
+			sessionFactory.getCurrentSession().delete(assessment);
 			logger.info("Deleted assessment " + assessment.getName());
 		} catch (Exception e) {
 			logger.error("Could not delete assessment " + assessment.getName(), e);
@@ -253,17 +252,25 @@ public class AssessmentDAO extends HibernateDaoSupport {
 	
 	public void saveOrUpdate(Assessment assessment) {
 		long id = assessment.getId();
-		getHibernateTemplate().saveOrUpdate(assessment);
+		sessionFactory.getCurrentSession().saveOrUpdate(assessment);
 		logger.info((id == assessment.getId() ? "Updated" : "Created") +
 				" assessment " + assessment.getName());
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Assessment> getAllAssessments() {
-		return getHibernateTemplate().find("FROM Assessment");
+		return sessionFactory.getCurrentSession().createCriteria(Assessment.class).list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Long> getAssessmentIDList() {
+		return sessionFactory.getCurrentSession()
+				.createCriteria(Assessment.class)
+				.setProjection(Projections.property("id"))
+				.list();
 	}
 	
 	public Assessment getAssessment(long id) {
-		return getHibernateTemplate().get(Assessment.class, id);
+		return (Assessment) sessionFactory.getCurrentSession().get(Assessment.class, id);
 	}
 }

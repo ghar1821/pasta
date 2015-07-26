@@ -33,13 +33,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionMarks;
@@ -61,9 +62,11 @@ import pasta.util.PASTAUtil;
  * @since 2012-12-07
  * 
  */
+@Transactional
 @Repository("executionScheduler")
-public class ExecutionScheduler extends HibernateDaoSupport {
-
+public class ExecutionScheduler {
+	private static Logger logger = Logger.getLogger(ExecutionScheduler.class);
+	
 	private List<AssessmentJob> jobQueueCache;
 	private Date lastQueueUpdate;
 	
@@ -71,9 +74,7 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	private ResultManager resultManager;
 	
 	@Autowired
-	public void setMySession(SessionFactory sessionFactory) {
-		setSessionFactory(sessionFactory);
-	}
+	private SessionFactory sessionFactory;
 	
 	public void scheduleJob(PASTAUser user, long assessmentId, AssessmentResult result, Date runDate) {
 		result.setWaitingToRun(true);
@@ -96,7 +97,7 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 
 	public void save(Job job) {
 		try{
-			getHibernateTemplate().save(job);
+			sessionFactory.getCurrentSession().save(job);
 		}
 		catch (Exception e){
 			logger.error("Exception while saving job", e);
@@ -105,7 +106,7 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 
 	public void update(Job job) {
 		try{
-			getHibernateTemplate().update(job);
+			sessionFactory.getCurrentSession().update(job);
 		}
 		catch (Exception e){
 			logger.error("Exception while updating job", e);
@@ -114,7 +115,7 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	
 	public void delete(Job job) {
 		try{
-			getHibernateTemplate().delete(job);
+			sessionFactory.getCurrentSession().delete(job);
 		}
 		catch (Exception e){
 			logger.error("Exception while deleting job", e);
@@ -132,10 +133,10 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	 * @return the list of assessment jobs that are outstanding
 	 */
 	public List<AssessmentJob> getOutstandingAssessmentJobs(){
-		DetachedCriteria cr = DetachedCriteria.forClass(AssessmentJob.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentJob.class);
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.addOrder(Order.asc("runDate"));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	/**
@@ -144,11 +145,11 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	 * @return the list of competition jobs that are outstanding
 	 */
 	public List<CompetitionJob> getOutstandingCompetitionJobs(){
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionJob.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionJob.class);
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.add(Restrictions.isNull("arena"));
 		cr.addOrder(Order.asc("runDate"));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	/**
@@ -157,11 +158,11 @@ public class ExecutionScheduler extends HibernateDaoSupport {
 	 * @return the list of competition jobs that are outstanding
 	 */
 	public List<CompetitionJob> getOutstandingArenaJobs(){
-		DetachedCriteria cr = DetachedCriteria.forClass(CompetitionJob.class);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionJob.class);
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.add(Restrictions.isNotNull("arena"));
 		cr.addOrder(Order.asc("runDate"));
-		return getHibernateTemplate().findByCriteria(cr);
+		return cr.list();
 	}
 	
 	/**
