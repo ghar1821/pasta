@@ -48,6 +48,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import pasta.domain.UserPermissionLevel;
 
@@ -57,7 +58,7 @@ import pasta.domain.UserPermissionLevel;
  * @since 2012-10-12
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users",uniqueConstraints={@UniqueConstraint(columnNames={"username"})})
 @Inheritance(strategy=InheritanceType.JOINED)
 public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 
