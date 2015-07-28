@@ -144,6 +144,10 @@ public class AuthenticationController {
 		loginForm.setUnikey(loginForm.getUnikey().trim());
 		
 		ProjectProperties.getInstance().getAuthenticationValidator().validate(loginForm, result);
+		if (result.hasErrors()) {
+			return "login";
+		}
+		
 		PASTAUser user = userManager.getUser(loginForm.getUnikey());
 		if(user == null || !user.isActive()) {
 			if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
