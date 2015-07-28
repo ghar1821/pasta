@@ -547,14 +547,18 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "info/{assessmentId}/")
 	public String viewAssessmentInfo(@PathVariable("assessmentId") long assessmentId, Model model) {
-
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
+		
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(assessment == null) {
+			return "redirect:/home/";
+		}
 
 		model.addAttribute("unikey", user);
-		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
+		model.addAttribute("assessment", assessment);
 		model.addAttribute("history",
 				resultManager.getAssessmentHistory(user, assessmentId));
 		
@@ -1079,10 +1083,14 @@ public class SubmissionController {
 		if(viewedUser == null) {
 			return "redirect:/home/";
 		}
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(assessment == null) {
+			return "redirect:/home/";
+		}
 		
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
-		model.addAttribute("assessment", assessmentManager.getAssessment(assessmentId));
+		model.addAttribute("assessment", assessment);
 		model.addAttribute("history", resultManager.getAssessmentHistory(viewedUser, assessmentId));
 		
 		Map<String, FileTreeNode> nodes = PASTAUtil.generateFileTree(viewedUser, assessmentId);

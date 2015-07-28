@@ -233,6 +233,9 @@ public class AssessmentController {
 		}
 
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
+		if(currAssessment == null) {
+			return "redirect:/home/";
+		}
 		
 		// If the page is returning from a failed validation, the model 
 		// will contain lists of the selected assessment modules.
@@ -351,6 +354,9 @@ public class AssessmentController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		if(assessment == null) {
+			return "redirect:/home/";
+		}
 		
 		// Form modules may contain dummy elements as list may have "holes" in it from form
 		// Remove these dummy elements by checking for default properties
@@ -434,8 +440,12 @@ public class AssessmentController {
 		if (!user.isTutor()) {
 			return "redirect:/home/";
 		}
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(assessment == null) {
+			return "redirect:/home/";
+		}
 		if (user.isInstructor()) {
-			submissionManager.runAssessment(assessmentManager.getAssessment(assessmentId), userManager.getUserListIncludingGroups());
+			submissionManager.runAssessment(assessment, userManager.getUserListIncludingGroups());
 		}
 		return "redirect:" + request.getHeader("Referer");
 	}
@@ -501,6 +511,9 @@ public class AssessmentController {
 		}
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if(assessment == null) {
+			return;
+		}
 		
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment;filename=\""
