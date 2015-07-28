@@ -4,15 +4,33 @@
 	<c:set var="node" value="${node}" scope="request"/>
 	<jsp:include page="fileWriter.jsp"/>
 </ul>
-<form:form id='viewFileForm' action="${pageContext.request.contextPath}/viewFile/" method="post" target="_blank">
-	<input type="hidden" id='location' name="location" value=""/>
-	<input type="hidden" name="owner" value="${param.owner}"/>
-</form:form>
 <script>
 $(function() {
-	//$(document.body).append($("<form id='viewFileForm' action='${pageContext.request.contextPath}/viewFile/' method='post' target='_blank'><input type='hidden' name='location' value=''/></form>"));
+	if(!$("#viewFileForm").length) {
+		var $form = $("<form />", {
+			id : "viewFileForm",
+			action : "${pageContext.request.contextPath}/viewFile/",
+			method : "post",
+			target : "_blank"
+		});
+		$form.append($("<input />", {
+			type : "hidden",
+			id : "location",
+			name : "location",
+			value : ""
+		}));
+		$form.append($("<input />", {
+			type : "hidden",
+			id : "owner",
+			name : "owner",
+			value : ""
+		}));
+		$(document.body).append($form);
+	}
+	
 	$("li.leaf").on("click", function() {
 		$('#viewFileForm').find("input#location").val($(this).attr('location'));
+		$('#viewFileForm').find("input#owner").val($(this).attr('owner'));
 		$('#viewFileForm').submit();
 	});
 });
