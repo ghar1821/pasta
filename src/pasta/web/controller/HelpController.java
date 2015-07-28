@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.template.UnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.util.PASTAUtil;
 
@@ -43,9 +44,11 @@ public class HelpController {
 			return "redirect:/home/"; 
 		}
 		model.addAttribute("unikey", user);
+		model.addAttribute("userout", UnitTest.BB_OUTPUT_FILENAME);
 		try {
 			model.addAttribute("PASTAJUnitTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTAJUnitTest.java")));
 			model.addAttribute("HelloWorldTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/HelloWorldTest.java")));
+			model.addAttribute("SampleCustomTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/SampleCustomTest.java")));
 		} catch (FileNotFoundException e) {}
 		return "help/unitTestHelp";
 	}
