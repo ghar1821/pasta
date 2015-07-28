@@ -238,7 +238,11 @@ public class ResultDAO{
 	
     @SuppressWarnings("unchecked")
 	public List<AssessmentResult> getLatestResultsForMultiUser(List<PASTAUser> users) {
-		DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentResult.class);
+		if(users.isEmpty()) {
+			return new LinkedList<AssessmentResult>();
+		}
+    	
+    	DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentResult.class);
 		latestSub.setProjection(
 				Projections.projectionList()
 					.add(Projections.groupProperty("user"))
