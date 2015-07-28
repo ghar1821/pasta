@@ -38,7 +38,6 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 
@@ -51,8 +50,6 @@ import pasta.domain.template.UnitTest;
  *
  */
 public class UpdateUnitTestForm {
-	
-	private Class<? extends UnitTest> formType;
 	
 	@Min(0)
 	private long id;
@@ -69,15 +66,11 @@ public class UpdateUnitTestForm {
 	private List<BlackBoxTestCaseForm> testCases;
 	
 	public UpdateUnitTestForm(UnitTest base) {
-		this.formType = base.getClass();
-		
 		this.id = base.getId();
 		this.name = base.getName();
 		this.mainClassName = base.getMainClassName();
 		this.submissionCodeRoot = base.getSubmissionCodeRoot();
-		if(base instanceof BlackBoxTest) {
-			this.testCases = createTestCaseForms(((BlackBoxTest) base).getTestCases());
-		}
+		this.testCases = createTestCaseForms(base.getTestCases());
 		
 		this.file = null;
 	}
@@ -87,10 +80,6 @@ public class UpdateUnitTestForm {
 			forms.add(new BlackBoxTestCaseForm(testCase));
 		}
 		return forms;
-	}
-	
-	public Class<? extends UnitTest> getFormType() {
-		return formType;
 	}
 	
 	public long getId() {

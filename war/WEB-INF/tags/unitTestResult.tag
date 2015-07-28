@@ -100,6 +100,13 @@
 								</div>
 							</c:forEach>
 						</c:when>
+						<c:when test="${results.runtimeError}">
+							<c:forEach var="runtimeError" items="${results.runtimeErrors}">
+								<div class="vertical-block">
+									<pre><c:out value="${runtimeError}" escapeXml="true"/></pre>
+								</div>
+							</c:forEach>
+						</c:when>
 					</c:choose>
 				</div>
 			</c:when>

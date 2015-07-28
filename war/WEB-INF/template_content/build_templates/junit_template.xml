@@ -24,19 +24,25 @@
             <fileset dir="${basedir}">
                 <exclude name="**/*.java"/>
                 <exclude name="build.xml"/>
+            	<exclude name="result.xml"/>
+            	<exclude name="run.errors"/>
+            	<exclude name="bin/**/*"/>
             </fileset>
         </copy>
 	</target>
     <target name="init" depends="makeBin, copyNonJava">
     </target>
     <target name="clean">
-        <echo message="Deleting directory 'bin'"/>
-        <!--<delete dir="bin"/>-->
+    	<echo message="Deleting .class files from 'bin'"/>
+		<delete>
+			<fileset dir="bin" includes="**/*.class"/>
+		</delete>
     </target>
     <target depends="init" name="build">
-        <echo message="Using javac to compile Java code in 'bin'"/>
-        <javac fork="yes" includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="."/>
+        <echo message="Using javac to compile Java code in '${basedir}'"/>
+        <javac fork="yes" srcdir="${basedir}" includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+			<exclude name="origSubmission/**/*"/>
+			<exclude name="bin/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
     </target>

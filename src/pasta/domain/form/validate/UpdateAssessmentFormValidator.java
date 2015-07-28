@@ -7,7 +7,6 @@ import org.springframework.validation.Validator;
 
 import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
@@ -50,7 +49,7 @@ public class UpdateAssessmentFormValidator implements Validator {
 		// Ensure solution name is present only if it needs to be
 		boolean hasBlackBox = false;
 		for(WeightedUnitTest wTest : form.getSelectedUnitTests()) {
-			hasBlackBox = hasBlackBox || (unitTestManager.getUnitTest(wTest.getTest().getId()) instanceof BlackBoxTest);
+			hasBlackBox = hasBlackBox || (unitTestManager.getUnitTest(wTest.getTest().getId()).hasBlackBoxTests());
 		}
 		boolean emptySolutionName = (form.getSolutionName() == null || form.getSolutionName().isEmpty());
 		if(hasBlackBox) {

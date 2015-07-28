@@ -32,6 +32,9 @@ public class BlackBoxTestCase implements Serializable {
 	
 	private String output;
 	
+	@Column(name="compare")
+	private boolean toBeCompared = true;
+	
 	private int timeout;
 
 	public long getId() {
@@ -77,6 +80,13 @@ public class BlackBoxTestCase implements Serializable {
 	}
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
+	}
+	
+	public boolean isToBeCompared() {
+		return toBeCompared;
+	}
+	public void setToBeCompared(boolean toBeCompared) {
+		this.toBeCompared = toBeCompared;
 	}
 	
 	@Override
@@ -132,6 +142,8 @@ public class BlackBoxTestCase implements Serializable {
 			return false;
 		if (timeout != other.timeout)
 			return false;
+		if (toBeCompared != other.toBeCompared)
+			return false;
 		return true;
 	}
 	
@@ -140,5 +152,4 @@ public class BlackBoxTestCase implements Serializable {
 		return "BlackBoxTestCase [id=" + id + ", testName=" + testName + ", commandLine=" + commandLine
 				+ ", input=" + input + ", output=" + output + ", timeout=" + timeout + "]";
 	}
-	
 }

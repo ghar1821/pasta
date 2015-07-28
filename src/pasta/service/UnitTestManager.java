@@ -54,7 +54,6 @@ import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.TestUnitTestForm;
 import pasta.domain.form.UpdateUnitTestForm;
 import pasta.domain.result.UnitTestResult;
-import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 import pasta.repository.AssessmentDAO;
@@ -69,8 +68,8 @@ import pasta.testing.JUnitTestRunner;
 import pasta.testing.JavaBlackBoxTestRunner;
 import pasta.testing.PythonBlackBoxTestRunner;
 import pasta.testing.Runner;
+import pasta.testing.task.CleanupSpecificFilesTask;
 import pasta.testing.task.DirectoryCopyTask;
-import pasta.testing.task.FileOrDirectoryDeleteTask;
 import pasta.testing.task.MakeDirectoryTask;
 import pasta.testing.task.UnzipTask;
 import pasta.util.Language;
@@ -97,8 +96,8 @@ public class UnitTestManager {
 	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
 	
-	private final String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
-	private final String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
+	final static String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
+	final static String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
@@ -157,16 +156,7 @@ public class UnitTestManager {
 	 * @param newTest the new unit test form used to create a new unit test template
 	 */
 	public UnitTest addUnitTest(NewUnitTestForm newTest) {
-		
-		UnitTest thisTest;
-		switch(newTest.getType()) {
-		case BLACK_BOX:
-			thisTest = new BlackBoxTest(newTest.getName(), false);
-			break;
-		default:
-			thisTest = new UnitTest(newTest.getName(), false);
-		}
-
+		UnitTest thisTest = new UnitTest(newTest.getName(), false);
 		// Save unit test to database
 		try {
 			unitTestDAO.save(thisTest);
@@ -213,214 +203,249 @@ public class UnitTestManager {
 	public void testUnitTest(UnitTest test, TestUnitTestForm testForm) {
 		logger.info("Testing unit test " + test.getName());
 		
-		String mainClass = test.getMainClassName();
-		if(mainClass == null || mainClass.isEmpty()) {
-			finishTesting(test, "Internal error: contact administrator.");
-			logger.error("No main test class for test " + test.getName());
-			return;
-		}
+		// This results object will be updated with the results as we go
+		UnitTestResult utResults = new UnitTestResult();
+		utResults.setTest(test);
+		test.setTestResult(utResults);
 		
-		File testLoc = test.getCodeLocation();
 		File sandboxLoc = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
-		
+		// Set up location where test will be run
 		try {
 			if (sandboxLoc.exists()) {
+				logger.debug("Deleting existing sandbox location " + sandboxLoc);
 				FileUtils.deleteDirectory(sandboxLoc);
 			}
 		} catch (IOException e) {
-			finishTesting(test, "Internal error: contact administrator.");
+			utResults.addValidationError("Internal error: contact administrator.");
 			logger.error("Could not delete existing test.", e);
 			return;
 		}
-		
+		logger.debug("Making directories to " + sandboxLoc);
 		sandboxLoc.mkdirs();
 		
-		// Save submission to disk
+		//Save submission to disk
 		CommonsMultipartFile submission = testForm.getFile();
-		File unzipTo = new File(sandboxLoc, "unzipped/");
+		File unzipTo = new File(sandboxLoc, "origSubmission/");
+		logger.debug("Making directories to " + unzipTo);
 		unzipTo.mkdirs();
-		File submissionFile = new File(unzipTo, submission.getOriginalFilename());
+		logger.debug("Unzipping " + submission.getOriginalFilename() + " to " + unzipTo);
+		boolean saved = new UnzipTask(submission, unzipTo).go();
+		if(!saved) {
+			utResults.addValidationError("Internal error: contact administrator.");
+			logger.error("Error saving submission to disk");
+			return;
+		}
+		// Code we are interested in testing
+		File importantCode = test.getSubmissionCodeLocation(unzipTo);
+		logger.debug("Copying " + importantCode + " to " + sandboxLoc);
+		new DirectoryCopyTask(importantCode, sandboxLoc).go();
+		
+		// Run any black box tests
+		if(test.hasBlackBoxTests()) {
+			String solutionName = testForm.getSolutionName();
+			if(solutionName != null && !solutionName.isEmpty()) {
+				runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode);
+			}
+		}
+		
 		try {
-			submission.getInputStream().close();
-			submission.transferTo(submissionFile);
+			logger.debug("Deleting " + unzipTo);
+			FileUtils.deleteDirectory(unzipTo);
 		} catch (IOException e) {
-			finishTesting(test, "Internal error: contact administrator.");
-			logger.error("Error moving submission initially", e);
+			utResults.addValidationError("Internal error: contact administrator.");
+			logger.error("Error removing unnecessary submission files", e);
 			return;
 		}
 		
-		Runner runner = null;
-		String[] targets = null;
-		
-		if(test instanceof BlackBoxTest) {
-			String solutionName = testForm.getSolutionName();
-			String base = test.getSubmissionCodeRoot();
-			
-			Language subLanguage = null;
-			try {
-				String[] submissionContents = PASTAUtil.listZipContents(submissionFile);
-				String shortest = null;
-				for(String filename : submissionContents) {
-					if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
-						if(Language.getLanguage(filename) != null) {
-							if(shortest == null || filename.length() < shortest.length()) {
-								shortest = filename;
-							}
-						}
-					}
-				}
-				subLanguage = Language.getLanguage(shortest);
-			} catch (IOException e) {
-				// Maybe submission wasn't a zip
-				subLanguage = Language.getLanguage(submissionFile);
-			}
-			
-			if(subLanguage == null) {
-				finishTesting(test, "Language not recognised");
-				logger.error("Language not recognised.");
-				return;
-			}
-			
-			try {
-				switch(subLanguage) {
-				case JAVA:
-					runner = new JavaBlackBoxTestRunner(); break;
-				case C:
-					runner = new CBlackBoxTestRunner(); break;
-				case CPP:
-					runner = new CPPBlackBoxTestRunner(); break;
-				case PYTHON:
-					runner = new PythonBlackBoxTestRunner(); break;
-				default:
-					finishTesting(test, "Language not yet implemented");
-					logger.error("Language not implemented.");
-					return;
-				}
-			} catch(FileNotFoundException e) {
-				finishTesting(test, "Internal error - test template not found.");
-				logger.error("Test template not found.", e);
-				return;
-			}
-			
-			((BlackBoxTestRunner) runner).setMainTestClassname(mainClass);
-			((BlackBoxTestRunner) runner).setFilterStackTraces(false);
-			((BlackBoxTestRunner) runner).setTestData(((BlackBoxTest) test).getTestCases());
-			int totalTime = 1000;
-			for(BlackBoxTestCase testCase : ((BlackBoxTest) test).getTestCases()) {
-				totalTime += testCase.getTimeout();
-			}
-			((BlackBoxTestRunner) runner).setMaxRunTime(totalTime);
-			((BlackBoxTestRunner) runner).setSolutionName(solutionName);
-			targets = new String[] {"build", "run", "test", "clean"};
-		} else {
-			try {
-				runner = new JUnitTestRunner();
-			} catch (FileNotFoundException e) {
-				finishTesting(test, "Internal error - test template not found.");
-				logger.error("Test template not found.", e);
-				return;
-			}
-			((JUnitTestRunner) runner).setMainTestClassname(mainClass);
-			((JUnitTestRunner) runner).setFilterStackTraces(false);
-			targets = new String[] {"build", "test", "clean"};
+		String mainClass = test.getMainClassName();
+		if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
+			runJUnitTests(test, utResults, mainClass, sandboxLoc);
 		}
 		
+		ProjectProperties.getInstance().getResultDAO().save(utResults);
+		ProjectProperties.getInstance().getUnitTestDAO().update(test);
+		
+		logger.debug("Deleting final sandbox location " + sandboxLoc);
+		try {
+			FileUtils.deleteDirectory(sandboxLoc);
+		} catch (IOException e) {
+			logger.error("Error deleting sandbox test at " + sandboxLoc);
+		}
+	}
+	
+	public void runBlackBoxTests(UnitTest test, String solutionName,
+			UnitTestResult utResults,
+			File sandboxLoc, File submissionCode) {
+		String mainClass = BB_TEST_TEMPLATE.substring(0, BB_TEST_TEMPLATE.lastIndexOf('.'));
+		
+		String base = test.getSubmissionCodeRoot();
+		
+		String[] submissionContents = PASTAUtil.listDirectoryContents(submissionCode);
+		String shortest = null;
+		for(String filename : submissionContents) {
+			if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
+				if(Language.getLanguage(filename) != null) {
+					if(shortest == null || filename.length() < shortest.length()) {
+						shortest = filename;
+					}
+				}
+			}
+		}
+		Language subLanguage = Language.getLanguage(shortest);
+		logger.debug("Submission language is " + subLanguage);
+		
+		if(subLanguage == null) {
+			utResults.addValidationError("Language not recognised.");
+			logger.error("Language not recognised.");
+			return;
+		}
+		
+		BlackBoxTestRunner runner = null;
+		try {
+			switch(subLanguage) {
+			case JAVA:
+				runner = new JavaBlackBoxTestRunner(); break;
+			case C:
+				runner = new CBlackBoxTestRunner(); break;
+			case CPP:
+				runner = new CPPBlackBoxTestRunner(); break;
+			case PYTHON:
+				runner = new PythonBlackBoxTestRunner(); break;
+			default:
+				utResults.addValidationError("Language not yet implemented.");
+				logger.error("Language not implemented.");
+				return;
+			}
+		} catch(FileNotFoundException e) {
+			utResults.addValidationError("Internal error - test template not found.");
+			logger.error("Test template not found.", e);
+			return;
+		}
+		
+		runner.setMainTestClassname(mainClass);
+		runner.setFilterStackTraces(false);
+		runner.setTestData(test.getTestCases());
+		int totalTime = 1000;
+		for(BlackBoxTestCase testCase : test.getTestCases()) {
+			totalTime += testCase.getTimeout();
+		}
+		runner.setMaxRunTime(totalTime);
+		runner.setSolutionName(solutionName);
+		
+		String[] targets = new String[] {"build", "run", "test", "clean"};
+		File testLoc = test.getGeneratedCodeLocation();
+		
+		doTest(test, mainClass, runner, targets, testLoc, sandboxLoc, utResults);
+	}
+	
+	public void runJUnitTests(UnitTest test, 
+			UnitTestResult utResults,
+			String mainClass, File sandboxLoc) {
+		JUnitTestRunner runner = null;
+		try {
+			runner = new JUnitTestRunner();
+		} catch (FileNotFoundException e) {
+			utResults.addValidationError("Internal error - test template not found.");
+			logger.error("Test template not found.", e);
+			return;
+		}
+		runner.setMainTestClassname(mainClass);
+		runner.setFilterStackTraces(false);
+		String[] targets = new String[] {"build", "test", "clean"};
+		File testLoc = test.getCodeLocation();
+		doTest(test, mainClass, runner, targets, testLoc, sandboxLoc, utResults);
+	}
+	
+	private void doTest(UnitTest test, String mainClassname, 
+			Runner runner, String[] targets, File testCode, File sandboxLoc, 
+			UnitTestResult utResults) {
 		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
 		antJob.addDependency("test", "build");
 		antJob.addDependency("run", "build");
 		
-		
-		antJob.addSetupTask(new UnzipTask(submissionFile, unzipTo));
-		File importantCode = test.getSubmissionCodeLocation(unzipTo);
-		antJob.addSetupTask(new DirectoryCopyTask(importantCode, sandboxLoc));
-		antJob.addSetupTask(new FileOrDirectoryDeleteTask(unzipTo));
-		antJob.addSetupTask(new DirectoryCopyTask(testLoc, sandboxLoc));
+		logger.debug("Copying " + testCode + " to " + sandboxLoc);
+		antJob.addSetupTask(new DirectoryCopyTask(testCode, sandboxLoc));
 		
 		File binLoc = new File(sandboxLoc, "bin/");
+		logger.debug("Making directories to " + binLoc);
 		antJob.addSetupTask(new MakeDirectoryTask(binLoc));
-		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, "userout/")));
+		logger.debug("Making directories to " + new File(binLoc, UnitTest.BB_OUTPUT_FILENAME + File.separatorChar));
+		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, UnitTest.BB_OUTPUT_FILENAME + File.separatorChar)));
+		
+		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, sandboxLoc, false));
+		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, binLoc, false));
 		
 		antJob.run();
 		
 		AntResults results = antJob.getResults();
 		
 		// Get results from ant output
-		UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
+		UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
 				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath());
-		if(utResults == null) {
-			utResults = new UnitTestResult();
+		if(thisResult == null) {
+			thisResult = new UnitTestResult();
 		}
-		utResults.setTest(test);
 		
-		utResults.setFilesCompiled(runner.extractFilesCompiled(results));
+		thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
 		if(!results.isSuccess("build")) {
-			utResults.setBuildError(true);
-			utResults.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
+			thisResult.setBuildError(true);
+			thisResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
 		}
 		
-		utResults.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
-		utResults.setCleanError(!results.isSuccess("clean"));
-		utResults.setRuntimeOutput(results.getFullOutput());
+		File errorFile = new File(sandboxLoc, "run.errors");
+		if(errorFile.exists()) {
+			String errorContents = PASTAUtil.scrapeFile(errorFile);
+			thisResult.setRuntimeErrors(errorContents.replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
+		}
 		
-		test.setTestResult(utResults);
+		thisResult.setCleanError(!results.isSuccess("clean"));
+		thisResult.setFullOutput(results.getFullOutput());
 		
-		ProjectProperties.getInstance().getResultDAO().save(utResults);
-		ProjectProperties.getInstance().getUnitTestDAO().update(test);
-		
-//		try {
-//			FileUtils.deleteDirectory(sandboxLoc);
-//		} catch (IOException e) {
-//			logger.error("Error deleting sandbox test at " + sandboxLoc);
-//		}
+		utResults.combine(thisResult);
 	}
-	private void finishTesting(UnitTest test, String errorMessage) {
-		UnitTestResult results = new UnitTestResult();
-		results.addValidationError(errorMessage);
-		test.setTestResult(results);
-		ProjectProperties.getInstance().getResultDAO().save(results);
-		ProjectProperties.getInstance().getUnitTestDAO().update(test);
-	}
-
+	
 	public void updateUnitTest(UnitTest test, UpdateUnitTestForm updateForm) {
 		test.setName(updateForm.getName());
-
-		if(test instanceof BlackBoxTest) {
-			BlackBoxTest bbTest = (BlackBoxTest) test;
-			List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
-			ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();
-			List<BlackBoxTestCase> oldCases = new LinkedList<>(bbTest.getTestCases());
-			while(newIt.hasNext()) {
-				BlackBoxTestCase newTestCase = newIt.next();
-				ListIterator<BlackBoxTestCase> oldIt = oldCases.listIterator();
-				while(oldIt.hasNext()) {
-					BlackBoxTestCase oldTestCase = oldIt.next();
-					if(oldTestCase.equals(newTestCase)) {
-						if(!oldTestCase.exactlyEquals(newTestCase)) {
-							oldTestCase.setTestName(newTestCase.getTestName());
-							oldTestCase.setCommandLine(newTestCase.getCommandLine());
-							oldTestCase.setInput(newTestCase.getInput());
-							oldTestCase.setOutput(newTestCase.getOutput());
-							oldTestCase.setTimeout(newTestCase.getTimeout());
-						}
-						newIt.set(oldTestCase);
-						oldIt.remove();
-						break;
+		test.setMainClassName(updateForm.getMainClassName());
+		test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
+		
+		List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
+		ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();
+		List<BlackBoxTestCase> oldCases = new LinkedList<>(test.getTestCases());
+		while(newIt.hasNext()) {
+			BlackBoxTestCase newTestCase = newIt.next();
+			ListIterator<BlackBoxTestCase> oldIt = oldCases.listIterator();
+			while(oldIt.hasNext()) {
+				BlackBoxTestCase oldTestCase = oldIt.next();
+				if(oldTestCase.equals(newTestCase)) {
+					if(!oldTestCase.exactlyEquals(newTestCase)) {
+						oldTestCase.setTestName(newTestCase.getTestName());
+						oldTestCase.setCommandLine(newTestCase.getCommandLine());
+						oldTestCase.setInput(newTestCase.getInput());
+						oldTestCase.setOutput(newTestCase.getOutput());
+						oldTestCase.setTimeout(newTestCase.getTimeout());
 					}
+					newIt.set(oldTestCase);
+					oldIt.remove();
+					break;
 				}
 			}
-			bbTest.setTestCases(newCases);
-			updateBlackBoxCode(bbTest);
-			createInputFiles(bbTest);
-			createExpectedOutputFiles(bbTest);
-		} else {
-			test.setMainClassName(updateForm.getMainClassName());
-			test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
 		}
+		test.setTestCases(newCases);
+		updateBlackBoxCode(test);
+		createInputFiles(test);
+		createExpectedOutputFiles(test);
+		
 		updateUnitTest(test);
 	}
 
-	private void updateBlackBoxCode(BlackBoxTest test) {
+	private void updateBlackBoxCode(UnitTest test) {
 		logger.info("Creating black box code for " + test.getName());
+		
+		FileUtils.deleteQuietly(test.getGeneratedCodeLocation());
+		if(!test.hasBlackBoxTests()) {
+			return;
+		}
 		
 		File bbTemplateFile = null;
 		try {
@@ -447,7 +472,7 @@ public class UnitTestManager {
 		}
 		
 		String filename = bbTemplateFile.getName().replace(".template", ".java");
-		File testFile = new File(test.getCodeLocation(), filename);
+		File testFile = new File(test.getGeneratedCodeLocation(), filename);
 		if(!testFile.exists()) {
 			testFile.getParentFile().mkdirs();
 		}
@@ -459,11 +484,10 @@ public class UnitTestManager {
 			logger.error("Unable to write to " + testFile, e);
 		}
 		
-		test.setMainClassName(bbTemplateFile.getName().substring(0, bbTemplateFile.getName().lastIndexOf('.')));
 		test.setTested(false);
 	}
 	
-	private String getTestsContent(BlackBoxTest test) {
+	private String getTestsContent(UnitTest test) {
 		StringBuilder methodTemplate = new StringBuilder();
 		File bbMethodTemplateFile = null;
 		try {
@@ -479,7 +503,7 @@ public class UnitTestManager {
 		
 		StringBuilder allTests = new StringBuilder();
 		for(BlackBoxTestCase testCase : test.getTestCases()) {
-			if(testCase.hasValidName()) {
+			if(testCase.hasValidName() && testCase.isToBeCompared()) {
 				String content = new String(methodTemplate.toString());
 				content = content.replaceAll("\\$\\{timeout\\}", String.valueOf(testCase.getTimeout()));
 				content = content.replaceAll("\\$\\{testName\\}", testCase.getTestName());
@@ -490,11 +514,11 @@ public class UnitTestManager {
 		return allTests.toString();
 	}
 	
-	private void createExpectedOutputFiles(BlackBoxTest test) {
-		File parentDir = new File(test.getCodeLocation(), "bbexpected/");
+	private void createExpectedOutputFiles(UnitTest test) {
+		File parentDir = new File(test.getGeneratedCodeLocation(), UnitTest.BB_EXPECTED_OUTPUT_FILENAME + File.separatorChar);
 		parentDir.mkdirs();
 		for(BlackBoxTestCase testCase : test.getTestCases()) {
-			if(testCase.hasValidName()) {
+			if(testCase.hasValidName() && testCase.isToBeCompared()) {
 				File testOut = new File(parentDir, testCase.getTestName());
 				try {
 					PrintWriter writer = new PrintWriter(testOut);
@@ -510,8 +534,8 @@ public class UnitTestManager {
 		}
 	}
 	
-	private void createInputFiles(BlackBoxTest test) {
-		File parentDir = new File(test.getCodeLocation(), "bbinput/");
+	private void createInputFiles(UnitTest test) {
+		File parentDir = new File(test.getGeneratedCodeLocation(), UnitTest.BB_INPUT_FILENAME + File.separatorChar);
 		parentDir.mkdirs();
 		for(BlackBoxTestCase testCase : test.getTestCases()) {
 			if(testCase.hasValidName()) {

@@ -13,6 +13,9 @@
 				<exclude name="**/*.h"/>
 				<exclude name="**/*.java"/>
                 <exclude name="build.xml"/>
+                <exclude name="result.xml"/>
+                <exclude name="run.errors"/>
+            	<exclude name="bin/**/*"/>
             </fileset>
         </copy>
 	</target>
@@ -53,8 +56,14 @@
     <target name="setup" depends="makeBin, copyNonC">
     </target>
     <target name="clean">
-        <echo message="Deleting directory 'bin'"/>
-        <!--<delete dir="bin"/>-->
+    	<echo message="Deleting .o files from 'bin'"/>
+		<delete>
+			<fileset dir="bin" includes="**/*.o"/>
+		</delete>
+    	<echo message="Deleting .class files from 'bin'"/>
+		<delete>
+			<fileset dir="bin" includes="**/*.class"/>
+		</delete>
     </target>
     <target name="build" depends="init, setup">
         <echo message="Using gcc to compile C code"/>
@@ -75,10 +84,12 @@
             includeantruntime="false"
             debug="true"
             debuglevel="${debuglevel}"
+        	srcdir="${basedir}"
             destdir="bin"
             source="${source}"
             target="${target}">
-            <src path="."/>
+        	<exclude name="origSubmission/**/*"/>
+        	<exclude name="bin/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
     </target>
@@ -102,8 +113,8 @@
         <exec
 			executable="./${solutionName}"
 			dir="bin"
-			input="bin/bbinput/${bbTestName}"
-            output="bin/userout/${bbTestName}"
+			input="bin/${bbinputfile}/${bbTestName}"
+            output="bin/${bbuseroutfile}/${bbTestName}"
 			error="${runErrorsFile}"
 			append="true"
 			timeout="${bbTestTimeout}">

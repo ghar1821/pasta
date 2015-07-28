@@ -31,6 +31,7 @@ package pasta.domain.template;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,11 +40,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
@@ -69,10 +72,13 @@ import pasta.util.ProjectProperties;
 
 @Entity
 @Table (name = "unit_tests")
-@Inheritance(strategy=InheritanceType.JOINED)
 public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
+	
+	public static String BB_INPUT_FILENAME = "bbinput";
+	public static String BB_EXPECTED_OUTPUT_FILENAME = "bbexpected";
+	public static String BB_OUTPUT_FILENAME = "userout";
 
 	@Id @GeneratedValue
 	private long id;
@@ -90,6 +96,11 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@OneToOne (cascade=CascadeType.ALL)
 	@JoinColumn (name="test_result_id")
 	private UnitTestResult testResult;
+	
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn (name="unit_test_id")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<BlackBoxTestCase> testCases;
 
 	/**
 	 * Default constructor
@@ -97,15 +108,18 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	 * name="Default" tested=false
 	 */
 	public UnitTest() {
-		this.name = "Default";
-		this.tested = false;
-		this.submissionCodeRoot = "";
+		init("Default", false);
 	}
 
 	public UnitTest(String name, boolean tested) {
+		init(name, tested);
+	}
+	
+	public void init(String name, boolean tested) {
 		this.name = name;
 		this.tested = tested;
 		this.submissionCodeRoot = "";
+		this.testCases = new ArrayList<BlackBoxTestCase>();
 	}
 
 	public String getName() {
@@ -122,6 +136,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	public File getCodeLocation() {
 		return new File(getFileLocation(), "code");
+	}
+	
+	public File getGeneratedCodeLocation() {
+		return new File(getFileLocation(), "generated");
 	}
 	
 	public boolean hasCode() {
@@ -214,6 +232,18 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public File getSubmissionCodeLocation(File submissionRoot) {
 		return new File(submissionRoot, submissionCodeRoot);
 	}
+	
+	public List<BlackBoxTestCase> getTestCases() {
+		return testCases;
+	}
+	public void setTestCases(List<BlackBoxTestCase> testCases) {
+		if(this.testCases == null || testCases == null) {
+			this.testCases = testCases;
+		} else {
+			this.testCases.clear();
+			this.testCases.addAll(testCases);
+		}
+	}
 
 	@Override
 	public int hashCode() {
@@ -235,5 +265,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		if (id != other.id)
 			return false;
 		return true;
+	}
+
+	public boolean hasBlackBoxTests() {
+		return !getTestCases().isEmpty();
 	}
 }

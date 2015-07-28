@@ -64,7 +64,6 @@ import pasta.domain.form.TestUnitTestForm;
 import pasta.domain.form.UpdateUnitTestForm;
 import pasta.domain.form.validate.TestUnitTestFormValidator;
 import pasta.domain.form.validate.UpdateUnitTestFormValidator;
-import pasta.domain.template.BlackBoxTest;
 import pasta.domain.template.UnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
@@ -200,30 +199,28 @@ public class UnitTestController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("latestResult", test.getTestResult());
 		
-		FileTreeNode node = PASTAUtil.generateFileTree(test.getFileLocation() + "/code");
+		FileTreeNode node = PASTAUtil.generateFileTree(test.getCodeLocation().getAbsolutePath());
 		model.addAttribute("node", node);
 		
 		if(test.hasCode()) {
-			if(!(test instanceof BlackBoxTest)) {
-				Map<String, String> candidateFiles = new HashMap<String, String>();
-				Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
-				toExpand.push(node);
-				int dirStart = node.getLocation().length();
-				
-				while(!toExpand.isEmpty()) {
-					FileTreeNode expandNode = toExpand.pop();
-					String location = expandNode.getLocation().substring(dirStart);
-					if(location.endsWith(".java")) {
-						candidateFiles.put(location.substring(0, location.length()-5), location);
-					}
-					if(!expandNode.isLeaf()) {
-						for(FileTreeNode child : expandNode.getChildren()) {
-							toExpand.push(child);
-						}
+			Map<String, String> candidateFiles = new HashMap<String, String>();
+			Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
+			toExpand.push(node);
+			int dirStart = node.getLocation().length();
+			
+			while(!toExpand.isEmpty()) {
+				FileTreeNode expandNode = toExpand.pop();
+				String location = expandNode.getLocation().substring(dirStart);
+				if(location.endsWith(".java")) {
+					candidateFiles.put(location.substring(0, location.length()-5), location);
+				}
+				if(!expandNode.isLeaf()) {
+					for(FileTreeNode child : expandNode.getChildren()) {
+						toExpand.push(child);
 					}
 				}
-				model.addAttribute("candidateMainFiles", candidateFiles);
 			}
+			model.addAttribute("candidateMainFiles", candidateFiles);
 		}
 		
 		return "assessment/view/unitTest";

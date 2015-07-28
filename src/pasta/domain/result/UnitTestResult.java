@@ -32,6 +32,7 @@ package pasta.domain.result;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,8 +107,9 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Size (max = 64000)
 	private String compileErrors;
 	
-	@Column (name = "runtime_error")
-	private boolean runtimeError;
+	@Column (name = "runtime_errors", length = 64000)
+	@Size (max = 64000)
+	private String runtimeErrors;
 	
 	@Column (name = "clean_error")
 	private boolean cleanError;
@@ -118,7 +120,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	
 	@Column (name = "runtime_output", length = 128000)
 	@Size (max = 128000)
-	private String runtimeOutput;
+	private String fullOutput;
 
 	public long getId() {
 		return id;
@@ -213,11 +215,13 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	}
 
 	public boolean isRuntimeError() {
-		return runtimeError;
+		return runtimeErrors != null && !runtimeErrors.isEmpty();
 	}
-
-	public void setRuntimeError(boolean runtimeError) {
-		this.runtimeError = runtimeError;
+	public String getRuntimeErrors() {
+		return runtimeErrors;
+	}
+	public void setRuntimeErrors(String runtimeErrors) {
+		this.runtimeErrors = runtimeErrors;
 	}
 
 	public boolean isCleanError() {
@@ -236,12 +240,12 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.filesCompiled = filesCompiled;
 	}
 
-	public String getRuntimeOutput() {
-		return runtimeOutput;
+	public String getFullOutput() {
+		return fullOutput;
 	}
 
-	public void setRuntimeOutput(String runtimeOutput) {
-		this.runtimeOutput = runtimeOutput;
+	public void setFullOutput(String fullOutput) {
+		this.fullOutput = fullOutput;
 	}
 
 	public double getPercentage(){
@@ -275,7 +279,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	
 	public boolean isError() {
 		return internalError || buildError || 
-				runtimeError || cleanError || 
+				isRuntimeError() || cleanError || 
 				isCompileError() || isTestCrashed() ||
 				isValidationError();
 	}
@@ -290,7 +294,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		if(buildError) {
 			return "Error building submission";
 		}
-		if(runtimeError) {
+		if(isRuntimeError()) {
 			return "Error running submission";
 		}
 		if(internalError || cleanError || isTestCrashed()) {
@@ -302,5 +306,44 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Override
 	public int compareTo(UnitTestResult target) {
 		return test.getName().compareTo(target.getTest().getName());
+	}
+	
+	public void combine(UnitTestResult other) {
+		if(other == null) {
+			return;
+		}
+		
+		this.setBuildError(buildError || other.buildError);
+		this.setCleanError(cleanError || other.cleanError);
+		this.setCompileErrors(combineStrings(compileErrors, other.compileErrors));
+		this.setFilesCompiled(combineStrings(filesCompiled, other.filesCompiled));
+		this.setGroupWork(groupWork || other.groupWork);
+		this.setInternalError(internalError || other.internalError);
+		this.setRuntimeErrors(combineStrings(runtimeErrors, other.runtimeErrors));
+		this.setFullOutput(combineStrings(fullOutput, other.fullOutput));
+		this.setSecret(secret || other.secret);
+		
+		if(this.getTestCases() == null && other.getTestCases() != null) {
+			this.testCases = new LinkedList<UnitTestCaseResult>();
+		}
+		if(other.getTestCases() != null) {
+			this.getTestCases().addAll(other.getTestCases());
+		}
+		this.getValidationErrors().addAll(other.getValidationErrors());
+	}
+	private String combineStrings(String s1, String s2) {
+		if(s1 == null && s2 == null) {
+			return null;
+		}
+		if(s1 == null && s2 != null) {
+			return s2;
+		}
+		if(s1 != null && s2 == null) {
+			return s1;
+		}
+		if(s1.trim().equals(s2.trim())) {
+			return s1.trim();
+		}
+		return (s1 + (!s1.isEmpty() && !s2.isEmpty() ? System.lineSeparator() + "===============" : "") + System.lineSeparator() + s2).trim();
 	}
 }

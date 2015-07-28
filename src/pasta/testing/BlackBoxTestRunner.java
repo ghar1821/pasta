@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import pasta.domain.template.BlackBoxTestCase;
+import pasta.domain.template.UnitTest;
 
 /**
  * @author Joshua Stretton
@@ -17,6 +18,9 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 		addOption("allTestData", "");
 		addOption("solutionName", "Solution");
 		addOption("runErrorsFile", "run.errors");
+		addOption("bbuseroutfile", UnitTest.BB_OUTPUT_FILENAME);
+		addOption("bbexpectedfile", UnitTest.BB_EXPECTED_OUTPUT_FILENAME);
+		addOption("bbinputfile", UnitTest.BB_INPUT_FILENAME);
 	}
 
 	public void setTestData(List<BlackBoxTestCase> testCases) {

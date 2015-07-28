@@ -10,7 +10,6 @@ import org.springframework.validation.Validator;
 
 import pasta.domain.form.BlackBoxTestCaseForm;
 import pasta.domain.form.UpdateUnitTestForm;
-import pasta.domain.template.BlackBoxTest;
 import pasta.service.UnitTestManager;
 
 /**
@@ -38,20 +37,18 @@ public class UpdateUnitTestFormValidator implements Validator {
 			errors.reject("NotFound");
 		}
 		
-		if(BlackBoxTest.class.isAssignableFrom(form.getFormType())) {
-			BlackBoxTestCaseFormValidator bbValidator = new BlackBoxTestCaseFormValidator();
-			HashSet<String> names = new HashSet<String>();
-			for(int i = 0; i < form.getTestCases().size(); i++) {
-				BlackBoxTestCaseForm bbForm = form.getTestCases().get(i);
-				if(names.contains(bbForm.getTestName())) {
-					errors.rejectValue("testCases", "NotUnique", new Object[]{bbForm.getTestName()}, "");
-				} else {
-					names.add(bbForm.getTestName());
-				}
-				errors.pushNestedPath("testCases[" + i + "]");
-	            ValidationUtils.invokeValidator(bbValidator, bbForm, errors);
-	            errors.popNestedPath();
+		BlackBoxTestCaseFormValidator bbValidator = new BlackBoxTestCaseFormValidator();
+		HashSet<String> names = new HashSet<String>();
+		for(int i = 0; i < form.getTestCases().size(); i++) {
+			BlackBoxTestCaseForm bbForm = form.getTestCases().get(i);
+			if(names.contains(bbForm.getTestName())) {
+				errors.rejectValue("testCases", "NotUnique", new Object[]{bbForm.getTestName()}, "");
+			} else {
+				names.add(bbForm.getTestName());
 			}
+			errors.pushNestedPath("testCases[" + i + "]");
+            ValidationUtils.invokeValidator(bbValidator, bbForm, errors);
+            errors.popNestedPath();
 		}
 	}
 

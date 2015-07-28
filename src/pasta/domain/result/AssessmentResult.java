@@ -316,6 +316,51 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	/**
+	 * Check if there is a runtime error in any of the unit test results
+	 * @return if any of the unit test results have runtime errors
+	 */
+	public boolean isRuntimeError() {
+		for(UnitTestResult result : unitTests){
+			if(result.isRuntimeError()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Get the set aggregated (unique) runtime errors.
+	 * <p>
+	 * Iterates over all of the unit test results and compiles all of the 
+	 * runtime errors across all of the unit tests that have runtime
+	 * errors. 
+	 * @return the aggregated (unique) runtime errors for the submission.
+	 */
+	public String getRuntimeError() {
+		boolean first = true;
+		String runtimeErrors = "";
+		for(String runtimeError : getRuntimeErrors()){
+			if(first) {
+				first = false;
+			} else {
+				runtimeErrors += System.lineSeparator() + System.lineSeparator();
+			}
+			runtimeErrors += runtimeError;
+		}
+		return runtimeErrors;
+	}
+	
+	public Collection<String> getRuntimeErrors() {
+		LinkedHashSet<String> uniqueErrors = new LinkedHashSet<String>();
+		for(UnitTestResult result : unitTests){
+			if(result.getRuntimeErrors()!= null && !result.getRuntimeErrors().isEmpty()){
+				uniqueErrors.add(result.getRuntimeErrors());
+			}
+		}
+		return uniqueErrors;
+	}
+	
+	/**
 	 * Check if there is a validation error in any of the unit test results
 	 * @return if any of the unit test results have validation errors
 	 */

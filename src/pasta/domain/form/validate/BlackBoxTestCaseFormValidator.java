@@ -38,6 +38,10 @@ public class BlackBoxTestCaseFormValidator implements Validator {
 		if(form.getTimeout() < 0) {
 			errors.rejectValue("timeout", "Min");
 		}
+		
+		if(!form.isToBeCompared() && (form.getOutput() != null && !form.getOutput().isEmpty())) {
+			errors.rejectValue("output", "NotComparedEmpty");
+		}
 	}
 
 }

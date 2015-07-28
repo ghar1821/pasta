@@ -14,17 +14,19 @@ public class BlackBoxTestCaseForm {
 	private String input;
 	private String output;
 	private int timeout;
+	private boolean toBeCompared;
 	private boolean deleteMe;
 	
 	public BlackBoxTestCaseForm() {}
 	
 	public BlackBoxTestCaseForm(BlackBoxTestCase testCase) {
 		this.id = testCase.getId();
-		this.testName = new String(testCase.getTestName());
-		this.commandLine = new String(testCase.getCommandLine());
-		this.input = new String(testCase.getInput());
-		this.output = new String(testCase.getOutput());
+		this.testName = testCase.getTestName();
+		this.commandLine = testCase.getCommandLine();
+		this.input = testCase.getInput();
+		this.output = testCase.getOutput();
 		this.timeout = testCase.getTimeout();
+		this.toBeCompared = testCase.isToBeCompared();
 		this.deleteMe = false;
 	}
 	
@@ -69,6 +71,13 @@ public class BlackBoxTestCaseForm {
 		this.timeout = timeout;
 	}
 	
+	public boolean isToBeCompared() {
+		return toBeCompared;
+	}
+	public void setToBeCompared(boolean toBeCompared) {
+		this.toBeCompared = toBeCompared;
+	}
+
 	public boolean isDeleteMe() {
 		return deleteMe;
 	}
@@ -84,6 +93,7 @@ public class BlackBoxTestCaseForm {
 		plain.setInput(input);
 		plain.setOutput(output);
 		plain.setTimeout(timeout);
+		plain.setToBeCompared(toBeCompared);
 		return plain;
 	}
 }

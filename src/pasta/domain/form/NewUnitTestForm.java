@@ -29,8 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.form;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -47,20 +45,10 @@ public class NewUnitTestForm {
 	@Length(max=256)
 	private String name;
 	
-	@NotNull
-	private UnitTestType type;
-	
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	public UnitTestType getType() {
-		return type;
-	}
-	public void setType(UnitTestType type) {
-		this.type = type;
 	}
 }

@@ -109,7 +109,6 @@
 				<value>pasta.domain.result.UnitTestResult</value>
 				<value>pasta.domain.template.Arena</value>
 				<value>pasta.domain.template.Assessment</value>
-				<value>pasta.domain.template.BlackBoxTest</value>
 				<value>pasta.domain.template.BlackBoxTestCase</value>
 				<value>pasta.domain.template.Competition</value>
 				<value>pasta.domain.template.HandMarkData</value>

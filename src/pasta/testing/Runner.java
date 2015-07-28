@@ -122,7 +122,7 @@ public abstract class Runner {
 	
 	public File createBuildFile(File file) {
 		if(file.exists()) {
-			Logger.getLogger(getClass()).warn("Overriding build file " + file.getAbsolutePath());
+			file.delete();
 		}
 		try {
 			PrintWriter out = new PrintWriter(file);

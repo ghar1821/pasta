@@ -32,10 +32,10 @@ package pasta.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -53,8 +53,6 @@ import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.BlackBoxTest;
-import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.Competition;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
@@ -67,18 +65,9 @@ import pasta.scheduler.ExecutionScheduler;
 import pasta.testing.AntJob;
 import pasta.testing.AntResults;
 import pasta.testing.ArenaCompetitionRunner;
-import pasta.testing.BlackBoxTestRunner;
-import pasta.testing.CBlackBoxTestRunner;
-import pasta.testing.CPPBlackBoxTestRunner;
 import pasta.testing.GenericScriptRunner;
-import pasta.testing.JUnitTestRunner;
-import pasta.testing.JavaBlackBoxTestRunner;
-import pasta.testing.PythonBlackBoxTestRunner;
-import pasta.testing.Runner;
 import pasta.testing.options.ScriptOptions;
 import pasta.testing.task.DirectoryCopyTask;
-import pasta.testing.task.MakeDirectoryTask;
-import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -103,6 +92,8 @@ public class ExecutionManager {
 			.getAssessmentDAO();
 	private ResultDAO resultDAO = ProjectProperties.getInstance()
 			.getResultDAO();
+	
+	@Autowired UnitTestManager unitTestManager;
 
 	private ExecutionScheduler scheduler;
 
@@ -438,216 +429,108 @@ public class ExecutionManager {
 		}
 	}
 	
-	private void executeNormalJob(AssessmentJob job) {
-		// TODO: remove /submission
+	public void executeNormalJob(AssessmentJob job) {
 		PASTAUser user = job.getUser();
 		boolean userIsGroup = user.isGroup();
+		
+		Assessment assessment = assDao.getAssessment(job.getAssessmentId());
+		
+		logger.info("Running unit test " + assessment.getName()
+				+ " for " + user.getUsername() + " with ExecutionScheduler - " + this);
+		
+		File sandboxRoot = new File(ProjectProperties.getInstance().getSandboxLocation() + 
+				user.getUsername() + "/" + job.getAssessmentId() + 
+				"/" + PASTAUtil.formatDate(job.getRunDate()));	
+		
+		UnitTestResult extraResults = new UnitTestResult();
+		job.getResults().addUnitTest(extraResults);
+		
+		// Set up location where test will be run
+		try {
+			if (sandboxRoot.exists()) {
+				logger.debug("Deleting existing sandbox location " + sandboxRoot);
+				FileUtils.deleteDirectory(sandboxRoot);
+			}
+		} catch (IOException e) {
+			extraResults.addValidationError("Internal error: contact administrator.");
+			logger.error("Could not delete existing test.", e);
+			finishTesting(job);
+			return;
+		}
+		logger.debug("Making directories to " + sandboxRoot);
+		sandboxRoot.mkdirs();
 		
 		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
 		File submissionLoc = new File(submissionHome);
 		
-		String sandboxHome = ProjectProperties.getInstance().getSandboxLocation() + user.getUsername() + "/"
-				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate());
-		File sandboxLoc = new File(sandboxHome);	
-		
-		Assessment currAssessment = assDao.getAssessment(job.getAssessmentId());
-		
-		try {
-			logger.info("Running unit test " + currAssessment.getName()
-					+ " for " + user.getUsername() + " with ExecutionScheduler - " + this);
-			
-			if (sandboxLoc.exists()) {
-				FileUtils.deleteDirectory(sandboxLoc);
-			}
-			
-			for (WeightedUnitTest weightedTest : currAssessment.getAllUnitTests()) {
-				if(weightedTest.isGroupWork() != userIsGroup) {
-					continue;
-				}
-				
-				try {
-					UnitTest test = weightedTest.getTest();
-					
-					String mainClass = test.getMainClassName();
-					if(mainClass == null || mainClass.isEmpty()) {
-						finishTesting(test, job, "Assessment setup error: contact administrator.");
-						logger.error("No main test class for test " + test.getName());
-						continue;
-					}
-					
-					File testSandboxLoc = new File(sandboxLoc, test.getFileAppropriateName());
-					testSandboxLoc.mkdirs();
-					
-					File testLoc = test.getCodeLocation();
-					
-					Runner runner = null;
-					String[] targets = null;
-					
-					if(test instanceof BlackBoxTest) {
-						String solutionName = currAssessment.getSolutionName();
-						if(solutionName == null || solutionName.isEmpty()) {
-							finishTesting(test, job, "Assessment setup error: contact administrator.");
-							logger.error("No solution name set for " + currAssessment.getName());
-							continue;
-						}
-						String base = test.getSubmissionCodeRoot();
-						
-						String[] submissionContents = PASTAUtil.listDirectoryContents(submissionLoc);
-						String shortest = null;
-						Language subLanguage = null;
-						for(String filename : submissionContents) {
-							if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
-								Language thisLanguage = Language.getLanguage(filename);
-								if(thisLanguage != null && currAssessment.isAllowed(thisLanguage)) {
-									if(shortest == null || filename.length() < shortest.length()) {
-										shortest = filename;
-										subLanguage = thisLanguage;
-									}
-								}
-							}
-						}
-						
-						if(subLanguage == null) {
-							finishTesting(test, job, "No suitable main file recognised");
-							logger.error("No suitable main file recognised.");
-							continue;
-						}
-						
-						switch(subLanguage) {
-						case JAVA:
-							runner = new JavaBlackBoxTestRunner(); break;
-						case C:
-							runner = new CBlackBoxTestRunner(); break;
-						case CPP:
-							runner = new CPPBlackBoxTestRunner(); break;
-						case PYTHON:
-							runner = new PythonBlackBoxTestRunner(); break;
-						default:
-							finishTesting(test, job, "Language not yet implemented");
-							logger.error("Language not implemented.");
-							continue;
-						}
-						
-						((BlackBoxTestRunner) runner).setMainTestClassname(mainClass);
-						((BlackBoxTestRunner) runner).setFilterStackTraces(true);
-						((BlackBoxTestRunner) runner).setTestData(((BlackBoxTest) test).getTestCases());
-						int totalTime = 1000;
-						for(BlackBoxTestCase testCase : ((BlackBoxTest) test).getTestCases()) {
-							totalTime += testCase.getTimeout();
-						}
-						((BlackBoxTestRunner) runner).setMaxRunTime(totalTime);
-						((BlackBoxTestRunner) runner).setSolutionName(solutionName);
-						targets = new String[] {"build", "run", "test", "clean"};
-					} else {
-						runner = new JUnitTestRunner();
-						((JUnitTestRunner) runner).setMainTestClassname(mainClass);
-						((JUnitTestRunner) runner).setFilterStackTraces(true);
-						targets = new String[] {"build", "test", "clean"};
-					}
-					
-					AntJob antJob = new AntJob(testSandboxLoc, runner, targets);
-					antJob.addDependency("test", "build");
-					antJob.addDependency("run", "build");
-					
-					
-					File importantCode = test.getSubmissionCodeLocation(submissionLoc);
-					antJob.addSetupTask(new DirectoryCopyTask(importantCode, testSandboxLoc));
-					antJob.addSetupTask(new DirectoryCopyTask(testLoc, testSandboxLoc));
-					
-					File binLoc = new File(testSandboxLoc, "bin/");
-					antJob.addSetupTask(new MakeDirectoryTask(binLoc));
-					antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, "userout/")));
-					
-					antJob.run();
-					
-					AntResults results = antJob.getResults();
-					
-					UnitTestResult currentResult = null;
-					for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
-						if(existingResult == null) {
-							continue;
-						}
-						if(existingResult.getTest().getId() == test.getId()) {
-							currentResult = existingResult;
-							break;
-						}
-					}
-					
-					// Get results from ant output
-					UnitTestResult utResults = ProjectProperties.getInstance().getResultDAO()
-							.getUnitTestResultFromDisk(testSandboxLoc.getAbsolutePath());
-					if(utResults == null) {
-						utResults = new UnitTestResult();
-					}
-					utResults.setTest(test);
-					
-					// If the test has been done before, update results, otherwise save new results
-					if(currentResult == null) {
-						currentResult = utResults;
-						job.getResults().addUnitTest(currentResult);
-					} else {
-						currentResult.getTestCases().clear();
-						currentResult.getTestCases().addAll(utResults.getTestCases());
-					}
-					
-					currentResult.setSecret(weightedTest.isSecret());
-					currentResult.setGroupWork(weightedTest.isGroupWork());
-					
-					currentResult.setFilesCompiled(runner.extractFilesCompiled(results));
-					if(!results.isSuccess("build")) {
-						currentResult.setBuildError(true);
-						currentResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(testSandboxLoc.getAbsolutePath()), ""));
-					}
-					
-					currentResult.setRuntimeError(results.hasRun("test") && !results.isSuccess("test"));
-					currentResult.setCleanError(!results.isSuccess("clean"));
-					currentResult.setRuntimeOutput(results.getFullOutput());
-					
-					ProjectProperties.getInstance().getResultDAO().update(job.getResults());
-				} catch(Exception e2) {
-					logger.error(
-							"Error executing test " + weightedTest.getTest().getName() + " for " + user.getUsername()
-									+ " - " + job.getAssessmentId(), e2);
-				}
-			}
-			
-			//TODO FileUtils.deleteDirectory(sandboxLoc);
-		}
-		catch (Exception e) {
-			logger.error("Execution error for " + user.getUsername() + " - "
-					+ job.getAssessmentId(), e);
-		}
-		
-		job.getResults().setWaitingToRun(false);
-		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
-		
-		scheduler.delete(job);
-	}
-	
-	private void finishTesting(UnitTest test, AssessmentJob job, String errorMessage) {
-		UnitTestResult currentResult = null;
-		for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
-			if(existingResult == null || existingResult.getTest() == null) {
+		for(WeightedUnitTest weightedTest : assessment.getAllUnitTests()) {
+			if(weightedTest.isGroupWork() != userIsGroup) {
 				continue;
 			}
-			if(existingResult.getTest().getId() == test.getId()) {
-				currentResult = existingResult;
-				break;
+			
+			UnitTest test = weightedTest.getTest();
+			File sandboxLoc = new File(sandboxRoot, test.getFileAppropriateName());
+			sandboxLoc.mkdirs();
+			
+			// Check if test has been run before, and remove previous results if so
+			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
+			while(previousResultsIt.hasNext()) {
+				UnitTestResult existingResult = previousResultsIt.next();
+				if(existingResult == null || existingResult == extraResults) {
+					continue;
+				}
+				if(existingResult.getTest().getId() == test.getId()) {
+					existingResult.clearValidationErrors();
+					existingResult.getTestCases().clear();
+					previousResultsIt.remove();
+					break;
+				}
+			}
+			
+			// Create the new results object that will be used
+			UnitTestResult utResults = new UnitTestResult();
+			utResults.setTest(test);
+			utResults.setSecret(weightedTest.isSecret());
+			utResults.setGroupWork(weightedTest.isGroupWork());
+			job.getResults().addUnitTest(utResults);
+			
+			// Code we are interested in testing
+			File importantCode = test.getSubmissionCodeLocation(submissionLoc);
+			logger.debug("Copying " + importantCode + " to " + sandboxLoc);
+			new DirectoryCopyTask(importantCode, sandboxLoc).go();
+			
+			// Run any black box tests
+			if(test.hasBlackBoxTests()) {
+				String solutionName = assessment.getSolutionName();
+				if(solutionName == null || solutionName.isEmpty()) {
+					extraResults.addValidationError("Assessment setup error: contact administrator.");
+					logger.error("No solution name set for " + assessment.getName());
+					continue;
+				}
+				unitTestManager.runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode);
+			}
+			
+			String mainClass = test.getMainClassName();
+			if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
+				unitTestManager.runJUnitTests(test, utResults, mainClass, sandboxLoc);
 			}
 		}
 		
-		if(currentResult == null) {
-			currentResult = new UnitTestResult();
-			job.getResults().addUnitTest(currentResult);
-		} else {
-			currentResult.getTestCases().clear();
+		logger.debug("Deleting final sandbox location " + sandboxRoot);
+		try {
+			FileUtils.deleteDirectory(sandboxRoot);
+		} catch (IOException e) {
+			logger.error("Error deleting sandbox test at " + sandboxRoot);
 		}
 		
-		currentResult.setTest(test);
-		currentResult.addValidationError(errorMessage);
-		
+		finishTesting(job);
+	}
+	
+	private void finishTesting(AssessmentJob job) {
+		job.getResults().setWaitingToRun(false);
 		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
+		scheduler.delete(job);
 	}
 
 	/**
