@@ -40,14 +40,18 @@
 					<div class='align-contents-top'>
 						<c:if test="${not empty results.groupUnitTests}">
 							<div class='horizontal-block' style='max-width:50%'>
-								<strong>Group Work:</strong>
+								<c:if test="${not empty results.nonGroupUnitTests}">
+									<strong>Group Work:</strong>
+								</c:if>
 								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
 									user="${user}" tests="${results.groupUnitTests}" />
 							</div>
 						</c:if>
 						<c:if test="${not empty results.nonGroupUnitTests}">
 							<div class='horizontal-block' style='max-width:50%'>
-								<strong style='white-space: nowrap'>Individual Work:</strong>
+								<c:if test="${not empty results.groupUnitTests}">
+									<strong style='white-space: nowrap'>Individual Work:</strong>
+								</c:if>
 								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
 									user="${user}" tests="${results.nonGroupUnitTests}" />
 							</div>
