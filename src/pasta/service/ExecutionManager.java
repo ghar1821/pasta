@@ -477,7 +477,7 @@ public class ExecutionManager {
 			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
 			while(previousResultsIt.hasNext()) {
 				UnitTestResult existingResult = previousResultsIt.next();
-				if(existingResult == null || existingResult == extraResults) {
+				if(existingResult == null || existingResult.getTest() == null) {
 					continue;
 				}
 				if(existingResult.getTest().getId() == test.getId()) {
