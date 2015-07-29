@@ -67,13 +67,13 @@ either expressed or implied, of the PASTA Project.
 	
 	<h3>Writing the test</h3>
 	<p>To write a test suite, create a JUnit class that extends <code>PASTAJUnitTest</code>.
-	<pre class="javacode"><code>${PASTAJUnitTest}</code></pre>
+	<pre class="javacode"><code><c:out value="${PASTAJUnitTest}" /></code></pre>
 	<p>For example, the following class will test a simple Java Hello World program.
 	<p><strong>Note:</strong> you must import <code>pasta.PASTAJUnitTest</code> to extend it. You do not need to submit PASTAJUnitTest as this will be provided for you.
-	<pre class="javacode"><code>${HelloWorldTest}</code></pre>
+	<pre class="javacode"><code><c:out value="${HelloWorldTest}" /></code></pre>
 	<p>As another example, the following class will test to see if the user has created a file (<code>outputFile.txt</code>), and also check to see if the results of a given test case were at least a given length.
 	<p><strong>Note:</strong> user output will be found in the relative directory "<code>${userout}</code>". Output to std out from a test case named <code>testCase1</code> will be found in a file of the same name.
-	<pre class="javacode"><code>${SampleCustomTest}</code></pre>
+	<pre class="javacode"><code><c:out value="${SampleCustomTest}" /></code></pre>
 	
 	<p>If your test requires multiple classes, simple zip the code into a .zip file and submit that.
 	
