@@ -35,7 +35,7 @@ public class HelpController {
 	}
 	
 	@RequestMapping("unitTests/")
-	public String help(Model model) {
+	public String unitTestHelp(Model model) {
 		PASTAUser user = getUser();
 		if(user == null) {
 			return "redirect:/login/"; 
@@ -51,5 +51,23 @@ public class HelpController {
 			model.addAttribute("SampleCustomTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/SampleCustomTest.java")));
 		} catch (FileNotFoundException e) {}
 		return "help/unitTestHelp";
+	}
+	
+	@RequestMapping("customValidation/")
+	public String customValidationHelp(Model model) {
+		PASTAUser user = getUser();
+		if(user == null) {
+			return "redirect:/login/"; 
+		}
+		if(!user.isTutor()) {
+			return "redirect:/home/"; 
+		}
+		model.addAttribute("unikey", user);
+		try {
+			model.addAttribute("PASTASubmissionValidator", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTASubmissionValidator.java")));
+			model.addAttribute("SampleCustomValidator", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/SampleCustomValidator.java")));
+			model.addAttribute("ValidationFeedback", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/ValidationFeedback.java")));
+		} catch (FileNotFoundException e) {}
+		return "help/customValidationHelp";
 	}
 }

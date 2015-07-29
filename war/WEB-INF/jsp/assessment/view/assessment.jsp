@@ -141,10 +141,12 @@ either expressed or implied, of the PASTA Project.
 				<td><form:checkbox path="countUncompilable"/></td>
 			</tr>
 			<tr>
-				<td>Solution name:</td>
+				<td>
+					Solution name:
+					<span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
+				</td>
 				<td>
 					<form:input path="solutionName"/>
-					<span class='help'>The name of the main solution source code file. <strong>Only required if you use Black Box unit tests.</strong> If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
 					<form:errors path="solutionName"/>
 				</td>
 			</tr>
@@ -157,7 +159,15 @@ either expressed or implied, of the PASTA Project.
 					</form:select>
 				</td>
 			</tr>
-			<tr><td>Upload custom validator:</td><td><form:input type="file" path="validatorFile"/> <form:errors path="validatorFile"/></td></tr>
+			<tr>
+				<td>
+					Upload custom validator:
+					<a href="../../help/customValidation/" target="_blank"><span class='help'>Click here for information about custom validators.</span></a>
+				</td>
+				<td>
+					<form:input type="file" path="validatorFile"/> <form:errors path="validatorFile"/>
+				</td>
+			</tr>
 			<c:if test="${assessment.customValidator}">
 				<tr>
 					<td>Current validator:</td>
