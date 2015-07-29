@@ -194,7 +194,7 @@ either expressed or implied, of the PASTA Project.
 				heading += "list using csv format.";
 				
 				var example = tutor ?
-						"username,role,classes(separated by commas)" :
+						"username,{tutor|instructor},classes(separated by commas)" :
 						"username,stream,class";
 				
 				var content = "<p> e.g. <br/>&nbsp;&nbsp;<code>" + example + "</code><br/>&nbsp;&nbsp;<code>" + example + "</code>";
