@@ -171,6 +171,7 @@ public class UnitTestManager {
 		// Delete unit test from database
 		try {
 			assDao.unlinkUnitTest(id);
+			resultDAO.unlinkUnitTest(id);
 			unitTestDAO.delete(unitTestDAO.getUnitTest(id));
 		} catch (Exception e) {
 			logger.error("Could not delete unit test " + id, e);

@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -45,6 +46,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
@@ -581,5 +583,27 @@ public class ResultDAO{
 	 */
 	public void update(UnitTestResult result) {
 		sessionFactory.getCurrentSession().update(result);
+	}
+
+	public void unlinkUnitTest(long id) {
+		Session session = sessionFactory.getCurrentSession();
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = session.createCriteria(AssessmentResult.class)
+				.createCriteria("unitTests", "utResult")
+				.createCriteria("utResult.test", "test")
+				.add(Restrictions.eq("test.id", id))
+				.list();
+		for(AssessmentResult result : results) {
+			Iterator<UnitTestResult> utIt = result.getUnitTests().iterator();
+			while(utIt.hasNext()) {
+				UnitTestResult utResult = utIt.next();
+				if(utResult.getTest().getId() == id) {
+					utResult.setTest(null);
+					session.update(utResult);
+					utIt.remove();
+				}
+			}
+			session.update(result);
+		}
 	}
 }
