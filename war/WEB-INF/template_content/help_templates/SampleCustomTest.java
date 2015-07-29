@@ -3,7 +3,6 @@ import org.junit.Test;
 import pasta.PASTAJUnitTest;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
 
 public class SampleCustomTest extends PASTAJUnitTest {
     @Test (timeout = 1000)
@@ -25,8 +24,7 @@ public class SampleCustomTest extends PASTAJUnitTest {
     	
     	File outputFile = new File("userout/testCase1");
     	try {
-    		Scanner scanner = new Scanner(outputFile);
-    		String content = scanner.nextLine();
+    		String content = readFile(outputFile);
     		assertTrue("You didn't produce enough output!", content.length() >= 10);
     	} catch(FileNotFoundException e) {
     		// This should never happen - the file is created 
