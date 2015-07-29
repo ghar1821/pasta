@@ -208,8 +208,9 @@ ul.linked li {
 	right: .95em;
 	top: 1.57em;
 	text-align: right;
-/*	text-transform: uppercase;*/
+	text-transform: uppercase;
 	width: 100%;
+	margin: 0;
 }
 
 #head h1 #separator {
