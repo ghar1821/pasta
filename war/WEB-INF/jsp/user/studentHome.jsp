@@ -45,9 +45,8 @@ either expressed or implied, of the PASTA Project.
 	</c:otherwise>
 </c:choose>
 
-
 <spring:hasBindErrors name="submission">
-	<div class='padded'>
+	<div class='vertical-box padded'>
 		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 			<h3>Submission Errors</h3>
 			<form:errors path="*" cssClass="ui-state-error" element="div" />
@@ -55,7 +54,9 @@ either expressed or implied, of the PASTA Project.
 	</div>
 </spring:hasBindErrors>
 
-<div class="padded"> 
+<tag:submissionValidation />
+
+<div class="vertical-box padded"> 
 	<c:forEach var="assessmentCategory" items="${assessments}">
 		<c:if test="${not empty assessmentCategory.key}">
 			<h2>${assessmentCategory.key}</h2>

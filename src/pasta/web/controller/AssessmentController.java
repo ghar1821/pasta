@@ -316,6 +316,10 @@ public class AssessmentController {
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allLanguages", Language.values());
 		
+		if(currAssessment.isCustomValidator()) {
+			model.addAttribute("node", PASTAUtil.generateFileTree(currAssessment.getCustomValidator().getAbsolutePath()));
+		}
+		
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}

@@ -30,10 +30,9 @@ either expressed or implied, of the PASTA Project.
 package pasta.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,170 +106,43 @@ public class SubmissionManager {
 	 * @param form the submission form
 	 */
 	public void submit(PASTAUser user, Submission form) {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-		Date now = new Date();
-		String currDate = sdf.format(now);
-		String location = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
-				+ form.getAssessment() + "/" + currDate + "/submission";
-		
 		Assessment currAssessment = assDao.getAssessment(form.getAssessment());
-		boolean compiled = true;
 		
 		AssessmentResult result = new AssessmentResult();
 		result.setAssessment(currAssessment);
 		result.setUser(user);
 		result.setSubmittedBy(form.getSubmittingUser());
 		result.setGroupResult(user.isGroup());
-		
-		try {
-			result.setSubmissionDate(sdf.parse(currDate));
-		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		result.setSubmissionDate(form.getSubmissionDate());
 		resultManager.save(result);
 
-		(new File(location)).mkdirs();
-		try {
-			form.getFile().transferTo(new File(location+"/"+form.getFile().getOriginalFilename()));
-			if(form.getFile().getOriginalFilename().endsWith(".zip")){
-				PASTAUtil.extractFolder(location+"/"+form.getFile().getOriginalFilename());
-				(new File(location+"/"+form.getFile().getOriginalFilename())).delete();
-			}
-			
-//			String unitTestsLocation = ProjectProperties.getInstance().getSubmissionsLocation() + username + "/assessments/"
-//					+ form.getAssessment() + "/" + currDate + "/unitTests";
-//			// ensure all unit tests compile
-//			for(WeightedUnitTest test: currAssessment.getUnitTests()){
-//				try {
-//					// create folder
-//					(new File(unitTestsLocation + "/" + test.getTest().getId())).mkdirs();
-//
-//
-//					// copy over submission
-//					FileUtils.copyDirectory(new File(location),
-//							new File(unitTestsLocation + "/" + test.getTest().getId()));
-//					
-//					// copy over unit test
-//					FileUtils.copyDirectory(new File(test.getTest().getFileLocation()
-//							+ "/code/"),
-//							new File(unitTestsLocation + "/" + test.getTest().getId()));
-//					
-//					// compile
-//					File buildFile = new File(unitTestsLocation + "/" + test.getTest().getId()
-//							+ "/build.xml");
-//
-//					ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-//					Project project = new Project();
-//
-//					project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-//					project.setBasedir(unitTestsLocation + "/" + test.getTest().getId());
-//					DefaultLogger consoleLogger = new DefaultLogger();
-//					PrintStream runErrors = new PrintStream(
-//							unitTestsLocation + "/" + test.getTest().getId()
-//							+ "/run.errors");
-//					consoleLogger.setOutputPrintStream(runErrors);
-//					consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-//					project.addBuildListener(consoleLogger);
-//					project.init();
-//
-//					project.addReference("ant.projectHelper", projectHelper);
-//					projectHelper.parse(project, buildFile);
-//					
-//					try {
-//						project.executeTarget("build");
-//						project.executeTarget("clean");
-//					} catch (BuildException e) {
-//						compiled = false;
-//						logger.error("Could not compile " + username + " - "
-//								+ currAssessment.getName() + " - "
-//								+ test.getTest().getName() + e);
-//						
-//						PrintStream compileErrors = new PrintStream(
-//								unitTestsLocation + "/" + test.getTest().getId()
-//								+ "/compile.errors");
-//						compileErrors.print(e.toString().replaceAll(".*" +
-//								unitTestsLocation + "/" + test.getTest().getId() + "/" , "folder "));
-//						compileErrors.close();
-//					}
-//
-//					runErrors.flush();
-//					runErrors.close();
-//					
-//					// scrape compiler errors from run.errors
-//					try{
-//						Scanner in = new Scanner (new File(unitTestsLocation + "/" + test.getTest().getId()
-//								+ "/run.errors"));
-//						boolean containsError = false;
-//						boolean importantData = false;
-//						String output = "";
-//						while(in.hasNextLine()){
-//							String line = in.nextLine();
-//							if(line.contains(": error:")){
-//								containsError = true;
-//							}
-//							if(line.contains("[javac] Files to be compiled:")){
-//								importantData = true;
-//							}
-//							if(importantData){
-//								output += line.replace("[javac]", "").replaceAll(".*unitTests","") + System.getProperty("line.separator");
-//							}
-//						}
-//						in.close();
-//						
-//						if(containsError){
-//							PrintStream compileErrors = new PrintStream(
-//									unitTestsLocation + "/" + test.getTest().getId()
-//									+ "/compile.errors");
-//							compileErrors.print(output);
-//							compileErrors.close();
-//						}
-//					}
-//					catch (Exception e){
-//						// do nothing
-//					}
-//					
-//					// delete everything else
-//					String[] allFiles = (new File(unitTestsLocation + "/" + test.getTest().getId()))
-//							.list();
-//					for (String file : allFiles) {
-//						File actualFile = new File(unitTestsLocation + "/" + test.getTest().getId()
-//								+ "/" + file);
-//						if (actualFile.isDirectory()) {
-//							FileUtils.deleteDirectory(actualFile);
-//						} else {
-//							if (!file.equals("result.xml")
-//									&& !file.equals("compile.errors")
-//									&& !file.equals("run.errors")) {
-//								FileUtils.forceDelete(actualFile);
-//							}
-//						}
-//					}
-//					
-//					if(compiled){
-//						try{
-//							FileUtils.forceDelete(new File(unitTestsLocation + "/" + test.getTest().getId()
-//									+ "/compile.errors"));
-//						}
-//						catch(FileNotFoundException e){}
-//					}
-//					
-//				} catch (IOException e) {
-//					logger.error("Unable to compile unit test "
-//							+ currAssessment.getName() + " for " + username
-//							+ System.getProperty("line.separator") + e);
-//				}
-//			}
-			
-//			resultDAO.updateUnitTestResults(username, currAssessment, now);
-			
-			// add to scheduler
-			if(compiled){
-				runAssessment(user, currAssessment.getId(), currDate, result);
-			}
-		} catch (Exception e) {
-			logger.error("Submission error for " + user.getUsername() + " - " + form + "   " + e);
+		if(saveSubmissionToDisk(user, form) != null) {
+			runAssessment(user, currAssessment.getId(), PASTAUtil.formatDate(form.getSubmissionDate()), result);
 		}
+	}
+	
+	public File saveSubmissionToDisk(PASTAUser user, Submission form) {
+		String currDate = PASTAUtil.formatDate(form.getSubmissionDate());
+		String location = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
+				+ form.getAssessment() + "/" + currDate + "/submission";
+		File unzipTo = new File(location);
+		if(unzipTo.exists()) {
+			return unzipTo;
+		}
+		unzipTo.mkdirs();
+		String filename = form.getFile().getOriginalFilename();
+		try {
+			File newLocation = new File(unzipTo, filename);
+			form.getFile().transferTo(newLocation);
+			if(filename.endsWith(".zip")) {
+				PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+				newLocation.delete();
+			}
+		} catch (IllegalStateException | IOException e) {
+			logger.error("Cannot save submission to disk.", e);
+			return null;
+		}
+		return unzipTo;
 	}
 	
 	/**

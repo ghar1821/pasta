@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.io.File;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,6 +64,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.user.PASTAUser;
 import pasta.util.Language;
+import pasta.util.ProjectProperties;
 
 /**
  * Container class for the assessment.
@@ -194,6 +196,9 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	@Column (name="students_manage_groups")
 	private boolean studentsManageGroups = true;
+	
+	@Column (name="custom_validator_name")
+	private String customValidatorName;
 	
 	public long getId() {
 		return id;
@@ -375,6 +380,23 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			}
 		}
 		return true;
+	}
+	
+	public boolean isCustomValidator() {
+		return customValidatorName != null && !customValidatorName.isEmpty();
+	}
+	public File getCustomValidator() {
+		if(!isCustomValidator()) {
+			return null;
+		}
+		return new File(ProjectProperties.getInstance().getAssessmentValidatorLocation() + 
+				id + "/" + customValidatorName);
+	}
+	public String getCustomValidatorName() {
+		return customValidatorName;
+	}
+	public void setCustomValidatorName(String customValidatorName) {
+		this.customValidatorName = customValidatorName;
 	}
 	
 	public Set<WeightedUnitTest> getUnitTests() {

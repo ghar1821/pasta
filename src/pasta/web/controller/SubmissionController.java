@@ -94,6 +94,8 @@ import pasta.service.RatingManager;
 import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UserManager;
+import pasta.service.ValidationManager;
+import pasta.service.validation.SubmissionValidationResult;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 import pasta.view.ExcelAutoMarkView;
@@ -160,6 +162,8 @@ public class SubmissionController {
 	private GroupManager groupManager;
 	@Autowired
 	private ExecutionScheduler scheduler;
+	@Autowired
+	private ValidationManager validationManager;
 	
 	@Autowired
 	private SubmissionValidator submissionValidator;
@@ -344,11 +348,6 @@ public class SubmissionController {
 		model.addAttribute("hasGroupWork", hasGroupWork);
 		model.addAttribute("allGroupWork", allGroupWork);
 		
-		if (session.getAttribute("binding") != null) {
-			model.addAttribute("org.springframework.validation.BindingResult.submission",
-					session.getAttribute("binding"));
-			session.removeAttribute("binding");
-		}
 		if (user.isTutor()) {
 			return "user/tutorHome";
 		} else {
@@ -399,16 +398,17 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "home/", method = RequestMethod.POST)
 	public String submitAssessment(@ModelAttribute(value = "submission") Submission form,
-			BindingResult result, Model model, RedirectAttributes attr) {
-		return doSubmitAssessment(null, form, result, model, attr);
+			BindingResult result, Model model, RedirectAttributes attr, HttpSession session) {
+		return doSubmitAssessment(null, form, result, model, attr, session);
 	}
 	
-	private String doSubmitAssessment(String submitForUsername, Submission form, BindingResult result, Model model, RedirectAttributes attr) {
+	private String doSubmitAssessment(String submitForUsername, Submission form, BindingResult result, Model model, RedirectAttributes attr, HttpSession session) {
 		PASTAUser user = getUser();
 		if (user == null) {
 			return "redirect:/login/";
 		}
 		form.setSubmittingUser(user);
+		form.setSubmissionDate(new Date());
 		
 		PASTAUser forUser = user;
 		if(submitForUsername != null) {
@@ -437,12 +437,42 @@ public class SubmissionController {
 			return "redirect:.";
 		}
 		
-		logger.info(ProjectProperties.getInstance().getAssessmentDAO()
-				.getAssessment(form.getAssessment()).getName()
+		Assessment assessment = ProjectProperties.getInstance().getAssessmentDAO()
+					.getAssessment(form.getAssessment());
+		
+		SubmissionValidationResult validationResult = validationManager.validate(forUser, assessment, form);
+		session.setAttribute("validationResults", validationResult);
+		if(validationResult != null && validationResult.hasErrors()) {
+			return "redirect:/mirror/";
+		}
+		
+		logger.info(assessment.getName()
 				+ " submitted for " + forUser.getUsername() + " by " + user.getUsername());
 		manager.submit(forUser, form);
 		
 		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping("**/home/clearValidationResults/") 
+	@ResponseBody
+	public String clearValidationResults(@RequestParam(value="part", required=false) String part, HttpSession session) {
+		SubmissionValidationResult result = (SubmissionValidationResult) session.getAttribute("validationResults");
+		if(result == null) {
+			return "SUCCESS";
+		}
+		boolean success = false;
+		if(part.equals("error")) {
+			result.setErrors(null);
+			success = true;
+		} else if(part.equals("feedback")) {
+			result.setFeedback(null);
+			success = true;
+		} 
+		if(part == null || (!result.hasErrors() && !result.hasFeedback())) {
+			session.removeAttribute("validationResults");
+			success = true;
+		}
+		return success ? "SUCCESS" : "";
 	}
 	
 	@RequestMapping("checkJobQueue/{assessmentId}/") 
@@ -1012,11 +1042,11 @@ public class SubmissionController {
 	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
 	public String submitAssessment(@PathVariable("username") String username,
 			@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model,
-			RedirectAttributes attr) {
+			RedirectAttributes attr, HttpSession session) {
 		if(username == null || username.isEmpty()) {
 			return "redirect:/home/";
 		}
-		return doSubmitAssessment(username, form, result, model, attr);
+		return doSubmitAssessment(username, form, result, model, attr, session);
 	}
 
 	/**

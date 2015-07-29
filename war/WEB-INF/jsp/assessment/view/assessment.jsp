@@ -148,7 +148,7 @@ either expressed or implied, of the PASTA Project.
 					<form:errors path="solutionName"/>
 				</td>
 			</tr>
-			<tr>
+			<tr class='spaceBelow'>
 				<td>Allowed languages:</td>
 				<td>
 					<form:errors path="languages" element="div"/>
@@ -157,6 +157,17 @@ either expressed or implied, of the PASTA Project.
 					</form:select>
 				</td>
 			</tr>
+			<tr><td>Upload custom validator:</td><td><form:input type="file" path="validatorFile"/> <form:errors path="validatorFile"/></td></tr>
+			<c:if test="${assessment.customValidator}">
+				<tr>
+					<td>Current validator:</td>
+					<td>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp">
+							<jsp:param name="owner" value="Validator - ${assessment.name}"/>
+						</jsp:include>
+					</td>
+				</tr>
+			</c:if>
 		</table>
 		
 		<h2>Release Rule</h2>

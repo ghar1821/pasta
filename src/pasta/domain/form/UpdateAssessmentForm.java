@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Assessment;
@@ -88,6 +89,8 @@ public class UpdateAssessmentForm {
 	@Length(max=64)
 	private String solutionName;
 	
+	private CommonsMultipartFile validatorFile;
+	
 	private Date groupLockDate;
 	private int groupCount;
 	private int groupSize;
@@ -99,7 +102,6 @@ public class UpdateAssessmentForm {
 	private List<WeightedHandMarking> selectedHandMarking;
 	private List<WeightedCompetition> selectedCompetitions;
 	
-	// TODO: check if 0.5 or 50% when submitting percentages -- only allow one
 	private ReleaseRule releaseRule;
 	
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -245,6 +247,13 @@ public class UpdateAssessmentForm {
 	}
 	public void setReleaseRule(ReleaseRule releaseRule) {
 		this.releaseRule = releaseRule;
+	}
+
+	public CommonsMultipartFile getValidatorFile() {
+		return validatorFile;
+	}
+	public void setValidatorFile(CommonsMultipartFile validatorFile) {
+		this.validatorFile = validatorFile;
 	}
 
 	public String getStrDate() {

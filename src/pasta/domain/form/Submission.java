@@ -29,6 +29,8 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.form;
 
+import java.util.Date;
+
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import pasta.domain.user.PASTAUser;
@@ -46,6 +48,7 @@ public class Submission {
 	private Long assessment;
 	private PASTAUser submittingUser;
 	private boolean groupSubmission;
+	private Date submissionDate;
 
 	public CommonsMultipartFile getFile() {
 		return file;
@@ -72,5 +75,12 @@ public class Submission {
 	}
 	public void setGroupSubmission(boolean groupSubmission) {
 		this.groupSubmission = groupSubmission;
+	}
+	
+	public Date getSubmissionDate() {
+		return submissionDate;
+	}
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
 	}
 }

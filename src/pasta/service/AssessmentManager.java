@@ -29,12 +29,15 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -335,6 +338,23 @@ public class AssessmentManager {
 						scheduler.scheduleJob(realComp, outstanding, outstanding.getNextRunDate());
 					}
 				}
+			}
+		}
+		
+		if(form.getValidatorFile() != null && !form.getValidatorFile().isEmpty()) {
+			String location = ProjectProperties.getInstance().getAssessmentValidatorLocation() + assessment.getId() + "/";
+			File unzipTo = new File(location);
+			if(unzipTo.exists()) {
+				FileUtils.deleteQuietly(unzipTo);
+			}
+			unzipTo.mkdirs();
+			String filename = form.getValidatorFile().getOriginalFilename();
+			try {
+				File newLocation = new File(unzipTo, filename);
+				form.getValidatorFile().transferTo(newLocation);
+				assessment.setCustomValidatorName(filename);
+			} catch (IllegalStateException | IOException e) {
+				logger.error("Cannot save validator to disk.", e);
 			}
 		}
 		

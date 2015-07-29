@@ -88,6 +88,12 @@ public class UpdateAssessmentFormValidator implements Validator {
 			}
 		}
 		
+		if(form.getValidatorFile() != null && !form.getValidatorFile().isEmpty()) {
+			if(!form.getValidatorFile().getOriginalFilename().endsWith(".java")) {
+				errors.rejectValue("validatorFile", "NotJavaValidator");
+			}
+		}
+		
 		// TODO: implement penalties (e.g. hand marking, or late) to allow proper 
 		// negative weights, then uncomment this section to disallow negative weights
 		// (currently you can hack penalties by making negative weight components 

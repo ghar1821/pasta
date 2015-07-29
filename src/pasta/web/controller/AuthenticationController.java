@@ -29,6 +29,8 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,9 +180,12 @@ public class AuthenticationController {
 	 * @return "redirect:../"
 	 */
 	@RequestMapping("exit")
-	public String logout() {
-		RequestContextHolder.currentRequestAttributes().removeAttribute("user",
-				RequestAttributes.SCOPE_SESSION);
+	public String logout(HttpSession session) {
+		for(String sessionAtt : RequestContextHolder.currentRequestAttributes()
+				.getAttributeNames(RequestAttributes.SCOPE_SESSION) ) {
+			RequestContextHolder.currentRequestAttributes()
+			.removeAttribute(sessionAtt, RequestAttributes.SCOPE_SESSION);
+		}
 		return "redirect:../";
 	}
 
