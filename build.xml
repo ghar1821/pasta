@@ -248,14 +248,13 @@
 			DROP TABLE IF EXISTS weighted_fields;
 			DROP TABLE IF EXISTS hand_markings;
 
+			DROP TABLE IF EXISTS unit_test_results_validation_errors;
 			DROP TABLE IF EXISTS unit_test_case_results;
 			DROP TABLE IF EXISTS assessment_secret_unit_tests;
 			DROP TABLE IF EXISTS assessment_unit_tests;
 			DROP TABLE IF EXISTS weighted_unit_tests;
 			DROP TABLE IF EXISTS unit_test_results;
-			DROP TABLE IF EXISTS j_unit_tests;
 			DROP TABLE IF EXISTS black_box_test_cases;
-			DROP TABLE IF EXISTS black_box_tests;
 			DROP TABLE IF EXISTS unit_tests;
 
 			DROP TABLE IF EXISTS player_history_retired_players;
