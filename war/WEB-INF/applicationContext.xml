@@ -107,6 +107,7 @@
 				<value>pasta.domain.result.HandMarkingResult</value>
 				<value>pasta.domain.result.UnitTestCaseResult</value>
 				<value>pasta.domain.result.UnitTestResult</value>
+				<value>pasta.domain.security.AuthenticationSettings</value>
 				<value>pasta.domain.template.Arena</value>
 				<value>pasta.domain.template.Assessment</value>
 				<value>pasta.domain.template.BlackBoxTestCase</value>

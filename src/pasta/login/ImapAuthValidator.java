@@ -93,7 +93,7 @@ public class ImapAuthValidator implements Validator{
 			String unikey = login.getUnikey();
 			String password = login.getPassword();
 			
-			List<String> mailServers = ProjectProperties.getInstance().getServerAddresses();
+			List<String> mailServers = ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses();
 			boolean authenticated = false;
 			for(String mailServer: mailServers){
 				try{

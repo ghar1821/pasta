@@ -29,6 +29,10 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.repository;
 
+import io.jsonwebtoken.impl.crypto.MacProvider;
+
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
@@ -37,6 +41,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.PASTALoginUser;
+import pasta.domain.security.AuthenticationSettings;
 
 /**
  * Data Access Object for Authentication if using {@link pasta.login.DBAuthValidator}.
@@ -95,4 +100,30 @@ public class LoginDAO {
 		}
 	}
 
+	public AuthenticationSettings getAuthSettings() {
+		@SuppressWarnings("unchecked")
+		List<AuthenticationSettings> settings = sessionFactory.getCurrentSession().createCriteria(AuthenticationSettings.class).list();
+		if(settings.isEmpty()) {
+			return null;
+		}
+		if(settings.size() > 1) {
+			for(int i = 1; i < settings.size(); i++) {
+				sessionFactory.getCurrentSession().delete(settings.get(i));
+			}
+		}
+		return settings.get(0);
+	}
+	
+	public AuthenticationSettings createAuthSettings(String authType, List<String> serverAdresses) {
+		AuthenticationSettings newSettings = new AuthenticationSettings();
+		newSettings.setKey(MacProvider.generateKey().getEncoded());
+		newSettings.setType(authType);
+		newSettings.setServerAddresses(serverAdresses);
+		sessionFactory.getCurrentSession().save(newSettings);
+		return newSettings;
+	}
+
+	public void updateAuthSettings(AuthenticationSettings authSettings) {
+		sessionFactory.getCurrentSession().update(authSettings);
+	}
 }

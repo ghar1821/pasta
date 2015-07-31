@@ -161,7 +161,7 @@ public class AdminController {
 		
 		if(user.isTutor()){
 			model.addAttribute("people", userManager.getUserList());
-			model.addAttribute("addresses", ProjectProperties.getInstance().getServerAddresses());
+			model.addAttribute("addresses", ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses());
 		}
 		
 		return "user/admin";

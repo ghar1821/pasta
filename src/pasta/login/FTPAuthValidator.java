@@ -94,7 +94,7 @@ public class FTPAuthValidator implements Validator{
 			String unikey = login.getUnikey();
 			String password = login.getPassword();
 			
-			List<String> servers = ProjectProperties.getInstance().getServerAddresses();
+			List<String> servers = ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses();
 			boolean authenticated = false;
 			for(String server: servers){
 				try{

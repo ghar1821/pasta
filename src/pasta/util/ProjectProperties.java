@@ -32,15 +32,12 @@ package pasta.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -51,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
+import pasta.domain.security.AuthenticationSettings;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
@@ -82,6 +80,8 @@ public class ProjectProperties {
 
 	private static ProjectProperties properties;
 
+	// name of the project
+	private String name;
 	// location of the project
 	private String projectLocation;
 	// location of the templates
@@ -94,10 +94,9 @@ public class ProjectProperties {
 	private String sandboxLocation = "sandbox" + File.separator;
 	// location of validator uploads
 	private String validatorLocation = "validation" + File.separator;
-	// auth type (dummy, imap, database)
-	private String authType;
-	// list of mail servers to auth with (imap auth only)
-	private List<String> serverAddresses;
+	
+	private AuthenticationSettings authSettings;
+	
 	// create a new account if not already assigned a class
 	private Boolean createAccountOnSuccessfulLogin;
 	// validator
@@ -105,8 +104,8 @@ public class ProjectProperties {
 	// proxy
 	private Proxy proxy;
 	
+	@Autowired
 	private LoginDAO loginDAO;
-	
 	@Autowired
 	private AssessmentDAO assessmentDAO;
 	@Autowired
@@ -127,7 +126,11 @@ public class ProjectProperties {
 	@Autowired
 	private ServletContext servletContext;
 
+	private String settingsAuthType;
+	
 	private ProjectProperties(Map<String, String> settings) {
+		name = settings.get("name");
+		
 		projectLocation = settings.get("location");
 		if (projectLocation != null && !projectLocation.isEmpty() && !projectLocation.endsWith(File.separator)) {
 			projectLocation += File.separator;
@@ -143,35 +146,9 @@ public class ProjectProperties {
 			logger.info("Using proxy " + settings.get("proxydomain") + " on port " + settings.get("proxyport"));
 		}
 
-		authType = settings.get("authentication").toLowerCase();
-		serverAddresses = new LinkedList<String>();
-
-		if (new File(getProjectLocation() + File.separator + "authentication.settings").exists()) {
-			logger.info("authentication info exists");
-			decryptAuthContent();
-		}
+		// Store for use in post construct method
+		settingsAuthType = settings.get("authentication");
 		
-		if(this.authType.toLowerCase().trim().equals("imap")){
-			authenticationValidator = new ImapAuthValidator();
-			logger.info("Using IMAP authentication");
-		}
-		else if(this.authType.toLowerCase().trim().equals("database")){
-			authenticationValidator = new DBAuthValidator();
-			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
-			logger.info("Using database authentication");
-		}
-		else if(this.authType.toLowerCase().trim().equals("ftp")){
-			authenticationValidator = new FTPAuthValidator();
-			logger.info("Using ftp authentication");
-		}
-		else if(this.authType.toLowerCase().trim().equals("ldap")){
-			authenticationValidator = new LDAPAuthValidator();
-			logger.info("Using ldap authentication");
-		} else {
-			authenticationValidator = new DummyAuthValidator();
-			logger.info("Using dummy authentication");
-		}
-
 		unitTestsLocation = checkPath(settings.get("pathUnitTests"), projectLocation + unitTestsLocation);
 		submissionsLocation = checkPath(settings.get("pathSubmissions"), projectLocation + submissionsLocation);
 		competitionsLocation = checkPath(settings.get("pathCompetitions"), projectLocation + competitionsLocation);
@@ -195,6 +172,38 @@ public class ProjectProperties {
 			PASTAUtil.getTemplateResource("lib/");
 		} catch (FileNotFoundException e) {
 			// ignore: no lib folder to copy
+		}
+		
+		authSettings = loginDAO.getAuthSettings();
+		if(authSettings == null) {
+			String authType = settingsAuthType;
+			if(authType == null) {
+				authType = "dummy";
+			}
+			authType = authType.trim().toLowerCase();
+			authSettings = loginDAO.createAuthSettings(authType, new LinkedList<String>());
+		}
+		
+		String authType = authSettings.getType();
+		if(authType.equals("imap")){
+			authenticationValidator = new ImapAuthValidator();
+			logger.info("Using IMAP authentication");
+		}
+		else if(authType.equals("database")){
+			authenticationValidator = new DBAuthValidator();
+			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
+			logger.info("Using database authentication");
+		}
+		else if(authType.equals("ftp")){
+			authenticationValidator = new FTPAuthValidator();
+			logger.info("Using ftp authentication");
+		}
+		else if(authType.equals("ldap")){
+			authenticationValidator = new LDAPAuthValidator();
+			logger.info("Using ldap authentication");
+		} else {
+			authenticationValidator = new DummyAuthValidator();
+			logger.info("Using dummy authentication");
 		}
 	}
 	
@@ -236,6 +245,10 @@ public class ProjectProperties {
 		return properties;
 	}
 
+	public String getName() {
+		return name;
+	}
+	
 	public String getProjectLocation() {
 		return projectLocation;
 	}
@@ -264,12 +277,8 @@ public class ProjectProperties {
 		return getValidatorLocation() + "assessments/";
 	}
 
-	public String getAuthType() {
-		return authType;
-	}
-
-	public List<String> getServerAddresses() {
-		return serverAddresses;
+	public AuthenticationSettings getAuthenticationSettings() {
+		return authSettings;
 	}
 
 	public Boolean getCreateAccountOnSuccessfulLogin() {
@@ -282,31 +291,31 @@ public class ProjectProperties {
 
 	public void setDBDao(LoginDAO dao) {
 		this.loginDAO = dao;
-		if (authType.toLowerCase().trim().equals("database")) {
+		if (authSettings.getType().equals("database")) {
 			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 		}
 	}
 
 	public void changeAuthMethod(String type, String[] addresses) {
-
-		serverAddresses.clear();
-		authType = type;
+		authSettings.getServerAddresses().clear();
+		authSettings.setType(type);
 		for (String address : addresses) {
 			if (!address.isEmpty()) {
-				serverAddresses.add(address);
+				authSettings.getServerAddresses().add(address);
 			}
 		}
-		if (authType.toLowerCase().trim().equals("imap")) {
+		String authType = authSettings.getType();
+		if (authType.equals("imap")) {
 			authenticationValidator = new ImapAuthValidator();
 			logger.info("Using IMAP authentication");
-		} else if (authType.toLowerCase().trim().equals("database")) {
+		} else if (authType.equals("database")) {
 			authenticationValidator = new DBAuthValidator();
 			((DBAuthValidator) authenticationValidator).setDAO(loginDAO);
 			logger.info("Using database authentication");
-		} else if (authType.toLowerCase().trim().equals("ftp")) {
+		} else if (authType.equals("ftp")) {
 			authenticationValidator = new FTPAuthValidator();
 			logger.info("Using ftp authentication");
-		} else if (authType.toLowerCase().trim().equals("ldap")) {
+		} else if (authType.equals("ldap")) {
 			authenticationValidator = new LDAPAuthValidator();
 			logger.info("Using ldap authentication");
 		} else {
@@ -314,53 +323,7 @@ public class ProjectProperties {
 			logger.info("Using dummy authentication");
 		}
 
-		encryptAuthContent();
-	}
-
-	/**
-	 * Doesn't actually do any ecryption.
-	 * <p>
-	 * This should be fixed, but I didn't have the time to do it. Doesn't actually
-	 * hold anything sensitive, but it should still not be held as plain text.
-	 */
-	private void encryptAuthContent() {
-
-		try {
-			PrintWriter out = new PrintWriter(new File(getProjectLocation() + "/authentication.settings"));
-
-			out.println(authType);
-			for (String address : serverAddresses) {
-				out.println(address);
-			}
-			out.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * Doesn't actually do any decryption.
-	 * <p>
-	 * This should be fixed, but I didn't have the time to do it. Doesn't actually
-	 * hold anything sensitive, but it should still not be held as plain text.
-	 */
-	private void decryptAuthContent() {
-
-		try {
-			Scanner in = new Scanner(new File(getProjectLocation() + File.separator + "authentication.settings"));
-
-			authType = in.nextLine();
-			serverAddresses.clear();
-			while (in.hasNextLine()) {
-				serverAddresses.add(in.nextLine());
-			}
-			in.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		loginDAO.updateAuthSettings(authSettings);
 	}
 
 	public boolean usingProxy() {
