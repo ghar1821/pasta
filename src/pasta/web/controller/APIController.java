@@ -37,23 +37,27 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import pasta.domain.form.LoginForm;
 import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
+import pasta.security.TokenUtils;
 import pasta.service.AssessmentManager;
 import pasta.service.ResultManager;
 import pasta.service.UserManager;
@@ -81,6 +85,14 @@ public class APIController {
 	private UserManager userManager;
 	@Autowired
 	private ResultManager resultManager;
+	@Autowired
+	private TokenUtils tokenUtils;
+
+	@RequestMapping(value="authenticate/", method=RequestMethod.POST)
+	@ResponseBody
+	public String getToken(HttpServletRequest request, @RequestParam("username") String username, @RequestParam("password") String password) {
+		return tokenUtils.generateToken(username, password);
+	}
 
 	/**
 	 * Get the latest marks

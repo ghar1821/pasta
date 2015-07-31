@@ -30,10 +30,11 @@
 		</property>
 	</bean>
 	           
-
-    <bean id="projectProperties" class="pasta.util.ProjectProperties">
+	<bean id="loginDAO" class="pasta.repository.LoginDAO" />
+    <bean id="projectProperties" class="pasta.util.ProjectProperties" depends-on="loginDAO">
 		<constructor-arg>
 			<map key-type="java.lang.String" value-type="java.lang.String">
+					<entry key="name" value="${project.name}" />
 					<entry key="location" value="${project.location}" />
 					<entry key="authentication" value="${project.authentication:ldap}" />
 					<entry key="createAccountOnSuccessfulLogin" value="${project.createAccountOnSuccessfulLogin:true}" />
@@ -136,17 +137,6 @@
     <context:component-scan base-package="pasta.scheduler" />
     <context:component-scan base-package="pasta.domain" />
     <context:component-scan base-package="pasta.util" />
-    
-    <bean id="assessmentManager" class="pasta.service.AssessmentManager" />
-    <bean id="competitionManager" class="pasta.service.CompetitionManager" />
-    <bean id="executionManager" class="pasta.service.ExecutionManager" />
-    <bean id="handMarkingManager" class="pasta.service.HandMarkingManager" />
-    <bean id="mossManager" class="pasta.service.MossManager" />
-    <bean id="submissionManager" class="pasta.service.SubmissionManager" />
-    <bean id="unitTestManager" class="pasta.service.UnitTestManager" />
-    <bean id="userManager" class="pasta.service.UserManager" />
-    <bean id="groupManager" class="pasta.service.GroupManager" />
-    <bean id="resultManager" class="pasta.service.ResultManager" />
     
 	<task:annotation-driven />
 </beans>
