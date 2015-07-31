@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="PASTA" basedir="." default="usage">
+<project name="PASTA" basedir="." default="usage" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<property file="build.properties"/>
 	<property file="war/WEB-INF/classes/database.properties"/>
 
@@ -45,7 +45,17 @@
         <echo message=""/>
     </target>
 	
-	<target name="cycle" depends="stop,clean,deploy,start">
+	<target name="retrieve" description="Retrieve dependencies using Maven">
+	     <artifact:dependencies filesetId="compile.fileset" useScope="compile">
+	        <pom file="pom.xml"/>
+	     </artifact:dependencies>
+	     <copy todir="${web.dir}/WEB-INF/lib">
+	        <fileset refid="compile.fileset" />
+	        <mapper type="flatten" />
+	     </copy>
+	</target>
+	
+	<target name="cycle" depends="stop,clean,retrieve,deploy,start">
 	</target>
 
 	<target name="quick-cycle" depends="stop,clean-classes,clean-static,deploy-classes,deploy-static,start">
@@ -192,7 +202,7 @@
 			print='true'
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 
 			SELECT CONCAT ('alter table ',
@@ -217,7 +227,7 @@
 		    password="${jdbc.password}"
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 
 			DROP TABLE IF EXISTS rules_class_content;
@@ -300,7 +310,7 @@
 			    password="${jdbc.password}"
 			    >
 				<classpath>
-	            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+	            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
 	            </classpath>
 
 				DROP TABLE IF EXISTS rules_class_content;
@@ -327,7 +337,7 @@
 		    password="${jdbc.password}"
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 
 			DROP TABLE IF EXISTS player_history_retired_players;
@@ -355,7 +365,7 @@
 		    password="${jdbc.password}"
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 			DROP TABLE IF EXISTS assessment_result_hand_marking_joins;
 			DROP TABLE IF EXISTS assessment_result_unit_test_joins;
@@ -379,7 +389,7 @@
 		    password="${jdbc.password}"
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 			DROP TABLE IF EXISTS assessment_result_unit_test_joins;
 
@@ -401,7 +411,7 @@
 		    password="${jdbc.password}"
 		    >
 			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.35-bin.jar"/>
+            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
             </classpath>
 			DROP TABLE IF EXISTS assessment_result_hand_marking_joins;
 			DROP TABLE IF EXISTS hand_marking_map_results;
