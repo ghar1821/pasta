@@ -10,6 +10,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +23,11 @@ import pasta.util.ProjectProperties;
 public class TokenUtils {
 	public final static int EXP_TIME = 30; // minutes
 	
-	public String generateToken(String username, String password) {
+	public String generateToken(HttpServletRequest request, String username, String password) {
+		String ipAddress = request.getHeader("X-FORWARDED-FOR");
+		if(ipAddress == null) {
+			ipAddress = request.getRemoteAddr();
+		}
 		Date now = new Date();
 		Calendar exp = Calendar.getInstance();
 		exp.setTime(now);
@@ -30,6 +36,7 @@ public class TokenUtils {
 		return Jwts.builder()
 				.setIssuer(ProjectProperties.getInstance().getName())
 				.setIssuedAt(now)
+				.setAudience(ipAddress)
 				.setExpiration(exp.getTime())
 				.claim("username", username)
 				.claim("password", password)
@@ -37,7 +44,7 @@ public class TokenUtils {
 				.compact();
 	}
 	
-	public boolean validate(String token) {
+	public boolean validate(HttpServletRequest request, String token) {
 		byte[] key = ProjectProperties.getInstance().getAuthenticationSettings().getKey();
 		try {
 			Jws<Claims> jws = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
@@ -51,6 +58,17 @@ public class TokenUtils {
 				return false;
 			}
 			if(!jws.getBody().getIssuer().equals(ProjectProperties.getInstance().getName())) {
+				return false;
+			}
+			String ipAddress = request.getHeader("X-FORWARDED-FOR");
+			if(ipAddress == null) {
+				ipAddress = request.getRemoteAddr();
+			}
+			if(jws.getBody().getAudience() == null) {
+				if(ipAddress != null) {
+					return false;
+				}
+			} else if(!jws.getBody().getAudience().equals(ipAddress)) {
 				return false;
 			}
 		} catch (SignatureException e) {

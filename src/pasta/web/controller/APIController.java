@@ -44,7 +44,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -91,7 +90,7 @@ public class APIController {
 	@RequestMapping(value="authenticate/", method=RequestMethod.POST)
 	@ResponseBody
 	public String getToken(HttpServletRequest request, @RequestParam("username") String username, @RequestParam("password") String password) {
-		return tokenUtils.generateToken(username, password);
+		return tokenUtils.generateToken(request, username, password);
 	}
 
 	/**

@@ -32,7 +32,7 @@ public class AuthenticationTokenProcessingFilter extends UsernamePasswordAuthent
             String token = parms.get("token")[0]; // grab the first "token" parameter
 
             // validate the token
-            if (tokenUtils.validate(token)) {
+            if (tokenUtils.validate((HttpServletRequest) request, token)) {
                 // determine the user based on the (already validated) token
                 UserDetails login = tokenUtils.getUserFromToken(token);
                 
