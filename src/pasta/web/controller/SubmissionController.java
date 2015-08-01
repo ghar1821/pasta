@@ -1704,7 +1704,7 @@ public class SubmissionController {
 			return "";
 		}
 
-		return generateJSON(userManager.getUserList());
+		return generateJSON(userManager.getStudentList());
 	}
 
 	/**
