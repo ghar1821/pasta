@@ -174,6 +174,9 @@ public class UserManager {
 		if(parts.length == 1) {
 			return getUserListByTutorialAndStream(null, className);
 		} else {
+			if(parts[0].isEmpty()) {
+				return getUserListByTutorialAndStream(null, parts[1]);
+			}
 			return getUserListByTutorialAndStream(parts[0], parts[1]);
 		}
 	}
