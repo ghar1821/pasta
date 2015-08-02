@@ -114,7 +114,11 @@
 						</tr>
 						<tr>
 							<td>Mark:</td>
-							<td><form:input path="compareMark" cssClass="setMark" /> <form:checkbox path="asPercentage" cssClass="percentCheck" label="Use percentages rather than raw marks"/></td>
+							<td>
+								<form:errors path="compareMark" element="div"/>
+								<form:input path="compareMark" cssClass="setMark" />
+								<form:checkbox path="asPercentage" cssClass="percentCheck" label="Use percentages rather than raw marks"/>
+							</td>
 						</tr>
 						<tr>
 							<td>Mark Type:</td>
