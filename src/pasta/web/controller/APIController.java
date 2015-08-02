@@ -92,6 +92,12 @@ public class APIController {
 	public String getToken(HttpServletRequest request, @RequestParam("username") String username, @RequestParam("password") String password) {
 		return tokenUtils.generateToken(request, username, password);
 	}
+	
+	@RequestMapping(value="testToken/", method=RequestMethod.GET)
+	@ResponseBody
+	public String testToken() {
+		return "VALID";
+	}
 
 	/**
 	 * Get the latest marks
