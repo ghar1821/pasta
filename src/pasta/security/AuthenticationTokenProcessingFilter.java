@@ -1,7 +1,6 @@
 package pasta.security;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -26,11 +25,9 @@ public class AuthenticationTokenProcessingFilter extends UsernamePasswordAuthent
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
-        Map<String, String[]> parms = request.getParameterMap();
-
-        if(parms.containsKey("token")) {
-            String token = parms.get("token")[0]; // grab the first "token" parameter
-
+       
+    	String token = ((HttpServletRequest) request).getHeader("Auth-Token");
+        if(token != null && !token.isEmpty()) {
             // validate the token
             if (tokenUtils.validate((HttpServletRequest) request, token)) {
                 // determine the user based on the (already validated) token
