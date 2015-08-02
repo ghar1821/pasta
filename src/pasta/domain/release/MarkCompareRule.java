@@ -137,7 +137,7 @@ public class MarkCompareRule extends ReleaseResultsRule implements Serializable 
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release if ").append(markType).append(" mark for assessment ")
 			.append(getCompareAssessment() == null ? "null" : getCompareAssessment().getName())
-			.append(" is ").append(compareMode).append(' ').append(compareMark).append(asPercentage ? "%" : "");
+			.append(" is ").append(compareMode).append(' ').append(asPercentage ? compareMark*100 : compareMark).append(asPercentage ? "%" : "");
 		return sb.toString();
 	}
 }
