@@ -70,7 +70,7 @@ public class PASTASecurityManager extends SecurityManager{
 	@Override
 	public void checkWrite(String file) {
 		// allow results to be written
-		if(file.endsWith("results.xml") ||
+		if(file.endsWith("result.xml") ||
 			file.matches(".*/junitvmwatcher\\d*\\.properties")){
 			// do nothing
 			return;
