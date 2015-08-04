@@ -70,7 +70,7 @@ import pasta.domain.user.PASTAUser;
  */
 @Entity
 @Table(name = "assessment_jobs",
-		uniqueConstraints = { @UniqueConstraint(columnNames={
+		uniqueConstraints = { @UniqueConstraint(name="unique_job_per_user_per_assessment", columnNames={
 				"user_id", "assessment_id", "run_date"
 		})})
 public class AssessmentJob extends Job implements Serializable{

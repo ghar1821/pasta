@@ -77,6 +77,9 @@ public class ExecutionScheduler {
 	private SessionFactory sessionFactory;
 	
 	public void scheduleJob(PASTAUser user, long assessmentId, AssessmentResult result, Date runDate) {
+		if(result.isWaitingToRun()) {
+			return;
+		}
 		result.setWaitingToRun(true);
 		resultManager.update(result);
 		save(new AssessmentJob(user, assessmentId, runDate, result));
