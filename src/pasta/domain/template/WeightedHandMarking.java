@@ -78,7 +78,7 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 	private Assessment assessment;
 	
 	public WeightedHandMarking() {
-		setWeight(1.0);
+		setWeight(0);
 		setGroupWork(false);
 	}
 	

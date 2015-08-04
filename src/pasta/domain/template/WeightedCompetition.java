@@ -77,7 +77,7 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 	private Assessment assessment;
 	
 	public WeightedCompetition() {
-		setWeight(1.0);
+		setWeight(0);
 		setGroupWork(false);
 	}
 	

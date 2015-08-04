@@ -65,7 +65,7 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	@GeneratedValue
 	private long id;
 	
-	private double weight = 1.0;
+	private double weight;
 	
 	private boolean secret;
 	
@@ -80,7 +80,7 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	private Assessment assessment;
 	
 	public WeightedUnitTest() {
-		setWeight(1.0);
+		setWeight(0);
 		setSecret(false);
 		setGroupWork(false);
 	}

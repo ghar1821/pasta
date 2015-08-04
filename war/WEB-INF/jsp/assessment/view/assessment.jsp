@@ -379,7 +379,15 @@ either expressed or implied, of the PASTA Project.
         
         // When you click on a selected checkbox, mark the row as selected
         $("input.select-check").on('click', function() {
-        	$(this).parents("tr").toggleClass("selected", $(this).is(":checked"));
+        	var $row = $(this).parents("tr");
+        	if($(this).is(":checked")) {
+        		var $weightBox = $row.find("td input[type='text']");
+        		var weight = $weightBox.val();
+        		if(weight == 0) {
+        			$weightBox.val("1.0");
+        		}
+        	}
+        	$row.toggleClass("selected", $(this).is(":checked"));
         	refreshTable($(this).parents("table.moduleTable"));
         });
         
