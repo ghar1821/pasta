@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 import pasta.domain.PASTAPlayer;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
+import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
@@ -95,7 +96,8 @@ public class ExecutionManager {
 	private ResultDAO resultDAO = ProjectProperties.getInstance()
 			.getResultDAO();
 	
-	@Autowired UnitTestManager unitTestManager;
+	@Autowired private UnitTestManager unitTestManager;
+	@Autowired private ResultManager resultManager;
 
 	private ExecutionScheduler scheduler;
 
@@ -552,13 +554,35 @@ public class ExecutionManager {
 	 */
 	@Scheduled(fixedDelay = 10000)
 	public void executeRemainingAssessmentJobs() {
-		List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
-		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-			for (AssessmentJob job : outstandingJobs) {
-				executeNormalJob(job);
+		synchronized (scheduler) {
+			List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
+			while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
+				for (AssessmentJob job : outstandingJobs) {
+					executeNormalJob(job);
+				}
+				scheduler.clearJobCache();
+				outstandingJobs = scheduler.getOutstandingAssessmentJobs();
 			}
-			scheduler.clearJobCache();
-			outstandingJobs = scheduler.getOutstandingAssessmentJobs();
+		}
+	}
+	
+	@Scheduled(fixedDelay = 3600000)
+	public void fixWaitingJobs() {
+		synchronized (scheduler) {
+			logger.info("Scheduled Task: Checking for tests that should be in the job queue");
+			List<AssessmentResult> waitingResults = resultManager.getWaitingResults();
+			List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
+			HashSet<Long> resultsInQueue = new HashSet<Long>();
+			for(AssessmentJob job : outstandingJobs) {
+				resultsInQueue.add(job.getResults().getId());
+			}
+			for(AssessmentResult waiting : waitingResults) {
+				if(!resultsInQueue.contains(waiting.getId())) {
+					logger.info("Scheduled Task: Found test that should be in the job queue (#" + waiting.getId() + ")");
+					waiting.setWaitingToRun(false);
+					scheduler.scheduleJob(waiting.getUser(), waiting.getAssessment().getId(), waiting, waiting.getSubmissionDate());
+				}
+			}
 		}
 	}
 
@@ -574,12 +598,14 @@ public class ExecutionManager {
 	 */
 	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingCompetitionJobs() {
-		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
-		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-			for (CompetitionJob job : outstandingJobs) {
-				executeCalculatedCompetitionJob(job);
+		synchronized (scheduler) {
+			List<CompetitionJob> outstandingJobs = scheduler.getOutstandingCompetitionJobs();
+			while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
+				for (CompetitionJob job : outstandingJobs) {
+					executeCalculatedCompetitionJob(job);
+				}
+				outstandingJobs = scheduler.getOutstandingCompetitionJobs();
 			}
-			outstandingJobs = scheduler.getOutstandingCompetitionJobs();
 		}
 	}
 	
@@ -595,12 +621,14 @@ public class ExecutionManager {
 	 */
 	//@Scheduled(fixedDelay = 10000)
 	public void executeRemainingArenaJobs() {
-		List<CompetitionJob> outstandingJobs = scheduler.getOutstandingArenaJobs();
-		while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-			for (CompetitionJob job : outstandingJobs) {
-				executeArenaJob(job);
+		synchronized (scheduler) {
+			List<CompetitionJob> outstandingJobs = scheduler.getOutstandingArenaJobs();
+			while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
+				for (CompetitionJob job : outstandingJobs) {
+					executeArenaJob(job);
+				}
+				outstandingJobs = scheduler.getOutstandingArenaJobs();
 			}
-			outstandingJobs = scheduler.getOutstandingArenaJobs();
 		}
 	}
 

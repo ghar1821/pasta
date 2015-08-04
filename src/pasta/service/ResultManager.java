@@ -282,4 +282,8 @@ public class ResultManager {
 	public void update(AssessmentResult result) {
 		resultDAO.update(result);
 	}
+
+	public List<AssessmentResult> getWaitingResults() {
+		return resultDAO.getWaitingResults();
+	}
 }

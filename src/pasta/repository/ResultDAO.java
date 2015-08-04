@@ -606,4 +606,12 @@ public class ResultDAO{
 			session.update(result);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<AssessmentResult> getWaitingResults() {
+		return sessionFactory.getCurrentSession()
+				.createCriteria(AssessmentResult.class)
+				.add(Restrictions.eq("waitingToRun", true))
+				.list();
+	}
 }
