@@ -36,6 +36,8 @@ either expressed or implied, of the PASTA Project.
 
 <h1>${unikey.username}</h1>
 
+<input id='search' type='text' />
+
 <spring:hasBindErrors name="submission">
 	<div class='vertical-box padded'>
 		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
@@ -49,62 +51,64 @@ either expressed or implied, of the PASTA Project.
 
 <div class="vertical-box padded"> 
 	<c:forEach var="assessmentCategory" items="${assessments}">
-		<c:if test="${not empty assessmentCategory.key}">
-			<h2>${assessmentCategory.key}</h2>
-		</c:if>
-		<div class="pastaQuickFeedback">
-			<div class='boxCard'>
-				<c:forEach var="assessment" items="${assessmentCategory.value}">
-					<c:set var="closedAssessment" value="false"/>
-					<c:if test="${closed[assessment.id]}">
-						<c:set var="closedAssessment" value="true"/>
-					</c:if>
-					<div class='boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
-						<div class='float-container vertical-block'>
-							<div class='horizontal-block float-left'>
-								<a href="../info/${assessment.id}/">${assessment.name}</a> - 
-								<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
-								<c:if test="${empty results[assessment.id]}">
-									0.0
-								</c:if>
-								/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
-								<br />
-								Due: ${dueDates[assessment.id]}
-								<br />
-								<c:choose>
-									<c:when test="${assessment.numSubmissionsAllowed == 0}">
-										&infin; submissions allowed <br />
-									</c:when>
-									<c:otherwise>
-										<c:if test="${empty results[assessment.id]}">
-											0
-										</c:if>
-										${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
-									</c:otherwise>
-								</c:choose>
+		<div class='category-box'>
+			<c:if test="${not empty assessmentCategory.key}">
+				<h2>${assessmentCategory.key}</h2>
+			</c:if>
+			<div class="pastaQuickFeedback">
+				<div class='boxCard'>
+					<c:forEach var="assessment" items="${assessmentCategory.value}">
+						<c:set var="closedAssessment" value="false"/>
+						<c:if test="${closed[assessment.id]}">
+							<c:set var="closedAssessment" value="true"/>
+						</c:if>
+						<div class='assessment-box boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+							<div class='float-container vertical-block'>
+								<div class='horizontal-block float-left'>
+									<a href="../info/${assessment.id}/">${assessment.name}</a> - 
+									<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+									<c:if test="${empty results[assessment.id]}">
+										0.0
+									</c:if>
+									/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
+									<br />
+									Due: ${dueDates[assessment.id]}
+									<br />
+									<c:choose>
+										<c:when test="${assessment.numSubmissionsAllowed == 0}">
+											&infin; submissions allowed <br />
+										</c:when>
+										<c:otherwise>
+											<c:if test="${empty results[assessment.id]}">
+												0
+											</c:if>
+											${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+										</c:otherwise>
+									</c:choose>
+								</div>
+								
+								<div class='horizontal-block float-right'>
+									<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
+										<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
+									</c:if>
+									<button onclick="submitAssessment('${assessment.id}');">Submit</button>
+								</div>
 							</div>
 							
-							<div class='horizontal-block float-right'>
-								<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
-									<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
+							<div class='float-clear float-container vertical-block small-gap'>
+								<div class='horizontal-block float-left' style='width:90%'>
+									<tag:unitTestResult user="${user}" results="${results[assessment.id]}" 
+										closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
+										detailsLink="../info/${assessment.id}/"/>
+								</div>
+								<c:if test="${assessment.groupWork}">
+									<div id="" class='horizontal-block float-right editGroup icon-edit-group' 
+									title='Group Details' assessment='${assessment.id}'></div>
 								</c:if>
-								<button onclick="submitAssessment('${assessment.id}');">Submit</button>
 							</div>
 						</div>
-						
-						<div class='float-clear float-container vertical-block small-gap'>
-							<div class='horizontal-block float-left' style='width:90%'>
-								<tag:unitTestResult user="${user}" results="${results[assessment.id]}" 
-									closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
-									detailsLink="../info/${assessment.id}/"/>
-							</div>
-							<c:if test="${assessment.groupWork}">
-								<div id="" class='horizontal-block float-right editGroup icon-edit-group' 
-								title='Group Details' assessment='${assessment.id}'></div>
-							</c:if>
-						</div>
-					</div>
-				</c:forEach>
+					</c:forEach>
+				</div>
 			</div>
 		</div>
 	</c:forEach>
@@ -163,5 +167,10 @@ either expressed or implied, of the PASTA Project.
 		$(".editGroup").on('click', function() {
 			location.href = '../groups/' + $(this).attr('assessment') + '/';
 		});
+		
+		$(".category-box,.assessment-box").searchNode();
+		$(".category-box").find("h2:first").searchable();
+		$(".assessment-box").find("a:first").searchable();
+		var searchBox = $("#search").searchBox();
 	});
 </script>

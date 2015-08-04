@@ -12,18 +12,22 @@ function resetDots($dotDiv) {
 	setDots($dotDiv, rating);
 }
 
-function askForRating() {
+function askForRating(hide) {
 	var $first = $(".ratingControls").has("#rating[value=0]").first();
-	$first.tipsy({
-		gravity : 'e',
-		fade : true,
-		trigger: 'manual',
-		fallback: "How difficult did you find this assessment?",
-		offset: 10,
-		css: {width: 40}
-	});
-	$first.tipsy('show');
-	$first.on("mouseover", function() {$(this).tipsy('hide');});
+	if(hide) {
+		$first.tipsy('hide');
+	} else {
+		$first.tipsy({
+			gravity : 'e',
+			fade : true,
+			trigger: 'manual',
+			fallback: "How difficult did you find this assessment?",
+			offset: 10,
+			css: {width: 40}
+		});
+		$first.tipsy('show');
+		$first.on("mouseover", function() {$(this).tipsy('hide');});
+	}
 }
 
 function sendRating($form) {

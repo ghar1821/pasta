@@ -230,6 +230,30 @@ div.group-highlight {
    padding: 1em;
 }
 
+div.search-box {
+	width: 150px;
+	float: right;
+	display: inline-block;
+	margin-right: 40px;
+}
+div.search-box input[type='text'] {
+	margin: 1px 0;
+	padding: 4px 20px 4px 5px;
+	width: 100%;
+	height: auto;
+	outline: 0;
+	border: 1px solid #aaa;
+	background: white url("../images/chosen-sprite.png") no-repeat 100% -20px;
+	background: url("../images/chosen-sprite.png") no-repeat 100% -20px;
+	font-size: 1.1em;
+	font-family: sans-serif;
+	line-height: normal;
+	border-radius: 0;
+}
+.search-node.not-found {
+	display:none;
+}
+
 table.dragRows {
 	border-collapse: collapse;
 }

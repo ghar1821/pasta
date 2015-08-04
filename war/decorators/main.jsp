@@ -39,6 +39,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.allowTab.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.search.js"/>"></script>
 		<decorator:head />
 		
 		
