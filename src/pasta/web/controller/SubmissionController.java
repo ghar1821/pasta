@@ -1884,7 +1884,6 @@ public class SubmissionController {
 				if (latestResult != null) {
 					mark = df.format(latestResult.getMarks());
 					percentage = String.valueOf(latestResult.getPercentage());
-					userData += "        \"testsize\": \"" + latestResult.getUnitTests().size() + "\",\r\n";
 				}
 				userData += "        \"mark\": \"" + mark + "\",\r\n";
 				userData += "        \"percentage\": \"" + percentage + "\",\r\n";
