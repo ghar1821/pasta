@@ -131,7 +131,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	private String comments;
 
 	@Column(name="waiting_to_run")
-	private boolean waitingToRun = true;
+	private boolean waitingToRun = false;
 	
 	@Column(name="group_result")
 	private boolean groupResult;
