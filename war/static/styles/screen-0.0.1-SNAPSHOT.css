@@ -1628,6 +1628,7 @@ body.splash #head h1 span#site-title {
 	clear: right;
 }
 
+/* This causes problems with datatables.
 span.prev {
 	background: transparent url(../../images/common/arrow-left-off.gif) 0
 		50% no-repeat;
@@ -1647,6 +1648,7 @@ a.next {
 	background: transparent url(../../images/common/arrow-right.gif) 100%
 		50% no-repeat;
 }
+*/
 
 .pageContent div.panel {
 	margin: 1.4em 0;
