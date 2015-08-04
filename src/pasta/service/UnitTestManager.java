@@ -594,7 +594,7 @@ public class UnitTestManager {
 					String location = expandNode.getLocation().substring(dirStart);
 					if(location.endsWith(".java")) {
 						if(location.endsWith("Test.java")) {
-							test.setMainClassName(location.substring(0, location.length()-5));
+							test.setMainClassName(PASTAUtil.extractQualifiedName(location));
 						}
 					}
 					if(!expandNode.isLeaf()) {

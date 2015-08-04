@@ -459,6 +459,42 @@ public class PASTAUtil {
 		}
 	}
 	
+	public static String extractQualifiedName(String javaFileLocation) {
+		return extractQualifiedName(new File(javaFileLocation));
+	}
+	public static String extractQualifiedName(File javaFile) {
+		if(!javaFile.exists()) {
+			return null;
+		}
+		String filename = javaFile.getName();
+		if(!filename.toLowerCase().endsWith(".java")) {
+			return null;
+		}
+		String classname = filename.substring(0, filename.lastIndexOf('.'));
+		String thePackage = null;
+		try (Scanner scn = new Scanner(javaFile)) {
+			while(scn.hasNextLine()) {
+				String line = scn.nextLine().trim();
+				if(line.startsWith("package")) {
+					line = line.substring("package".length()).trim();
+					if(line.contains("/"))
+						line = line.substring(0, line.indexOf('/'));
+					thePackage = line;
+					break;
+				}
+				if(line.startsWith("import")) {
+					break;
+				}
+			}
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+		if(thePackage != null) {
+			return thePackage.replaceAll("[\\s;]+", "").concat(".").concat(classname);
+		}
+		return classname;
+	}
+	
 	public static File getTemplateResource(String pathInProject) throws FileNotFoundException {
 		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);
 		if(file.exists() && !file.isDirectory()) {

@@ -48,13 +48,6 @@ public class JUnitTestRunner extends Runner {
 	 * @param name the class name to use
 	 */
 	public void setMainTestClassname(String name) {
-		int firstGoodChar = 0;
-		for(; firstGoodChar < name.length(); firstGoodChar++) {
-			if(!(name.charAt(firstGoodChar) == '\\' || name.charAt(firstGoodChar) == '/')) {
-				break;
-			}
-		}
-		name = name.substring(firstGoodChar).replaceAll("[/\\\\]", ".");
 		addOption("testName", name);
 	}
 

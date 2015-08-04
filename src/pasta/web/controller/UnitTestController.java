@@ -212,7 +212,8 @@ public class UnitTestController {
 				FileTreeNode expandNode = toExpand.pop();
 				String location = expandNode.getLocation().substring(dirStart);
 				if(location.endsWith(".java")) {
-					candidateFiles.put(location.substring(0, location.length()-5), location);
+					String qualified = PASTAUtil.extractQualifiedName(expandNode.getLocation());
+					candidateFiles.put(qualified, location + " [" + qualified + "]");
 				}
 				if(!expandNode.isLeaf()) {
 					for(FileTreeNode child : expandNode.getChildren()) {
