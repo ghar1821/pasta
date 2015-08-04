@@ -32,9 +32,11 @@ package pasta.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
@@ -442,9 +444,6 @@ public class ExecutionManager {
 				user.getUsername() + "/" + job.getAssessmentId() + 
 				"/" + PASTAUtil.formatDate(job.getRunDate()));	
 		
-		UnitTestResult extraResults = new UnitTestResult();
-		job.getResults().addUnitTest(extraResults);
-		
 		// Set up location where test will be run
 		try {
 			if (sandboxRoot.exists()) {
@@ -452,7 +451,6 @@ public class ExecutionManager {
 				FileUtils.deleteDirectory(sandboxRoot);
 			}
 		} catch (IOException e) {
-			extraResults.addValidationError("Internal error: contact administrator.");
 			logger.error("Could not delete existing test.", e);
 			finishTesting(job);
 			return;
@@ -463,6 +461,14 @@ public class ExecutionManager {
 		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
 				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
 		File submissionLoc = new File(submissionHome);
+		
+		Set<Long> validTestIds = new HashSet<>();
+		for(WeightedUnitTest weightedTest : assessment.getAllUnitTests()) {
+			if(weightedTest.isGroupWork() != userIsGroup) {
+				continue;
+			}
+			validTestIds.add(weightedTest.getTest().getId());
+		}
 		
 		for(WeightedUnitTest weightedTest : assessment.getAllUnitTests()) {
 			if(weightedTest.isGroupWork() != userIsGroup) {
@@ -477,14 +483,15 @@ public class ExecutionManager {
 			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
 			while(previousResultsIt.hasNext()) {
 				UnitTestResult existingResult = previousResultsIt.next();
-				if(existingResult == null || existingResult.getTest() == null) {
+				if(existingResult == null) {
 					continue;
 				}
-				if(existingResult.getTest().getId() == test.getId()) {
+				if(existingResult.getTest() == null || 
+						existingResult.getTest().getId() == test.getId() ||
+						!validTestIds.contains(existingResult.getTest().getId())) {
 					existingResult.clearValidationErrors();
 					existingResult.getTestCases().clear();
 					previousResultsIt.remove();
-					break;
 				}
 			}
 			
@@ -504,7 +511,7 @@ public class ExecutionManager {
 			if(test.hasBlackBoxTests()) {
 				String solutionName = assessment.getSolutionName();
 				if(solutionName == null || solutionName.isEmpty()) {
-					extraResults.addValidationError("Assessment setup error: contact administrator.");
+					utResults.addValidationError("Assessment setup error: contact administrator.");
 					logger.error("No solution name set for " + assessment.getName());
 					continue;
 				}
