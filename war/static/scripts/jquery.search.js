@@ -27,7 +27,7 @@
 	
 	$.search = function(text, options) {
 		var settings = $.extend({
-			anyTerm : true,
+			anyTerm : false,
 			resetOnBlank : true,
 			beforeSearch : function() {},
 			afterSearch : function() {},
@@ -45,8 +45,10 @@
 			}
 			var found = !settings.anyTerm;
 			for(var i = 0; i < terms.length && found != settings.anyTerm; i++) {
+				if(!terms[i]) {
+					continue;
+				}
 				var node = $(this);
-				
 				var numFound = node.find(".searchable").filter(function(index, element) {
 					return ($(element).closest(".search-node").is(node));
 				}).filter(":Contains('" + terms[i] + "')").length;
