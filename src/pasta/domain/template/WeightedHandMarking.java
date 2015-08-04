@@ -77,6 +77,10 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 	@ManyToOne (cascade = CascadeType.ALL)
 	private Assessment assessment;
 	
+	public WeightedHandMarking() {
+		setWeight(1.0);
+		setGroupWork(false);
+	}
 	
 	public long getId() {
 		return id;

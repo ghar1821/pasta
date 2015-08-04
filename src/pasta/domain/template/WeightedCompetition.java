@@ -76,6 +76,10 @@ public class WeightedCompetition implements Serializable, Comparable<WeightedCom
 	@ManyToOne (cascade = CascadeType.ALL)
 	private Assessment assessment;
 	
+	public WeightedCompetition() {
+		setWeight(1.0);
+		setGroupWork(false);
+	}
 	
 	public long getId() {
 		return id;

@@ -257,9 +257,6 @@ public class AssessmentController {
 			if (!contains) {
 				WeightedUnitTest weightedTest = new WeightedUnitTest();
 				weightedTest.setTest(test);
-				weightedTest.setWeight(0);
-				weightedTest.setSecret(false);
-				weightedTest.setGroupWork(false);
 				allUnitTests.add(weightedTest);
 			}
 		}
@@ -282,8 +279,6 @@ public class AssessmentController {
 			if(!contains) {
 				WeightedHandMarking weightedTemplate = new WeightedHandMarking();
 				weightedTemplate.setHandMarking(template);
-				weightedTemplate.setWeight(0);
-				weightedTemplate.setGroupWork(false);
 				allHandMarking.add(weightedTemplate);
 			}
 		}
@@ -306,8 +301,6 @@ public class AssessmentController {
 			if(!contains) {
 				WeightedCompetition weightedComp = new WeightedCompetition();
 				weightedComp.setCompetition(comp);
-				weightedComp.setWeight(0);
-				weightedComp.setGroupWork(false);
 				allCompetitions.add(weightedComp);
 			}
 		}
