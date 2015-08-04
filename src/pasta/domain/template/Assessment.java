@@ -358,10 +358,13 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	
 	public boolean isOnlyIndividualWork() {
-		return isConsistentGroupWork(false);
+		return hasWork() && isConsistentGroupWork(false);
 	}
 	public boolean isOnlyGroupWork() {
-		return isConsistentGroupWork(true);
+		return hasWork() && isConsistentGroupWork(true);
+	}
+	private boolean hasWork() {
+		return !(unitTests.isEmpty() && handMarking.isEmpty() && competitions.isEmpty());
 	}
 	private boolean isConsistentGroupWork(boolean isGroupWork) {
 		for(WeightedUnitTest module : unitTests){
