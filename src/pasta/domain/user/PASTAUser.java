@@ -135,7 +135,20 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	}
 	
 	public String getFullTutorial() {
-		return this.getStream() + "." + this.getTutorial();
+		String tutorial = getTutorial() == null ? "" : getTutorial();
+		if(tutorial.isEmpty()){
+			return tutorial;
+		}
+		String full = "";
+		String stream = getStream() == null ? "" : getStream();
+		if(!stream.isEmpty()) {
+			full += this.getStream();
+		}
+		if(!full.isEmpty()) {
+			full += ".";
+		}
+		full += tutorial;
+		return full;
 	}
 	
 	public boolean isTutor(){
