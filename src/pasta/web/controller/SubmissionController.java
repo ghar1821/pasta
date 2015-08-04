@@ -311,7 +311,7 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("results", resultManager.getLatestResultsIncludingGroups(user));
 		
-		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
+		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory(user.isTutor());
 		Iterator<String> itCategories = allAssessments.keySet().iterator();
 		while(itCategories.hasNext()) {
 			String category = itCategories.next();
@@ -961,7 +961,7 @@ public class SubmissionController {
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("results", resultManager.getLatestResultsIncludingGroups(viewedUser));
 		
-		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory();
+		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory(user.isTutor());
 		Iterator<String> itCategories = allAssessments.keySet().iterator();
 		while(itCategories.hasNext()) {
 			String category = itCategories.next();

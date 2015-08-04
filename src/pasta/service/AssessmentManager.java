@@ -32,6 +32,7 @@ package pasta.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -237,13 +238,36 @@ public class AssessmentManager {
 	}
 	
 	/**
-	 * Helper method.
+	 * Gets all assessments by category, including only the assessment
+	 * categories that can be viewed by the user.
 	 * 
-	 * @see pasta.repository.AssessmentDAO#getAllAssessmentsByCategory()
-	 * @return a map of the categories and the list of all assessments belonging to that category.
+	 * @param includeTutorOnly
+	 *            whether to include categories that are marked as being
+	 *            tutor-only assessments.
+	 * @return a map of the categories and the list of all assessments belonging
+	 *         to that category.
 	 */
-	public Map<String, Set<Assessment>> getAllAssessmentsByCategory() {
-		return assDao.getAllAssessmentsByCategory();
+	public Map<String, Set<Assessment>> getAllAssessmentsByCategory(boolean includeTutorOnly) {
+		Map<String, Set<Assessment>> allCategories = assDao.getAllAssessmentsByCategory();
+		Map<String, String> keyReplacements = new HashMap<>();
+		for(String key : allCategories.keySet()) {
+			if(key.startsWith(Assessment.TUTOR_CATEGORY_PREFIX)) {
+				keyReplacements.put(key, key.substring(Assessment.TUTOR_CATEGORY_PREFIX.length()));
+			}
+		}
+		for(Map.Entry<String, String> replaceKey : keyReplacements.entrySet()) {
+			String oldKey = replaceKey.getKey();
+			String newKey = replaceKey.getValue();
+			Set<Assessment> oldSet = allCategories.remove(oldKey);
+			if(includeTutorOnly) {
+				if(allCategories.containsKey(newKey)) {
+					allCategories.get(newKey).addAll(oldSet);
+				} else {
+					allCategories.put(newKey, oldSet);
+				}
+			}
+		}
+		return allCategories;
 	}
 
 	public Assessment addAssessment(NewAssessmentForm form) {

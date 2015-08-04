@@ -73,7 +73,7 @@ either expressed or implied, of the PASTA Project.
 				</td>
 			</tr>
 			<tr>
-				<td>Category: <span class='help'>Separate multiple categories with commas.</span></td>
+				<td>Category: <span class='help'>Separate multiple categories with commas.<br/>Prefix a category with ${tutorCategoryPrefix} if you want that category to only be visible to tutors.</span></td>
 				<td>
 					<form:input type="text" path="category"/>
 					<form:errors path="category"/>

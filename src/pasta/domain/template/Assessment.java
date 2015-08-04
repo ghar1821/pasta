@@ -131,6 +131,8 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 
 	private static final long serialVersionUID = -387829953944113890L;
 
+	public static final String TUTOR_CATEGORY_PREFIX = "*";
+
 	@Transient
 	protected final Log logger = LogFactory.getLog(getClass());
 	

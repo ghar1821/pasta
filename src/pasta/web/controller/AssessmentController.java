@@ -320,6 +320,8 @@ public class AssessmentController {
 			model.addAttribute("node", PASTAUtil.generateFileTree(currAssessment.getCustomValidator().getAbsolutePath()));
 		}
 		
+		model.addAttribute("tutorCategoryPrefix", Assessment.TUTOR_CATEGORY_PREFIX);
+		
 		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}
