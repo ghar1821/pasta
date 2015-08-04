@@ -81,6 +81,18 @@ either expressed or implied, of the PASTA Project.
 	
 	<h3>Choosing a main file</h3>
 	<p>Every custom JUnit test requires a main test file. You can choose this file from the drop down box on the unit test details page.
+	
+	<h3>Designing tests</h3>
+	<p>It is generally a good idea to make sure that none of your JUnit assert statements that interact with student code reveal any test logic.
+	<p>For example, consider the following test code:
+	<pre class="javacode"><code>assertEquals(4, StudentClass.doCalculation(8));</code></pre>
+	<p>If the student has submitted code that doesn't include the <code>StudentClass.doCalculation</code> method, then they will be shown a compiler error including that line of code, revealing that you are testing the input value 8.
+	<p>A better approach would be to do this:
+	<pre class="javacode"><code>int expected = 4;
+int input = 8;
+int actual = StudentClass.doCalculation(input);
+assertEquals(expected, actual);</code></pre>
+	<p>Now, if the student doesn't have the required method, then they will be shown only line 3, which does not show any test logic.
 </div>
 
 <h2>Testing the Unit Test</h2>
