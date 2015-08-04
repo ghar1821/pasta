@@ -109,46 +109,47 @@ either expressed or implied, of the PASTA Project.
 					{ "mData": {_: "${assessment.id}", sort: "${assessment.id}.percentage"}}<c:if test="${assessmentStatus.index < (fn:length(assessmentList)-1)}">,</c:if>
 					</c:forEach>
 		         ],
-				 "aoColumnDefs": [ {
-					  "aTargets": ["_all"],
-					  "mRender": function ( data, type, full ) {
-						// assessment
-						if (data.mark >= 0) {
-							return '<span style="display:none">'+data.percentage+'</span><a href="${pathBack}/student/'+full.name+'/info/'+data.assessmentid+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.mark+'</a>';
-						}
-						// name
-						if(data == full.name){
-							return '<a href="${pathBack}/student/'+data+'/home/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
-						}
-						// stream
-						if(data == full.stream){
-							return '<a href="${pathBack}/stream/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data+'</a>';
-						}
-						// class
-						if(data == full.class){
-							return '<a href="${pathBack}/tutorial/'+data+'/" style="display:block;height:100%;width:100%;text-decoration:none;color:black;">'+data.substring(data.indexOf('.')+1)+'</a>';
-						}
-						return data;
-					  },
-					  "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						if(iCol > 2){
-							if ( nTd.getElementsByTagName("span")[0].innerHTML == "" ) {
-							  $(nTd).css('background-color', $("div.gradeCentreMarkNoSub").css("backgroundColor"));
+				"columnDefs": [ 
+					{
+						"targets": 0,
+						"render": function(data) {
+							return '<a class="gc-link" href="${pathBack}/student/'+data+'/home/">'+data+'</a>';
+						},
+						"createdCell" : null
+					},{
+						"targets": 1,
+						"render": function(data) {
+							return '<a class="gc-link" href="${pathBack}/stream/'+data+'/">'+data+'</a>';
+						},
+						"createdCell" : null
+					},{
+						"targets": 2,
+						"render": function(data) {
+							return '<a class="gc-link" href="${pathBack}/tutorial/'+data+'/">'+data.substring(data.indexOf('.')+1)+'</a>';
+						},
+						"createdCell" : null
+					},{
+						"targets": "_all",
+						"render": function(data, type, row, meta) {
+							if(data.mark) {
+								return data.mark;
 							}
-							else{
-								var pos = parseFloat(nTd.getElementsByTagName("span")[0].innerHTML);
-								
-								n = 100; // number of color groups
-								
-								red = parseInt((xr + (( pos * (yr - xr)))).toFixed(0));
-								green = parseInt((xg + (( pos * (yg - xg)))).toFixed(0));
-								blue = parseInt((xb + (( pos * (yb - xb)))).toFixed(0));
-
-								$(nTd).css('background-color', 'rgb('+red+','+green+','+blue+')');
+							return null;
+						},
+						"createdCell" : function(td, cellData, rowData, row, col) {
+							if(cellData.mark === "") {
+								$(td).css('background-color', $("div.gradeCentreMarkNoSub").css("background-color"));
+								return;
 							}
+							// adjust 0 out of 0 to display as full marks
+							var percentage = cellData.mark == 0 && cellData.max == 0 ? 1.0 : cellData.percentage;
+							red = parseInt((xr + (( percentage * (yr - xr)))).toFixed(0));
+							green = parseInt((xg + (( percentage * (yg - xg)))).toFixed(0));
+							blue = parseInt((xb + (( percentage * (yb - xb)))).toFixed(0));
+							$(td).css('background-color', 'rgb('+red+','+green+','+blue+')');
 						}
-					  }
-					} ]
+					}
+				]
 			} );
 	    } 
 	); 

@@ -431,14 +431,19 @@ pre {
 .gradeCentreMarkGood{
 	background-color: #1FCB4A; 
 }
-
 .gradeCentreMarkBad{
 	background-color: #FFFFFF; 
 }
-
 .gradeCentreMarkNoSub{
 	background-color: #FF7575; 
 
+}
+a.gc-link {
+	color: black;
+	display: block;
+	height: 100%;
+	text-decoration: none;
+	width: 100%;
 }
 
  /*

@@ -444,7 +444,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		}
 				
 		if(maxWeight == 0){
-			return marks == 0 ? 1 : 0;
+			return 0;
 		}
 		return (marks / maxWeight);
 	}
