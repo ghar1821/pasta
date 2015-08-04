@@ -68,7 +68,9 @@ either expressed or implied, of the PASTA Project.
 	<h3>Writing the test</h3>
 	<p>To write a test suite, create a JUnit class that extends <code>PASTAJUnitTest</code>.
 	<pre class="javacode"><code><c:out value="${PASTAJUnitTest}" /></code></pre>
-	<p>For example, the following class will test a simple Java Hello World program.
+	<p>For example, the class below will test a simple Java Hello World program.
+	<h5 class='compact'>Important!</h5> 
+	<p><strong>It is very important that you include test timeouts to the tests</strong>; e.g. <code>@Test(timeout=1000)</code>, as otherwise students who submit code with infinite loops will cause large delays to other students.
 	<p><strong>Note:</strong> you must import <code>pasta.PASTAJUnitTest</code> to extend it. You do not need to submit PASTAJUnitTest as this will be provided for you.
 	<pre class="javacode"><code><c:out value="${HelloWorldTest}" /></code></pre>
 	<p>As another example, the following class will test to see if the user has created a file (<code>outputFile.txt</code>), and also check to see if the results of a given test case were at least a given length.
