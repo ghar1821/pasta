@@ -87,12 +87,15 @@ public class AssessmentDAO {
 	public Map<String, Set<Assessment>> getAllAssessmentsByCategory() {
 		Map<String, Set<Assessment>> assessments = new TreeMap<String, Set<Assessment>>();
 		for(Assessment assessment : getAllAssessments()) {
-			Set<Assessment> sameCategory = assessments.get(assessment.getCategory());
-			if(sameCategory == null) {
-				sameCategory = new TreeSet<Assessment>(new DueDateComparator());
-				assessments.put(assessment.getCategory(), sameCategory);
+			String[] categories = assessment.getCategory().split(",");
+			for(String category : categories) {
+				Set<Assessment> sameCategory = assessments.get(category);
+				if(sameCategory == null) {
+					sameCategory = new TreeSet<Assessment>(new DueDateComparator());
+					assessments.put(category, sameCategory);
+				}
+				sameCategory.add(assessment);
 			}
-			sameCategory.add(assessment);
 		}
 		return assessments;
 	}

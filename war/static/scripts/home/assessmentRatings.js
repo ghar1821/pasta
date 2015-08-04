@@ -27,6 +27,9 @@ function askForRating() {
 }
 
 function sendRating($form) {
+	var assessmentId = $form.attr("assessment");
+	var $allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
+	
 	$.ajax({
 		headers : {
 			'Accept' : 'application/json',
@@ -44,21 +47,29 @@ function sendRating($form) {
 			$confirm.show();
 			$confirm.html("<span style='color:green;'>&#10004; Thanks!</span>");
 			$confirm.fadeOut(2000, function() {
-				$form.find(".ratingVisToggle").toggleClass("hidden");
+				$allForms.find(".ratingVisToggle").toggleClass("hidden");
 			});
 		}
 	});
 }
 
 $(".ratingVisToggle").on("click", "a", function() {
-	$(this).parents("form").find(".ratingVisToggle").toggleClass("hidden");
+	var $form = $(this).closest("form");
+	var assessmentId = $form.attr("assessment");
+	var $allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
+	$allForms.find(".ratingVisToggle").toggleClass("hidden");
 });
 
 $(document).ready(function() {
 	$("[class^='ratingForm']").each(function() {
 		var $form = $(this);
-		var $dotDiv = $form.find(".ratingControls").children(".ratingDots");
-		var $ratingInput = $dotDiv.children("input");
+		var $thisDotDiv = $form.find(".ratingControls").children(".ratingDots");
+		
+		var assessmentId = $form.attr("assessment");
+		var $allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
+		var $dotDivs = $allForms.find(".ratingControls").children(".ratingDots");
+		
+		var $ratingInput = $thisDotDiv.children("input");
 		for(var i = 1; i <= 5; i++) {
 			var $newDiv = 
 				jQuery('<div/>', {
@@ -70,14 +81,14 @@ $(document).ready(function() {
 				sendRating($form);
 			});
 			$newDiv.on('mouseover', function() {
-				setDots($dotDiv, $(this).attr('rating'));
+				setDots($dotDivs, $(this).attr('rating'));
 			});
 			$newDiv.on('mouseout', function() {
-				resetDots($dotDiv);
+				resetDots($dotDivs);
 			});
-			$dotDiv.append($newDiv);
+			$thisDotDiv.append($newDiv);
 		}
-		resetDots($dotDiv);
+		resetDots($thisDotDiv);
 	});
 	
 	$(".ratingForm").on('submit', function() {
