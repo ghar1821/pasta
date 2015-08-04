@@ -102,39 +102,42 @@ either expressed or implied, of the PASTA Project.
 				"ajax": "DATA/",
 				"deferRender": true,
 		        "columns": [
-					{ "mData": "name" },
-					{ "mData": "stream" },
-					{ "mData": "class" },
+					{ "data": "name" },
+					{ "data": "stream" },
+					{ "data": "class" },
 					<c:forEach var="assessment" items="${assessmentList}" varStatus="assessmentStatus">
-					{ "mData": {_: "${assessment.id}", sort: "${assessment.id}.percentage"}}<c:if test="${assessmentStatus.index < (fn:length(assessmentList)-1)}">,</c:if>
+					{ "data": {_: "${assessment.id}", sort: "${assessment.id}.percentage"}}<c:if test="${not assessmentStatus.last}">,</c:if>
 					</c:forEach>
 		         ],
 				"columnDefs": [ 
 					{
-						"targets": 0,
-						"render": function(data) {
+						"targets" : 0,
+						"render" : function(data) {
 							return '<a class="gc-link" href="${pathBack}/student/'+data+'/home/">'+data+'</a>';
 						},
 						"createdCell" : null
 					},{
-						"targets": 1,
-						"render": function(data) {
+						"targets" : 1,
+						"render" : function(data) {
 							return '<a class="gc-link" href="${pathBack}/stream/'+data+'/">'+data+'</a>';
 						},
 						"createdCell" : null
 					},{
-						"targets": 2,
-						"render": function(data) {
+						"targets" : 2,
+						"render" : function(data) {
 							return '<a class="gc-link" href="${pathBack}/tutorial/'+data+'/">'+data.substring(data.indexOf('.')+1)+'</a>';
 						},
 						"createdCell" : null
 					},{
 						"targets": "_all",
 						"render": function(data, type, row, meta) {
-							if(data.mark) {
-								return data.mark;
+							if(type === 'display') {
+								if(data.mark) {
+									return '<a class="gc-link" href="${pathBack}/student/'+row.name+'/info/'+data.assessmentid+'/">'+data.mark+'</a>'
+								}
+								return null;
 							}
-							return null;
+							return data;
 						},
 						"createdCell" : function(td, cellData, rowData, row, col) {
 							if(cellData.mark === "") {
