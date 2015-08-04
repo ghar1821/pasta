@@ -116,7 +116,7 @@ either expressed or implied, of the PASTA Project.
 							
 							<c:if test="${empty viewedUser && results[assessment.id].submissionsMade > 0}">
 								<div class='horizontal-block float-right'>
-									<form:form commandName="ratingForm" cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
+									<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
 										<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
 										<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
 										<div class='vertical'>
