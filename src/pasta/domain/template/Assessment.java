@@ -368,6 +368,10 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private boolean hasWork() {
 		return !(unitTests.isEmpty() && handMarking.isEmpty() && competitions.isEmpty());
 	}
+	// Named for bean convention
+	public boolean isHasWork() {
+		return hasWork();
+	}
 	private boolean isConsistentGroupWork(boolean isGroupWork) {
 		for(WeightedUnitTest module : unitTests){
 			if(module.isGroupWork() != isGroupWork) {

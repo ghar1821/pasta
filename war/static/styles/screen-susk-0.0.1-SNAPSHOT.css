@@ -6,6 +6,10 @@
 	display:none;
 }
 
+.no-margin {
+	margin: 0 !important;
+}
+
 div.optionset {
 	background-color:#DDF;
 }
@@ -119,6 +123,13 @@ tr.spaceBelow+tr td {
 tr.spaceBelow td {
 	border-bottom: 1px solid gray;
 	padding-bottom: 1.5em;
+}
+
+div.separated + div.separated {
+	border-top: 1px solid gray;
+}
+p.compact {
+	line-height: normal;
 }
 
 span.help {

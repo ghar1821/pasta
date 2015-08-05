@@ -32,95 +32,99 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <h1>Assessments</h1>
 
-<table style="width: 100%;">
-	<c:forEach var="assessment" items="${allAssessments}" varStatus="">
-		<tr>
-			<!-- icons -->
-			<td style="width: 5em">
-				<c:if test="${not assessment.completelyTested}">
-					<span class="ui-icon ui-icon-alert"
-						style="float: left; margin-right: .3em;"
-						title="Contains untested unit tests."></span>
-				</c:if>
-				<c:if test="${assessment.closed}">
-					<span class="ui-icon ui-icon-locked"
-						style="float: left; margin-right: .3em;" title="Past due date"></span>
-				</c:if> 
-				<c:if test="${not assessment.released}">
-					<span class="ui-icon ui-icon-gear" style="float: left; margin-right: .3em;" title="Not released"></span>
-				</c:if>
-					</td>
-			<!-- Data -->
-			<td><b>${assessment.name}</b> - <c:choose>
-					<c:when test="${assessment.marks != 0}">
-Out of ${assessment.marks}
-</c:when>
-					<c:otherwise>
-Unmarked
-</c:otherwise>
-				</c:choose> <br /> ${assessment.dueDate} <br /> <c:choose>
-					<c:when test="${assessment.numSubmissionsAllowed == 0}">
-&infin;
-</c:when>
-					<c:otherwise>
-${assessment.numSubmissionsAllowed}
-</c:otherwise>
-				</c:choose> submissions allowed <br /> <c:choose>
-					<c:when
-						test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests) + fn:length(assessment.handMarking) + fn:length(assessment.competitions)) == 0}">
-No tests
-</c:when>
-					<c:otherwise>
-						<c:if test="${fn:length(assessment.unitTests) > 0}">
-${fn:length(assessment.unitTests)} Unit Tests <br />
-						</c:if>
-						<c:if test="${fn:length(assessment.secretUnitTests) > 0}">
-${fn:length(assessment.secretUnitTests)} Secret Unit Tests <br />
-						</c:if>
-						<c:if test="${fn:length(assessment.handMarking) > 0}">
-${fn:length(assessment.handMarking)} Hand marking templates <br />
-						</c:if>
-						<c:if test="${fn:length(assessment.competitions) > 0}">
-${fn:length(assessment.competitions)} Competitions <br />
-						</c:if>
-					</c:otherwise>
-				</c:choose></td>
-			<td>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
-						onclick="location.href='./${assessment.id}/'">Details</button>
-				</div>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
-						onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
-				</div>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
-						onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
-				</div>
-				<div style="float: left">
-					<button style="float: left; text-align: center;"
-						onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-					<button style="float: left; display: none; text-align: center;"
-						onclick="location.href='./delete/${assessment.id}/'"
-						onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-				</div> <c:if
-					test="${(fn:length(assessment.unitTests) + fn:length(assessment.secretUnitTests)) != 0}">
-					<div style="float: left">
-						<button style="float: left; text-align: center;"
-							onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
-						<button style="float: left; display: none; text-align: center;"
-							onclick="location.href='./${assessment.id}/run/'"
-							onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+<input id='search' type='text' />
+
+<div class='vertical-block float-container' style='width:100%'>
+	<c:forEach var="assessmentCategory" items="${allAssessments}">
+		<div class='category-box'>
+			<c:if test="${not empty assessmentCategory.key}">
+				<h2 class="compact">${assessmentCategory.key}</h2>
+			</c:if>
+			<div class='boxCard'>
+				<c:forEach var="assessment" items="${assessmentCategory.value}">
+					<div class='assessment-row vertical-block no-margin align-contents-middle separated'>
+						<div class='horizontal-block' style='width:6%'>
+							<c:if test="${not assessment.completelyTested}">
+								<div class='float-left'>
+									<span class="ui-icon ui-icon-alert" title="Contains untested unit tests." ></span>
+								</div>
+							</c:if>
+							<c:if test="${assessment.closed}">
+								<div class='float-left'>
+									<span class="ui-icon ui-icon-locked" title="Past due date"></span>
+								</div>
+							</c:if> 
+							<c:if test="${not assessment.released}">
+								<div class='float-left'>
+									<span class="ui-icon ui-icon-gear" title="Not released"></span>
+								</div>
+							</c:if>
+						</div>
+						<div class='horizontal-block' style='width:25%'>
+							<p class='compact'><a class='assessment-name' href="${assessment.id}/">${assessment.name}</a> -
+							<c:choose>
+								<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
+								<c:otherwise>Out of ${assessment.marks}</c:otherwise>
+							</c:choose>
+							<br/>
+							<pasta:readableDate date="${assessment.dueDate}" />
+							<br/>
+							<c:choose>
+								<c:when test="${assessment.numSubmissionsAllowed == 0}">&infin;</c:when>
+								<c:otherwise>${assessment.numSubmissionsAllowed}</c:otherwise>
+							</c:choose> submissions allowed
+							<br/>
+							<c:choose>
+								<c:when test="${not assessment.hasWork}">No modules</c:when>
+								<c:otherwise>
+									<c:if test="${fn:length(assessment.unitTests) > 0}">
+										${fn:length(assessment.unitTests)} Unit Tests <br />
+									</c:if>
+									<c:if test="${fn:length(assessment.secretUnitTests) > 0}">
+										${fn:length(assessment.secretUnitTests)} Secret Unit Tests <br />
+									</c:if>
+									<c:if test="${fn:length(assessment.handMarking) > 0}">
+										${fn:length(assessment.handMarking)} Hand marking templates <br />
+									</c:if>
+									<c:if test="${fn:length(assessment.competitions) > 0}">
+										${fn:length(assessment.competitions)} Competitions <br />
+									</c:if>
+								</c:otherwise>
+							</c:choose>
+						</div>
+						<div class='horizontal-block' style='width:65%'>
+							<div class='horizontal-block no-margin'>
+								<button onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
+							</div>
+							<div class="horizontal-block no-margin">
+								<button onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
+							</div>
+							<div class='horizontal-block no-margin'>
+								<button style="float: left;" onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
+								<button style="float: left; display: none;"
+									onclick="location.href='./delete/${assessment.id}/'"
+									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+							</div> 
+							<c:if test="${fn:length(assessment.allUnitTests) != 0}">
+								<div class='horizontal-block no-margin'>
+									<button style="float: left;"
+										onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
+									<button style="float: left; display: none;"
+										onclick="location.href='./${assessment.id}/run/'"
+										onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+								</div>
+							</c:if>
+						</div>
 					</div>
-				</c:if>
-			</td>
-		</tr>
+				</c:forEach>
+			</div>
+		</div>
 	</c:forEach>
-</table>
+</div>
 
 <button id="newPopup">Add a new Assessment</button>
 
@@ -182,5 +186,10 @@ ${fn:length(assessment.competitions)} Competitions <br />
 		<spring:hasBindErrors name='newAssessmentForm'>
 			$('#newAssessment').bPopup();
 	    </spring:hasBindErrors>
+	    
+	    $(".category-box,.assessment-row").searchNode();
+		$(".assessment-name").searchable();
+		$(".category-box").find("h2:first").searchable();
+		var searchBox = $("#search").searchBox();
 	})(jQuery);
 </script>

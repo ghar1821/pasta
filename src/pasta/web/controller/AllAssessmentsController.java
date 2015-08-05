@@ -164,7 +164,7 @@ public class AllAssessmentsController {
 			return "redirect:/home/";
 		}
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("allAssessments", assessmentManager.getAssessmentList());
+		model.addAttribute("allAssessments", assessmentManager.getAllAssessmentsByCategory(true));
 		model.addAttribute("unikey", user);
 		return "assessment/viewAll/assessment";
 	}
