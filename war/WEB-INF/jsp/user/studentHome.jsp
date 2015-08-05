@@ -78,17 +78,22 @@ either expressed or implied, of the PASTA Project.
 								<div class='horizontal-block float-left'>
 									<a href="../info/${assessment.id}/">${assessment.name}</a> - 
 									<c:choose>
-										<c:when test="${empty results[assessment.id]}">
-											0.0
-										</c:when>
-										<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
-											???
-										</c:when>
+										<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
 										<c:otherwise>
-											<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+											<c:choose>
+												<c:when test="${empty results[assessment.id]}">
+													0.0
+												</c:when>
+												<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
+													???
+												</c:when>
+												<c:otherwise>
+													<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+												</c:otherwise>
+											</c:choose>
+											/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
 										</c:otherwise>
 									</c:choose>
-									/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
 									<br />
 									Due: ${dueDates[assessment.id]}
 									<c:if test="${(not empty viewedUser and not empty viewedUser.extensions[assessment.id]) or not empty unikey.extensions[assessment.id]}">

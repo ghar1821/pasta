@@ -66,11 +66,16 @@ either expressed or implied, of the PASTA Project.
 							<div class='float-container vertical-block'>
 								<div class='horizontal-block float-left'>
 									<a href="../info/${assessment.id}/">${assessment.name}</a> - 
-									<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
-									<c:if test="${empty results[assessment.id]}">
-										0.0
-									</c:if>
-									/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
+									<c:choose>
+										<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
+										<c:otherwise>
+											<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+											<c:if test="${empty results[assessment.id]}">
+												0.0
+											</c:if>
+											/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
+										</c:otherwise>
+									</c:choose>
 									<br />
 									Due: ${dueDates[assessment.id]}
 									<br />
