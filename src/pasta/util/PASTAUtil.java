@@ -494,6 +494,16 @@ public class PASTAUtil {
 		}
 		return classname;
 	}
+
+	public static File getClassFileForQualifiedClassName(File base, String validatorName) {
+		if(!validatorName.contains(".")) {
+			File classFile = new File(base, validatorName + ".class");
+			return classFile.exists() ? classFile : null;
+		}
+		String dir = validatorName.substring(0, validatorName.indexOf('.'));
+		validatorName = validatorName.substring(dir.length() + 1);
+		return getClassFileForQualifiedClassName(new File(base, dir), validatorName);
+	}
 	
 	public static File getTemplateResource(String pathInProject) throws FileNotFoundException {
 		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);

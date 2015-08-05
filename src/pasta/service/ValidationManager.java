@@ -62,23 +62,24 @@ public class ValidationManager {
 		}
 		
 		File validator = assessment.getCustomValidator();
-		String validatorName = validator.getName().substring(0, validator.getName().lastIndexOf('.'));
+		File parentDir = validator.getParentFile();
+		String validatorName = PASTAUtil.extractQualifiedName(validator);
 		
-		StringBuilder classpath = new StringBuilder();
-		for(URL url : ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs()) {
-			classpath.append(url.getPath()).append(':');
-		}
-		classpath.append('.');
-		
-		File validatorClass = new File(validator.getParentFile(), validatorName + ".class");
-		if(!validatorClass.exists()) {
+		File validatorClass = PASTAUtil.getClassFileForQualifiedClassName(parentDir, validatorName);
+		if(validatorClass == null) {
+			StringBuilder classpath = new StringBuilder();
+			for(URL url : ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs()) {
+				classpath.append(url.getPath()).append(':');
+			}
+			classpath.append('.');
+			
 			// Try to compile user validator
 			StringWriter errorsString = new StringWriter();
 			PrintWriter errors = new PrintWriter(errorsString);
-			com.sun.tools.javac.Main.compile(new String[] {"-classpath", classpath.toString(), validator.getAbsolutePath()}, errors);
+			com.sun.tools.javac.Main.compile(new String[] {"-d", validator.getParentFile().getAbsolutePath(), "-classpath", classpath.toString(), validator.getAbsolutePath()}, errors);
 			
 			// If compile errors are found, show to a tutor
-			String compileError = errorsString.toString().trim().replaceAll(Matcher.quoteReplacement(validator.getParentFile().getAbsolutePath()), "");
+			String compileError = errorsString.toString().trim().replaceAll(Matcher.quoteReplacement(parentDir.getAbsolutePath()), "");
 			if(compileError != null && !compileError.isEmpty()) {
 				SubmissionValidationResult result = new SubmissionValidationResult(assessment.getName());
 				List<ValidationFeedback> errorsList = new LinkedList<ValidationFeedback>();
@@ -98,7 +99,7 @@ public class ValidationManager {
 	    ClassLoader parentLoader = PASTASubmissionValidator.class.getClassLoader();
 	    URLClassLoader loader = null;
 		try {
-			loader = new URLClassLoader(new URL[] {validator.getParentFile().toURI().toURL()}, parentLoader);
+			loader = new URLClassLoader(new URL[] {parentDir.toURI().toURL()}, parentLoader);
 		} catch (MalformedURLException e) {
 			Logger.getLogger(getClass()).error("Could not load custom validator class.", e);
 			return null;
