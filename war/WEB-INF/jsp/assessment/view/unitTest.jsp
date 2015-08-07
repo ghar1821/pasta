@@ -59,7 +59,7 @@ either expressed or implied, of the PASTA Project.
 		<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
 		<c:if test="${unitTest.hasCode}">
 			<tr>
-				<td>Current Code</td>
+				<td>Current Code: <a id='del-code'>(Delete)</a></td>
 				<td>
 					<jsp:include page="../../recursive/fileWriterRoot.jsp">
 						<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
@@ -184,7 +184,7 @@ either expressed or implied, of the PASTA Project.
 </form:form>
 
 <div class='vertical-block'>
-	<c:if test="${not empty unitTest.mainClassName}">
+	<c:if test="${(not unitTest.hasCode and unitTest.hasBlackBoxTests) or (unitTest.hasCode and not empty unitTest.mainClassName)}">
 		<button id="testPopup"> Test Unit Test </button>
 	</c:if>
 	<c:if test="${unitTest.hasCode}">
@@ -357,6 +357,16 @@ either expressed or implied, of the PASTA Project.
             <%-- Disable test code button when main class not selected --%>
             $('#mainClassName').on('change', function() {
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
+            });
+            
+            $("#del-code").on("click", function() {
+            	var confirmResult = confirm("Are you sure you wish to delete the code for this unit test?");
+            	if(confirmResult) {
+            		$("<form />", {
+            			action : "clearCode/",
+            			method : "post"
+            		}).submit();
+            	}
             });
             
             $("#addTest").on("click", function(e) {

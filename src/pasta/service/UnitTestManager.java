@@ -385,6 +385,7 @@ public class UnitTestManager {
 				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath());
 		if(thisResult == null) {
 			thisResult = new UnitTestResult();
+			thisResult.setRuntimeErrors("Could not read unit test results from disk.");
 		}
 		
 		thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
@@ -613,6 +614,14 @@ public class UnitTestManager {
 			(new File(test.getFileLocation())).delete();
 			logger.error("Unit test code for " + test.getName()
 					+ " could not be updated successfully!", e);
+		}
+	}
+
+	public void deleteUserCode(UnitTest test) {
+		try {
+			FileUtils.deleteDirectory(test.getCodeLocation());
+		} catch (IOException e) {
+			logger.error("Cannot delete code for unit test " + test.getId(), e);
 		}
 	}
 }

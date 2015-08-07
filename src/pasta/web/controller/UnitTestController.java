@@ -332,6 +332,23 @@ public class UnitTestController {
 		return "redirect:/mirror/";
 	}
 	
+	@RequestMapping(value = "{testId}/clearCode/", method = RequestMethod.POST)
+	public String clearTestCode(@ModelAttribute(value = "unitTest") UnitTest test, Model model) {
+		PASTAUser user = getUser();
+		if (user == null) {
+			return "redirect:/login/";
+		}
+		if (!user.isTutor()) {
+			return "redirect:/home/";
+		}
+		
+		if(test.hasCode()) {
+			unitTestManager.deleteUserCode(test);
+		}
+
+		return "redirect:/mirror/";
+	}
+	
 	/**
 	 * $PASTAUrl$/unitTest/{testId}/test/ - POST
 	 * <p>

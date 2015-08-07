@@ -270,4 +270,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public boolean hasBlackBoxTests() {
 		return !getTestCases().isEmpty();
 	}
+	public boolean isHasBlackBoxTests() {
+		return hasBlackBoxTests();
+	}
 }
