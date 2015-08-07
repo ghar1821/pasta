@@ -1,7 +1,5 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.LinkedList;
-import java.util.Scanner;
 
 public class PASTAJUnitTest {
 	/**
@@ -24,11 +22,28 @@ public class PASTAJUnitTest {
 	 */
     protected final void clearOutput() {/*...*/}
 
+    /**
+     * Throw away any unread input.
+     */
+    protected final void clearInput() {/*...*/}
+    
 	/**
-	 * Set the contents of std in.
-	 * This will discard any unread data.
+	 * Send input to standard in. Successive calls to this
+	 * method will queue the input.
+	 * 
+	 * @throws IllegalStateException if you have already
+	 * sent terminated input, which closes the input stream.
 	 */
-    protected final void setInput(String input) {/*...*/}
+    protected final void sendInput(String input) {/*...*/}
+    
+    /**
+	 * Send input to standard in, and close the stream. 
+	 * This indicates that no more input should be read.
+	 * 
+	 * @throws IllegalStateException if you have already
+	 * sent terminated input, which closes the input stream.
+	 */
+    protected final void sendTerminatedInput(String input) {/*...*/}
     
     /**
      * Read the contents of the given file into an array of lines.
