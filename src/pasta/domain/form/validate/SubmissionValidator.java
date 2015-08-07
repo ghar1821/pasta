@@ -1,6 +1,7 @@
 package pasta.domain.form.validate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -13,6 +14,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
 import pasta.service.ResultManager;
+import pasta.service.SubmissionManager;
 
 /**
  * @author Joshua Stretton
@@ -26,12 +28,25 @@ public class SubmissionValidator implements Validator {
 	@Autowired private ResultManager resultManager;
 	@Autowired private AssessmentManager assessmentManager;
 	@Autowired private GroupManager groupManager;
+	@Autowired private SubmissionManager submissionManager;
 	
 	@Override
 	public boolean supports(Class<?> clazz) {
 		return Submission.class.equals(clazz);
 	}
 
+	public void validate(PASTAUser forUser, Object target, Errors errors) {
+		Submission form = (Submission) target;
+		
+		try {
+			submissionManager.saveSubmissionToDisk(forUser, form);
+		} catch (InvalidMediaTypeException e) {
+			errors.rejectValue("file", "NotRealZip");
+		}
+		
+		validate(target, errors);
+	}
+	
 	@Override
 	public void validate(Object target, Errors errors) {
 		Submission form = (Submission) target;

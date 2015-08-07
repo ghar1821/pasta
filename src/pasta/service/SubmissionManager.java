@@ -37,6 +37,7 @@ import java.util.Collection;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
@@ -121,7 +122,22 @@ public class SubmissionManager {
 		}
 	}
 	
-	public File saveSubmissionToDisk(PASTAUser user, Submission form) {
+	/**
+	 * <p>Save the submission to the appropriate submission location. If it is a
+	 * zip file, extract it.
+	 * 
+	 * <p>This method will only move and unzip once. After the first call, the
+	 * method will simply return the location of the submission.
+	 * 
+	 * @param user
+	 *            the submitting user
+	 * @param form
+	 *            the submission form
+	 * @return the base directory of the submission
+	 * @throws InvalidMediaTypeException
+	 *             if the file has a .zip extension but isn't a zip file
+	 */
+	public File saveSubmissionToDisk(PASTAUser user, Submission form) throws InvalidMediaTypeException {
 		String currDate = PASTAUtil.formatDate(form.getSubmissionDate());
 		String location = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
 				+ form.getAssessment() + "/" + currDate + "/submission";
@@ -135,8 +151,12 @@ public class SubmissionManager {
 			File newLocation = new File(unzipTo, filename);
 			form.getFile().transferTo(newLocation);
 			if(filename.endsWith(".zip")) {
-				PASTAUtil.extractFolder(newLocation.getAbsolutePath());
-				newLocation.delete();
+				if(PASTAUtil.isZipFile(newLocation)) {
+					PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+					newLocation.delete();
+				} else {
+					throw new InvalidMediaTypeException("ZIP", "Not really a zip file.");
+				}
 			}
 		} catch (IllegalStateException | IOException e) {
 			logger.error("Cannot save submission to disk.", e);
