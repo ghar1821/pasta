@@ -508,15 +508,20 @@ public class PASTAUtil {
 	
 	public static File getTemplateResource(String pathInProject) throws FileNotFoundException {
 		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);
-		if(file.exists() && !file.isDirectory()) {
+		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
+		if(!file.isDirectory() && !isOutOfDate(file, copyFile)) {
 			return file;
 		}
-		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
 		if(copyFile.exists()) {
 			copy(copyFile, file);
 			return file;
 		}
 		throw new FileNotFoundException("Template resource \"" + pathInProject + "\" not found.");
+	}
+	
+	private static boolean isOutOfDate(File file, File reference) {
+		return (!file.exists() 
+				|| reference.lastModified() > file.lastModified());
 	}
 	
 	private static void copy(File from, File to) {
@@ -526,7 +531,7 @@ public class PASTAUtil {
 				copy(child, new File(to, child.getName()));
 			}
 		} else {
-			if(to.exists()) {
+			if(!isOutOfDate(to, from)) {
 				return;
 			}
 			logger.info("Copying template file " + from + " to " + to);
