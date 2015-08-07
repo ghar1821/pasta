@@ -106,6 +106,9 @@ public class AntJob {
 		try {
 			project.executeTarget(target);
 		} catch (BuildException e) {
+			if(!e.getMessage().contains("Compile failed")) {
+				logger.error("Error on task " + target + " at " + homeDirectory, e);
+			}
 			success = false;
 		}
 		
