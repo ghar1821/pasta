@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -535,5 +536,26 @@ public class PASTAUtil {
 				logger.error("Error copying " + from, e);
 			}
 		}
+	}
+	
+	public static boolean isZipFile(File f) {
+		// MAGIC bytes that indicate the start of a ZIP file
+		byte[] MAGIC = { 'P', 'K', 0x3, 0x4 };
+		boolean isZip = true;
+		byte[] buffer = new byte[MAGIC.length];
+		try {
+			RandomAccessFile raf = new RandomAccessFile(f, "r");
+			raf.readFully(buffer);
+			for (int i = 0; i < MAGIC.length; i++) {
+				if (buffer[i] != MAGIC[i]) {
+					isZip = false;
+					break;
+				}
+			}
+			raf.close();
+		} catch (Throwable e) {
+			isZip = false;
+		}
+		return isZip;
 	}
 }
