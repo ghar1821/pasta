@@ -63,6 +63,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.scheduler.AssessmentJob;
+import pasta.scheduler.AssessmentJobExecutor;
 import pasta.scheduler.CompetitionJob;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.testing.AntJob;
@@ -100,6 +101,11 @@ public class ExecutionManager {
 	@Autowired private ResultManager resultManager;
 
 	private ExecutionScheduler scheduler;
+	
+	private AssessmentJobExecutor executor;
+	public ExecutionManager(AssessmentJobExecutor executor) {
+		this.executor = executor;
+	}
 
 	@Autowired
 	public void setMyScheduler(ExecutionScheduler myScheduler) {
@@ -439,8 +445,7 @@ public class ExecutionManager {
 		
 		Assessment assessment = assDao.getAssessment(job.getAssessmentId());
 		
-		logger.info("Running unit test " + assessment.getName()
-				+ " for " + user.getUsername() + " with ExecutionScheduler - " + this);
+		logger.info("Running " + assessment.getName() + " unit tests for " + user.getUsername());
 		
 		File sandboxRoot = new File(ProjectProperties.getInstance().getSandboxLocation() + 
 				user.getUsername() + "/" + job.getAssessmentId() + 
@@ -454,7 +459,6 @@ public class ExecutionManager {
 			}
 		} catch (IOException e) {
 			logger.error("Could not delete existing test.", e);
-			finishTesting(job);
 			return;
 		}
 		logger.debug("Making directories to " + sandboxRoot);
@@ -532,14 +536,6 @@ public class ExecutionManager {
 		} catch (IOException e) {
 			logger.error("Error deleting sandbox test at " + sandboxRoot);
 		}
-		
-		finishTesting(job);
-	}
-	
-	private void finishTesting(AssessmentJob job) {
-		job.getResults().setWaitingToRun(false);
-		ProjectProperties.getInstance().getResultDAO().update(job.getResults());
-		scheduler.delete(job);
 	}
 
 	/**
@@ -552,16 +548,12 @@ public class ExecutionManager {
 	 * all, then check the database again. When a check to the database is empty,
 	 * the system goes back to waiting.
 	 */
-	@Scheduled(fixedDelay = 10000)
+	@Scheduled(fixedDelay = 5000)
 	public void executeRemainingAssessmentJobs() {
 		synchronized (scheduler) {
 			List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
-			while (outstandingJobs != null && !outstandingJobs.isEmpty()) {
-				for (AssessmentJob job : outstandingJobs) {
-					executeNormalJob(job);
-				}
-				scheduler.clearJobCache();
-				outstandingJobs = scheduler.getOutstandingAssessmentJobs();
+			for(AssessmentJob job : outstandingJobs) {
+				executor.offer(job);
 			}
 		}
 	}
@@ -569,7 +561,6 @@ public class ExecutionManager {
 	@Scheduled(fixedDelay = 3600000)
 	public void fixWaitingJobs() {
 		synchronized (scheduler) {
-			logger.info("Scheduled Task: Checking for tests that should be in the job queue");
 			List<AssessmentResult> waitingResults = resultManager.getWaitingResults();
 			List<AssessmentJob> outstandingJobs = scheduler.getOutstandingAssessmentJobs();
 			HashSet<Long> resultsInQueue = new HashSet<Long>();

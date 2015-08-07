@@ -61,6 +61,14 @@
 	    class="org.springframework.orm.hibernate4.HibernateTransactionManager">
 	    <property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+	
+	<bean id="assessmentJobExecutor" class="pasta.scheduler.AssessmentJobExecutor">
+	    <constructor-arg name="corePoolSize" value="5" />
+	    <constructor-arg name="maxPoolSize" value="10" />
+	</bean>
+	<bean name="executionManager" class="pasta.service.ExecutionManager">
+		<constructor-arg ref="assessmentJobExecutor" />
+	</bean>
     
 	<!-- Hibernate session factory -->
 	<bean id="sessionFactory" 
