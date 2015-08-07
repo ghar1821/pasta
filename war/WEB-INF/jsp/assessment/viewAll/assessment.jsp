@@ -34,9 +34,12 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="pasta" uri="pastaTag"%>
 
-<h1>Assessments</h1>
-
-<input id='search' type='text' />
+<div class='float-container'>
+	<div class='horizontal-block'>
+		<h1>Assessments</h1>
+	</div>
+	<input id='search' type='text' />
+</div>
 
 <div class='vertical-block float-container' style='width:100%'>
 	<c:forEach var="assessmentCategory" items="${allAssessments}">

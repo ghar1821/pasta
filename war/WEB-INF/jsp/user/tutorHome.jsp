@@ -34,9 +34,12 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
-<h1>${unikey.username}</h1>
-
-<input id='search' type='text' />
+<div class='float-container'>
+	<div class='horizontal-block'>
+		<h1>${unikey.username}</h1>
+	</div>
+	<input id='search' type='text' />
+</div>
 
 <spring:hasBindErrors name="submission">
 	<div class='vertical-box padded'>

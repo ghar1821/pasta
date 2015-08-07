@@ -35,9 +35,12 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <c:set var="username" value="${ not empty viewedUser ? viewedUser.username : unikey.username }"/>
-<h1>${username}</h1>
-
-<input id='search' type='text' />
+<div class='float-container'>
+	<div class='horizontal-block'>
+		<h1>${username}</h1>
+	</div>
+	<input id='search' type='text' />
+</div>
 
 <c:choose>
 	<c:when test="${ not empty viewedUser}">
