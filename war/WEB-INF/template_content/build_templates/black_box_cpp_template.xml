@@ -77,6 +77,8 @@
         	<fileset dir="${basedir}">
 				<include name="**/*.cpp"/>
 				<include name="**/*.cc"/>
+        		<exclude name="origSubmission/**/*"/>
+        		<exclude name="bin/**/*"/>
 			</fileset>
 			<syslibset libs="stdc++"/>
         </cc>

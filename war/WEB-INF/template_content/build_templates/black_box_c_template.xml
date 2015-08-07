@@ -66,7 +66,7 @@
 		</delete>
     </target>
     <target name="build" depends="init, setup">
-        <echo message="Using gcc to compile C code"/>
+    	<echo message="Using gcc to compile C code"/>
 		<cc
 			name="gcc"
 			outtype="executable"
@@ -74,6 +74,8 @@
 			outfile="bin/${solutionName}"
 			objdir="bin">
         	<fileset dir="${basedir}">
+        		<exclude name="origSubmission/**/*"/>
+        		<exclude name="bin/**/*"/>
 				<include name="**/*.c"/>
 			</fileset>
 			<syslibset libs="m"/>
