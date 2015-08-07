@@ -143,7 +143,7 @@ either expressed or implied, of the PASTA Project.
 			<%--Summary of results--%>
 			<h5 class='compact'>Summary</h5>
 			<c:set var="closed" value="${((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}" />
-			<tag:unitTestResult closedAssessment="${closed}" user="${user}" results="${result}" summary="true" />
+			<tag:unitTestResult closedAssessment="${closed}" user="${unikey}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>
 			<div id="${result.id}" class='resultDetails vertical-block'>
@@ -164,49 +164,11 @@ either expressed or implied, of the PASTA Project.
 				</c:if>
 				
 				<tag:unitTestResult closedAssessment="${closed}" 
-					user="${user}" results="${result}" />
+					user="${unikey}" results="${result}" />
 				
-				<tag:handMarkingResult user="${user}" results="${result}" 
+				<tag:handMarkingResult user="${unikey}" results="${result}" 
 					marking="false" headingLevel="h5"/>
 				
-				<%--
-				<c:set var="relevantHandMarking" value="${groupResult ? result.assessment.groupHandMarking : result.assessment.individualHandMarking}" />
-				<c:if test="${not empty relevantHandMarking and result.finishedHandMarking}">
-					<div class='vertical-block'>
-						<h5 class='compact'>Hand Marking</h5>
-						<c:forEach var="handMarking" items="${relevantHandMarking}" varStatus="handMarkingStatus">
-							<div style="width:100%; overflow:auto">
-								<table id="handMarkingTable${handMarkingStatus.index}" style="table-layout:fixed; overflow:auto">
-									<thead>
-										<tr>
-											<th></th> <!-- empty on purpose -->
-											<c:forEach items="${handMarking.handMarking.columnHeader}" varStatus="columnStatus">
-												<th style="cursor:pointer">
-													${handMarking.handMarking.columnHeader[columnStatus.index].name}<br />
-													${handMarking.handMarking.columnHeader[columnStatus.index].weight*100}%<br />
-												</th>
-											</c:forEach>
-										</tr>
-									</thead>
-									<tbody>
-										<c:forEach var="row" items="${handMarking.handMarking.rowHeader}" varStatus="rowStatus">
-											<tr>
-												<th>
-													${handMarking.handMarking.rowHeader[rowStatus.index].name}<br />
-													<fmt:formatNumber type="number" maxIntegerDigits="3" value="${handMarking.handMarking.rowHeader[rowStatus.index].weight*handMarking.weight}" />
-												</th>
-												<c:forEach var="column" items="${handMarking.handMarking.columnHeader}">
-													<td id="cell_${result.id}_${handMarking.id}_${column.id}_${row.id}" <c:if test="${result.handMarkingResults[handMarkingStatus.index].result[row.id] == column.id}" > class="selectedMark" </c:if>></td>
-												</c:forEach>
-											</tr>
-										</c:forEach>
-									</tbody>
-								</table>
-							</div>
-						</c:forEach>
-					</div>
-				</c:if>
-				 --%>
 				<div class='vertical-block'>
 					<h5 class='compact'>Comments</h5>
 					<div id="comments${result.id}" class='vertical-block'>
@@ -236,31 +198,6 @@ either expressed or implied, of the PASTA Project.
 		</div>
 		</c:forEach>
 		<script src='<c:url value="/static/scripts/assessment/userViewAssessment.js"/>'></script>
-		<%--
-		<script>		
-			function fillCells() {
-				var cell;
-				<c:forEach var="result" items="${history}" varStatus="resultStatus">
-					<c:if test="${not empty relevantHandMarking and result.finishedHandMarking}">
-						<c:forEach var="handMarking" items="${relevantHandMarking}" varStatus="handMarkingStatus">
-							<c:forEach var="datum" items="${handMarking.handMarking.data}" varStatus="datumStatus">
-								cell = document.getElementById("cell_${result.id}_${handMarking.id}_${datum.column.id}_${datum.row.id}");
-								<c:if test="${not empty datum.data or datum.data == \"\"}">
-									fillCell(cell, 
-										<fmt:formatNumber type='number' maxIntegerDigits='3' value='${handMarking.weight * datum.row.weight * datum.column.weight}' />,
-										"${datum.data}");
-								</c:if>
-							</c:forEach>
-						</c:forEach>
-					</c:if>
-				</c:forEach>
-			}
-			
-			$(function() {
-				fillCells()
-			});
-		</script>
-		 --%>
 	</c:when>
 	
 	<c:otherwise>
