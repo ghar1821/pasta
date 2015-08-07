@@ -64,6 +64,9 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	public static final String PASS = "pass";
 	public static final String FAILURE = "failure";
 	public static final String ERROR = "error";
+	
+	private final static int MAX_MESSAGE_LENGTH = 8000;
+	private final static int MAX_EXT_MESSAGE_LENGTH = 64000;
 
 	@Id @GeneratedValue
 	private long id;
@@ -74,11 +77,12 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	@Column(name = "result")
 	private String testResult;
 	
-	@Column(name = "message")
+	@Column(name = "message", length = MAX_MESSAGE_LENGTH)
+	@Size (max = MAX_MESSAGE_LENGTH)
 	private String testMessage;
 	
-	@Column(name = "extended_message", length = 64000)
-	@Size (max = 64000)
+	@Column(name = "extended_message", length = MAX_EXT_MESSAGE_LENGTH)
+	@Size (max = MAX_EXT_MESSAGE_LENGTH)
 	private String extendedMessage = "";
 	
 	private String type;
@@ -108,13 +112,21 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 		return testMessage;
 	}
 	public void setTestMessage(String testMessage) {
-		this.testMessage = testMessage.trim();
+		testMessage = testMessage.trim();
+		if(testMessage.length() >= (MAX_MESSAGE_LENGTH - 3)) {
+			testMessage = testMessage.substring(0, MAX_MESSAGE_LENGTH - 3) + "...";
+		}
+		this.testMessage = testMessage;
 	}
 	public String getExtendedMessage() {
 		return extendedMessage;
 	}
 	public void setExtendedMessage(String extendedMessage) {
-		this.extendedMessage = extendedMessage.trim();
+		extendedMessage = extendedMessage.trim();
+		if(extendedMessage.length() >= (MAX_EXT_MESSAGE_LENGTH - 3)) {
+			extendedMessage = extendedMessage.substring(0, MAX_EXT_MESSAGE_LENGTH - 3) + "...";
+		}
+		this.extendedMessage = extendedMessage;
 	}
 	public double getTime() {
 		return time;
