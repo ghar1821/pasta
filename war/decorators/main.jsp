@@ -11,9 +11,10 @@
 		<meta name="Author" content="Alex Radu, Joshua Stretton" />
 		<title><spring:message code="UOS" /> </title>
 		
+		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
+		<link href="<c:url value="/static/styles/screen-0.0.1-SNAPSHOT.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/screen-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/images/favicon.ico"/>" rel="shortcut icon" />
 		<link href="<c:url value="/static/scripts/jqplot/jquery.jqplot.css"/>" media="screen" rel="stylesheet" type="text/css" />
