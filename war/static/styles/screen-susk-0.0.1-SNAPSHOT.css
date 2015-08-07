@@ -126,7 +126,7 @@ tr.spaceBelow td {
 }
 
 div.separated + div.separated {
-	border-top: 1px solid gray;
+	border-top: 1px solid lightgray;
 }
 p.compact {
 	line-height: normal;
