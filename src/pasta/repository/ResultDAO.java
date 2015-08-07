@@ -562,9 +562,7 @@ public class ResultDAO{
 	}
 
 	public void saveOrUpdate(HandMarkingResult result) {
-		logger.warn("Saving or updating result: " + result.getId());
 		sessionFactory.getCurrentSession().saveOrUpdate(result);
-		logger.warn("ID after: " + result.getId());
 	}
 
 	/**

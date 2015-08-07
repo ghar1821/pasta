@@ -106,7 +106,6 @@ public class RatingController {
 	public String reportStatus(HttpSession session) {  
 		@SuppressWarnings("unchecked")
 		Future<AssessmentRating> rating = (Future<AssessmentRating>) session.getAttribute("rating");
-		logger.warn("Checking status | Rating: " + rating);
 		if(rating == null || !rating.isDone()) {
 			return "WORKING";
 		}
