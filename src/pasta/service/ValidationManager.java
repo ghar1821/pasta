@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -48,7 +47,7 @@ public class ValidationManager {
 			return null;
 		}
 		
-		String subDate = PASTAUtil.formatDate(new Date());
+		String subDate = PASTAUtil.formatDate(submission.getSubmissionDate());
 		File sandboxLoc = new File(ProjectProperties.getInstance().getSandboxLocation(), "validate/" + user.getUsername() + "/" + assessment.getId() + "/" + subDate);
 		sandboxLoc.mkdirs();
 		File savedLoc = submissionManager.saveSubmissionToDisk(user, submission);

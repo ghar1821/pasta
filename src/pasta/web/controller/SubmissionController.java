@@ -39,6 +39,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -408,7 +409,10 @@ public class SubmissionController {
 			return "redirect:/login/";
 		}
 		form.setSubmittingUser(user);
-		form.setSubmissionDate(new Date());
+		
+		Calendar now = Calendar.getInstance();
+		now.set(Calendar.MILLISECOND, 0);
+		form.setSubmissionDate(now.getTime());
 		
 		PASTAUser forUser = user;
 		if(submitForUsername != null) {
@@ -430,7 +434,7 @@ public class SubmissionController {
 			}
 		}
 		
-		submissionValidator.validate(form, result);
+		submissionValidator.validate(forUser, form, result);
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("submission", form);
 			attr.addFlashAttribute("org.springframework.validation.BindingResult.submission", result);
