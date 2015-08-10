@@ -36,19 +36,9 @@
             <pathelement location="bin"/>
             <path refid="lib.jars"/>
         </path>
-        <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
           <classpath>
             <pathelement location="${libdirectory}/ant-contrib/ant-contrib-1.0b3.jar"/>
-          </classpath>
-        </taskdef>
-		<taskdef resource="cpptasks.tasks">
-          <classpath>
-            <pathelement location="${libdirectory}/ant-contrib/cpptasks.jar"/>
-          </classpath>
-        </taskdef>
-		<taskdef resource="cpptasks.types">
-          <classpath>
-            <pathelement location="${libdirectory}/ant-contrib/cpptasks.jar"/>
           </classpath>
         </taskdef>
     </target>
@@ -59,6 +49,7 @@
     	<echo message="Deleting .o files from 'bin'"/>
 		<delete>
 			<fileset dir="bin" includes="**/*.o"/>
+			<fileset dir="bin" includes="${solutionName}"/>
 		</delete>
     	<echo message="Deleting .class files from 'bin'"/>
 		<delete>
@@ -67,19 +58,14 @@
     </target>
     <target name="build" depends="init, setup">
     	<echo message="Using gcc to compile C code"/>
-		<cc
-			name="gcc"
-			outtype="executable"
-			subsystem="console"
-			outfile="bin/${solutionName}"
-			objdir="bin">
-        	<fileset dir="${basedir}">
+		<apply executable="gcc" parallel="true">
+    		<arg line="-w -lm -std=c99 -o bin/${solutionName}"/>
+			<fileset dir="${basedir}">
         		<exclude name="origSubmission/**/*"/>
         		<exclude name="bin/**/*"/>
 				<include name="**/*.c"/>
 			</fileset>
-			<syslibset libs="m"/>
-        </cc>
+    	</apply>
 		<echo message="Using javac to compile Java code"/>
         <javac
             fork="yes"
@@ -111,7 +97,7 @@
                 project.setProperty('bbTestCommandLine', arr[2]);
             }
         ]]></script>
-        <echo message="Running ./${solutionName}.o ${bbTestCommandLine}"/>
+        <echo message="Running ./${solutionName} ${bbTestCommandLine}"/>
         <exec
 			executable="./${solutionName}"
 			dir="bin"
