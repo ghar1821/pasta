@@ -234,7 +234,7 @@ public class UserManager {
 	 */
 	public void giveExtension(PASTAUser user, long assessmentId, Date extension) {
 		user.getExtensions().put(assessmentId, extension);
-		userDao.save(user);
+		userDao.update(user);
 	}
 	
 	public static Date getDueDate(PASTAUser user, long assessmentId) {
