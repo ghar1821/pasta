@@ -393,7 +393,12 @@ either expressed or implied, of the PASTA Project.
         
         // When submitting, ignore non-selected module rows
         $("#updateAssessmentForm").on("submit", function() {
+   			//Only visible rows will be properly selected, so make them all visible
+        	$("table.moduleTable").each(function() {
+   				$(this).DataTable().page.len(-1).search("").draw();
+   			});
         	$("input.select-check").parents("tr").not(".selected").find("input").prop("disabled", true);
+        	$("input.select-check").parents("tr").not(".selected").hide();
         });
         
     	var i = 0;
