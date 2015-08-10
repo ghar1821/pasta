@@ -571,7 +571,10 @@ public class ResultDAO{
 	 * @param result the assessment result being updated
 	 */
 	public void update(AssessmentResult result) {
-		sessionFactory.getCurrentSession().saveOrUpdate(result);
+		Session session = sessionFactory.getCurrentSession();
+		session.saveOrUpdate(result);
+		session.flush();
+		session.clear();
 	}
 
 	/**

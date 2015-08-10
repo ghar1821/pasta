@@ -51,8 +51,6 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
-		AssessmentJobTask task = (AssessmentJobTask) r;
-		task.lock();
 	}
 	
 	@Override
@@ -68,9 +66,8 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 		} catch(Exception e) {
 			logger.error("Unable to update results from assessment job #" + task.job.getId(), e);
 		}
-		scheduler.delete(task.job);
 		processingIds.remove(task.job.getId());
-		task.unlock();
+		scheduler.delete(task.job);
 	}
 	
 	static class AssessmentJobTask implements Runnable {
@@ -84,7 +81,6 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 			this.job = job;
 			this.lockKey = job.getUser().getUsername() + "|" + job.getAssessmentId();
 			this.manager = manager;
-			
 			this.lock = locks.get(this.lockKey);
 			if(this.lock == null) {
 				this.lock = new ReentrantLock();
@@ -110,17 +106,11 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 			return lockKey;
 		}
 		
-		public void lock() {
-			this.lock.lock();
-		}
-		
-		public void unlock() {
-			this.lock.unlock();
-		}
-		
 		@Override
 		public void run() {
+			this.lock.lock();
 			manager.executeNormalJob(job);
+			this.lock.unlock();
 		}
 	}
 }
