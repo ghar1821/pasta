@@ -36,9 +36,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
-
 /**
  * Container class for a pairing of String and double, commonly used in
  * the hand marking assessment module template.
@@ -58,12 +55,13 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 	@GeneratedValue
 	private long id;
 	
-	@NotEmpty
-	@Length(max = 128)
 	private String name;
 	private double weight;
 	
-	public WeightedField(){}
+	public WeightedField(){
+		name = "";
+		weight = 0;
+	}
 	
 	public WeightedField(String name, double weight){
 		this.name = name;
