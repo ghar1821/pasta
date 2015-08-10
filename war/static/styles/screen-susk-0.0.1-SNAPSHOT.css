@@ -132,6 +132,13 @@ p.compact {
 	line-height: normal;
 }
 
+div.consolePreview {
+	font-family: monospace;
+	white-space: pre-wrap;
+	overflow: scroll;
+	width: 400px;
+}
+
 span.help {
 	background-image: url("../images/help_small.png");
 	cursor: pointer;

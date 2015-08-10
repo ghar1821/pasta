@@ -115,7 +115,7 @@ either expressed or implied, of the PASTA Project.
 						<tr>
 							<td>Console Input:</td>
 							<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].input" cols="40" rows="7"/></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
 						</tr>
 						<tr>
 							<td colspan='3'>
@@ -125,7 +125,7 @@ either expressed or implied, of the PASTA Project.
 						<tr>
 							<td>Expected Console Output:</td>
 							<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].output" cols="40" rows="7"/></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
 						</tr>
 					</table>
 				</div>
@@ -156,7 +156,7 @@ either expressed or implied, of the PASTA Project.
 						<tr>
 							<td>Console Input:</td>
 							<td><textarea id="testCases0.input" name="testCases[0].input" class="console" rows="7" cols="40"></textarea></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
 						</tr>
 						<tr>
 							<td colspan='3'>
@@ -168,7 +168,7 @@ either expressed or implied, of the PASTA Project.
 						<tr>
 							<td>Expected Console Output:</td>
 							<td><textarea id="testCases0.output" name="testCases[0].output" class="console" rows="7" cols="40"></textarea></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard'><pre class="consolePreview"></pre></div></td>
+							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
 						</tr>
 					</table>
 				</div>
