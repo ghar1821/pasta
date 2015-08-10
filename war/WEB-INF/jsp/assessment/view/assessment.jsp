@@ -201,6 +201,7 @@ either expressed or implied, of the PASTA Project.
 		<button type="button" id="modifyDescription">Modify Description</button>
 		<div style="display:none">
 			<form:textarea path="description" cols="110" rows="10" /><br/>
+			<input type="submit" value="Save Assessment" id="submit"/>
 		</div>
 		
 		<div class='vertical-block'>
@@ -353,29 +354,41 @@ either expressed or implied, of the PASTA Project.
     	$("#toggleGroups,#unlimitedGroups,#unlimitedSize").trigger("change");
     	
         
-        
         $("#modifyDescription").bind('click', function(e) {
         	$("#description").parents('div').show();
         	$("#modifyDescription").hide();
+        	
+        	tinymce.init({
+                selector: "#description",
+                plugins: "table code link textcolor",
+                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | code",
+                setup: function(editor) {
+                    editor.on('keyup', function() {
+                    	updateDescription(1000);
+                    });
+                    editor.on('change', function() {
+                    	updateDescription();
+                    });
+                },
+                style_formats_merge: true,
+        		style_formats: [
+					{
+						title: "PASTA Headings", 
+						items: [
+        					{title: 'Compact heading', selector: 'h1,h2,h3,h4,h5,h6', classes: "compact", styles: {"font-weight": "bold"}}
+						]
+					}
+        		]
+            });
         });
         
         var timer;
-        $("#description").wysiwyg({
-        	initialContent: function() {
-    			return "";
-    		},
-        	controls: {
-        		html  : { visible: true }
-        	},
-        	events: {
-        		keyup: function() {
-        			clearTimeout(timer);
-                	timer = setTimeout(function() {
-                		$("#descriptionHTML").html($("#description").val());
-                	}, 1000);
-        		}
-        	}
-        });
+        function updateDescription(wait) {
+        	clearTimeout(timer);
+        	timer = setTimeout(function() {
+        		$("#descriptionHTML").html(tinymce.activeEditor.getContent());
+        	}, wait ? wait : 0);
+        }
         
         // When you click on a selected checkbox, mark the row as selected
         $("input.select-check").on('click', function() {
@@ -391,14 +404,18 @@ either expressed or implied, of the PASTA Project.
         	refreshTable($(this).parents("table.moduleTable"));
         });
         
-        // When submitting, ignore non-selected module rows
         $("#updateAssessmentForm").on("submit", function() {
    			//Only visible rows will be properly selected, so make them all visible
         	$("table.moduleTable").each(function() {
    				$(this).DataTable().page.len(-1).search("").draw();
    			});
+   			
+   			// Ignore non-selected modules
         	$("input.select-check").parents("tr").not(".selected").find("input").prop("disabled", true);
         	$("input.select-check").parents("tr").not(".selected").hide();
+        	
+        	// Save the description
+        	$("#description").val(tinymce.activeEditor.getContent());
         });
         
     	var i = 0;

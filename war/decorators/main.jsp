@@ -41,6 +41,8 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.allowTab.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.search.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		<decorator:head />
 		
 		
