@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -281,20 +282,32 @@ public class UnitTestManager {
 		
 		String base = test.getSubmissionCodeRoot();
 		
-		String[] submissionContents = PASTAUtil.listDirectoryContents(submissionCode);
-		String shortest = null;
-		for(String filename : submissionContents) {
-			if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
-				if(Language.getLanguage(filename) != null) {
-					if(shortest == null || filename.length() < shortest.length()) {
-						shortest = filename;
-					}
+		Language subLanguage = null;
+		if(solutionName.contains(".")) {
+			Map<File, String> qualifiedNames = PASTAUtil.mapJavaFilesToQualifiedNames(submissionCode);
+			if(!qualifiedNames.isEmpty()) {
+				if(qualifiedNames.containsValue(solutionName)) {
+					subLanguage = Language.JAVA;
 				}
 			}
 		}
-		Language subLanguage = Language.getLanguage(shortest);
-		logger.debug("Submission language is " + subLanguage);
 		
+		if(subLanguage == null) {
+			String[] submissionContents = PASTAUtil.listDirectoryContents(submissionCode);
+			String shortest = null;
+			for(String filename : submissionContents) {
+				if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
+					if(Language.getLanguage(filename) != null) {
+						if(shortest == null || filename.length() < shortest.length()) {
+							shortest = filename;
+						}
+					}
+				}
+			}
+			subLanguage = Language.getLanguage(shortest);
+		}
+		
+		logger.debug("Submission language is " + subLanguage);
 		if(subLanguage == null) {
 			utResults.addValidationError("Language not recognised.");
 			logger.error("Language not recognised.");

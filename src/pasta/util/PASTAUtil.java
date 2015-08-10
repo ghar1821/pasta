@@ -45,6 +45,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -464,7 +465,7 @@ public class PASTAUtil {
 		return extractQualifiedName(new File(javaFileLocation));
 	}
 	public static String extractQualifiedName(File javaFile) {
-		if(!javaFile.exists()) {
+		if(!javaFile.exists() || javaFile.isDirectory()) {
 			return null;
 		}
 		String filename = javaFile.getName();
@@ -562,5 +563,23 @@ public class PASTAUtil {
 			isZip = false;
 		}
 		return isZip;
+	}
+
+	public static Map<File, String> mapJavaFilesToQualifiedNames(File file) {
+		Map<File, String> results = new HashMap<File, String>();
+		mapJavaFilesToQualifiedNames(results, file);
+		return results;
+	}
+	private static void mapJavaFilesToQualifiedNames(Map<File, String> map, File current) {
+		for(File f : current.listFiles()) {
+			if(f.isDirectory()) {
+				mapJavaFilesToQualifiedNames(map, f);
+			} else {
+				String name = extractQualifiedName(f);
+				if(name != null) {
+					map.put(f, name);
+				}
+			}
+		}
 	}
 }

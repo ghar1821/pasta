@@ -70,7 +70,7 @@ either expressed or implied, of the PASTA Project.
 			<p>Your submission must be in a file named <code>${assessment.solutionName}</code>.
 		</c:when>
 		<c:otherwise>
-			<p>Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.solutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
+			<p>Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.shortSolutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
 		</c:otherwise>
 	</c:choose>
 	</c:if>

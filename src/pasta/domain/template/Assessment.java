@@ -257,6 +257,12 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	public String getSolutionName() {
 		return solutionName;
 	}
+	public String getShortSolutionName() {
+		if(this.getSubmissionLanguages().contains(Language.JAVA)) {
+			return solutionName.substring(solutionName.lastIndexOf('.') + 1);
+		}
+		return solutionName;
+	}
 	public void setSolutionName(String solutionName) {
 		this.solutionName = solutionName;
 	}
@@ -285,7 +291,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return submissionLanguages.isEmpty() || submissionLanguages.contains(thisLanguage);
 	}
 	public String getSampleSubmissionName() {
-		String sample = getSolutionName();
+		String sample = getShortSolutionName();
 		if(sample == null) {
 			return "";
 		}
