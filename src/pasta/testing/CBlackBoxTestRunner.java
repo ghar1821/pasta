@@ -16,4 +16,16 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 	public CBlackBoxTestRunner() throws FileNotFoundException {
 		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 	}
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		// TODO Extract c-specific compile errors and append super errors to those
+		return super.extractCompileErrors(results);
+	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		// TODO Extract c-specific files compiled and append super files to those
+		return super.extractFilesCompiled(results);
+	}
 }

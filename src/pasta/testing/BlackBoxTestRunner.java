@@ -44,4 +44,14 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 	public void setRunErrorsFile(String filename) {
 		addOption("runErrorsFile", filename);
 	}
+
+	@Override
+	public String extractCompileErrors(AntResults results) {
+		return super.extractCompileErrors(results);
+	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		return super.extractFilesCompiled(results);
+	}
 }

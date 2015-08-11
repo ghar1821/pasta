@@ -16,4 +16,10 @@ public class PythonBlackBoxTestRunner extends BlackBoxTestRunner {
 	public PythonBlackBoxTestRunner() throws FileNotFoundException {
 		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
 	}
+
+	@Override
+	public String extractFilesCompiled(AntResults results) {
+		// TODO Extract python-specific files compiled and append super files to those
+		return super.extractFilesCompiled(results);
+	}
 }
