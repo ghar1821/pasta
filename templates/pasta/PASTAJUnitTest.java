@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -95,9 +96,9 @@ public class PASTAJUnitTest {
     }
     
     protected final String[] readFileLines(File file) throws FileNotFoundException {
-    	Scanner scn = new Scanner(file);
+    	Scanner scn = new Scanner(new FileInputStream(file));
     	LinkedList<String> lines = new LinkedList<>();
-    	while(scn.hasNextLine()) {
+    	while(scn.hasNext()) {
     		lines.add(scn.nextLine());
     	}
     	scn.close();
@@ -105,7 +106,7 @@ public class PASTAJUnitTest {
     }
     
     protected final String readFile(File file) throws FileNotFoundException {
-    	Scanner scn = new Scanner(file).useDelimiter("\\Z");
+    	Scanner scn = new Scanner(new FileInputStream(file)).useDelimiter("\\Z");
     	String content = scn.next();
     	scn.close();
     	return content;

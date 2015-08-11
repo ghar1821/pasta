@@ -1,6 +1,7 @@
 package pasta.domain.form.validate;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -45,7 +46,7 @@ public class UpdateUsersFormValidator implements Validator {
 			File updateFile = new File(ProjectProperties.getInstance().getSandboxLocation() + form.getFile().getOriginalFilename());
 			try {
 				form.getFile().transferTo(updateFile);
-				content = new Scanner(updateFile);
+				content = new Scanner(new FileInputStream(updateFile));
 				while(content.hasNextLine()) {
 					newData.append(content.nextLine()).append(System.lineSeparator());
 				}

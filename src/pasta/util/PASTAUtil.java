@@ -284,7 +284,7 @@ public class PASTAUtil {
 	public static String scrapeFile(File file) {
 		StringBuilder sb = new StringBuilder();
 		try {
-			Scanner in = new Scanner(file);
+			Scanner in = new Scanner(new FileInputStream(file));
 			while(in.hasNextLine()){
 				sb.append(in.nextLine()).append(System.lineSeparator());
 			}
@@ -474,7 +474,7 @@ public class PASTAUtil {
 		}
 		String classname = filename.substring(0, filename.lastIndexOf('.'));
 		String thePackage = null;
-		try (Scanner scn = new Scanner(javaFile)) {
+		try (Scanner scn = new Scanner(new FileInputStream(javaFile))) {
 			while(scn.hasNextLine()) {
 				String line = scn.nextLine().trim();
 				if(line.startsWith("package")) {
