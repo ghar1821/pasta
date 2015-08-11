@@ -12,9 +12,7 @@ $(".showHide").each(function() {
 
 $(".showHide").on('click', function() {
 	var $content = $('#' + $(this).attr('showhide'));
-	if(!$content.has(".dataTables_wrapper").length) {
-		setupTable($content.find("table.unitTestDetailsTable"));
-	}
+	setupTable($content.find("table.unitTestDetailsTable"));
 	$(this).find(".expanded-icon").html($content.css("display") === "none" ? " &laquo;" : " &raquo;");
 	$content.slideToggle(300);
 	$(".showHide").first().tipsy('hide');
@@ -52,8 +50,9 @@ $('div.submitted-by-panel').each(function() {
 });
 
 function setupTable($table) {
-	$table.addClass("stripe row-border hover");
+	$table.toggleClass("stripe row-border hover", true);
 	$table.DataTable({
+		retrieve: true,
 		"searching" : false,
 		"paging" : false,
 		"info" : false,
