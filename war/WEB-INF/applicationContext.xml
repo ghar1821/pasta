@@ -7,6 +7,7 @@
         xmlns:p="http://www.springframework.org/schema/p"
         xmlns:jdbc="http://www.springframework.org/schema/jdbc"
         xmlns:task="http://www.springframework.org/schema/task"
+        xmlns:util="http://www.springframework.org/schema/util"
         xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
@@ -18,7 +19,9 @@
            http://www.springframework.org/schema/jdbc
            http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
            http://www.springframework.org/schema/task  
-           http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+           http://www.springframework.org/schema/task/spring-task-3.0.xsd
+           http://www.springframework.org/schema/util
+           http://www.springframework.org/schema/util/spring-util-3.0.xsd">
            
 	<bean 
 	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -138,6 +141,16 @@
            class="org.springframework.context.support.ResourceBundleMessageSource">
            <property name="basename" value="messages" />
     </bean>
+    
+    <!-- Reload logging properties every 30 seconds -->
+    <util:list id="log4jProperties" list-class="java.util.ArrayList">
+	    <value>classpath:log4j.properties</value>
+	    <value>30000</value>
+	</util:list>
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean"
+	    p:targetClass="org.springframework.util.Log4jConfigurer"
+	    p:targetMethod="initLogging"
+	    p:arguments-ref="log4jProperties" />
 
     <context:component-scan base-package="pasta.repository" />
     <context:component-scan base-package="pasta.login" />		 
