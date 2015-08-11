@@ -32,6 +32,7 @@ package pasta.repository;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -368,6 +371,19 @@ public class ResultDAO{
 	 * @return the result of the unit test
 	 */
 	public UnitTestResult getUnitTestResultFromDisk(String location){
+		return getUnitTestResultFromDisk(location, null);
+	}
+	
+	/**
+	 * Load a unit test result from a location, including error line numbers in
+	 * the 'type' if the error occurred in one of the files listed in the given
+	 * context.
+	 * 
+	 * @param location the location of the test
+	 * @param errorContext a list of file names to check for error context
+	 * @return the result of the unit test
+	 */
+	public UnitTestResult getUnitTestResultFromDisk(String location, Collection<String> errorContext){
 		UnitTestResult result = new UnitTestResult();
 		
 		//TODO: replace with generic file
@@ -414,7 +430,26 @@ public class ResultDAO{
 								}
 								// extended message
 								if(failedUnitTestElement.getTextContent() != null){
-									caseResult.setExtendedMessage(failedUnitTestElement.getTextContent());
+									String message = failedUnitTestElement.getTextContent();
+									caseResult.setExtendedMessage(message);
+									
+									// Include error line number for Java submissions
+									if(errorContext != null && caseResult.getType() != null && caseResult.isError()) {
+										String find = "(\\(.+?\\.java:[0-9]+\\))";
+										Pattern p = Pattern.compile(find);
+										Matcher m = p.matcher(message);
+										boolean found = false;
+										while(m.find() && !found) {
+											String line = m.group();
+											for(String file : errorContext) {
+												if(line.contains(file)) {
+													caseResult.setType(caseResult.getType() + " at " + line);
+													found = true;
+													break;
+												}
+											}
+										}
+									}
 								}
 							}
 							testCases.add(caseResult);

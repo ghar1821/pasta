@@ -170,25 +170,28 @@ public class PASTAUtil {
 	    return listZipContents(file);
 	}
 	
-	public static String[] listDirectoryContents(String baseFilename) {
-		File file = new File(baseFilename);
-		return listDirectoryContents(file);
-	}
 	
+	public static String[] listDirectoryContents(String baseFilename, boolean namesOnly) {
+		File file = new File(baseFilename);
+		return listDirectoryContents(file, namesOnly);
+	}
 	public static String[] listDirectoryContents(File file) {
+		return listDirectoryContents(file, false);
+	}
+	public static String[] listDirectoryContents(File file, boolean namesOnly) {
 		if(!file.isDirectory()) {
 			return new String[] {file.getName()};
 		}
 		List<String> contents = new LinkedList<String>();
-		listDirectory(contents, file.getAbsolutePath(), file);
+		listDirectory(contents, file.getAbsolutePath(), file, namesOnly);
 		return contents.toArray(new String[contents.size()]);
 	}
-	private static void listDirectory(List<String> contents, String base, File current) {
+	private static void listDirectory(List<String> contents, String base, File current, boolean namesOnly) {
 		for(File f : current.listFiles()) {
 			if(f.isDirectory()) {
-				listDirectory(contents, base, f);
+				listDirectory(contents, base, f, namesOnly);
 			} else {
-				contents.add(f.getAbsolutePath().substring(base.length()));
+				contents.add(namesOnly ? f.getName() : f.getAbsolutePath().substring(base.length()));
 			}
 		}
 	}

@@ -31,9 +31,11 @@ package pasta.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +74,7 @@ import pasta.testing.ArenaCompetitionRunner;
 import pasta.testing.GenericScriptRunner;
 import pasta.testing.options.ScriptOptions;
 import pasta.testing.task.DirectoryCopyTask;
+import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -513,6 +516,19 @@ public class ExecutionManager {
 			logger.debug("Copying " + importantCode + " to " + sandboxLoc);
 			new DirectoryCopyTask(importantCode, sandboxLoc).go();
 			
+			List<String> context = null;
+			if(assessment.isAllowed(Language.JAVA)) {
+				// Get a list of files submitted for tracking later
+				context = new LinkedList<String>();
+				if(assessment.getShortSolutionName() != null && !assessment.getShortSolutionName().isEmpty()) {
+					// Add solutionName.java just in case this is a Java 
+					// submission, as that will be the most important file
+					String shortName = assessment.getShortSolutionName();
+					context.add(shortName + "." + Language.JAVA.getExtensions().first());
+				}
+				context.addAll(Arrays.asList(PASTAUtil.listDirectoryContents(importantCode, true)));
+			}
+			
 			// Run any black box tests
 			if(test.hasBlackBoxTests()) {
 				String solutionName = assessment.getSolutionName();
@@ -521,12 +537,12 @@ public class ExecutionManager {
 					logger.error("No solution name set for " + assessment.getName());
 					continue;
 				}
-				unitTestManager.runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode);
+				unitTestManager.runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode, context);
 			}
 			
 			String mainClass = test.getMainClassName();
 			if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
-				unitTestManager.runJUnitTests(test, utResults, mainClass, sandboxLoc);
+				unitTestManager.runJUnitTests(test, utResults, mainClass, sandboxLoc, context);
 			}
 		}
 		

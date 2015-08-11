@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,18 +111,6 @@ public class UnitTestManager {
 
 	public static final Logger logger = Logger
 			.getLogger(UnitTestManager.class);
-	
-	
-	/**
-	 * Helper method
-	 * 
-	 * @see pasta.repository.ResultDAO#getUnitTestResultFromDisk(String)
-	 * @param location get the non cached unit test results from a location
-	 * @return the unit test result
-	 */
-	public UnitTestResult getUnitTestResult(String location) {
-		return resultDAO.getUnitTestResultFromDisk(location);
-	}
 
 	/**
 	 * Get the collection of all unit test templates
@@ -242,11 +231,24 @@ public class UnitTestManager {
 		logger.debug("Copying " + importantCode + " to " + sandboxLoc);
 		new DirectoryCopyTask(importantCode, sandboxLoc).go();
 		
+		
+		// Get a list of files submitted for tracking later
+		List<String> context = new LinkedList<String>();
+		if(testForm.getSolutionName() != null) {
+			// Add solutionName.java just in case this is a Java 
+			// submission, as that will be the most important file
+			String shortName = testForm.getSolutionName();
+			shortName = shortName.substring(shortName.lastIndexOf('.') + 1);
+			context.add(shortName + "." + Language.JAVA.getExtensions().first());
+		}
+		context.addAll(Arrays.asList(PASTAUtil.listDirectoryContents(importantCode, true)));
+		
+		
 		// Run any black box tests
 		if(test.hasBlackBoxTests()) {
 			String solutionName = testForm.getSolutionName();
 			if(solutionName != null && !solutionName.isEmpty()) {
-				runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode);
+				runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode, context);
 			}
 		}
 		
@@ -261,7 +263,7 @@ public class UnitTestManager {
 		
 		String mainClass = test.getMainClassName();
 		if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
-			runJUnitTests(test, utResults, mainClass, sandboxLoc);
+			runJUnitTests(test, utResults, mainClass, sandboxLoc, context);
 		}
 		
 		ProjectProperties.getInstance().getResultDAO().save(utResults);
@@ -277,7 +279,7 @@ public class UnitTestManager {
 	
 	public void runBlackBoxTests(UnitTest test, String solutionName,
 			UnitTestResult utResults,
-			File sandboxLoc, File submissionCode) {
+			File sandboxLoc, File submissionCode, List<String> context) {
 		String mainClass = BB_TEST_TEMPLATE.substring(0, BB_TEST_TEMPLATE.lastIndexOf('.'));
 		
 		String base = test.getSubmissionCodeRoot();
@@ -349,12 +351,12 @@ public class UnitTestManager {
 		String[] targets = new String[] {"build", "run", "test", "clean"};
 		File testLoc = test.getGeneratedCodeLocation();
 		
-		doTest(test, mainClass, runner, targets, testLoc, sandboxLoc, utResults);
+		doTest(runner, targets, testLoc, sandboxLoc, utResults, context);
 	}
 	
 	public void runJUnitTests(UnitTest test, 
 			UnitTestResult utResults,
-			String mainClass, File sandboxLoc) {
+			String mainClass, File sandboxLoc, List<String> context) {
 		JUnitTestRunner runner = null;
 		try {
 			runner = new JUnitTestRunner();
@@ -367,12 +369,11 @@ public class UnitTestManager {
 		runner.setFilterStackTraces(false);
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
-		doTest(test, mainClass, runner, targets, testLoc, sandboxLoc, utResults);
+		doTest(runner, targets, testLoc, sandboxLoc, utResults, context);
 	}
 	
-	private void doTest(UnitTest test, String mainClassname, 
-			Runner runner, String[] targets, File testCode, File sandboxLoc, 
-			UnitTestResult utResults) {
+	private void doTest(Runner runner, String[] targets, File testCode, File sandboxLoc, 
+			UnitTestResult utResults, List<String> context) {
 		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
 		antJob.addDependency("test", "build");
 		antJob.addDependency("run", "build");
@@ -395,7 +396,7 @@ public class UnitTestManager {
 		
 		// Get results from ant output
 		UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
-				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath());
+				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context);
 		if(thisResult == null) {
 			thisResult = new UnitTestResult();
 			thisResult.setRuntimeErrors("Could not read unit test results from disk.");
