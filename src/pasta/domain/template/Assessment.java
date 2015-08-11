@@ -258,7 +258,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return solutionName;
 	}
 	public String getShortSolutionName() {
-		if(this.getSubmissionLanguages().contains(Language.JAVA)) {
+		if(this.solutionName != null && isAllowed(Language.JAVA)) {
 			return solutionName.substring(solutionName.lastIndexOf('.') + 1);
 		}
 		return solutionName;
