@@ -15,6 +15,7 @@ import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
 import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
+import pasta.service.UserManager;
 
 /**
  * @author Joshua Stretton
@@ -29,6 +30,7 @@ public class SubmissionValidator implements Validator {
 	@Autowired private AssessmentManager assessmentManager;
 	@Autowired private GroupManager groupManager;
 	@Autowired private SubmissionManager submissionManager;
+	@Autowired private UserManager userManager;
 	
 	@Override
 	public boolean supports(Class<?> clazz) {
@@ -76,7 +78,7 @@ public class SubmissionValidator implements Validator {
 			errors.reject("MustBeGroup");
 		}
 		
-		if (assessment.isClosedFor(user)) {
+		if (assessment.isClosedFor(user, userManager.getExtension(user, assessment))) {
 			errors.reject("AfterClosingDate");
 		}
 		

@@ -51,7 +51,6 @@ import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;
-import pasta.util.ProjectProperties;
 
 /**
  * User manager.
@@ -232,17 +231,16 @@ public class UserManager {
 	 * @param assessmentId the id of the assessment
 	 * @param extension the new due date for the assessment
 	 */
-	public void giveExtension(PASTAUser user, long assessmentId, Date extension) {
-		user.getExtensions().put(assessmentId, extension);
-		userDao.update(user);
+	public void giveExtension(PASTAUser user, Assessment assessment, Date extension) {
+		userDao.giveExtension(user, assessment, extension);
+	}
+
+	public Date getExtension(PASTAUser user, Assessment assessment) {
+		return userDao.getExtension(user, assessment);
 	}
 	
-	public static Date getDueDate(PASTAUser user, long assessmentId) {
-		return getDueDate(user, ProjectProperties.getInstance().getAssessmentDAO().getAssessment(assessmentId));
-	}
-	
-	public static Date getDueDate(PASTAUser user, Assessment assessment) {
-		Date extDate = user.getExtensions().get(assessment.getId());
+	public Date getDueDate(PASTAUser user, Assessment assessment) {
+		Date extDate = getExtension(user, assessment);
 		Date normal = assessment.getDueDate();
 		if(extDate != null && extDate.after(normal)) {
 			return extDate;
@@ -250,7 +248,6 @@ public class UserManager {
 			return normal;
 		}
 	}
-
 
 	/**
 	 * Return the Data Access Object used if using {@link pasta.login.DBAuthValidator}

@@ -122,6 +122,7 @@
 				<value>pasta.domain.security.AuthenticationSettings</value>
 				<value>pasta.domain.template.Arena</value>
 				<value>pasta.domain.template.Assessment</value>
+				<value>pasta.domain.template.AssessmentExtension</value>
 				<value>pasta.domain.template.BlackBoxTestCase</value>
 				<value>pasta.domain.template.Competition</value>
 				<value>pasta.domain.template.HandMarkData</value>

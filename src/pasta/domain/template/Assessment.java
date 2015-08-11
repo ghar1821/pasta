@@ -499,7 +499,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return "None";
 	}
 	
-	public boolean isClosedFor(PASTAUser user) {
+	public boolean isClosedFor(PASTAUser user, Date extension) {
 		if(!isReleasedTo(user)) {
 			return true;
 		}
@@ -507,7 +507,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if(dueDate == null) {
 			return false;
 		}
-		Date extension = user.getExtensions().get(getId());
 		if(extension != null) {
 			if(extension.after(dueDate)) {
 				dueDate = extension;

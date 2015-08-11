@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.repository;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.AssessmentExtension;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 
@@ -499,5 +501,30 @@ public class UserDAO {
 	public List<PASTAGroup> getAllGroups() {
 		return sessionFactory.getCurrentSession()
 				.createCriteria(PASTAGroup.class).list();
+	}
+
+	public void giveExtension(PASTAUser user, Assessment assessment, Date extension) {
+		AssessmentExtension curExt = getAssessmentExtension(user, assessment);
+		if(curExt == null) {
+			AssessmentExtension ext = new AssessmentExtension(user, assessment, extension);
+			sessionFactory.getCurrentSession().save(ext);
+		} else {
+			curExt.setNewDueDate(extension);
+			sessionFactory.getCurrentSession().update(curExt);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public AssessmentExtension getAssessmentExtension(PASTAUser user, Assessment assessment) {
+		return (AssessmentExtension) DataAccessUtils.uniqueResult(
+				sessionFactory.getCurrentSession().createCriteria(AssessmentExtension.class)
+				.add(Restrictions.eq("user", user))
+				.add(Restrictions.eq("assessment", assessment))
+				.list());
+	}
+	
+	public Date getExtension(PASTAUser user, Assessment assessment) {
+		AssessmentExtension ext = getAssessmentExtension(user, assessment);
+		return ext == null ? null : ext.getNewDueDate();
 	}
 }

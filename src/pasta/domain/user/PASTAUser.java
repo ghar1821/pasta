@@ -30,23 +30,15 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.user;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -80,12 +72,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	@Column(name = "permission_level", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserPermissionLevel permissionLevel;
-	
-	@ElementCollection (fetch=FetchType.EAGER)
-	@MapKeyColumn(name="assessment_id")
-	@Column(name="due_date")
-	@CollectionTable(name="student_assessment_extensions", joinColumns=@JoinColumn(name="pasta_user_id"))
-	private Map<Long, Date> extensions = new TreeMap<Long, Date>();
 	
 	@Column(name="active")
 	private boolean active = true;
@@ -170,17 +156,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 			return tutorial.split(",");
 		}
 		return new String[0];
-	}
-	
-	public Map<Long, Date> getExtensions(){
-		return extensions;
-	}
-	public void setExtensions(Map<Long, Date> extensions){
-		this.extensions = extensions;
-	}
-	
-	public void giveExtension(Long assessmentId, Date newDueDate){
-		extensions.put(assessmentId, newDueDate);
 	}
 	
 	public boolean isActive() {

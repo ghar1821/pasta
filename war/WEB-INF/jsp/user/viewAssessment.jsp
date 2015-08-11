@@ -46,7 +46,18 @@ either expressed or implied, of the PASTA Project.
 </h1>
 
 <table class='alignCellsTop'>
-	<tr><th>Due Date</th><td><pasta:readableDate date="${assessment.dueDate}" /></td></tr>
+	<tr>
+		<th>Due Date</th>
+		<td>
+			<c:choose>
+				<c:when test="${empty extension}"><pasta:readableDate date="${assessment.dueDate}" /></c:when>
+				<c:otherwise>
+					<span style='text-decoration: line-through;'><pasta:readableDate date="${assessment.dueDate}" /></span>
+					<span style='color: red;'><pasta:readableDate date="${extension}" /></span>
+				</c:otherwise>
+			</c:choose>
+		</td>
+	</tr>
 	<tr><th>Possible Marks</th><td>${assessment.marks}</td></tr>
 	<c:if test="${not empty assessment.submissionLanguages}">
 		<tr><th>Allowed Languages</th><td>
@@ -142,7 +153,6 @@ either expressed or implied, of the PASTA Project.
 			
 			<%--Summary of results--%>
 			<h5 class='compact'>Summary</h5>
-			<c:set var="closed" value="${((assessment.dueDate lt now) and (empty viewedUser.extensions[assessment.id] or viewedUser.extensions[assessment.id] lt now))}" />
 			<tag:unitTestResult closedAssessment="${closed}" user="${unikey}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>

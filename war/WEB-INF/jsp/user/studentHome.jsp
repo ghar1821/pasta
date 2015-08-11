@@ -99,7 +99,7 @@ either expressed or implied, of the PASTA Project.
 									</c:choose>
 									<br />
 									Due: ${dueDates[assessment.id]}
-									<c:if test="${(not empty viewedUser and not empty viewedUser.extensions[assessment.id]) or not empty unikey.extensions[assessment.id]}">
+									<c:if test="${hasExtension[assessment.id]}">
 										(with extension)
 									</c:if>
 									<br />

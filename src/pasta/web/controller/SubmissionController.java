@@ -331,20 +331,24 @@ public class SubmissionController {
 		
 		
 		Map<Long, String> dueDates = new HashMap<Long, String>();
+		Map<Long, Boolean> hasExtension = new HashMap<>();
 		Map<Long, Boolean> closed = new HashMap<>();
 		Map<Long, Boolean> hasGroupWork = new HashMap<>();
 		Map<Long, Boolean> allGroupWork = new HashMap<>();
 		for(Assessment assessment : assessmentManager.getAssessmentList()) {
-			Date due = UserManager.getDueDate(user, assessment);
+			Date due = userManager.getDueDate(user, assessment);
 			String formatted = PASTAUtil.formatDateReadable(due);
 			dueDates.put(assessment.getId(), formatted);
-			closed.put(assessment.getId(), assessment.isClosedFor(user));
+			Date extension = userManager.getExtension(user, assessment);
+			hasExtension.put(assessment.getId(), extension != null);
+			closed.put(assessment.getId(), assessment.isClosedFor(user, extension));
 			boolean userHasGroup = groupManager.getGroup(user, assessment) != null;
 			boolean assessmentHasGroupWork = userHasGroup && assessmentManager.hasGroupWork(assessment);
 			hasGroupWork.put(assessment.getId(), assessmentHasGroupWork);
 			allGroupWork.put(assessment.getId(), assessmentHasGroupWork && assessmentManager.isAllGroupWork(assessment));
 		}
 		model.addAttribute("dueDates", dueDates);
+		model.addAttribute("hasExtension", hasExtension);
 		model.addAttribute("closed", closed);
 		model.addAttribute("hasGroupWork", hasGroupWork);
 		model.addAttribute("allGroupWork", allGroupWork);
@@ -593,6 +597,8 @@ public class SubmissionController {
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessment", assessment);
+		model.addAttribute("closed", assessment.isClosedFor(user, userManager.getExtension(user, assessment)));
+		model.addAttribute("extension", userManager.getExtension(user, assessment));
 		model.addAttribute("history",
 				resultManager.getAssessmentHistory(user, assessmentId));
 		
@@ -983,22 +989,26 @@ public class SubmissionController {
 		model.addAttribute("assessments", allAssessments);
 		
 		Map<Long, String> dueDates = new HashMap<Long, String>();
+		Map<Long, Boolean> hasExtension = new HashMap<>();
 		Map<Long, Boolean> released = new HashMap<>();
 		Map<Long, Boolean> closed = new HashMap<>();
 		Map<Long, Boolean> hasGroupWork = new HashMap<>();
 		Map<Long, Boolean> allGroupWork = new HashMap<>();
 		for(Assessment assessment : assessmentManager.getAssessmentList()) {
-			Date due = UserManager.getDueDate(viewedUser, assessment);
+			Date due = userManager.getDueDate(viewedUser, assessment);
 			String formatted = PASTAUtil.formatDateReadable(due);
 			dueDates.put(assessment.getId(), formatted);
 			released.put(assessment.getId(), assessment.isReleasedTo(viewedUser));
-			closed.put(assessment.getId(), assessment.isClosedFor(viewedUser));
+			Date extension = userManager.getExtension(viewedUser, assessment);
+			hasExtension.put(assessment.getId(), extension != null);
+			closed.put(assessment.getId(), assessment.isClosedFor(viewedUser, extension));
 			boolean userHasGroup = groupManager.getGroup(viewedUser, assessment) != null;
 			boolean assessmentHasGroupWork = userHasGroup && assessmentManager.hasGroupWork(assessment);
 			hasGroupWork.put(assessment.getId(), assessmentHasGroupWork);
 			allGroupWork.put(assessment.getId(), assessmentHasGroupWork && assessmentManager.isAllGroupWork(assessment));
 		}
 		model.addAttribute("dueDates", dueDates);
+		model.addAttribute("hasExtension", hasExtension);
 		model.addAttribute("released", released);
 		model.addAttribute("closed", closed);
 		model.addAttribute("hasGroupWork", hasGroupWork);
@@ -1125,6 +1135,8 @@ public class SubmissionController {
 		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("assessment", assessment);
+		model.addAttribute("closed", assessment.isClosedFor(viewedUser, userManager.getExtension(viewedUser, assessment)));
+		model.addAttribute("extension", userManager.getExtension(viewedUser, assessment));
 		model.addAttribute("history", resultManager.getAssessmentHistory(viewedUser, assessmentId));
 		
 		Map<String, FileTreeNode> nodes = PASTAUtil.generateFileTree(viewedUser, assessmentId);
@@ -1280,10 +1292,11 @@ public class SubmissionController {
 		if(viewedUser == null) {
 			return "redirect:/home/";
 		}
-		if (user.isInstructor()) {
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		if (assessment != null && user.isInstructor()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 			try {
-				userManager.giveExtension(viewedUser, assessmentId, sdf.parse(extension));
+				userManager.giveExtension(viewedUser, assessment, sdf.parse(extension));
 			} catch (ParseException e) {
 				logger.error("Parse Exception");
 			}
