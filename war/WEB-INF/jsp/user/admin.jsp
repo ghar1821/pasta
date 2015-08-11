@@ -142,8 +142,10 @@ either expressed or implied, of the PASTA Project.
 			<tbody>
 				<c:forEach var="person" items="${people}">
 					<c:if test="${not person.tutor}">
-						<tr>
-							<td>${person.username}</td><td>${person.stream}</td><td>${person.tutorial}</td>
+						<tr username='${person.username}'>
+							<td><a class='gc-link' href="../student/${person.username}/home/">${person.username}</a></td>
+							<td>${person.stream}</td>
+							<td>${person.tutorial}</td>
 							<td>
 								<div>
 									<div title='Delete' class='icon_delete'></div>
