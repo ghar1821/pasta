@@ -37,7 +37,7 @@ either expressed or implied, of the PASTA Project.
 <c:set var="username" value="${ not empty viewedUser ? viewedUser.username : unikey.username }"/>
 <div class='float-container'>
 	<div class='horizontal-block'>
-		<h1>${username}</h1>
+		<h1>Home - ${username}</h1>
 	</div>
 	<input id='search' type='text' />
 </div>

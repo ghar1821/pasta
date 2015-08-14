@@ -33,6 +33,8 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<h1>Grade Centre</h1>
+
 <!-- Ignore me, I don't exist -->
 <div style="display:none" class="gradeCentreMarkGood"></div>
 <div style="display:none" class="gradeCentreMarkBad"></div>

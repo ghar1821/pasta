@@ -91,6 +91,12 @@
 	            		html: true
 	            	});
 	            });
+	            
+	            var specificTitle = $('.pageContent h1:first').text();
+	            if(specificTitle) {
+		            document.title = specificTitle;
+	            }
+	            
 				});
 		</script>
 	</head>

@@ -32,9 +32,10 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
+<h1>PASTA Admin</h1>
 <!-- IF using DBAuth-->
 <c:if test="${authType == 'pasta.login.DBAuthValidator'}">
-<h1>Authentication</h1>
+<h2>Authentication</h2>
 	<h2>Change Password</h2>
 	<form:form method="post" commandName="changePasswordForm" action="changePassword/" autocomplete="off">
 		<table>
@@ -67,7 +68,7 @@ either expressed or implied, of the PASTA Project.
 <!-- FOR INSTRUCTORS ONLY!! -->
 <c:if test="${unikey.instructor}">
 
-	<h1>Authentication System</h1>
+	<h2>Authentication System</h2>
 		
 	<form method="get" action="auth/" autocomplete="off">
 		<table>
@@ -103,12 +104,12 @@ either expressed or implied, of the PASTA Project.
 		
 	</form>
 	
-	<h1>Legacy Content</h1>
+	<h2>Legacy Content</h2>
 	<p>Click <a href="../legacy/convert/">here</a> to go to the legacy content page.
 </c:if>
 <c:if test="${unikey.tutor}">
 
-	<h1>Tutors</h1>
+	<h2>Tutors</h2>
 		<table class='dataTable hover row-border'>
 			<thead>
 				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><th></th></tr>
@@ -134,7 +135,7 @@ either expressed or implied, of the PASTA Project.
 		<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
 		
 	
-	<h1>Students</h1>
+	<h2>Students</h2>
 		<table class='dataTable hover row-border'>
 			<thead>
 				<tr><th>Username</th><th>Stream</th><th>Tutorial</th><th></th></tr>
