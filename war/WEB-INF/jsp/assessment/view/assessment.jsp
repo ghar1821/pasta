@@ -361,13 +361,29 @@ either expressed or implied, of the PASTA Project.
         	tinymce.init({
                 selector: "#description",
                 plugins: "table code link textcolor",
-                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | code",
+                toolbar: "undo redo | styleselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | style-code style-pre | bullist numlist outdent indent | link | code",
                 setup: function(editor) {
                     editor.on('keyup', function() {
                     	updateDescription(1000);
                     });
                     editor.on('change', function() {
                     	updateDescription();
+                    });
+                    editor.addButton('style-code', {
+                        text: '<code>',
+                        title: 'Toggle <code>',
+                        icon: false,
+                        onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, "code");
+                        }
+                    });
+                    editor.addButton('style-pre', {
+                        text: '<pre>',
+                        title: 'Toggle <pre>',
+                        icon: false,
+                        onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, "pre");
+                        }
                     });
                 },
                 style_formats_merge: true,
