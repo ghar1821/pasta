@@ -26,6 +26,7 @@ public class PASTASecurityManager extends SecurityManager{
 				perm.implies(new RuntimePermission("createClassLoader"))||
 				perm.implies(new java.lang.reflect.ReflectPermission("suppressAccessChecks"))||
 				perm.implies(new RuntimePermission("getStackTrace"))||
+				perm.implies(new RuntimePermission("accessClassInPackage.sun.reflect"))||
 				perm.implies(new RuntimePermission("getProtectionDomain"))){
 				// do nothing
 			return;
