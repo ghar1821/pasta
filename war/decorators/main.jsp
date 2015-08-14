@@ -16,7 +16,6 @@
 		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/images/favicon.ico"/>" rel="shortcut icon" />
 		<link href="<c:url value="/static/scripts/jqplot/jquery.jqplot.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
@@ -43,8 +42,27 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.search.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
-		<decorator:head />
 		
+		<link rel="apple-touch-icon" sizes="57x57" href="<c:url value="/static/icons/apple-icon-57x57.png"/>">
+		<link rel="apple-touch-icon" sizes="60x60" href="<c:url value="/static/icons/apple-icon-60x60.png"/>">
+		<link rel="apple-touch-icon" sizes="72x72" href="<c:url value="/static/icons/apple-icon-72x72.png"/>">
+		<link rel="apple-touch-icon" sizes="76x76" href="<c:url value="/static/icons/apple-icon-76x76.png"/>">
+		<link rel="apple-touch-icon" sizes="114x114" href="<c:url value="/static/icons/apple-icon-114x114.png"/>">
+		<link rel="apple-touch-icon" sizes="120x120" href="<c:url value="/static/icons/apple-icon-120x120.png"/>">
+		<link rel="apple-touch-icon" sizes="144x144" href="<c:url value="/static/icons/apple-icon-144x144.png"/>">
+		<link rel="apple-touch-icon" sizes="152x152" href="<c:url value="/static/icons/apple-icon-152x152.png"/>">
+		<link rel="apple-touch-icon" sizes="180x180" href="<c:url value="/static/icons/apple-icon-180x180.png"/>">
+		<link rel="shortcut icon" sizes="16x16" href="<c:url value="/static/icons/favicon.ico?v=3"/>"/>
+		<link rel="icon" type="image/png" sizes="192x192"  href="<c:url value="/static/icons/android-icon-192x192.png"/>">
+		<link rel="icon" type="image/png" sizes="32x32" href="<c:url value="/static/icons/favicon-32x32.png"/>">
+		<link rel="icon" type="image/png" sizes="96x96" href="<c:url value="/static/icons/favicon-96x96.png"/>">
+		<link rel="icon" type="image/png" sizes="16x16" href="<c:url value="/static/icons/favicon-16x16.png"/>">
+		<link rel="manifest" href="<c:url value="/manifest.json"/>">
+		<meta name="msapplication-TileColor" content="#12416c">
+		<meta name="msapplication-TileImage" content="<c:url value="/static/icons/ms-icon-144x144.png"/>">
+		<meta name="theme-color" content="#12416c">
+		
+		<decorator:head />
 		
 		<script type="text/javascript">
 			$(document).ready(function(){
