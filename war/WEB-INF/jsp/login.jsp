@@ -32,7 +32,15 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<h1>Login</h1>
+<p> Welcome to Programming Assignment Submission and Testing Application (PASTA).
+
+<p> PASTA is a submission system aimed at helping students maximize their marks 
+and programming understanding through instant feedback on their code.
+
+<p> Its main purpose is to reduce the marking load on tutors. It has been written for tutors
+and lecturers by tutors and lecturers.
+
+<h1 style='text-align:center'>Login to PASTA</h1>
 <br />
 <div class="susk-form" style="text-align:center; width:500px">
 	<form:errors path="loginForm.*">

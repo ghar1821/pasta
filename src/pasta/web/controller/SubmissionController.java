@@ -264,6 +264,11 @@ public class SubmissionController {
 		return "redirect:" + request.getHeader("Referer");
 	}
 
+	@RequestMapping(value = "")
+	public String root(Model model, HttpSession session) {
+		return "redirect:/login/";
+	}
+	
 	/**
 	 * $PASTAUrl$/home/
 	 * <p>
