@@ -511,6 +511,15 @@ public class PASTAUtil {
 	}
 	
 	public static File getTemplateResource(String pathInProject) throws FileNotFoundException {
+		// build templates require up to date lib directory
+		if(pathInProject.contains("build_template")) {
+			try {
+				getTemplateResource("lib/");
+			} catch (FileNotFoundException e) {
+				// ignore: no lib folder to copy
+			}
+		}
+		
 		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);
 		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
 		if(!file.isDirectory() && !isOutOfDate(file, copyFile)) {
