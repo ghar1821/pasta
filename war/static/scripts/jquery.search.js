@@ -14,15 +14,20 @@
 
 	$.fn.searchBox = function(options) {
 		var settings = $.extend({
+			focus : true,
 			placeholder : "Search..."
 		}, options);
-		return this.filter("input[type='text']").each(function() {
+		var $searchBoxes = this.filter("input[type='text']").each(function() {
 			$(this).wrap("<div class='search-box'></div>")
 			$(this).attr("placeholder", settings.placeholder);
 			$(this).on("keyup", function() {
 				$.search($(this).val(), options);
 			});
 		});
+		if(settings.focus === true) {
+			$searchBoxes.first().focus();
+		}
+		return $searchBoxes;
 	};
 	
 	$.search = function(text, options) {
