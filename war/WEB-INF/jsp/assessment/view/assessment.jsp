@@ -195,7 +195,7 @@ either expressed or implied, of the PASTA Project.
 		
 		
 		<h2>Description</h2>
-		<div id='descriptionHTML'>
+		<div id='descriptionHTML' class='show-math'>
 			${assessment.description}
 		</div>
 		<button type="button" id="modifyDescription">Modify Description</button>
@@ -361,29 +361,65 @@ either expressed or implied, of the PASTA Project.
         	tinymce.init({
                 selector: "#description",
                 plugins: "table code link textcolor",
-                toolbar: "undo redo | styleselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | style-code style-pre | bullist numlist outdent indent | link | code",
+                toolbar: "undo redo | styleselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | code-styles-split | latex-split | bullist numlist outdent indent | link | code",
                 setup: function(editor) {
                     editor.on('keyup', function() {
-                    	updateDescription(1000);
+                    	updateDescription(600);
                     });
                     editor.on('change', function() {
                     	updateDescription();
                     });
-                    editor.addButton('style-code', {
-                        text: '<code>',
-                        title: 'Toggle <code>',
+                    editor.addButton('code-styles-split', {
+                        type: 'splitbutton',
+                        text: 'code',
+                        title: 'Toggle <code> tags',
                         icon: false,
                         onclick: function() {
-                        	editor.execCommand('mceToggleFormat', false, "code");
-                        }
+                        	editor.execCommand('mceToggleFormat', false, 'code');
+                        },
+                        menu: [
+                            {text: 'Inline <code>', onclick: function() {
+                            	editor.execCommand('mceToggleFormat', false, 'code');
+                            }},
+                            {text: 'Block <pre>', onclick: function() {
+                            	editor.execCommand('mceToggleFormat', false, 'pre');
+                            }}
+                        ]
                     });
-                    editor.addButton('style-pre', {
-                        text: '<pre>',
-                        title: 'Toggle <pre>',
+                    editor.addButton('latex-split', {
+                        type: 'splitbutton',
+                        text: 'LaTeX',
+                        title: 'Insert LaTeX equation',
                         icon: false,
                         onclick: function() {
-                        	editor.execCommand('mceToggleFormat', false, "pre");
-                        }
+                        	var content = editor.selection.getContent({format: 'html'});
+                        	console.log(editor.selection.getSel().getRangeAt(0));
+                        	if(!content) {
+	                        	editor.execCommand('mceInsertContent', false, '$$ $$');
+                        	} else {
+                        		editor.execCommand('mceReplaceContent', false, '$$' + content + '$$');
+                        	}
+                        },
+                        menu: [
+                            {text: 'Insert inline equation', onclick: function() {
+                            	var content = editor.selection.getContent({format: 'html'});
+                            	console.log(editor.selection.getSel().getRangeAt(0));
+                            	if(!content) {
+    	                        	editor.execCommand('mceInsertContent', false, '$$ $$');
+                            	} else {
+                            		editor.execCommand('mceReplaceContent', false, '$$' + content + '$$');
+                            	}
+                            }},
+                            {text: 'Insert block equation', onclick: function() {
+                            	var content = editor.selection.getContent({format: 'html'});
+                            	console.log(editor.selection.getSel().getRangeAt(0));
+                            	if(!content) {
+    	                        	editor.execCommand('mceInsertContent', false, '$$$ $$$');
+                            	} else {
+                            		editor.execCommand('mceReplaceContent', false, '$$$' + content + '$$$');
+                            	}
+                            }}
+                        ]
                     });
                 },
                 style_formats_merge: true,
@@ -403,41 +439,48 @@ either expressed or implied, of the PASTA Project.
         	clearTimeout(timer);
         	timer = setTimeout(function() {
         		$("#descriptionHTML").html(tinymce.activeEditor.getContent());
+        		preview.refresh();
         	}, wait ? wait : 0);
         }
-        
-        // When you click on a selected checkbox, mark the row as selected
-        $("input.select-check").on('click', function() {
-        	var $row = $(this).parents("tr");
-        	if($(this).is(":checked")) {
-        		var $weightBox = $row.find("td input[type='text']");
-        		var weight = $weightBox.val();
-        		if(weight == 0) {
-        			$weightBox.val("1.0");
-        		}
-        	}
-        	$row.toggleClass("selected", $(this).is(":checked"));
-        	refreshTable($(this).parents("table.moduleTable"));
-        });
-        
-        $("#updateAssessmentForm").on("submit", function() {
-   			//Only visible rows will be properly selected, so make them all visible
-        	$("table.moduleTable").each(function() {
-   				$(this).DataTable().page.len(-1).search("").draw();
-   			});
-   			
-   			// Ignore non-selected modules
-        	$("input.select-check").parents("tr").not(".selected").find("input").prop("disabled", true);
-        	$("input.select-check").parents("tr").not(".selected").hide();
-        	
-        	// Save the description
-        	$("#description").val(tinymce.activeEditor.getContent());
-        });
-        
-    	var i = 0;
-        // Initialise module tables
+
+		// When you click on a selected checkbox, mark the row as selected
+		$("input.select-check").on('click', function() {
+			var $row = $(this).parents("tr");
+			if ($(this).is(":checked")) {
+				var $weightBox = $row.find("td input[type='text']");
+				var weight = $weightBox.val();
+				if (weight == 0) {
+					$weightBox.val("1.0");
+				}
+			}
+			$row.toggleClass("selected", $(this).is(":checked"));
+			refreshTable($(this).parents("table.moduleTable"));
+		});
+
+		$("#updateAssessmentForm").on(
+				"submit",
+				function() {
+					//Only visible rows will be properly selected, so make them all visible
+					$("table.moduleTable").each(function() {
+						$(this).DataTable().page.len(-1).search("").draw();
+					});
+
+					// Ignore non-selected modules
+					$("input.select-check").parents("tr").not(".selected")
+							.find("input").prop("disabled", true);
+					$("input.select-check").parents("tr").not(".selected")
+							.hide();
+
+					// Save the description
+					$("#description").val(tinymce.activeEditor.getContent());
+				});
+
+		var i = 0;
+		// Initialise module tables
 		$.fn.dataTable.ext.order['dom-checkbox'] = function(settings, col) {
-			return this.api().column(col, {order : 'index'}).nodes().map(function(td, i) {
+			return this.api().column(col, {
+				order : 'index'
+			}).nodes().map(function(td, i) {
 				return $('input', td).prop('checked') ? '0' : '1';
 			});
 		};
@@ -454,7 +497,7 @@ either expressed or implied, of the PASTA Project.
 				ordering : true,
 				columnDefs : [ {
 					targets : 0,
-					orderData : [0, 1],
+					orderData : [ 0, 1 ],
 					orderDataType : "dom-checkbox"
 				}, {
 					orderable : false,
@@ -480,4 +523,29 @@ either expressed or implied, of the PASTA Project.
 		$("#hideUntilLoaded").show();
 		$("#loading").hide();
 	});
+</script>
+
+
+
+<script>
+// For updating all MathJax on page, call preview.refresh()
+var preview = {
+  mjRunning: false,  // true when MathJax is processing
+
+  update: function () {
+    if (this.mjRunning) return;
+    this.mjRunning = true;
+    MathJax.Hub.Queue(
+      ["Typeset",MathJax.Hub],
+      ["previewDone",this]
+    );
+  },
+
+  previewDone: function () {
+    this.mjRunning = false;
+  }
+};
+
+preview.refresh = MathJax.Callback(["update",preview]);
+preview.refresh.autoReset = true;  // make sure it can run more than once
 </script>

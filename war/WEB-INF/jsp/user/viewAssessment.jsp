@@ -70,7 +70,9 @@ either expressed or implied, of the PASTA Project.
 
 <c:if test="${not empty assessment.description}">
 	<h4>Assessment Description</h4>
-	${assessment.description}
+	<div class='show-math'>
+		${assessment.description}
+	</div>
 </c:if>
 
 <c:if test="${assessment.autoMarked}">

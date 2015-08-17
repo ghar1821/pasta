@@ -43,6 +43,17 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		
+		<script type="text/x-mathjax-config">
+			MathJax.Hub.Config({
+				tex2jax: {
+					inlineMath: [ ['$$','$$'], ['\\(','\\)'] ],
+					displayMath: [ ['$$$','$$$'], ['\[','\]'] ],
+					processClass: "show-math"
+				}
+			});
+		</script>
+		<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+		
 		<link rel="apple-touch-icon" sizes="57x57" href="<c:url value="/static/icons/apple-icon-57x57.png"/>">
 		<link rel="apple-touch-icon" sizes="60x60" href="<c:url value="/static/icons/apple-icon-60x60.png"/>">
 		<link rel="apple-touch-icon" sizes="72x72" href="<c:url value="/static/icons/apple-icon-72x72.png"/>">
@@ -100,7 +111,7 @@
 				});
 		</script>
 	</head>
-	<body id="home">
+	<body id="home" class="tex2jax_ignore">
 		<div id="w1">
 			<div id="w2">
 				<div id="w3">
