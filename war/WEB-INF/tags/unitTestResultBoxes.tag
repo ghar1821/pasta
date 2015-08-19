@@ -1,7 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<%@ attribute name="user" required="true" type="pasta.domain.user.PASTAUser" rtexprvalue="true"%>
 <%@ attribute name="tests" required="true" type="java.util.List" rtexprvalue="true"%>
 <%@ attribute name="closedAssessment" required="true" type="Boolean" rtexprvalue="true"%>
 

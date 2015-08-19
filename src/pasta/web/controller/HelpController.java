@@ -32,9 +32,8 @@ public class HelpController {
 	}
 	
 	@RequestMapping("unitTests/")
-	public String unitTestHelp(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String unitTestHelp(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		model.addAttribute("unikey", user);
 		model.addAttribute("userout", UnitTest.BB_OUTPUT_FILENAME);
 		try {
 			model.addAttribute("PASTAJUnitTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTAJUnitTest.java")));
@@ -45,9 +44,8 @@ public class HelpController {
 	}
 	
 	@RequestMapping("customValidation/")
-	public String customValidationHelp(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String customValidationHelp(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		model.addAttribute("unikey", user);
 		try {
 			model.addAttribute("PASTASubmissionValidator", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTASubmissionValidator.java")));
 			model.addAttribute("SampleCustomValidator", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/SampleCustomValidator.java")));

@@ -145,7 +145,6 @@ public class HandMarkingController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
 	 * 	<tr><td>handMarking</td><td>the hand marking object</td></tr>
 	 * </table>
 	 * 
@@ -156,7 +155,7 @@ public class HandMarkingController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/handMarks"
 	 */
 	@RequestMapping(value = "{handMarkingId}/")
-	public String viewHandMarking(@ModelAttribute("user") PASTAUser user,
+	public String viewHandMarking(
 			@PathVariable("handMarkingId") Long handMarkingId,
 			@ModelAttribute("handMarking") HandMarking template, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
@@ -172,7 +171,6 @@ public class HandMarkingController {
 			model.addAttribute("allColumns", template.getColumnHeader());
 		}
 
-		model.addAttribute("unikey", user);
 		return "assessment/view/handMarks";
 	}
 

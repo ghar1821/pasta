@@ -68,9 +68,8 @@ public class ReleaseController {
 	
 	
 	@RequestMapping(value = "{assessmentId}/")
-	public String loadRule(@ModelAttribute("user") PASTAUser user, ModelMap model, @ModelAttribute("assessment") Assessment assessment) {
+	public String loadRule(ModelMap model, @ModelAttribute("assessment") Assessment assessment) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
-		model.addAttribute("unikey", user);
 		
 		TreeSet<String> allUsernames = new TreeSet<>(userManager.getStudentUsernameList());
 		TreeSet<String> allTutorials = new TreeSet<>(userManager.getTutorialList());

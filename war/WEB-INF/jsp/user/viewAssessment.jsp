@@ -39,10 +39,10 @@ either expressed or implied, of the PASTA Project.
 
 <jsp:useBean id="now" class="java.util.Date"/>
 
-<c:set var="user" value="${not empty viewedUser ? viewedUser : unikey}" />
+<c:set var="effectiveUser" value="${not empty viewedUser ? viewedUser : user}" />
 
 <h1>
-	${user.username} - ${assessment.name}
+	${effectiveUser.username} - ${assessment.name}
 </h1>
 
 <table class='alignCellsTop'>
@@ -106,14 +106,14 @@ either expressed or implied, of the PASTA Project.
 		<h2>Submission History</h2>
 		
 		<c:forEach var="result" items="${history}" varStatus="resultStatus">
-		<c:set var='groupResult' value="${result.user.id != user.id}" />
+		<c:set var='groupResult' value="${result.user.id != effectiveUser.id}" />
 		<div class='vertical-block boxCard <c:if test="${groupResult}">group-highlight</c:if>'>
 			<%--Heading and button panel--%>
 			<div class='vertical-block float-container'>
 				<div class='float-left'>
 					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /></h4>
 				</div>
-				<c:if test="${ unikey.tutor }" >
+				<c:if test="${ user.tutor }" >
 					<div id='buttonPanel' class='float-right horizontal-block'>
 						<c:set var="pathPrefix" value="../.." />
 						<c:if test="${not empty viewedUser}">
@@ -124,12 +124,12 @@ either expressed or implied, of the PASTA Project.
 							<c:if test="${not empty result.handMarkingResults and result.finishedHandMarking}">
 								<c:set var="markButtonText" value="Edit attempt marks" />
 							</c:if>
-							<button onclick="window.location.href='${pathPrefix}/mark/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
+							<button onclick="window.location.href='${pathPrefix}/mark/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
 						</c:if>
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<button onclick="window.location.href='${pathPrefix}/runAssessment/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+							<button onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 						</c:if>
-						<button onclick="window.location.href='${pathPrefix}/download/${user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+						<button onclick="window.location.href='${pathPrefix}/download/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 					</div>
 				</c:if>
 				<c:if test="${groupResult}">
@@ -144,7 +144,7 @@ either expressed or implied, of the PASTA Project.
 			</div>
 			
 			<%--Submission contents--%>
-			<c:if test="${unikey.tutor}">
+			<c:if test="${user.tutor}">
 				<div class='vertical-block'>
 					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
 					<jsp:include page="../recursive/fileWriterRoot.jsp">
@@ -155,13 +155,13 @@ either expressed or implied, of the PASTA Project.
 			
 			<%--Summary of results--%>
 			<h5 class='compact'>Summary</h5>
-			<tag:unitTestResult closedAssessment="${closed}" user="${unikey}" results="${result}" summary="true" />
+			<tag:unitTestResult closedAssessment="${closed}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>
 			<div id="${result.id}" class='resultDetails vertical-block'>
 				<h5 class='compact'>Details</h5>
 				<%--Files compiled--%>
-				<c:if test="${ unikey.tutor }" >
+				<c:if test="${ user.tutor }" >
 					<div class='vertical-block'>
 						<p class='showHide' showhide="files_${resultStatus.index}"><strong>Files Compiled</strong>
 						<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
@@ -175,11 +175,9 @@ either expressed or implied, of the PASTA Project.
 					</div>
 				</c:if>
 				
-				<tag:unitTestResult closedAssessment="${closed}" 
-					user="${unikey}" results="${result}" />
+				<tag:unitTestResult closedAssessment="${closed}" results="${result}" />
 				
-				<tag:handMarkingResult user="${unikey}" results="${result}" 
-					marking="false" headingLevel="h5"/>
+				<tag:handMarkingResult results="${result}" marking="false" headingLevel="h5"/>
 				
 				<div class='vertical-block'>
 					<h5 class='compact'>Comments</h5>

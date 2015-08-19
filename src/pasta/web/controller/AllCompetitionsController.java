@@ -101,7 +101,6 @@ public class AllCompetitionsController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The user object</td></tr>
 	 * 	<tr><td>allCompetitions</td><td>The collection of all competitions</td></tr>
 	 * </table>
 	 * 
@@ -112,7 +111,6 @@ public class AllCompetitionsController {
 	 */
 	@RequestMapping(value = "")
 	public String viewAllCompetitions(@ModelAttribute("user") PASTAUser user, Model model) {
-		model.addAttribute("unikey", user);
 		model.addAttribute("allCompetitions", competitionManager.getCompetitionList());
 		model.addAttribute("liveAssessmentCounts", competitionManager.getLiveAssessmentCounts(user));
 

@@ -131,7 +131,6 @@ public class AllUnitTestsController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.user.PASTAUser} for the currently logged in user.</td></tr>
 	 * 	<tr><td>allUnitTests</td><td>A collection of all {@link pasta.domain.template.UnitTest} of all unit tests on the system.</td></tr>
 	 * </table>
 	 * 
@@ -141,11 +140,9 @@ public class AllUnitTestsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/unitTest"
 	 */
 	@RequestMapping(value = "")
-	public String viewUnitTest(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String viewUnitTest(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-
 		model.addAttribute("allUnitTests", unitTestManager.getUnitTestList());
-		model.addAttribute("unikey", user);
 		return "assessment/viewAll/unitTest";
 	}
 	

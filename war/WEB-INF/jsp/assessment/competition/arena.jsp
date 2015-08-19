@@ -49,7 +49,7 @@ either expressed or implied, of the PASTA Project.
 
 <h1>Unofficial Arenas</h1>
 
-<c:if test="${competition.studentCanCreateArena || unikey.tutor}">
+<c:if test="${competition.studentCanCreateArena || user.tutor}">
 	<div style="float: left">
 		<button style="float: left; text-align: center;" id="newPopup">Add
 			Arena</button>
@@ -101,7 +101,7 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </table>
 
-<c:if test="${competition.studentCanCreateArena || unikey.tutor}">
+<c:if test="${competition.studentCanCreateArena || user.tutor}">
 
 	<div id="newArena">
 		<span class="button bClose"> <span><b>X</b></span>
@@ -120,17 +120,17 @@ either expressed or implied, of the PASTA Project.
 					<td><form:input path="firstStartDateStr" /></td>
 				</tr>
 				<c:if
-					test="${unikey.instructor || (unikey.tutor && competition.tutorCreatableRepeatableArena) || competition.studentCreatableRepeatableArena}">
+					test="${user.instructor || (user.tutor && competition.tutorCreatableRepeatableArena) || competition.studentCreatableRepeatableArena}">
 					<tr>
 						<td>Repeat every:</td>
 						<td>
-							<c:if test="${unikey.tutor}">
+							<c:if test="${user.tutor}">
 								<form:input type="number" path="frequency.years" style="width:3em;" /> years 
 							</c:if>
 							<form:input type="number" path="frequency.days" style="width:3em;" /> days 
 							<form:input	type="number" path="frequency.hours" style="width:3em;" /> hours
 							
-							<c:if test="${unikey.tutor}">
+							<c:if test="${user.tutor}">
 								<form:input type="number" path="frequency.minutes" style="width:3em;" /> minutes 
 								<form:input type="number" path="frequency.seconds" style="width:3em;" /> seconds
 							</c:if>

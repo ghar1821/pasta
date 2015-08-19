@@ -243,10 +243,6 @@ public class SubmissionController {
 	 * ATTRIBTUES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>the user object for the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessments</td>
 	 * <td>map of all assessments by category (key of category: String, value of
 	 * list of {@link pasta.domain.template.Assessment}</td>
@@ -274,7 +270,6 @@ public class SubmissionController {
 	public String home(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
 		WebUtils.ensureLoggedIn(request);
 
-		model.addAttribute("unikey", user);
 		model.addAttribute("results", resultManager.getLatestResultsIncludingGroups(user));
 		
 		Map<String, Set<Assessment>> allAssessments = assessmentManager.getAllAssessmentsByCategory(user.isTutor());
@@ -504,10 +499,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessment</td>
 	 * <td>{@link pasta.domain.template.Assessment} the assessment</td>
 	 * </tr>
@@ -542,7 +533,6 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("unikey", user);
 		model.addAttribute("assessment", assessment);
 		model.addAttribute("closed", assessment.isClosedFor(user, userManager.getExtension(user, assessment)));
 		model.addAttribute("extension", userManager.getExtension(user, assessment));
@@ -760,10 +750,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>location</td>
 	 * <td>The location of the disk of the file</td>
 	 * </tr>
@@ -795,7 +781,7 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@ModelAttribute("user") PASTAUser user, @RequestParam("location") String location, 
+	public String viewFile(@RequestParam("location") String location, 
 			@RequestParam("owner") String owner, Model model,
 			HttpServletResponse response) {
 		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
@@ -810,7 +796,6 @@ public class SubmissionController {
 //			return "redirect:" + location;
 //		}
 		
-		model.addAttribute("unikey", user);
 		model.addAttribute("location", location);
 		model.addAttribute("owner", owner);
 		model.addAttribute("codeStyle", codeStyle);
@@ -834,10 +819,6 @@ public class SubmissionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} for the currently logged in user</td>
-	 * </tr>
 	 * <tr>
 	 * <td>viewedUser</td>
 	 * <td>{@link pasta.domain.user.PASTAUser} for the viewed user</td>
@@ -875,7 +856,6 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 		
-		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("results", resultManager.getLatestResultsIncludingGroups(viewedUser));
 		
@@ -983,10 +963,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
-	 * </tr>
-	 * <tr>
 	 * <td>viewedUser</td>
 	 * <td>{@link pasta.domain.user.PASTAUser} of the user being viewed</td>
 	 * </tr>
@@ -1021,7 +997,7 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAssessment"
 	 */
 	@RequestMapping(value = "student/{username}/info/{assessmentId}/")
-	public String viewAssessmentInfo(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
+	public String viewAssessmentInfo(@PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId, Model model) {
 
 		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
@@ -1034,7 +1010,6 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 		
-		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("assessment", assessment);
 		model.addAttribute("closed", assessment.isClosedFor(viewedUser, userManager.getExtension(viewedUser, assessment)));
@@ -1204,10 +1179,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} the user logged in</td>
-	 * </tr>
-	 * <tr>
 	 * <td>student</td>
 	 * <td>{@link pasta.domain.user.PASTAUser} the user being viewed</td>
 	 * </tr>
@@ -1247,7 +1218,7 @@ public class SubmissionController {
 	 *         "assessment/mark/handMark"
 	 */
 	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/")
-	public String handMarkAssessment(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
+	public String handMarkAssessment(@PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model) {
 
@@ -1257,8 +1228,6 @@ public class SubmissionController {
 			return "redirect:/home/";
 		}
 		
-		model.addAttribute("unikey", user);
-
 		String assessmentName = ProjectProperties.getInstance().getAssessmentDAO()
 				.getAssessment(assessmentId).getName();
 		model.addAttribute("assessmentName", assessmentName);
@@ -1367,10 +1336,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>{@link pasta.domain.user.PASTAUser} of the user logged in</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessmentId</td>
 	 * <td>the id of the assessment</td>
 	 * </tr>
@@ -1439,7 +1404,6 @@ public class SubmissionController {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(student);
 
-		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentId", assessmentId);
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
@@ -1537,8 +1501,6 @@ public class SubmissionController {
 			HttpServletRequest request, Model model) {
 
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-
-		model.addAttribute("unikey", user);
 
 		// find the first student or group with a submission
 		int i = 0;
@@ -1775,10 +1737,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessmentList</td>
 	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
 	 * system</td>
@@ -1795,12 +1753,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "gradeCentre/")
-	public String viewGradeCentre(@ModelAttribute("user") PASTAUser user, Model model) {
-
+	public String viewGradeCentre(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("unikey", user);
 		model.addAttribute("pathBack", "..");
 
 		return "user/gradeCentre";
@@ -1818,10 +1774,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessmentList</td>
 	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
 	 * system</td>
@@ -1838,11 +1790,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "tutorial/{className}/")
-	public String viewClass(@ModelAttribute("user") PASTAUser user, @PathVariable("className") String className, Model model) {
+	public String viewClass(@PathVariable("className") String className, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("unikey", user);
 		model.addAttribute("pathBack", "../..");
 		model.addAttribute("tutorial", className);
 
@@ -1861,10 +1812,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessmentList</td>
 	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
 	 * system</td>
@@ -1881,11 +1828,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "stream/{streamName}/")
-	public String viewStream(@ModelAttribute("user") PASTAUser user, @PathVariable("streamName") String streamName, Model model) {
+	public String viewStream(@PathVariable("streamName") String streamName, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("unikey", user);
 		model.addAttribute("pathBack", "../..");
 		model.addAttribute("stream", streamName);
 
@@ -1904,10 +1850,6 @@ public class SubmissionController {
 	 * ATTRIBUTES:
 	 * <table>
 	 * <tr>
-	 * <td>unikey</td>
-	 * <td>The {@link pasta.domain.user.PASTAUser} of the currently logged in user</td>
-	 * </tr>
-	 * <tr>
 	 * <td>assessmentList</td>
 	 * <td>The list of all {@link pasta.domain.template.Assessment} on the
 	 * system</td>
@@ -1924,11 +1866,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "myTutorials/")
-	public String viewMyTutorials(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String viewMyTutorials(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("unikey", user);
 		model.addAttribute("pathBack", "..");
 		model.addAttribute("myClasses", true);
 

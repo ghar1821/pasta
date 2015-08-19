@@ -66,7 +66,7 @@ either expressed or implied, of the PASTA Project.
 </c:if>
 
 <!-- FOR INSTRUCTORS ONLY!! -->
-<c:if test="${unikey.instructor}">
+<c:if test="${user.instructor}">
 
 	<h2>Authentication System</h2>
 		
@@ -107,19 +107,19 @@ either expressed or implied, of the PASTA Project.
 	<h2>Legacy Content</h2>
 	<p>Click <a href="../legacy/convert/">here</a> to go to the legacy content page.
 </c:if>
-<c:if test="${unikey.tutor}">
+<c:if test="${user.tutor}">
 
 	<h2>Tutors</h2>
 		<table class='dataTable hover row-border'>
 			<thead>
-				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><c:if test="${unikey.instructor}"><th></th></c:if></tr>
+				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><c:if test="${user.instructor}"><th></th></c:if></tr>
 			</thead>
 			<tbody>
 				<c:forEach var="person" items="${people}">
 					<c:if test="${person.tutor}">
 						<tr>
 							<td>${person.username}</td><td>${person.permissionLevel}</td><td><c:if test="${empty person.tutorial}">-</c:if>${person.tutorial}</td>
-							<c:if test="${unikey.instructor}">
+							<c:if test="${user.instructor}">
 								<td>
 									<div>
 										<div title='Delete' class='icon_delete'></div>
@@ -133,7 +133,7 @@ either expressed or implied, of the PASTA Project.
 			</tbody>
 		</table>
 		
-		<c:if test="${unikey.instructor}">
+		<c:if test="${user.instructor}">
 			<button id="tutorUpdate" onclick="popup(true, false);">Update</button>
 			<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
 		</c:if>

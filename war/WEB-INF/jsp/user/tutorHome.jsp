@@ -36,7 +36,7 @@ either expressed or implied, of the PASTA Project.
 
 <div class='float-container'>
 	<div class='horizontal-block'>
-		<h1>Home - ${unikey.username}</h1>
+		<h1>Home - ${user.username}</h1>
 	</div>
 	<input id='search' type='text' />
 </div>
@@ -96,7 +96,7 @@ either expressed or implied, of the PASTA Project.
 								</div>
 								
 								<div class='horizontal-block float-right'>
-									<c:if test="${ not empty unikey.tutorial and not empty assessment.handMarking}">
+									<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
 										<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
 									</c:if>
 									<button onclick="submitAssessment('${assessment.id}');">Submit</button>
@@ -105,7 +105,7 @@ either expressed or implied, of the PASTA Project.
 							
 							<div class='float-clear float-container vertical-block small-gap'>
 								<div class='horizontal-block float-left' style='width:90%'>
-									<tag:unitTestResult user="${user}" results="${results[assessment.id]}" 
+									<tag:unitTestResult results="${results[assessment.id]}" 
 										closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
 										detailsLink="../info/${assessment.id}/"/>
 								</div>

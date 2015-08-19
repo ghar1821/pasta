@@ -129,7 +129,6 @@ public class AllHandMarkingsController {
 	 * 
 	 * ATTRIBTUES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object of the current used object</td></tr>
 	 * 	<tr><td>allHandMarking</td><td>a collection of all of the hand marking templates</td></tr>
 	 * </table>
 	 * 
@@ -139,9 +138,8 @@ public class AllHandMarkingsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/handMarks"
 	 */
 	@RequestMapping(value = "")
-	public String viewAllHandMarking(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String viewAllHandMarking(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		model.addAttribute("unikey", user);
 		model.addAttribute("allHandMarking", handMarkingManager.getHandMarkingList());
 		return "assessment/viewAll/handMarks";
 	}

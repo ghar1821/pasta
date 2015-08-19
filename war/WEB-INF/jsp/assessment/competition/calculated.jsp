@@ -44,7 +44,7 @@ either expressed or implied, of the PASTA Project.
 			<tr>
 				<th>Position</th><th>Username</th><th>Percentage</th>
 				<c:choose>
-					<c:when test="${not unikey.tutor}">
+					<c:when test="${not user.tutor}">
 						<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
 							<th>${category}</th>
 						</c:forEach>
@@ -68,7 +68,7 @@ either expressed or implied, of the PASTA Project.
 						<td>${compResult.username}</td>
 						<td>${compResult.percentage}</td>
 						<c:choose>
-							<c:when test="${not unikey.tutor}">
+							<c:when test="${not user.tutor}">
 								<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
 									<td>${arenaResult.data[compResult.username][category]}</td>
 								</c:forEach>

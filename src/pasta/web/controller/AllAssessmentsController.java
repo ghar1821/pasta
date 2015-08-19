@@ -136,7 +136,6 @@ public class AllAssessmentsController {
 	 * <table>
 	 * 	<tr><td>tutorialByStream</td><td>All tutorials by stream, used for releases from this page</td></tr>
 	 * 	<tr><td>allAssessments</td><td>All assessments</td></tr>
-	 * 	<tr><td>unikey</td><td>the user viewing this page.</td></tr>
 	 * </table>
 	 * 
 	 * JSP:
@@ -145,11 +144,10 @@ public class AllAssessmentsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/assessment" 
 	 */
 	@RequestMapping(value = "")
-	public String viewAllAssessment(@ModelAttribute("user") PASTAUser user, Model model) {
+	public String viewAllAssessment(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allAssessments", assessmentManager.getAllAssessmentsByCategory(true));
-		model.addAttribute("unikey", user);
 		return "assessment/viewAll/assessment";
 	}
 

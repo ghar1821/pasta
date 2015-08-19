@@ -200,7 +200,6 @@ public class AssessmentController {
 	 * 	<tr><td>otherUnitTests</td><td>The weighted unit tests not already associated with this assessment</td></tr>
 	 * 	<tr><td>otherHandMarking</td><td>The weighted hand marking templates not already associated with this assessment</td></tr>
 	 * 	<tr><td>otherCompetitions</td><td>The weighted competitions not already associated with this assessment</td></tr>
-	 * 	<tr><td>unikey</td><td>the username of the current logged in user</td></tr>
 	 * </table>
 	 * 
 	 * JSP:
@@ -211,7 +210,7 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessment"
 	 */
 	@RequestMapping(value = "{assessmentId}/")
-	public String viewAssessment(@ModelAttribute("user") PASTAUser user, 
+	public String viewAssessment(
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
 
@@ -300,7 +299,6 @@ public class AssessmentController {
 		
 		model.addAttribute("tutorCategoryPrefix", Assessment.TUTOR_CATEGORY_PREFIX);
 		
-		model.addAttribute("unikey", user);
 		return "assessment/view/assessment";
 	}
 	

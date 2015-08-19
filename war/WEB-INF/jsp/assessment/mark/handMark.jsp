@@ -53,18 +53,18 @@ either expressed or implied, of the PASTA Project.
 			<h3 class='compact'>Automatic Marking Results</h3>
 			<div class='vertical-block'>
 				<h4 class='compact'>Summary</h4>
-				<tag:unitTestResult closedAssessment="false" user="${unikey}" results="${assessmentResult}" summary="true" />
+				<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" summary="true" />
 			</div>
 					
 			<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
 				<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
 				<tag:unitTestResult closedAssessment="false" 
-					user="${unikey}" results="${assessmentResult}" />
+					results="${assessmentResult}" />
 			</div>
 		</div>
 		
 		<div class='vertical-block boxCard'>
-			<tag:handMarkingResult user="${unikey}" results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines" />
+			<tag:handMarkingResult results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines" />
 		</div>
 	
 		<div class='vertical-block boxCard'>

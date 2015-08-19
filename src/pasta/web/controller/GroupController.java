@@ -107,8 +107,6 @@ public class GroupController {
 			return "redirect:/home/";
 		}
 		
-		model.addAttribute("user", user);
-		model.addAttribute("unikey", user);
 		model.addAttribute("assessment", assessment);
 		
 		PASTAGroup myGroup = groupManager.getGroup(user, assessment);

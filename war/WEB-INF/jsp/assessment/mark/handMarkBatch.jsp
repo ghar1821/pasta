@@ -41,8 +41,8 @@ either expressed or implied, of the PASTA Project.
 	<c:if test="${not empty myStudents}">
 		<h3 class='compact'>Individual Submissions</h3>
 	</c:if>
-	<c:forEach var='user' items="${allUsers}" varStatus="loop">
-		<c:set var="name" value="${loop.index < fn:length(myStudents) ? user.username : user.name}" />
+	<c:forEach var='submittingUser' items="${allUsers}" varStatus="loop">
+		<c:set var="name" value="${loop.index < fn:length(myStudents) ? submittingUser.username : submittingUser.name}" />
 		<c:set var="submission" value="${hasSubmission[loop.index]}" />
 		<c:set var="completed" value="${completedMarking[loop.index]}" />
 		<c:set var="current" value="${loop.index == savingStudentIndex}" />
@@ -85,18 +85,18 @@ th, td{
 				<h3 class='compact'>Automatic Marking Results</h3>
 				<div class='vertical-block'>
 					<h4 class='compact'>Summary</h4>
-					<tag:unitTestResult closedAssessment="false" user="${unikey}" results="${assessmentResult}" summary="true" />
+					<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" summary="true" />
 				</div>
 						
 				<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
 					<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
 					<tag:unitTestResult closedAssessment="false" 
-						user="${unikey}" results="${assessmentResult}" />
+						results="${assessmentResult}" />
 				</div>
 			</div>
 
 			<div class='vertical-block boxCard'>
-				<tag:handMarkingResult user="${unikey}" results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines"/>
+				<tag:handMarkingResult results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines"/>
 			</div>
 			
 			<div class='vertical-block boxCard'>

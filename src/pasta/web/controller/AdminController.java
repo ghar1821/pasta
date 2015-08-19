@@ -122,7 +122,6 @@ public class AdminController {
 	 * Attributes:
 	 * <table>
 	 * 	<tr><td>authType</td><td>ProjectProperties.getInstance().getAuthenticationValidator().getClass().getName()</td></tr>
-	 * 	<tr><td>unikey</td><td>{@link pasta.domain.user.PASTAUser} currently logged in user</td></tr>
 	 * 	<tr><td>people</td><td><b>Only if tutor or instructor!</b> - the list of users (both students and teaching staff)</td></tr>
 	 * 	<tr><td>addresses</td><td><b>Only if tutor or instructor!</b> - the list of sever addresses for which to authenticate against</td></tr>
 	 * </table>
@@ -137,13 +136,10 @@ public class AdminController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
 		model.addAttribute("authType", ProjectProperties.getInstance().getAuthenticationValidator().getClass().getName());
-		model.addAttribute("unikey", user);
-		
 		if(user.isTutor()){
 			model.addAttribute("people", userManager.getUserList());
 			model.addAttribute("addresses", ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses());
 		}
-		
 		return "user/admin";
 	}
 	

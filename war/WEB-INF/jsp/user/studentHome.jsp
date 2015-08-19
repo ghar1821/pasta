@@ -34,7 +34,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
-<c:set var="username" value="${ not empty viewedUser ? viewedUser.username : unikey.username }"/>
+<c:set var="username" value="${ not empty viewedUser ? viewedUser.username : user.username }"/>
 <div class='float-container'>
 	<div class='horizontal-block'>
 		<h1>Home - ${username}</h1>
@@ -47,7 +47,7 @@ either expressed or implied, of the PASTA Project.
 		<c:set var="classes" value="${viewedUser.stream}.${viewedUser.tutorial}"/>
 	</c:when>
 	<c:otherwise>
-		<c:set var="classes" value="${unikey.stream}.${unikey.tutorial}"/>
+		<c:set var="classes" value="${user.stream}.${user.tutorial}"/>
 	</c:otherwise>
 </c:choose>
 
@@ -121,7 +121,7 @@ either expressed or implied, of the PASTA Project.
 										<!-- tutor is viewing a user and they may give out an extension -->
 										<button onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
 									</c:if>
-									<c:if test="${unikey.tutor or not closedAssessment}">
+									<c:if test="${user.tutor or not closedAssessment}">
 										<button onclick="submitAssessment('${assessment.id}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
 									</c:if>
 								</div>
@@ -184,7 +184,7 @@ either expressed or implied, of the PASTA Project.
 								</div>
 								
 								<div class='horizontal-block float-left' style='width:90%'>
-									<tag:unitTestResult user="${user}" results="${results[assessment.id]}" 
+									<tag:unitTestResult results="${results[assessment.id]}" 
 										closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
 										detailsLink="../info/${assessment.id}/"/>
 								</div>

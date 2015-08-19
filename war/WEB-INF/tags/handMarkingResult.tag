@@ -3,7 +3,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="pasta" uri="pastaTag"%>
 
-<%@ attribute name="user" required="true" type="pasta.domain.user.PASTAUser" rtexprvalue="true"%>
 <%@ attribute name="results" required="true" type="pasta.domain.result.AssessmentResult" rtexprvalue="true"%>
 <%@ attribute name="marking" required="true" type="Boolean"%>
 

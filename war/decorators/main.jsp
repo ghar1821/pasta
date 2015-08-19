@@ -133,8 +133,8 @@
 							<div id="quicklinks"></div>
 							<div id="login">
 								<c:choose>
-									<c:when test="${not empty unikey}">
-										<a href="<c:url value="/home/"/>"><span>${unikey.username}</span></a> |
+									<c:when test="${not empty user}">
+										<a href="<c:url value="/home/"/>"><span>${user.username}</span></a> |
 										<a href="<c:url value="/login/exit"/>"><span>Logout</span></a>
 									</c:when>
 									<c:otherwise>
@@ -151,13 +151,13 @@
 									<a href="<c:url value="/home/"/>"><span>Home</span></a>
 								</span>
 							</li>
-							<c:if test="${not empty unikey and unikey.tutor}">
+							<c:if test="${not empty user and user.tutor}">
 								<li>
 									<span>
 										<a href="<c:url value="/gradeCentre/"/>"><span>Grade Centre</span></a>
 									</span>
 								</li>
-								<c:if test="${ not empty unikey.tutorial }">
+								<c:if test="${ not empty user.tutorial }">
 									<li>
 										<span>
 											<a href="<c:url value="/myTutorials/"/>"><span>My Tutorials</span></a>
@@ -180,7 +180,7 @@
 									</span>
 								</li>
 							</c:if>
-							<c:if test="${not empty unikey}">
+							<c:if test="${not empty user}">
 								<li>
 									<span>
 										<a href="<c:url value="/competition/"/>"><span>Competitions</span></a>

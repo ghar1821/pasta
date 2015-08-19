@@ -78,7 +78,7 @@ either expressed or implied, of the PASTA Project.
 <c:if test="${not empty results}">
 <h2>Results:</h2>
 <c:choose>
-	<c:when test="${unikey.tutor}">
+	<c:when test="${user.tutor}">
 		<c:set var="categories" value="${results.categories}"/>
 	</c:when>
 	<c:otherwise>

@@ -2,7 +2,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
-<%@ attribute name="user" required="true" type="pasta.domain.user.PASTAUser" rtexprvalue="true"%>
 <%@ attribute name="results" required="true" type="pasta.domain.result.AssessmentResult" rtexprvalue="true"%>
 <%@ attribute name="closedAssessment" required="true" type="Boolean" rtexprvalue="true"%>
 
@@ -44,7 +43,7 @@
 									<strong>Group Work:</strong>
 								</c:if>
 								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
-									user="${user}" tests="${results.groupUnitTests}" />
+									tests="${results.groupUnitTests}" />
 							</div>
 						</c:if>
 						<c:if test="${not empty results.nonGroupUnitTests}">
@@ -53,14 +52,14 @@
 									<strong style='white-space: nowrap'>Individual Work:</strong>
 								</c:if>
 								<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
-									user="${user}" tests="${results.nonGroupUnitTests}" />
+									tests="${results.nonGroupUnitTests}" />
 							</div>
 						</c:if>
 					</div>
 				</c:if>
 				<c:if test="${!separateGroup}">
 					<tag:unitTestResultBoxes closedAssessment="${closedAssessment}" 
-						user="${user}" tests="${results.unitTests}" />
+						tests="${results.unitTests}" />
 				</c:if>
 			</c:when>
 			<c:otherwise>

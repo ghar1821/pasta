@@ -109,7 +109,6 @@ public class MossController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
 	 * 	<tr><td>assessmentId</td><td>the id of the assessment</td></tr>
 	 * 	<tr><td>mossList</td><td>the list of moss execution given by {@link pasta.service.MossManager#getMossList(String)}</td></tr>
 	 * </table>
@@ -121,10 +120,9 @@ public class MossController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/list"
 	 */
 	@RequestMapping(value = "/view/{assessmentId}/")
-	public String viewMoss(@ModelAttribute("user") PASTAUser user, ModelMap model,
+	public String viewMoss(ModelMap model,
 			@PathVariable("assessmentId") long assessmentId) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentId", assessmentId);
 		model.addAttribute("mossList", mossManager.getMossList(assessmentId));
 		return "moss/list";
@@ -141,7 +139,6 @@ public class MossController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
 	 * 	<tr><td>mossResults</td><td>the {@link pasta.domain.moss.MossResults} for the execution at this time.</td></tr>
 	 * </table>
 	 * 
@@ -153,11 +150,10 @@ public class MossController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/view"
 	 */
 	@RequestMapping(value = "/view/{assessmentId}/{date}/")
-	public String viewMoss(@ModelAttribute("user") PASTAUser user, ModelMap model,
+	public String viewMoss(ModelMap model,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("date") String date) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		model.addAttribute("unikey", user);
 		model.addAttribute("mossResults", mossManager.getMossRun(assessmentId, date));
 		return "moss/view";
 	}

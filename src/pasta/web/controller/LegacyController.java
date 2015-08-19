@@ -42,10 +42,9 @@ public class LegacyController {
 	}
 	
 	@RequestMapping(value="convert/", method=RequestMethod.GET)
-	public String viewConvert(@ModelAttribute("user") PASTAUser user, 
+	public String viewConvert(
 			@ModelAttribute("assessmentConverter") AssessmentConverter converter, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
-		model.addAttribute("unikey", user);
 		if(converter.isStarted()) {
 			model.addAttribute("started", true);
 		}

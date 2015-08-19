@@ -163,7 +163,6 @@ public class UnitTestController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The {@link pasta.domain.user.PASTAUser} for the logged in user</td></tr>
 	 * 	<tr><td>unitTest</td><td>The {@link pasta.domain.template.UnitTest} for this test</td></tr>
 	 * 	<tr><td>latestResult</td><td>The {@link pasta.domain.result.UnitTestResult} for the execution of the test run of the unit testing code.</td></tr>
 	 * 	<tr><td>node</td><td>The root {@link pasta.domain.FileTreeNode} for the root of the unit test code.</td></tr>
@@ -176,12 +175,11 @@ public class UnitTestController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/unitTest"
 	 */
 	@RequestMapping(value = "{testId}/")
-	public String viewUnitTest(@ModelAttribute("user") PASTAUser user, @PathVariable("testId") long testId,
+	public String viewUnitTest(@PathVariable("testId") long testId,
 			@ModelAttribute("unitTest") UnitTest test,
 			Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
-		model.addAttribute("unikey", user);
 		model.addAttribute("latestResult", test.getTestResult());
 		
 		FileTreeNode node = PASTAUtil.generateFileTree(test.getCodeLocation().getAbsolutePath());

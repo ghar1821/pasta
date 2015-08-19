@@ -40,9 +40,9 @@ either expressed or implied, of the PASTA Project.
 		<c:set var="releaseUsername" value="${viewedUser.username}"/>
 	</c:when>
 	<c:otherwise>
-		<h1>${unikey.username}</h1>
-		<c:set var="classes" value="${unikey.stream}.${unikey.tutorial}"/>
-		<c:set var="releaseUsername" value="${unikey.username}"/>
+		<h1>${user.username}</h1>
+		<c:set var="classes" value="${user.stream}.${user.tutorial}"/>
+		<c:set var="releaseUsername" value="${user.username}"/>
 	</c:otherwise>
 </c:choose>
 
@@ -54,7 +54,7 @@ either expressed or implied, of the PASTA Project.
 		<c:if test="${not empty liveAssessmentCounts[competition.id] and liveAssessmentCounts[competition.id] gt 0}">
 			<c:set var="liveAssessment" value="true"/>
 		</c:if>
-		<c:if test="${(liveAssessment and not competition.hidden) or unikey.tutor}" >
+		<c:if test="${(liveAssessment and not competition.hidden) or user.tutor}" >
 			<tr>		
 			<!-- 
 				<td class="pastaTF pastaTF${competition.tested}">
@@ -95,7 +95,7 @@ either expressed or implied, of the PASTA Project.
 				</td>
 				<td>
 					<!-- buttons -->
-					<c:if test="${unikey.tutor}">
+					<c:if test="${user.tutor}">
 						<div style="float:left">
 							<button style="float:left; text-align: center; " onclick="location.href='./${competition.id}/'">Details</button>
 						</div>
@@ -108,7 +108,7 @@ either expressed or implied, of the PASTA Project.
 					<div style="float:left">
 						<button style="float:left; text-align: center; " onclick="location.href='./view/${competition.id}/'">Competition Page</button>
 					</div>
-					<c:if test="${unikey.instructor}">
+					<c:if test="${user.instructor}">
 						<div style="float:left">
 							<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
 							<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${competition.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
@@ -120,7 +120,7 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </table>
 				
-<c:if test="${unikey.instructor}">
+<c:if test="${user.instructor}">
 
 	<button id="newPopup">Add a new Competition</button>
 	

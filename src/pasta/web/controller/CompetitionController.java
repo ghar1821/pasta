@@ -163,7 +163,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
 	 * 	<tr><td>competition</td><td>the competition object</td></tr>
 	 * 	<tr><td>node</td><td>the root node for the code being used by the competition</td></tr>
 	 * </table>
@@ -179,7 +178,6 @@ public class CompetitionController {
 			@PathVariable("competitionId") long competitionId, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
-		model.addAttribute("unikey", user);
 		//model.addAttribute("competition", competitionManager.getCompetition(competitionId));
 		model.addAttribute("node", PASTAUtil.generateFileTree(competitionManager
 				.getCompetition(competitionId).getFileLocation() + "/code"));
@@ -250,7 +248,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object of the currently logged in user</td></tr>
 	 * 	<tr><td>competition</td><td>the competition object</td></tr>
 	 * 	<tr><td>arenaResult</td><td>the results of the last execution if it's a calculated competition. I know it's called arenaResult, I was lazy and copy-pasting is fun.</td></tr>
 	 * 	<tr><td>marks</td><td>The mars awarded to the users based on their performance</td></tr>
@@ -274,7 +271,6 @@ public class CompetitionController {
 			return "redirect:/home/";
 		}
 
-		model.addAttribute("unikey", user);
 		//model.addAttribute("competition", currComp);
 
 		if (currComp.isCalculated()) {
@@ -350,7 +346,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>The user object for the currently logged in user</td></tr>
 	 * 	<tr><td>players</td><td>A list of players the currently logged in user has uploaded and are not retired</td></tr>
 	 * 	<tr><td>arena</td><td>the arena object</td></tr>
 	 * 	<tr><td>completed</td><td>a flag for whether the arena has finished executing and will not execute again</td></tr>
@@ -376,7 +371,6 @@ public class CompetitionController {
 		}		
 		
 		if(!currComp.isCalculated()){
-			model.addAttribute("unikey", user);
 			model.addAttribute("players", competitionManager.getPlayers(user, competitionId));
 			model.addAttribute("arena", currComp.getArena(arenaId));
 			model.addAttribute("completed", currComp.isCompleted(arenaId));
@@ -496,7 +490,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object of the currently logged in player</td></tr>
 	 * 	<tr><td>competition</td><td>the competition object</td></tr>
 	 * 	<tr><td>nodeList</td><td>the collection of nodes for the root of the folder structure of the code of the players uploaded, will only be use by tutors atm.</td></tr>
 	 * 	<tr><td>players</td><td>the list of all of the players that have been uploaded for this competition by this player</td></tr>
@@ -516,7 +509,6 @@ public class CompetitionController {
 			return "redirect:/home/";
 		}		
 		
-		model.addAttribute("unikey", user);
 		//model.addAttribute("competition", currComp);
 		model.addAttribute("nodeList", PASTAUtil.generateFileTree(user, competitionManager
 				.getCompetition(competitionId), competitionManager.getPlayers(
@@ -540,7 +532,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object of the currently logged in player</td></tr>
 	 * 	<tr><td>competition</td><td>the competition object</td></tr>
 	 * 	<tr><td>nodeList</td><td>the collection of nodes for the root of the folder structure of the code of the players uploaded, will only be use by tutors atm.</td></tr>
 	 * 	<tr><td>players</td><td>the list of all of the players that have been uploaded for this competition by this player</td></tr>
@@ -568,7 +559,6 @@ public class CompetitionController {
 		competitionManager.addPlayer(playerForm, user, currComp.getId(), result);
 		
 		if(result.hasErrors()){
-			model.addAttribute("unikey", user);
 			//model.addAttribute("competition", currComp);
 			model.addAttribute("players", competitionManager.getPlayers(user, competitionId));
 			model.addAttribute("nodeList", PASTAUtil.generateFileTree(user,
@@ -591,7 +581,6 @@ public class CompetitionController {
 	 * 
 	 * ATTRIBUTES:
 	 * <table>
-	 * 	<tr><td>unikey</td><td>the user object for the currently logged in user</td></tr>
 	 * 	<tr><td>viewedUser</td><td>the user object for the currently viewed user</td></tr>
 	 * 	<tr><td>nodeList</td><td>the collection of nodes for the root of the folder structure of the code of the players uploaded, will only be use by tutors atm.</td></tr>
 	 * 	<tr><td>competition</td><td>the competition object</td></tr>
@@ -615,7 +604,6 @@ public class CompetitionController {
 			return "redirect:/home/";
 		}		
 		
-		model.addAttribute("unikey", user);
 		model.addAttribute("viewedUser", viewedUser);
 		model.addAttribute("nodeList", PASTAUtil.generateFileTree(viewedUser,
 				competitionManager.getCompetition(competitionId),

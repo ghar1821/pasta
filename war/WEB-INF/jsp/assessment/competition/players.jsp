@@ -57,7 +57,7 @@ either expressed or implied, of the PASTA Project.
 			<tr>
 				<td><h5>${player.activePlayer.name}</h5></td><td><h5>Uploaded: ${player.activePlayer.firstUploaded}</h5></td>
 			</tr>
-			<c:if test="${unikey.tutor}">
+			<c:if test="${user.tutor}">
 				<tr>
 					<td>
 						<c:set var="node" value="${nodeList[player.activePlayer.name]}" scope="request"/>
