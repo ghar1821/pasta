@@ -40,13 +40,14 @@ public class SubmissionValidator implements Validator {
 	public void validate(PASTAUser forUser, Object target, Errors errors) {
 		Submission form = (Submission) target;
 		
-		try {
-			submissionManager.saveSubmissionToDisk(forUser, form);
-		} catch (InvalidMediaTypeException e) {
-			errors.rejectValue("file", "NotRealZip");
-		}
-		
 		validate(target, errors);
+		if(!errors.hasErrors()) {
+			try {
+				submissionManager.saveSubmissionToDisk(forUser, form);
+			} catch (InvalidMediaTypeException e) {
+				errors.rejectValue("file", "NotRealZip");
+			}
+		}
 	}
 	
 	@Override
