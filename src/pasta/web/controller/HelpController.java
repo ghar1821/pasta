@@ -2,15 +2,18 @@ package pasta.web.controller;
 
 import java.io.FileNotFoundException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.template.UnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.util.PASTAUtil;
+import pasta.web.WebUtils;
 
 /**
  * @author Joshua Stretton
@@ -22,27 +25,15 @@ import pasta.util.PASTAUtil;
 @RequestMapping("help/")
 public class HelpController {
 
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 	
 	@RequestMapping("unitTests/")
-	public String unitTestHelp(Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/"; 
-		}
-		if(!user.isTutor()) {
-			return "redirect:/home/"; 
-		}
+	public String unitTestHelp(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("unikey", user);
 		model.addAttribute("userout", UnitTest.BB_OUTPUT_FILENAME);
 		try {
@@ -54,14 +45,8 @@ public class HelpController {
 	}
 	
 	@RequestMapping("customValidation/")
-	public String customValidationHelp(Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/"; 
-		}
-		if(!user.isTutor()) {
-			return "redirect:/home/"; 
-		}
+	public String customValidationHelp(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("unikey", user);
 		try {
 			model.addAttribute("PASTASubmissionValidator", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTASubmissionValidator.java")));

@@ -32,6 +32,7 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
@@ -43,14 +44,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.template.UnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Unit Test functions. 
@@ -109,20 +110,10 @@ public class AllUnitTestsController {
 		return new NewUnitTestForm();
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -150,14 +141,8 @@ public class AllUnitTestsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/unitTest"
 	 */
 	@RequestMapping(value = "")
-	public String viewUnitTest(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String viewUnitTest(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("allUnitTests", unitTestManager.getUnitTestList());
 		model.addAttribute("unikey", user);
@@ -186,16 +171,10 @@ public class AllUnitTestsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newUnitTest(
+	public String newUnitTest(@ModelAttribute("user") PASTAUser user, 
 			@Valid @ModelAttribute(value = "newUnitTest") NewUnitTestForm form, BindingResult result,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("newUnitTest", form);
@@ -203,12 +182,7 @@ public class AllUnitTestsController {
 			return "redirect:.";
 		}
 
-		if (getUser().isInstructor()) {
-			// add it.
-			UnitTest newTest = unitTestManager.addUnitTest(form);
-			return "redirect:" + newTest.getId() + "/";
-		}
-
-		return "redirect:/mirror/";
+		UnitTest newTest = unitTestManager.addUnitTest(form);
+		return "redirect:" + newTest.getId() + "/";
 	}
 }

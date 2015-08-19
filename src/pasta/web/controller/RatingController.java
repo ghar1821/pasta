@@ -32,6 +32,7 @@ package pasta.web.controller;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
@@ -43,8 +44,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
@@ -53,6 +52,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.RatingManager;
 import pasta.service.UserManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Rating functions. 
@@ -78,23 +78,11 @@ public class RatingController {
 	@Autowired
 	private AssessmentManager assessmentManager;
 
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
-
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// RATINGS //
@@ -118,7 +106,6 @@ public class RatingController {
 		}
 		return "ERROR";
 	}  
-	
 	
 	@RequestMapping(value = "/saveRating/{username}/{assessmentId}/", method = RequestMethod.POST)
 	@ResponseBody

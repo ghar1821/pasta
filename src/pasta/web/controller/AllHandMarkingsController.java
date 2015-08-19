@@ -32,6 +32,7 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
@@ -43,14 +44,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewHandMarkingForm;
 import pasta.domain.template.HandMarking;
 import pasta.domain.user.PASTAUser;
 import pasta.service.HandMarkingManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Hand marking functions. 
@@ -94,13 +95,9 @@ public class AllHandMarkingsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private HandMarkingManager handMarkingManager;
+	@Autowired private HandMarkingManager handMarkingManager;
 	private Map<String, String> codeStyle;
 
-	@Autowired
-	public void setMyService(HandMarkingManager myService) {
-		this.handMarkingManager = myService;
-	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -111,20 +108,10 @@ public class AllHandMarkingsController {
 		return new NewHandMarkingForm();
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -152,15 +139,8 @@ public class AllHandMarkingsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/handMarks"
 	 */
 	@RequestMapping(value = "")
-	public String viewAllHandMarking(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-
+	public String viewAllHandMarking(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("unikey", user);
 		model.addAttribute("allHandMarking", handMarkingManager.getHandMarkingList());
 		return "assessment/viewAll/handMarks";
@@ -184,16 +164,10 @@ public class AllHandMarkingsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:." or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newHandMarking(
+	public String newHandMarking(@ModelAttribute("user") PASTAUser user, 
 			@Valid @ModelAttribute(value = "newHandMarkingModel") NewHandMarkingForm form, BindingResult result,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("newHandMarkingModel", form);
@@ -201,11 +175,7 @@ public class AllHandMarkingsController {
 			return "redirect:.";
 		}
 
-		// add it to the system
-		if (getUser().isInstructor()) {
-			HandMarking template = handMarkingManager.newHandMarking(form);
-			return "redirect:./" + template.getId() + "/";
-		}
-		return "redirect:.";
+		HandMarking template = handMarkingManager.newHandMarking(form);
+		return "redirect:./" + template.getId() + "/";
 	}
 }

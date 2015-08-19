@@ -39,6 +39,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.zip.ZipOutputStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -53,11 +54,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.Submission;
 import pasta.domain.form.TestUnitTestForm;
@@ -69,6 +69,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.service.UnitTestManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Unit Test functions. 
@@ -140,21 +141,11 @@ public class UnitTestController {
 	public UnitTest loadUnitTest(@PathVariable("testId") long testId) {
 		return unitTestManager.getUnitTest(testId);
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -185,16 +176,10 @@ public class UnitTestController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/unitTest"
 	 */
 	@RequestMapping(value = "{testId}/")
-	public String viewUnitTest(@PathVariable("testId") long testId,
+	public String viewUnitTest(@ModelAttribute("user") PASTAUser user, @PathVariable("testId") long testId,
 			@ModelAttribute("unitTest") UnitTest test,
 			Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("latestResult", test.getTestResult());
@@ -243,13 +228,7 @@ public class UnitTestController {
 	@RequestMapping(value = "{testId}/download/")
 	public void downloadUnitTest(@PathVariable("testId") long testId,
 			Model model,HttpServletResponse response) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return;
-		}
-		if (!user.isTutor()) {
-			return;
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		
 		String testName = unitTestManager.getUnitTest(testId).getFileAppropriateName();
 		response.setContentType("application/zip");
@@ -306,13 +285,7 @@ public class UnitTestController {
 			@Valid @ModelAttribute(value = "updateUnitTest") UpdateUnitTestForm updateForm, BindingResult result,
 			@ModelAttribute(value = "unitTest") UnitTest test,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		updateValidator.validate(updateForm, result);
 		if(result.hasErrors()) {
@@ -321,7 +294,7 @@ public class UnitTestController {
 			return "redirect:.";
 		}
 		
-		if(updateForm != null && getUser().isInstructor()) {
+		if(updateForm != null) {
 			unitTestManager.updateUnitTest(test, updateForm);
 			
 			if(updateForm.getFile() != null && !updateForm.getFile().isEmpty()) {
@@ -334,13 +307,7 @@ public class UnitTestController {
 	
 	@RequestMapping(value = "{testId}/clearCode/", method = RequestMethod.POST)
 	public String clearTestCode(@ModelAttribute(value = "unitTest") UnitTest test, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		if(test.hasCode()) {
 			unitTestManager.deleteUserCode(test);
@@ -376,13 +343,7 @@ public class UnitTestController {
 			@Valid @ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm, BindingResult result,
 			@ModelAttribute(value = "unitTest") UnitTest test,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		testValidator.validate(testForm, result);
 		if(result.hasErrors()) {
@@ -391,7 +352,7 @@ public class UnitTestController {
 			return "redirect:../.";
 		}
 		
-		if(testForm != null && testForm.getFile() != null && getUser().isInstructor()) {
+		if(testForm != null && testForm.getFile() != null) {
 			unitTestManager.testUnitTest(test, testForm);
 		}
 		
@@ -418,16 +379,8 @@ public class UnitTestController {
 	@RequestMapping(value = "delete/{testId}/")
 	public String deleteUnitTest(@PathVariable("testId") long testId,
 			Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (getUser().isInstructor()) {
-			unitTestManager.removeUnitTest(testId);
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		unitTestManager.removeUnitTest(testId);
 		return "redirect:../../";
 	}
 
@@ -449,18 +402,10 @@ public class UnitTestController {
 	@RequestMapping(value = "tested/{testId}/")
 	public String testedUnitTest(@PathVariable("testId") long testId,
 			Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (getUser().isInstructor()) {
-			UnitTest test = unitTestManager.getUnitTest(testId);
-			test.setTested(true);
-			unitTestManager.updateUnitTest(test);
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		UnitTest test = unitTestManager.getUnitTest(testId);
+		test.setTested(true);
+		unitTestManager.updateUnitTest(test);
 		return "redirect:../../" + testId + "/";
 	}
 }

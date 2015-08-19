@@ -67,12 +67,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.FileTreeNode;
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.Submission;
@@ -101,6 +100,7 @@ import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 import pasta.view.ExcelAutoMarkView;
 import pasta.view.ExcelMarkView;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for the submission (pretty much other, I just dump
@@ -202,7 +202,7 @@ public class SubmissionController {
 	public Map<Long, RatingForm> loadRatingForms() {
 		Map<Long, RatingForm> forms = new HashMap<Long, RatingForm>();
 		
-		PASTAUser user = getUser();
+		PASTAUser user = WebUtils.getUser();
 		if(user == null) {
 			return null;
 		}
@@ -222,53 +222,17 @@ public class SubmissionController {
 	public RatingForm loadRatingForm() {
 		return new RatingForm();
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user
-	 *         isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// HOME //
 	// ///////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * $PASTAUrl$/mirror/
-	 * <p>
-	 * Redirect back to the referrer. This is mainly used to get rid of the
-	 * resubmitting a form when refreshing a page.
-	 * 
-	 * @param request
-	 *            the http request used for redirection
-	 * @param session
-	 *            the http session that is never used here directly, but is
-	 *            passed to other methods to ensure that the binding result
-	 *            information is kept when using the mirror to stop the
-	 *            refreshing may re-submit form.
-	 * @return redirect to the referrer.
-	 */
-	@RequestMapping(value = "mirror/")
-	public String goBack(HttpServletRequest request, HttpSession session) {
-		return "redirect:" + request.getHeader("Referer");
-	}
-
-	@RequestMapping(value = "")
-	public String root(Model model, HttpSession session) {
-		return "redirect:/login/";
-	}
-	
 	/**
 	 * $PASTAUrl$/home/
 	 * <p>
@@ -307,12 +271,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "user/tutorHome" or "user/studentHome"
 	 */
 	@RequestMapping(value = "home/")
-	public String home(Model model, HttpSession session) {
-		// check if tutor or student
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
+	public String home(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
+		WebUtils.ensureLoggedIn(request);
 
 		model.addAttribute("unikey", user);
 		model.addAttribute("results", resultManager.getLatestResultsIncludingGroups(user));
@@ -407,16 +367,12 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "home/", method = RequestMethod.POST)
-	public String submitAssessment(@ModelAttribute(value = "submission") Submission form,
+	public String submitAssessment(@ModelAttribute("user")PASTAUser user, @ModelAttribute(value = "submission") Submission form,
 			BindingResult result, Model model, RedirectAttributes attr, HttpSession session) {
-		return doSubmitAssessment(null, form, result, model, attr, session);
+		return doSubmitAssessment(user, null, form, result, model, attr, session);
 	}
 	
-	private String doSubmitAssessment(String submitForUsername, Submission form, BindingResult result, Model model, RedirectAttributes attr, HttpSession session) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
+	private String doSubmitAssessment(@ModelAttribute("user")PASTAUser user, String submitForUsername, Submission form, BindingResult result, Model model, RedirectAttributes attr, HttpSession session) {
 		form.setSubmittingUser(user);
 		
 		Calendar now = Calendar.getInstance();
@@ -490,43 +446,34 @@ public class SubmissionController {
 	
 	@RequestMapping("checkJobQueue/{assessmentId}/") 
 	@ResponseBody
-	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "error";
-		}
-		
-		return checkJobQueue(user, assessmentId);
+	public String checkJobQueue(@ModelAttribute("user")PASTAUser user, @PathVariable("assessmentId") long assessmentId) {
+		return doCheckJobQueue(user, assessmentId);
 	}
 	
 	@RequestMapping("student/{username}/checkJobQueue/{assessmentId}/") 
 	@ResponseBody
 	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId, 
 			@PathVariable("username") String username) {
-		if (getUser() == null) {
+		PASTAUser forUser = userManager.getUser(username);
+		if(forUser == null) {
 			return "error";
 		}
-		PASTAUser user = userManager.getUser(username);
-		if(user == null) {
-			return "error";
-		}
-		
-		return checkJobQueue(user, assessmentId);
+		return doCheckJobQueue(forUser, assessmentId);
 	}
 
-	private String checkJobQueue(PASTAUser user, long assessmentId) {
+	private String doCheckJobQueue(PASTAUser forUser, long assessmentId) {
 		List<AssessmentJob> jobs = scheduler.getAssessmentQueue();
 		if(jobs == null || jobs.isEmpty()) {
 			return "";
 		}
-		PASTAGroup userGroup = groupManager.getGroup(user, assessmentId);
+		PASTAGroup userGroup = groupManager.getGroup(forUser, assessmentId);
 		
 		StringBuilder positions = new StringBuilder();
 		int subCount = 0;
 		for(int i = 0; i < jobs.size(); i++) {
 			AssessmentJob job = jobs.get(i);
 			if(job.getAssessmentId() == assessmentId
-					&& (job.getUser().equals(user) ||
+					&& (job.getUser().equals(forUser) ||
 							(userGroup != null && job.getUser().equals(userGroup)))) {
 				if(subCount > 0) {
 					positions.append(", ");
@@ -589,12 +536,7 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "user/viewAssessment"
 	 */
 	@RequestMapping(value = "info/{assessmentId}/")
-	public String viewAssessmentInfo(@PathVariable("assessmentId") long assessmentId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		
+	public String viewAssessmentInfo(@ModelAttribute("user") PASTAUser user, @PathVariable("assessmentId") long assessmentId, Model model) {
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(assessment == null) {
 			return "redirect:/home/";
@@ -638,21 +580,12 @@ public class SubmissionController {
 	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadMarks/")
-	public ModelAndView viewExcel(HttpServletRequest request, HttpServletResponse response, 
+	public ModelAndView viewExcel(@ModelAttribute("user") PASTAUser user, HttpServletResponse response, 
 			@RequestParam(value="myClasses", required=false) Boolean useMyClasses,
 			@RequestParam(value="tutorial", required=false) String tutorial,
 			@RequestParam(value="stream", required=false) String stream) {
-		PASTAUser user = getUser();
-		ModelAndView model = new ModelAndView();
-
-		if (user == null) {
-			model.setViewName("redirect:/login/");
-			return model;
-		}
-		if (!user.isTutor()) {
-			model.setViewName("redirect:/home/");
-			return model;
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		
 		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
@@ -691,21 +624,12 @@ public class SubmissionController {
 	 *         {@link pasta.view.ExcelMarkView})
 	 */
 	@RequestMapping(value = "downloadAutoMarks/")
-	public ModelAndView viewAutoExcel(HttpServletRequest request, HttpServletResponse response, 
+	public ModelAndView viewAutoExcel(@ModelAttribute("user") PASTAUser user, HttpServletResponse response, 
 			@RequestParam(value="myClasses", required=false) Boolean useMyClasses,
 			@RequestParam(value="tutorial", required=false) String tutorial,
 			@RequestParam(value="stream", required=false) String stream) {
-		PASTAUser user = getUser();
-		ModelAndView model = new ModelAndView();
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
-		if (user == null) {
-			model.setViewName("redirect:/login/");
-			return model;
-		}
-		if (!user.isTutor()) {
-			model.setViewName("redirect:/home/");
-			return model;
-		}
 		Map<String, Object> data = new TreeMap<String, Object>();
 
 		data.put("assessmentList", assessmentManager.getAssessmentList());
@@ -749,13 +673,7 @@ public class SubmissionController {
 	@RequestMapping(value = "student/{username}/info/{assessmentId}/updateComment/", method = RequestMethod.POST)
 	public String updateComment(@RequestParam("newComment") String newComment,
 			@RequestParam("resultId") long resultId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		resultManager.updateComment(resultId, newComment);
 		return "redirect:../";
 	}
@@ -777,19 +695,17 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "viewFile/loadFile", method = RequestMethod.GET)
 	public void getFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
-		PASTAUser user = getUser();
-		if (user != null && user.isTutor()) {
-			if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
-				try {
-					// get your file as InputStream
-					InputStream is = new FileInputStream(fileName.replace("\"", ""));
-					// copy it to response's OutputStream
-					IOUtils.copy(is, response.getOutputStream());
-					response.flushBuffer();
-					is.close();
-				} catch (IOException ex) {
-					throw new RuntimeException("IOError writing file to output stream");
-				}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
+			try {
+				// get your file as InputStream
+				InputStream is = new FileInputStream(fileName.replace("\"", ""));
+				// copy it to response's OutputStream
+				IOUtils.copy(is, response.getOutputStream());
+				response.flushBuffer();
+				is.close();
+			} catch (IOException ex) {
+				throw new RuntimeException("IOError writing file to output stream");
 			}
 		}
 	}
@@ -809,27 +725,25 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
 	public void downloadFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
-		PASTAUser user = getUser();
-		if (user != null && user.isTutor()) {
-			if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
-				try {
-					// get your file as InputStream
-					InputStream is = new FileInputStream(fileName.replace("\"", ""));
-					// copy it to response's OutputStream
-					response.setContentType("application/octet-stream;");
-					response.setHeader(
-							"Content-Disposition",
-							"attachment; filename="
-									+ fileName.replace("\"", "")
-											.substring(
-													fileName.replace("\"", "").replace("\\", "/")
-															.lastIndexOf("/") + 1));
-					IOUtils.copy(is, response.getOutputStream());
-					response.flushBuffer();
-					is.close();
-				} catch (IOException ex) {
-					throw new RuntimeException("IOError writing file to output stream");
-				}
+		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
+		if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
+			try {
+				// get your file as InputStream
+				InputStream is = new FileInputStream(fileName.replace("\"", ""));
+				// copy it to response's OutputStream
+				response.setContentType("application/octet-stream;");
+				response.setHeader(
+						"Content-Disposition",
+						"attachment; filename="
+								+ fileName.replace("\"", "")
+										.substring(
+												fileName.replace("\"", "").replace("\\", "/")
+														.lastIndexOf("/") + 1));
+				IOUtils.copy(is, response.getOutputStream());
+				response.flushBuffer();
+				is.close();
+			} catch (IOException ex) {
+				throw new RuntimeException("IOError writing file to output stream");
 			}
 		}
 	}
@@ -881,16 +795,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@RequestParam("location") String location, 
+	public String viewFile(@ModelAttribute("user") PASTAUser user, @RequestParam("location") String location, 
 			@RequestParam("owner") String owner, Model model,
 			HttpServletResponse response) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
 
 		File file = new File(location);
 		model.addAttribute("filename", file.getName());
@@ -958,15 +866,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/studentHome"
 	 */
 	@RequestMapping(value = "student/{username}/home/")
-	public String viewStudent(@PathVariable("username") String username, Model model) {
+	public String viewStudent(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username, Model model) {
 		// check if tutor or student
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1059,13 +962,13 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
-	public String submitAssessment(@PathVariable("username") String username,
+	public String submitAssessment(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
 			@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model,
 			RedirectAttributes attr, HttpSession session) {
 		if(username == null || username.isEmpty()) {
 			return "redirect:/home/";
 		}
-		return doSubmitAssessment(username, form, result, model, attr, session);
+		return doSubmitAssessment(user, username, form, result, model, attr, session);
 	}
 
 	/**
@@ -1118,16 +1021,10 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAssessment"
 	 */
 	@RequestMapping(value = "student/{username}/info/{assessmentId}/")
-	public String viewAssessmentInfo(@PathVariable("username") String username,
+	public String viewAssessmentInfo(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId, Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1181,10 +1078,7 @@ public class SubmissionController {
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletResponse response) {
 
-		PASTAUser user = getUser();
-		if (user == null || !user.isTutor()) {
-			return;
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment;filename=\"" + username + "-" + assessmentId
@@ -1237,13 +1131,7 @@ public class SubmissionController {
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletRequest request) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1282,17 +1170,11 @@ public class SubmissionController {
 	 *         referrer
 	 */
 	@RequestMapping(value = "student/{username}/extension/{assessmentId}/{extension}/")
-	public String giveExtension(@PathVariable("username") String username,
+	public String giveExtension(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId, @PathVariable("extension") String extension,
 			Model model, HttpServletRequest request) {
 		// check if tutor or student
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1365,17 +1247,11 @@ public class SubmissionController {
 	 *         "assessment/mark/handMark"
 	 */
 	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/")
-	public String handMarkAssessment(@PathVariable("username") String username,
+	public String handMarkAssessment(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1441,15 +1317,9 @@ public class SubmissionController {
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate,
 			@ModelAttribute(value = "assessmentResult") AssessmentResult form, BindingResult result,
-			Model model, HttpServletRequest request) {
+			Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(username);
 		if(viewedUser == null) {
 			return "redirect:/home/";
@@ -1561,18 +1431,12 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "mark/{assessmentId}/{studentIndex}/", method = { RequestMethod.POST,
 			RequestMethod.GET })
-	public String handMarkAssessmentBatch(@PathVariable("studentIndex") String studentIndex,
+	public String handMarkAssessmentBatch(@ModelAttribute("user") PASTAUser user, @PathVariable("studentIndex") String studentIndex,
 			@PathVariable("assessmentId") long assessmentId,
 			@RequestParam(value = "student", required = false) String student,
-			@ModelAttribute(value = "assessmentResult") AssessmentResult form, HttpServletRequest request,
+			@ModelAttribute(value = "assessmentResult") AssessmentResult form,
 			Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser viewedUser = userManager.getUser(student);
 
 		model.addAttribute("unikey", user);
@@ -1669,16 +1533,10 @@ public class SubmissionController {
 	}
 
 	@RequestMapping(value = "mark/{assessmentId}/", method = RequestMethod.GET)
-	public String handMarkAssessmentBatchStart(@PathVariable("assessmentId") long assessmentId,
+	public String handMarkAssessmentBatchStart(@ModelAttribute("user") PASTAUser user, @PathVariable("assessmentId") long assessmentId,
 			HttpServletRequest request, Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("unikey", user);
 
@@ -1718,14 +1576,7 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "gradeCentre/DATA/")
 	public @ResponseBody String viewGradeCentreData() {
-		PASTAUser currentUser = getUser();
-		if (currentUser == null) {
-			return "";
-		}
-		if (!currentUser.isTutor()) {
-			return "";
-		}
-
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		return generateJSON(userManager.getStudentList());
 	}
 
@@ -1743,14 +1594,7 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "stream/{streamName}/DATA/")
 	public @ResponseBody String viewStreamData(@PathVariable("streamName") String streamName) {
-		PASTAUser currentUser = getUser();
-		if (currentUser == null) {
-			return "";
-		}
-		if (!currentUser.isTutor()) {
-			return "";
-		}
-
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		if (userManager.getUserListByStream(streamName) == null) {
 			return "";
 		}
@@ -1772,13 +1616,7 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "tutorial/{className}/DATA/")
 	public @ResponseBody String viewTutorialData(@PathVariable("className") String className) {
-		PASTAUser currentUser = getUser();
-		if (currentUser == null) {
-			return "";
-		}
-		if (!currentUser.isTutor()) {
-			return "";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		if (userManager.getUserListByTutorial(className) == null) {
 			return "";
@@ -1800,16 +1638,10 @@ public class SubmissionController {
 	 * @return the appropriate json file
 	 */
 	@RequestMapping(value = "myTutorials/DATA/")
-	public @ResponseBody String viewMyTutorialData() {
-		PASTAUser currentUser = getUser();
-		if (currentUser == null) {
-			return "";
-		}
-		if (!currentUser.isTutor()) {
-			return "";
-		}
+	public @ResponseBody String viewMyTutorialData(@ModelAttribute("user") PASTAUser user) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
-		Collection<PASTAUser> myUsers = userManager.getTutoredStudents(currentUser);
+		Collection<PASTAUser> myUsers = userManager.getTutoredStudents(user);
 		return generateJSON(myUsers);
 	}
 
@@ -1963,15 +1795,9 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "gradeCentre/")
-	public String viewGradeCentre(Model model) {
+	public String viewGradeCentre(@ModelAttribute("user") PASTAUser user, Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
@@ -2012,14 +1838,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "tutorial/{className}/")
-	public String viewClass(@PathVariable("className") String className, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String viewClass(@ModelAttribute("user") PASTAUser user, @PathVariable("className") String className, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
@@ -2061,14 +1881,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "stream/{streamName}/")
-	public String viewStream(@PathVariable("streamName") String streamName, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String viewStream(@ModelAttribute("user") PASTAUser user, @PathVariable("streamName") String streamName, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);
@@ -2110,14 +1924,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/gradeCentre"
 	 */
 	@RequestMapping(value = "myTutorials/")
-	public String viewMyTutorials(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String viewMyTutorials(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
 		model.addAttribute("unikey", user);

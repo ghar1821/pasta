@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
@@ -41,10 +42,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.form.NewPlayer;
 import pasta.domain.form.UpdateCompetitionForm;
@@ -57,6 +57,7 @@ import pasta.service.CompetitionManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Competition functions. 
@@ -114,21 +115,11 @@ public class CompetitionController {
 	public AssessmentResult returnAssessmentResultModel() {
 		return new AssessmentResult();
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////
@@ -156,16 +147,8 @@ public class CompetitionController {
 	@RequestMapping(value = "delete/{competitionId}/")
 	public String deleteCompetition(
 			@PathVariable("competitionId") long competitionId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (user.isInstructor()) {
-			competitionManager.removeCompetition(competitionId);
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		competitionManager.removeCompetition(competitionId);
 		return "redirect:../../";
 	}
 
@@ -192,15 +175,9 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/competition"
 	 */
 	@RequestMapping(value = "{competitionId}/")
-	public String viewCompetition(
+	public String viewCompetition(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("competitionId") long competitionId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("unikey", user);
 		//model.addAttribute("competition", competitionManager.getCompetition(competitionId));
@@ -241,13 +218,7 @@ public class CompetitionController {
 			@ModelAttribute(value = "competition") Competition comp,
 			@PathVariable("competitionId") long competitionId, 
 			RedirectAttributes attr, Model model){
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) {
@@ -256,14 +227,12 @@ public class CompetitionController {
 			return "redirect:.";
 		}
 		
-		if(user.isInstructor()){
-			// update competition
-			competitionManager.updateCompetition(comp, form);
-			
-			if(form.getFile() != null && !form.getFile().isEmpty()){
-				// update contents
-				competitionManager.updateCode(comp, form);
-			}
+		// update competition
+		competitionManager.updateCompetition(comp, form);
+		
+		if(form.getFile() != null && !form.getFile().isEmpty()){
+			// update contents
+			competitionManager.updateCode(comp, form);
 		}
 		
 		return "redirect:.";
@@ -298,15 +267,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/calculated" or "assessment/competition/arena"
 	 */
 	@RequestMapping(value = "view/{competitionId}/")
-	public String viewCompetitionPage(Model model,
+	public String viewCompetitionPage(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("competitionId") long competitionId) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		Competition currComp = competitionManager.getCompetition(competitionId);
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
-			return "redirect:/home/.";
+			return "redirect:/home/";
 		}
 
 		model.addAttribute("unikey", user);
@@ -344,15 +309,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "view/{competitionId}/", method = RequestMethod.POST)
-	public String addArena(Model model,
+	public String addArena(Model model, @ModelAttribute("user") PASTAUser user, 
 			@ModelAttribute(value = "newArenaModel") Arena arena,
 			@PathVariable("competitionId") long competitionId) {
-		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionId);
 
-		if (user == null) {
-			return "redirect:/login/";
-		}
+		Competition currComp = competitionManager.getCompetition(competitionId);
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -405,15 +366,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../" or "assessment/competition/arenaDetails"
 	 */
 	@RequestMapping(value = "view/{competitionId}/{arenaId}/")
-	public String viewArenaPage(Model model,
+	public String viewArenaPage(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("arenaId") long arenaId,
 			@PathVariable("competitionId") long competitionId) {
-		PASTAUser user = getUser();
-		Competition currComp = competitionManager.getCompetition(competitionId);
 
-		if (user == null) {
-			return "redirect:/login/";
-		}
+		Competition currComp = competitionManager.getCompetition(competitionId);
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -452,16 +409,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
 	@RequestMapping(value = "view/{competitionId}/{arenaId}/add/{playerName}/")
-	public String addPlayerToArena(Model model,
+	public String addPlayerToArena(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("arenaId") long arenaId,
 			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playername) {
-		PASTAUser user = getUser();
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -490,16 +442,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
 	@RequestMapping(value = "view/{competitionId}/{arenaId}/remove/{playerName}/")
-	public String removePlayerFromArena(Model model,
+	public String removePlayerFromArena(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("arenaId") long arenaId,
 			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playername) {
-		PASTAUser user = getUser();
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -525,16 +472,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../.."
 	 */
 	@RequestMapping(value = "{competitionId}/myPlayers/retire/{playerName}/")
-	public String retirePlayer(Model model,
+	public String retirePlayer(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("competitionId") long competitionId,
 			@PathVariable("playerName") String playerName) {
 		
-		PASTAUser user = getUser();
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/.";
 		}	
@@ -567,14 +509,9 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/players"
 	 */
 	@RequestMapping(value = "{competitionId}/myPlayers/")
-	public String manageMyPlayers(Model model,
+	public String manageMyPlayers(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("competitionId") long competitionId) {
-		PASTAUser user = getUser();
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -618,16 +555,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/" or "assessment/competition/players"
 	 */
 	@RequestMapping(value = "{competitionId}/myPlayers/", method = RequestMethod.POST)
-	public String submitNewPlayer(Model model,
+	public String submitNewPlayer(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("competitionId") long competitionId,
 			@ModelAttribute(value = "newPlayerModel") NewPlayer playerForm,
 			BindingResult result) {
-		PASTAUser user = getUser();
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		
@@ -674,16 +606,11 @@ public class CompetitionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/competition/players"
 	 */
 	@RequestMapping(value = "view/{competitionId}/{unikey}/players/")
-	public String viewOthersPlayers(Model model,
+	public String viewOthersPlayers(Model model, @ModelAttribute("user") PASTAUser user, 
 			@PathVariable("unikey") String unikey,
 			@PathVariable("competitionId") long competitionId) {
-		PASTAUser user = getUser();
 		PASTAUser viewedUser = userManager.getUser(unikey);
 		Competition currComp = competitionManager.getCompetition(competitionId);
-
-		if (user == null) {
-			return "redirect:/login/";
-		}
 		if (viewedUser == null || currComp == null || (!user.isTutor() && !ProjectProperties.getInstance().getCompetitionDAO().isLive(currComp))) {
 			return "redirect:/home/";
 		}		

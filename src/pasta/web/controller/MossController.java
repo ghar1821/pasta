@@ -36,13 +36,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.user.PASTAUser;
 import pasta.service.MossManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for the MOSS plagarism detection functions. 
@@ -59,30 +60,14 @@ import pasta.service.MossManager;
 @Controller
 @RequestMapping("moss/")
 public class MossController {
-
-
 	protected final Log logger = LogFactory.getLog(getClass());
-	private MossManager mossManager;
+	
+	@Autowired private MossManager mossManager;
 
-	@Autowired
-	public void setMyService(MossManager myService) {
-		this.mossManager = myService;
-	}
-	
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-	
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -108,15 +93,7 @@ public class MossController {
 	@RequestMapping(value = "/run/{assessmentId}/")
 	public String runMoss(ModelMap model, HttpServletRequest request,
 			@PathVariable("assessmentId") long assessmentId) {
-		
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-	
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		mossManager.runMoss(assessmentId);
 		return "redirect:" + request.getHeader("Referer");
 	}
@@ -144,17 +121,9 @@ public class MossController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/list"
 	 */
 	@RequestMapping(value = "/view/{assessmentId}/")
-	public String viewMoss(ModelMap model,
+	public String viewMoss(@ModelAttribute("user") PASTAUser user, ModelMap model,
 			@PathVariable("assessmentId") long assessmentId) {
-				
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("unikey", user);
 		model.addAttribute("assessmentId", assessmentId);
 		model.addAttribute("mossList", mossManager.getMossList(assessmentId));
@@ -184,18 +153,10 @@ public class MossController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "moss/view"
 	 */
 	@RequestMapping(value = "/view/{assessmentId}/{date}/")
-	public String viewMoss(ModelMap model,
+	public String viewMoss(@ModelAttribute("user") PASTAUser user, ModelMap model,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("date") String date) {
-				
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("unikey", user);
 		model.addAttribute("mossResults", mossManager.getMossRun(assessmentId, date));
 		return "moss/view";

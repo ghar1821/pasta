@@ -24,10 +24,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.AssessmentReleaseForm;
 import pasta.domain.form.validate.AssessmentReleaseFormValidator;
 import pasta.domain.release.ReleaseRule;
@@ -36,6 +35,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.ReleaseManager;
 import pasta.service.UserManager;
+import pasta.web.WebUtils;
 
 @Controller
 @SessionAttributes({"allUsernames", "allTutorials", "allStreams", "allAssessments", "allRules"})
@@ -60,29 +60,16 @@ public class ReleaseController {
 		return assessmentManager.getAssessment(assessmentId);
 	}
 	
-	
-	/**
-	 * Get the currently logged in user. If it doesn't exist, don't create it.
-	 * 
-	 * @return the currently logged in user, null if not logged in or doesn't already exist.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 	
 	
 	@RequestMapping(value = "{assessmentId}/")
-	public String loadRule(ModelMap model, @ModelAttribute("assessment") Assessment assessment) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+	public String loadRule(@ModelAttribute("user") PASTAUser user, ModelMap model, @ModelAttribute("assessment") Assessment assessment) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		model.addAttribute("unikey", user);
 		
 		TreeSet<String> allUsernames = new TreeSet<>(userManager.getStudentUsernameList());
@@ -112,13 +99,7 @@ public class ReleaseController {
 	public String saveRule(@Valid @ModelAttribute("releaseRuleForm") AssessmentReleaseForm form, BindingResult result,
 			@ModelAttribute("assessment") Assessment assessment,
 			ModelMap model, SessionStatus status, RedirectAttributes attr) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) { 
@@ -139,13 +120,7 @@ public class ReleaseController {
 			@RequestParam(value="basePath") String basePath,
 			@RequestParam(value="changeConjunction", required=false) Boolean changeConjunction,
 			RedirectAttributes attr) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		// The newly added form (selected as the "change to" rule)
 		AssessmentReleaseForm newForm = new AssessmentReleaseForm("pasta.domain.release.Release" + newRuleType + "Rule");
@@ -198,13 +173,7 @@ public class ReleaseController {
 	
 	@RequestMapping(value = "{assessmentId}/load/")
 	public String loadPartialRule(Model model, @RequestParam("pathPrefix") String pathPrefix, @ModelAttribute("newRule") AssessmentReleaseForm newForm, @ModelAttribute("releaseRuleForm") AssessmentReleaseForm releaseRuleForm) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		model.addAttribute("pathPrefix", pathPrefix);
 		if(pathPrefix.equals("releaseRuleForm")) {

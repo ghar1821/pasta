@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
@@ -40,14 +41,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAUser;
 import pasta.service.CompetitionManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Competition functions. 
@@ -68,12 +69,8 @@ public class AllCompetitionsController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	private CompetitionManager competitionManager;
+	@Autowired private CompetitionManager competitionManager;
 
-	@Autowired
-	public void setMyService(CompetitionManager myService) {
-		this.competitionManager = myService;
-	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -83,21 +80,11 @@ public class AllCompetitionsController {
 	public NewCompetitionForm returnNewCompetitionModel() {
 		return new NewCompetitionForm();
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -124,12 +111,7 @@ public class AllCompetitionsController {
 	 * @return "redirect:/login/" or "assessment/viewAll/competition"
 	 */
 	@RequestMapping(value = "")
-	public String viewAllCompetitions(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-
+	public String viewAllCompetitions(@ModelAttribute("user") PASTAUser user, Model model) {
 		model.addAttribute("unikey", user);
 		model.addAttribute("allCompetitions", competitionManager.getCompetitionList());
 		model.addAttribute("liveAssessmentCounts", competitionManager.getLiveAssessmentCounts(user));
@@ -156,16 +138,9 @@ public class AllCompetitionsController {
 	 * @return "redirect:/login" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newCompetition(
-			@Valid @ModelAttribute(value = "newCompetitionModel") NewCompetitionForm form, BindingResult result,
+	public String newCompetition(@Valid @ModelAttribute(value = "newCompetitionModel") NewCompetitionForm form, BindingResult result,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("newCompetitionModel", form);
@@ -173,11 +148,9 @@ public class AllCompetitionsController {
 			return "redirect:.";
 		}
 		
-		if(user.isInstructor()){
-			Competition newComp = competitionManager.addCompetition(form);
-			if(newComp != null) {
-				return "redirect:./" + newComp.getId() + "/";
-			}
+		Competition newComp = competitionManager.addCompetition(form);
+		if(newComp != null) {
+			return "redirect:./" + newComp.getId() + "/";
 		}
 
 		return "redirect:/mirror/";

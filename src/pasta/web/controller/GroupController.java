@@ -32,6 +32,8 @@ package pasta.web.controller;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateGroupsForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAGroup;
@@ -52,6 +53,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
 import pasta.service.UserManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for group functions. 
@@ -77,24 +79,6 @@ public class GroupController {
 	@Autowired
 	private AssessmentManager assessmentManager;
 
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
-	}
-	
-	
 	// ///////////////////////////////////////////////////////////////////////////
 	// Model //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -104,19 +88,20 @@ public class GroupController {
 		return new UpdateGroupsForm();
 	}
 
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// Groups //
 	// ///////////////////////////////////////////////////////////////////////////
 	
 	@RequestMapping(value = "/{assessmentId}/", method = RequestMethod.GET)
-	public String viewAssessmentGroup(
+	public String viewAssessmentGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/";
-		}
-		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
 			return "redirect:/home/";
@@ -148,14 +133,9 @@ public class GroupController {
 	}
 	
 	@RequestMapping(value = "/{assessmentId}/leaveGroup/", method = RequestMethod.POST)
-	public String leaveGroup(
+	public String leaveGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/";
-		}
-		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
 			return "redirect:/home/";
@@ -167,15 +147,10 @@ public class GroupController {
 	}
 	
 	@RequestMapping(value = "/{assessmentId}/joinGroup/{groupId}/", method = RequestMethod.POST)
-	public String joinGroup(
+	public String joinGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("groupId") long groupId,
 			Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/";
-		}
-		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
 			return "redirect:/home/";
@@ -193,28 +168,23 @@ public class GroupController {
 	
 	@RequestMapping(value = "/{assessmentId}/lockGroup/{groupId}/", method = RequestMethod.POST)
 	@ResponseBody
-	public String lockGroup(
+	public String lockGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("groupId") long groupId,
 			Model model) {
-		return toggleLock(assessmentId, groupId, model, true);
+		return toggleLock(user, assessmentId, groupId, model, true);
 	}
 	
 	@RequestMapping(value = "/{assessmentId}/unlockGroup/{groupId}/", method = RequestMethod.POST)
 	@ResponseBody
-	public String unlockGroup(
+	public String unlockGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("groupId") long groupId,
 			Model model) {
-		return toggleLock(assessmentId, groupId, model, false);
+		return toggleLock(user, assessmentId, groupId, model, false);
 	}
 	
-	private String toggleLock(long assessmentId, long groupId, Model model, boolean lock) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "not logged in";
-		}
-		
+	private String toggleLock(PASTAUser user, long assessmentId, long groupId, Model model, boolean lock) {
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
 			return "not released";
@@ -231,14 +201,9 @@ public class GroupController {
 	}
 	
 	@RequestMapping(value = "/{assessmentId}/addGroup/", method = RequestMethod.POST)
-	public String addGroup(
+	public String addGroup(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/";
-		}
-		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {
 			return "redirect:/home/";
@@ -250,14 +215,11 @@ public class GroupController {
 	}
 	
 	@RequestMapping(value = "/{assessmentId}/saveAll/", method = RequestMethod.POST)
-	public String updateGroups(
+	public String updateGroups(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute("updateGroupsForm") UpdateGroupsForm form,
 			Model model) {
-		PASTAUser user = getUser();
-		if(user == null) {
-			return "redirect:/login/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(!assessment.isReleasedTo(user)) {

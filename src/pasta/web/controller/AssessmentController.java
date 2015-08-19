@@ -59,10 +59,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.form.validate.UpdateAssessmentFormValidator;
 import pasta.domain.result.AssessmentResult;
@@ -86,6 +85,7 @@ import pasta.service.UserManager;
 import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Assessment functions. 
@@ -167,19 +167,10 @@ public class AssessmentController {
 		return new UpdateAssessmentForm(assessmentManager.getAssessment(assessmentId));
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -220,17 +211,11 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/assessment"
 	 */
 	@RequestMapping(value = "{assessmentId}/")
-	public String viewAssessment(
+	public String viewAssessment(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			Model model) {
 
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		Assessment currAssessment = assessmentManager.getAssessment(assessmentId);
 		if(currAssessment == null) {
@@ -341,18 +326,12 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "{assessmentId}/", method = RequestMethod.POST)
-	public String updateAssessment(
+	public String updateAssessment(@ModelAttribute("user") PASTAUser user, 
 			@PathVariable("assessmentId") long assessmentId,
 			@Valid @ModelAttribute(value = "updateAssessmentForm") UpdateAssessmentForm form, BindingResult result,
 			@ModelAttribute(value = "assessment") Assessment assessment,
 			RedirectAttributes attr, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		if(assessment == null) {
 			return "redirect:/home/";
 		}
@@ -403,9 +382,7 @@ public class AssessmentController {
 			return "redirect:.";
 		}
 		
-		if (user.isInstructor()) {
-			assessmentManager.updateAssessment(assessment, form);
-		}
+		assessmentManager.updateAssessment(assessment, form);
 		return "redirect:.";
 	}
 
@@ -428,24 +405,14 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or redirect to referrer
 	 */
 	@RequestMapping(value = "{assessmentId}/run/")
-	public String runAssessment(
-			@PathVariable("assessmentId") long assessmentId,
-			HttpServletRequest request) {
-
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String runAssessment(HttpServletRequest request, 
+			@PathVariable("assessmentId") long assessmentId) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(assessment == null) {
 			return "redirect:/home/";
 		}
-		if (user.isInstructor()) {
-			submissionManager.runAssessment(assessment, userManager.getUserListIncludingGroups());
-		}
+		submissionManager.runAssessment(assessment, userManager.getUserListIncludingGroups());
 		return "redirect:" + request.getHeader("Referer");
 	}
 
@@ -467,18 +434,9 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../../"
 	 */
 	@RequestMapping(value = "delete/{assessmentId}/")
-	public String deleteAssessment(
-			@PathVariable("assessmentId") long assessmentId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (getUser().isInstructor()) {
-			assessmentManager.removeAssessment(assessmentId);
-		}
+	public String deleteAssessment(@PathVariable("assessmentId") long assessmentId, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		assessmentManager.removeAssessment(assessmentId);
 		return "redirect:../../";
 	}
 	
@@ -504,10 +462,7 @@ public class AssessmentController {
 	public void downloadLatest(
 			@PathVariable("assessmentId") long assessmentId, Model model,
 			HttpServletResponse response) {
-		PASTAUser user = getUser();
-		if (user == null || !user.isTutor()) {
-			return;
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		if(assessment == null) {

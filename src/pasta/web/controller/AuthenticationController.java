@@ -47,6 +47,7 @@ import pasta.domain.form.LoginForm;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Authentication functions. 
@@ -72,22 +73,6 @@ public class AuthenticationController {
 	public void setMyService(UserManager myService) {
 		this.userManager = myService;
 	}
-	
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
-	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// LOGIN //
@@ -112,7 +97,7 @@ public class AuthenticationController {
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String get(ModelMap model) {
-		if(getUser() != null){
+		if(WebUtils.getUser() != null){
 			return "redirect:/home/";
 		}
 		
@@ -168,8 +153,7 @@ public class AuthenticationController {
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
 				user, RequestAttributes.SCOPE_SESSION);
 
-		// Use the redirect-after-post pattern to reduce double-submits.
-		return "redirect:/home/";
+		return WebUtils.getRedirectAfterLogin();
 	}
 
 	/**

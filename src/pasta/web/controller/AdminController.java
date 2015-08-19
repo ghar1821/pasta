@@ -45,8 +45,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.domain.UserPermissionLevel;
@@ -57,6 +55,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for admin functions. 
@@ -104,23 +103,10 @@ public class AdminController {
 		return new UpdateUsersForm();
 	}
 	
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-	
-	/**
-	 * Get the current logged in user.
-	 * <p>
-	 * Gets the "user" attribute from the current session.
-	 *  
-	 * @see pasta.service.UserManager#getUser(String)
-	 * @return the user or null if there is no user with that name.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -149,13 +135,7 @@ public class AdminController {
 	 * @return "redirect:/login" or "user/admin".
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String get(ModelMap model) {
-				
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		
+	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
 		model.addAttribute("authType", ProjectProperties.getInstance().getAuthenticationValidator().getClass().getName());
 		model.addAttribute("unikey", user);
 		
@@ -181,25 +161,21 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/changePassword/", method = RequestMethod.POST)
-	public String changePassword(ModelMap model, HttpServletRequest request,
+	public String changePassword(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
 			@ModelAttribute(value = "changePasswordForm") ChangePasswordForm form) {
 				
-		PASTAUser user = getUser();
-		
-		if (user != null) {
-			Validator val = ProjectProperties.getInstance().getAuthenticationValidator();
-			if(val instanceof DBAuthValidator){
-				DBAuthValidator authenticator = (DBAuthValidator)val;
-				if(authenticator.authenticate(user.getUsername(), form.getOldPassword())
-						&& form.getNewPassword().equals(form.getConfirmPassword())){
-					logger.info("swapping password");
-					userManager.updatePassword(user.getUsername(), form.getNewPassword());
-				}
-				else{
-					logger.info("an error occured");
-				}
-				
+		Validator val = ProjectProperties.getInstance().getAuthenticationValidator();
+		if(val instanceof DBAuthValidator){
+			DBAuthValidator authenticator = (DBAuthValidator)val;
+			if(authenticator.authenticate(user.getUsername(), form.getOldPassword())
+					&& form.getNewPassword().equals(form.getConfirmPassword())){
+				logger.info("swapping password");
+				userManager.updatePassword(user.getUsername(), form.getNewPassword());
 			}
+			else{
+				logger.info("an error occured");
+			}
+			
 		}
 		
 		return "redirect:" + request.getHeader("Referer");
@@ -220,13 +196,13 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/updateUsers/", method = RequestMethod.POST)
-	public String updateUsers(
+	public String updateUsers(@ModelAttribute("user") PASTAUser user, 
 			@Valid @ModelAttribute("updateUsersForm") UpdateUsersForm form, BindingResult result, 
 			RedirectAttributes attr, Model model, HttpServletRequest request) {
-		PASTAUser user = getUser();
-		if(user == null || user.getPermissionLevel() == UserPermissionLevel.STUDENT || 
-				(form.isUpdateTutors() && user.getPermissionLevel() == UserPermissionLevel.TUTOR)) {
-			return "redirect:" + request.getHeader("Referer");
+		if(form.isUpdateTutors()) {
+			WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		}
 		
 		updateValidator.validate(form, result);
@@ -257,17 +233,17 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/delete/{username}/")
-	public String deleteUser(ModelMap model, HttpServletRequest request,
+	public String deleteUser(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
 			@PathVariable("username") String username) {
 				
-		PASTAUser user = getUser();
-	
-		if(user != null && user.isTutor()){
-			// update classlist
-			PASTAUser toDelete = userManager.getUser(username);
-			userManager.deleteUser(toDelete);
+		PASTAUser toDelete = userManager.getUser(username);
+		if(toDelete.isTutor()) {
+			WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		}
-				
+	
+		userManager.deleteUser(toDelete);
 		return "redirect:" + request.getHeader("Referer");
 	}
 	
@@ -288,16 +264,12 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/auth/", method = RequestMethod.GET)
-	public String changeAuthType(ModelMap model, HttpServletRequest request,
+	public String changeAuthType(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
 			@RequestParam(value="type") String type,
 			@RequestParam(value="address") String[] address) {
-				
-		PASTAUser user = getUser();
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 	
-		if(user != null && user.isTutor()){
-			ProjectProperties.getInstance().changeAuthMethod(type, address);
-		}
-				
+		ProjectProperties.getInstance().changeAuthMethod(type, address);
 		return "redirect:" + request.getHeader("Referer");
 	}
 }

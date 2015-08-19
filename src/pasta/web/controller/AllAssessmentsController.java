@@ -32,6 +32,7 @@ package pasta.web.controller;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.logging.Log;
@@ -43,15 +44,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewAssessmentForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.UserManager;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Assessment functions. 
@@ -112,21 +113,10 @@ public class AllAssessmentsController {
 		return new NewAssessmentForm();
 	}
 
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user. If it doesn't exist, don't create it.
-	 * 
-	 * @return the currently logged in user, null if not logged in or doesn't already exist.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -155,14 +145,8 @@ public class AllAssessmentsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/viewAll/assessment" 
 	 */
 	@RequestMapping(value = "")
-	public String viewAllAssessment(Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+	public String viewAllAssessment(@ModelAttribute("user") PASTAUser user, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allAssessments", assessmentManager.getAllAssessmentsByCategory(true));
 		model.addAttribute("unikey", user);
@@ -192,17 +176,10 @@ public class AllAssessmentsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newAssessmentAssessment(
+	public String newAssessmentAssessment(@ModelAttribute("user") PASTAUser user,
 			@Valid @ModelAttribute(value = "newAssessmentForm") NewAssessmentForm form,
 			BindingResult result, RedirectAttributes attr, Model model) {
-
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("newAssessmentForm", form);
@@ -210,7 +187,7 @@ public class AllAssessmentsController {
 			return "redirect:.";
 		}
 		
-		if (getUser().isInstructor()) {
+		if (user.isInstructor()) {
 			Assessment newAssessment = assessmentManager.addAssessment(form);
 			return "redirect:./" + newAssessment.getId() + "/";
 		}

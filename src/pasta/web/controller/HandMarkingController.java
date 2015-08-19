@@ -48,10 +48,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateHandMarkingForm;
 import pasta.domain.form.validate.UpdateHandMarkingFormValidator;
 import pasta.domain.template.HandMarking;
@@ -59,6 +58,7 @@ import pasta.domain.template.WeightedField;
 import pasta.domain.user.PASTAUser;
 import pasta.service.HandMarkingManager;
 import pasta.util.ProjectProperties;
+import pasta.web.WebUtils;
 
 /**
  * Controller class for Hand marking functions. 
@@ -123,21 +123,11 @@ public class HandMarkingController {
 		return new UpdateHandMarkingForm(
 				handMarkingManager.getHandMarking(handMarkingId));
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////
-	// Helper Methods //
-	// ///////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Get the currently logged in user.
-	 * 
-	 * @return the currently used user, null if nobody is logged in or user isn't registered.
-	 */
-	public PASTAUser getUser() {
-		PASTAUser user = (PASTAUser) RequestContextHolder
-				.currentRequestAttributes().getAttribute("user",
-						RequestAttributes.SCOPE_SESSION);
-		return user;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -166,16 +156,10 @@ public class HandMarkingController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "assessment/view/handMarks"
 	 */
 	@RequestMapping(value = "{handMarkingId}/")
-	public String viewHandMarking(
+	public String viewHandMarking(@ModelAttribute("user") PASTAUser user,
 			@PathVariable("handMarkingId") Long handMarkingId,
 			@ModelAttribute("handMarking") HandMarking template, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		
 		if(model.containsAttribute("hasValidationErrors")) {
 			UpdateHandMarkingForm form = (UpdateHandMarkingForm) model.asMap().get("updateHandMarkingForm");
@@ -216,13 +200,7 @@ public class HandMarkingController {
 			@ModelAttribute(value = "handMarking") HandMarking template,
 			@Valid @ModelAttribute(value = "updateHandMarkingForm") UpdateHandMarkingForm form, BindingResult result,
 			RedirectAttributes attr, Model model,HttpServletRequest request) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/.";
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) {
@@ -232,9 +210,7 @@ public class HandMarkingController {
 			return "redirect:.";
 		}
 		
-		if (getUser().isInstructor()) {
-			handMarkingManager.updateHandMarking(template, form);
-		}
+		handMarkingManager.updateHandMarking(template, form);
 		return "redirect:.";
 	}
 	
@@ -258,16 +234,8 @@ public class HandMarkingController {
 	@RequestMapping(value = "delete/{handMarkingId}/")
 	public String deleteHandMarking(
 			@PathVariable("handMarkingId") Long handMarkingId, Model model) {
-		PASTAUser user = getUser();
-		if (user == null) {
-			return "redirect:/login/";
-		}
-		if (!user.isTutor()) {
-			return "redirect:/home/";
-		}
-		if (getUser().isInstructor()) {
-			handMarkingManager.removeHandMarking(handMarkingId);
-		}
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		handMarkingManager.removeHandMarking(handMarkingId);
 		return "redirect:../../";
 	}
 	
