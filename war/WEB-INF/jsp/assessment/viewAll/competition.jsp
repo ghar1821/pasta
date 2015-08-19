@@ -108,7 +108,7 @@ either expressed or implied, of the PASTA Project.
 					<div style="float:left">
 						<button style="float:left; text-align: center; " onclick="location.href='./view/${competition.id}/'">Competition Page</button>
 					</div>
-					<c:if test="${unikey.tutor}">
+					<c:if test="${unikey.instructor}">
 						<div style="float:left">
 							<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
 							<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${competition.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
@@ -120,7 +120,7 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </table>
 				
-<c:if test="${unikey.tutor}">
+<c:if test="${unikey.instructor}">
 
 	<button id="newPopup">Add a new Competition</button>
 	

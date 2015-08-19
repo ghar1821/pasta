@@ -112,28 +112,31 @@ either expressed or implied, of the PASTA Project.
 	<h2>Tutors</h2>
 		<table class='dataTable hover row-border'>
 			<thead>
-				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><th></th></tr>
+				<tr><th>Username</th><th>Role</th><th>Tutorial(s)</th><c:if test="${unikey.instructor}"><th></th></c:if></tr>
 			</thead>
 			<tbody>
 				<c:forEach var="person" items="${people}">
 					<c:if test="${person.tutor}">
 						<tr>
 							<td>${person.username}</td><td>${person.permissionLevel}</td><td><c:if test="${empty person.tutorial}">-</c:if>${person.tutorial}</td>
-							<td>
-								<div>
-									<div title='Delete' class='icon_delete'></div>
-									<div title='Confirm' style='display:none' class='icon_delete_confirm' username='${person.username}'></div>
-								</div>
-							</td>
+							<c:if test="${unikey.instructor}">
+								<td>
+									<div>
+										<div title='Delete' class='icon_delete'></div>
+										<div title='Confirm' style='display:none' class='icon_delete_confirm' username='${person.username}'></div>
+									</div>
+								</td>
+							</c:if>
 						</tr>
 					</c:if>
 				</c:forEach>
 			</tbody>
 		</table>
 		
-		<button id="tutorUpdate" onclick="popup(true, false);">Update</button>
-		<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
-		
+		<c:if test="${unikey.instructor}">
+			<button id="tutorUpdate" onclick="popup(true, false);">Update</button>
+			<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
+		</c:if>
 	
 	<h2>Students</h2>
 		<table class='dataTable hover row-border'>

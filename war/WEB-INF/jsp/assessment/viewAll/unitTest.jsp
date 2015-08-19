@@ -66,16 +66,20 @@ either expressed or implied, of the PASTA Project.
 				<div style="float:left">
 					<button style="float:left; text-align: center; " onclick="location.href='./${unitTest.id}/'">Details</button>
 				</div>
-				<div style="float:left">
-					<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-					<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-				</div>
+				<c:if test="${user.instructor}">
+					<div style="float:left">
+						<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
+						<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+					</div>
+				</c:if>
 			</td>
 		</tr>
 	</c:forEach>
 </table>
 
-<button id="newPopup">Add a new Unit Test</button>
+<c:if test="${user.instructor}">
+	<button id="newPopup">Add a new Unit Test</button>
+</c:if>
 
 <div id="newUnitTestDiv" class='popup' >
 	<span class="button bClose">

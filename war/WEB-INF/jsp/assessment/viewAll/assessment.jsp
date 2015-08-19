@@ -106,12 +106,14 @@ either expressed or implied, of the PASTA Project.
 							<div class="horizontal-block no-margin">
 								<button onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
 							</div>
-							<div class='horizontal-block no-margin'>
-								<button style="float: left;" onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-								<button style="float: left; display: none;"
-									onclick="location.href='./delete/${assessment.id}/'"
-									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-							</div> 
+							<c:if test="${user.instructor}">
+								<div class='horizontal-block no-margin'>
+									<button style="float: left;" onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
+									<button style="float: left; display: none;"
+										onclick="location.href='./delete/${assessment.id}/'"
+										onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+								</div> 
+							</c:if>
 							<c:if test="${fn:length(assessment.allUnitTests) != 0}">
 								<div class='horizontal-block no-margin'>
 									<button style="float: left;"
@@ -129,35 +131,37 @@ either expressed or implied, of the PASTA Project.
 	</c:forEach>
 </div>
 
-<button id="newPopup">Add a new Assessment</button>
-
-<div id="newAssessment" class='popup'>
-	<span class="button bClose"> <span><b>X</b></span>
-	</span>
-	<h1>New Assessment</h1>
-	<form:form commandName="newAssessmentForm" enctype="multipart/form-data"
-		method="POST">
-		<table>
-			<tr>
-				<td>Assessment Name:</td>
-				<td><form:input autocomplete="off" type="text" path="name" /> <form:errors path="name" /></td>
-			</tr>
-			<tr>
-				<td>Assessment Marks:</td>
-				<td><form:input type="text" path="marks" /> <form:errors path="marks" /></td>
-			</tr>
-			<tr>
-				<td>Assessment DueDate:</td>
-				<td><form:input type="text" path="strDate"/> <form:errors path="dueDate" /></td>
-			</tr>
-			<tr>
-				<td>Maximum Number of allowed submissions:</td>
-				<td><form:input type="text" path="maxSubmissions" /> <form:errors path="maxSubmissions" /></td>
-			</tr>
-		</table>
-		<input type="submit" value="Create" id="submit" />
-	</form:form>
-</div>
+<c:if test="${user.instructor}">
+	<button id="newPopup">Add a new Assessment</button>
+	
+	<div id="newAssessment" class='popup'>
+		<span class="button bClose"> <span><b>X</b></span>
+		</span>
+		<h1>New Assessment</h1>
+		<form:form commandName="newAssessmentForm" enctype="multipart/form-data"
+			method="POST">
+			<table>
+				<tr>
+					<td>Assessment Name:</td>
+					<td><form:input autocomplete="off" type="text" path="name" /> <form:errors path="name" /></td>
+				</tr>
+				<tr>
+					<td>Assessment Marks:</td>
+					<td><form:input type="text" path="marks" /> <form:errors path="marks" /></td>
+				</tr>
+				<tr>
+					<td>Assessment DueDate:</td>
+					<td><form:input type="text" path="strDate"/> <form:errors path="dueDate" /></td>
+				</tr>
+				<tr>
+					<td>Maximum Number of allowed submissions:</td>
+					<td><form:input type="text" path="maxSubmissions" /> <form:errors path="maxSubmissions" /></td>
+				</tr>
+			</table>
+			<input type="submit" value="Create" id="submit" />
+		</form:form>
+	</div>
+</c:if>
 
 <div id="confirmPopup" class="popup">
 	<span class="button bClose"> <span><b>X</b></span>
