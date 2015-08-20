@@ -1661,6 +1661,10 @@ public class SubmissionController {
 	 * @return the JSON string
 	 */
 	private String generateJSON(Collection<PASTAUser> allUsers) {
+		if(allUsers.isEmpty()) {
+			return "{\"data\": []}";
+		}
+		
 		List<PASTAUser> usersList = new ArrayList<>(allUsers);
 		
 		DecimalFormat df = new DecimalFormat("#.###");
