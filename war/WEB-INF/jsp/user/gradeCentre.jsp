@@ -154,7 +154,10 @@ either expressed or implied, of the PASTA Project.
 							$(td).css('background-color', 'rgb('+red+','+green+','+blue+')');
 						}
 					}
-				]
+				],
+				"language": {
+				    "emptyTable": "No students to display."
+				}
 			} );
 	    } 
 	); 
