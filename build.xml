@@ -162,7 +162,7 @@
 
     <target name="build" description="Compile main source tree java files">
         <mkdir dir="${build.dir}"/>
-        <javac destdir="${build.dir}" source="1.7" target="1.7" debug="true"
+        <javac destdir="${build.dir}" source="1.8" target="1.8" debug="true"
                deprecation="false" optimize="false" failonerror="true">
             <src path="${src.dir}"/>
             <classpath refid="master-classpath"/>
@@ -491,7 +491,7 @@
 
 	<target name="buildtests" description="Compile test tree java files">
         <mkdir dir="${build.dir}"/>
-        <javac destdir="${build.dir}" source="1.7" target="1.7" debug="true"
+        <javac destdir="${build.dir}" source="1.8" target="1.8" debug="true"
             deprecation="false" optimize="false" failonerror="true">
             <src path="${test.dir}"/>
             <classpath refid="master-classpath"/>
