@@ -1,5 +1,8 @@
 package pasta.web.controller.advice;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -10,6 +13,7 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 import pasta.domain.user.PASTAUser;
 import pasta.web.WebUtils;
@@ -39,21 +43,23 @@ public class GlobalExceptionHandler {
 	}
 	
 	@ExceptionHandler(value = Exception.class)
-    public String defaultErrorHandler(HttpServletRequest request, Exception e) throws Exception {
+    public ModelAndView defaultErrorHandler(HttpServletRequest request, Exception e) throws Exception {
         // If the exception is annotated with @ResponseStatus rethrow it and let
         // the framework handle it
         if (AnnotationUtils.findAnnotation(e.getClass(), ResponseStatus.class) != null)
             throw e;
 
         logger.error("Exception thrown at " + request.getRequestURL(), e);
-        return "redirect:/home/";
         
-        // TODO Should redirect to error page like this:
-//        ModelAndView mav = new ModelAndView();
-//        mav.addObject("exception", e);
-//        mav.addObject("url", reqest.getRequestURL());
-//        mav.setViewName("error");
-//        return mav;
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("exception", e);
+        mav.addObject("url", request.getRequestURL());
+        StringWriter writer = new StringWriter();
+        e.printStackTrace(new PrintWriter(writer));
+        mav.addObject("exceptionTrace", writer.toString());
+        
+        mav.setViewName("error/generalError");
+        return mav;
     }
 
 }
