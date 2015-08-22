@@ -214,7 +214,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 			return 0;
 		}
 		return ProjectProperties.getInstance().getResultDAO()
-				.getSubmissionCount(user, assessment.getId(), false);
+				.getSubmissionCount(user, assessment.getId(), false, true);
 	}
 	
 	public int getSubmissionsMade() {
@@ -222,7 +222,23 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 			return 0;
 		}
 		return ProjectProperties.getInstance().getResultDAO()
-				.getSubmissionCount(user, assessment.getId(), true);
+				.getSubmissionCount(user, assessment.getId(), true, true);
+	}
+	
+	public int getIndividualSubmissionsMadeThatCount() {
+		if(user == null || assessment == null) {
+			return 0;
+		}
+		return ProjectProperties.getInstance().getResultDAO()
+				.getSubmissionCount(user, assessment.getId(), false, assessment.isCountUncompilable());
+	}
+	
+	public int getSubmissionsMadeThatCount() {
+		if(user == null || assessment == null) {
+			return 0;
+		}
+		return ProjectProperties.getInstance().getResultDAO()
+				.getSubmissionCount(user, assessment.getId(), true, assessment.isCountUncompilable());
 	}
 
 	public Date getSubmissionDate() {

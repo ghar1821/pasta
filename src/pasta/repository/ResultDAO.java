@@ -128,12 +128,25 @@ public class ResultDAO{
 		return (AssessmentResult) sessionFactory.getCurrentSession().get(AssessmentResult.class, id);
 	}
 	
-	public int getSubmissionCount(PASTAUser user, long assessmentId, boolean includeGroup) {
+	public int getSubmissionCount(PASTAUser user, long assessmentId, boolean includeGroup, boolean includeCompileErrors) {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
-		cr.setProjection(Projections.rowCount())
-		.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
 		restrictCriteriaUser(cr, user, includeGroup, assessmentId);
-		return DataAccessUtils.intResult(cr.list());
+		
+		if(includeCompileErrors) {
+			cr.setProjection(Projections.rowCount());
+			return DataAccessUtils.intResult(cr.list());
+		}
+		
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = cr.list();
+		int count = 0;
+		for(AssessmentResult result : results) {
+			if(!result.isError()) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	public AssessmentResult getResult(PASTAUser user, long assessmentId, Date submissionDate, boolean includeGroup) {

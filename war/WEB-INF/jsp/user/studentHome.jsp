@@ -103,17 +103,19 @@ either expressed or implied, of the PASTA Project.
 										(with extension)
 									</c:if>
 									<br />
+									<c:if test="${empty results[assessment.id]}">
+										0
+									</c:if>
+									${results[assessment.id].submissionsMadeThatCount} of 
 									<c:choose>
 										<c:when test="${assessment.numSubmissionsAllowed == 0}">
-											&infin; submissions allowed <br />
+											&infin;
 										</c:when>
 										<c:otherwise>
-											<c:if test="${empty results[assessment.id]}">
-												0
-											</c:if>
-											${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+											${assessment.numSubmissionsAllowed} 
 										</c:otherwise>
 									</c:choose>
+									attempts made<br />
 								</div>
 								
 								<div class='horizontal-block float-right'>
@@ -126,7 +128,7 @@ either expressed or implied, of the PASTA Project.
 									</c:if>
 								</div>
 								
-								<c:if test="${empty viewedUser && results[assessment.id].submissionsMade > 0}">
+								<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
 									<div class='horizontal-block float-right'>
 										<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
 											<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />

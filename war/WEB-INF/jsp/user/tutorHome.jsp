@@ -82,17 +82,19 @@ either expressed or implied, of the PASTA Project.
 									<br />
 									Due: ${dueDates[assessment.id]}
 									<br />
+									<c:if test="${empty results[assessment.id]}">
+										0
+									</c:if>
+									${results[assessment.id].submissionsMadeThatCount} of 
 									<c:choose>
 										<c:when test="${assessment.numSubmissionsAllowed == 0}">
-											&infin; submissions allowed <br />
+											&infin;
 										</c:when>
 										<c:otherwise>
-											<c:if test="${empty results[assessment.id]}">
-												0
-											</c:if>
-											${results[assessment.id].submissionsMade} of ${assessment.numSubmissionsAllowed} attempts made<br />
+											${assessment.numSubmissionsAllowed} 
 										</c:otherwise>
 									</c:choose>
+									attempts made<br />
 								</div>
 								
 								<div class='horizontal-block float-right'>

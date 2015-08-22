@@ -86,7 +86,7 @@ public class SubmissionValidator implements Validator {
 		AssessmentResult latestResult = resultManager.getLatestResultIncludingGroup(user, form.getAssessment());
 		int maxSubmissions = assessment.getNumSubmissionsAllowed();
 		if (latestResult != null && maxSubmissions != 0
-				&& latestResult.getSubmissionsMade() >= maxSubmissions) {
+				&& latestResult.getSubmissionsMadeThatCount() >= maxSubmissions) {
 			errors.reject("MaxAttempts");
 		}
 	}
