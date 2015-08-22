@@ -214,7 +214,7 @@ public class AdminController {
 	}
 	
 	/**
-	 * $PASTAUrl$/admin/delete/{username}/
+	 * $PASTAUrl$/admin/delete/{deleteUsername}/
 	 * <p>
 	 * Delete a user from the system.
 	 * <p>
@@ -225,12 +225,12 @@ public class AdminController {
 	 * 
 	 * @param model the model
 	 * @param request the http request object, used to send the user back to the page that referred them
-	 * @param username the name of the user
+	 * @param deleteUsername the name of the user
 	 * @return redirect to the referrer url
 	 */
-	@RequestMapping(value = "/delete/{username}/")
+	@RequestMapping(value = "/delete/{deleteUsername}/")
 	public String deleteUser(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
-			@PathVariable("username") String username) {
+			@PathVariable("deleteUsername") String username) {
 				
 		PASTAUser toDelete = userManager.getUser(username);
 		if(toDelete.isTutor()) {

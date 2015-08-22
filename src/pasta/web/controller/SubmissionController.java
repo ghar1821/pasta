@@ -445,10 +445,10 @@ public class SubmissionController {
 		return doCheckJobQueue(user, assessmentId);
 	}
 	
-	@RequestMapping("student/{username}/checkJobQueue/{assessmentId}/") 
+	@RequestMapping("student/{studentUsername}/checkJobQueue/{assessmentId}/") 
 	@ResponseBody
 	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId, 
-			@PathVariable("username") String username) {
+			@PathVariable("studentUsername") String username) {
 		PASTAUser forUser = userManager.getUser(username);
 		if(forUser == null) {
 			return "error";
@@ -642,7 +642,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/student/{username}/info/{assessmentId}/updateComment/ - POST
+	 * $PASTAUrl$/student/{studentUsername}/info/{assessmentId}/updateComment/ - POST
 	 * <p>
 	 * Update the comment for a given user for a given assessment for a given
 	 * submission using
@@ -652,7 +652,7 @@ public class SubmissionController {
 	 *            the new comment
 	 * @param assessmentDate
 	 *            the assessment date (format: yyyy-MM-dd'T'HH-mm-ss)
-	 * @param username
+	 * @param studentUsername
 	 *            the name of the user
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -660,7 +660,7 @@ public class SubmissionController {
 	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:../"
 	 */
-	@RequestMapping(value = "student/{username}/info/{assessmentId}/updateComment/", method = RequestMethod.POST)
+	@RequestMapping(value = "student/{studentUsername}/info/{assessmentId}/updateComment/", method = RequestMethod.POST)
 	public String updateComment(@RequestParam("newComment") String newComment,
 			@RequestParam("resultId") long resultId, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
@@ -809,7 +809,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/student/{username}/home/
+	 * $PASTAUrl$/student/{studentUsername}/home/
 	 * <p>
 	 * View the home page for a given user.
 	 * 
@@ -840,14 +840,14 @@ public class SubmissionController {
 	 * <li>user/studentHome</li>
 	 * </ul>
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the name of the user you are looking at
 	 * @param model
 	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/studentHome"
 	 */
-	@RequestMapping(value = "student/{username}/home/")
-	public String viewStudent(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username, Model model) {
+	@RequestMapping(value = "student/{studentUsername}/home/")
+	public String viewStudent(@ModelAttribute("user") PASTAUser user, @PathVariable("studentUsername") String username, Model model) {
 		// check if tutor or student
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
@@ -906,7 +906,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/student/{username}/home/
+	 * $PASTAUrl$/student/{studentUsername}/home/
 	 * <p>
 	 * Submit an assessment for another user.
 	 * 
@@ -941,8 +941,8 @@ public class SubmissionController {
 	 *            you will not resubmit the form if you refresh the page
 	 * @return "redirect:/login/" or "redirect:/mirror/"
 	 */
-	@RequestMapping(value = "student/{username}/home/", method = RequestMethod.POST)
-	public String submitAssessment(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
+	@RequestMapping(value = "student/{studentUsername}/home/", method = RequestMethod.POST)
+	public String submitAssessment(@ModelAttribute("user") PASTAUser user, @PathVariable("studentUsername") String username,
 			@ModelAttribute(value = "submission") Submission form, BindingResult result, Model model,
 			RedirectAttributes attr, HttpSession session) {
 		if(username == null || username.isEmpty()) {
@@ -952,7 +952,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/student/{username}/info/{assessmentId}/
+	 * $PASTAUrl$/student/{studentUsername}/info/{assessmentId}/
 	 * <p>
 	 * View the details and history for an assessment.
 	 * 
@@ -988,7 +988,7 @@ public class SubmissionController {
 	 * <li>user/viewAssessment</li>
 	 * </ul>
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the username for the user you are viewing
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -996,8 +996,8 @@ public class SubmissionController {
 	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "user/viewAssessment"
 	 */
-	@RequestMapping(value = "student/{username}/info/{assessmentId}/")
-	public String viewAssessmentInfo(@PathVariable("username") String username,
+	@RequestMapping(value = "student/{studentUsername}/info/{assessmentId}/")
+	public String viewAssessmentInfo(@PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId, Model model) {
 
 		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
@@ -1027,7 +1027,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/download/{username}/{assessmentId}/{assessmentDate}/
+	 * $PASTAUrl$/download/{studentUsername}/{assessmentId}/{assessmentDate}/
 	 * <p>
 	 * Serve the zip file that contains the submission for the username for a
 	 * given assessment at a given time.
@@ -1037,7 +1037,7 @@ public class SubmissionController {
 	 * Otherwise create the zip file and serve the zip file. The file name is
 	 * $username$-$assessmentId$-$assessmentDate$.zip
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the user which you want to download the submission for
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -1048,8 +1048,8 @@ public class SubmissionController {
 	 * @param response
 	 *            the http response being used to serve the zip file.
 	 */
-	@RequestMapping(value = "download/{username}/{assessmentId}/{assessmentDate}/")
-	public void downloadAssessment(@PathVariable("username") String username,
+	@RequestMapping(value = "download/{studentUsername}/{assessmentId}/{assessmentDate}/")
+	public void downloadAssessment(@PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletResponse response) {
 
@@ -1077,7 +1077,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/runAssessment/{username}/{assessmentId}/{assessmentDate}/
+	 * $PASTAUrl$/runAssessment/{studentUsername}/{assessmentId}/{assessmentDate}/
 	 * <p>
 	 * Run an assessment again.
 	 * 
@@ -1088,7 +1088,7 @@ public class SubmissionController {
 	 * Otherwise: run assessment using
 	 * {@link pasta.service.SubmissionManager#runAssessment(String, long, String)}
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the user which you want to download the submission for
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -1101,8 +1101,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the
 	 *         referrer
 	 */
-	@RequestMapping(value = "runAssessment/{username}/{assessmentId}/{assessmentDate}/")
-	public String runAssessment(@PathVariable("username") String username,
+	@RequestMapping(value = "runAssessment/{studentUsername}/{assessmentId}/{assessmentDate}/")
+	public String runAssessment(@PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model, HttpServletRequest request) {
 
@@ -1119,7 +1119,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/student/{username}/extension/{assessmentId}/{extension}/
+	 * $PASTAUrl$/student/{studentUsername}/extension/{assessmentId}/{extension}/
 	 * <p>
 	 * Give an extension to a user for an assessment.
 	 * 
@@ -1131,7 +1131,7 @@ public class SubmissionController {
 	 * {@link pasta.service.UserManager#giveExtension(String, long, Date)} then
 	 * redirect to the referrer page.
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the user which you want to download the submission for
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -1144,8 +1144,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or redirect back to the
 	 *         referrer
 	 */
-	@RequestMapping(value = "student/{username}/extension/{assessmentId}/{extension}/")
-	public String giveExtension(@ModelAttribute("user") PASTAUser user, @PathVariable("username") String username,
+	@RequestMapping(value = "student/{studentUsername}/extension/{assessmentId}/{extension}/")
+	public String giveExtension(@ModelAttribute("user") PASTAUser user, @PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId, @PathVariable("extension") String extension,
 			Model model, HttpServletRequest request) {
 		// check if tutor or student
@@ -1168,7 +1168,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/mark/{username}/{assessmentId}/{assessmentDate}/
+	 * $PASTAUrl$/mark/{studentUsername}/{assessmentId}/{assessmentDate}/
 	 * <p>
 	 * Mark the submission for a student.
 	 * 
@@ -1206,7 +1206,7 @@ public class SubmissionController {
 	 * <li>assessment/mark/handMark</li>
 	 * </ul>
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the user which you want to download the submission for
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -1217,8 +1217,8 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/" or
 	 *         "assessment/mark/handMark"
 	 */
-	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/")
-	public String handMarkAssessment(@PathVariable("username") String username,
+	@RequestMapping(value = "mark/{studentUsername}/{assessmentId}/{assessmentDate}/")
+	public String handMarkAssessment(@PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate, Model model) {
 
@@ -1254,7 +1254,7 @@ public class SubmissionController {
 	}
 
 	/**
-	 * $PASTAUrl$/mark/{username}/{assessmentId}/{assessmentDate}/ - POST
+	 * $PASTAUrl$/mark/{studentUsername}/{assessmentId}/{assessmentDate}/ - POST
 	 * <p>
 	 * Save the hand marking for a submission for a student
 	 * 
@@ -1267,7 +1267,7 @@ public class SubmissionController {
 	 * and
 	 * {@link pasta.service.HandMarkingManager#saveComment(String, long, String, String)}
 	 * 
-	 * @param username
+	 * @param studentUsername
 	 *            the user which you want to download the submission for
 	 * @param assessmentId
 	 *            the id of the assessment
@@ -1281,8 +1281,8 @@ public class SubmissionController {
 	 *            the model being used
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
-	@RequestMapping(value = "mark/{username}/{assessmentId}/{assessmentDate}/", method = RequestMethod.POST)
-	public String saveHandMarkAssessment(@PathVariable("username") String username,
+	@RequestMapping(value = "mark/{studentUsername}/{assessmentId}/{assessmentDate}/", method = RequestMethod.POST)
+	public String saveHandMarkAssessment(@PathVariable("studentUsername") String username,
 			@PathVariable("assessmentId") long assessmentId,
 			@PathVariable("assessmentDate") String assessmentDate,
 			@ModelAttribute(value = "assessmentResult") AssessmentResult form, BindingResult result,

@@ -107,10 +107,10 @@ public class RatingController {
 		return "ERROR";
 	}  
 	
-	@RequestMapping(value = "/saveRating/{username}/{assessmentId}/", method = RequestMethod.POST)
+	@RequestMapping(value = "/saveRating/{ratingUsername}/{assessmentId}/", method = RequestMethod.POST)
 	@ResponseBody
 	public void saveRating(
-			@PathVariable("username") String username, 
+			@PathVariable("ratingUsername") String username, 
 			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute("ratingForm") RatingForm form,
 			HttpSession session) {
