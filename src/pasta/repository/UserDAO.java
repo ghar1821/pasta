@@ -104,8 +104,9 @@ public class UserDAO {
 	public void delete(PASTAUser user) {
 		if(user instanceof PASTAGroup) {
 			((PASTAGroup) user).setAssessment(null);
-			((PASTAGroup) user).getMembers().clear();
+			((PASTAGroup) user).removeAllMembers();
 			update(user);
+			logger.info("Deleting group " + ((PASTAGroup) user).getName());
 			sessionFactory.getCurrentSession().delete(user);
 		} else {
 			user.setActive(false);
@@ -422,6 +423,15 @@ public class UserDAO {
 		cr.add(Restrictions.eq("assessment", assessment));
 		return cr.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+	public List<PASTAGroup> getAssessmentGroups(long assessmentId) {
+		Criteria cr = sessionFactory.getCurrentSession()
+				.createCriteria(PASTAGroup.class)
+				.createCriteria("assessment")
+					.add(Restrictions.eq("id", assessmentId));
+		return cr.list();
+	}
 
 	public PASTAGroup getGroup(PASTAUser user, Assessment assessment) {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAGroup.class);
@@ -526,5 +536,17 @@ public class UserDAO {
 	public Date getExtension(PASTAUser user, Assessment assessment) {
 		AssessmentExtension ext = getAssessmentExtension(user, assessment);
 		return ext == null ? null : ext.getNewDueDate();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AssessmentExtension> getAllExtensionsForAssessment(long assessmentId) {
+		return sessionFactory.getCurrentSession().createCriteria(AssessmentExtension.class)
+				.createCriteria("assessment")
+				.add(Restrictions.eq("id", assessmentId))
+				.list();
+	}
+	
+	public void deleteExtension(AssessmentExtension extension) {
+		sessionFactory.getCurrentSession().delete(extension);
 	}
 }

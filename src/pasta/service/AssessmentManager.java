@@ -82,6 +82,12 @@ public class AssessmentManager {
 	private ResultManager resultManager;
 	@Autowired
 	private GroupManager groupManager;
+	@Autowired
+	private RatingManager ratingManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private ReleaseManager releaseManager;
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
@@ -127,8 +133,18 @@ public class AssessmentManager {
 	 * @see pasta.repository.AssessmentDAO#removeAssessment(long)
 	 * @param assessmentId the id of the assessment
 	 */
-	public void removeAssessment(long assessmentId) {
+	public boolean removeAssessment(long assessmentId) {
+		if(releaseManager.isAssessmentLinked(assessmentId)) {
+			//TODO explain to user that you can't delete an assessment that is used in a release rule
+			return false;
+		}
+		groupManager.deleteAllAssessmentGroups(assessmentId);
+		ratingManager.deleteAllRatingsForAssessment(assessmentId);
+		resultManager.deleteAllResultsForAssessment(assessmentId);
+		userManager.deleteAllExtensionsForAssessment(assessmentId);
+		
 		assDao.removeAssessment(assessmentId);
+		return true;
 	}
 	
 	/**

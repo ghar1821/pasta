@@ -60,6 +60,15 @@ public class RatingDAO {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public List<AssessmentRating> getAllRatingsForAssessment(long assessmentId) {
+		Criteria cr = sessionFactory.getCurrentSession()
+				.createCriteria(AssessmentRating.class)
+				.createCriteria("assessment")
+					.add(Restrictions.eq("id", assessmentId));
+		return cr.list();
+	}
+	
+	@SuppressWarnings("unchecked")
 	public List<AssessmentRating> getAllRatingsForUser(PASTAUser user) {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class);
 		cr.add(Restrictions.eq("user", user));

@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateUsersForm;
 import pasta.domain.template.Assessment;
+import pasta.domain.template.AssessmentExtension;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.LoginDAO;
 import pasta.repository.UserDAO;
@@ -372,5 +373,15 @@ public class UserManager {
 			user.setTutorial(parts[2]);
 		}
 		return user;
+	}
+
+	public void deleteAllExtensionsForAssessment(long assessmentId) {
+		List<AssessmentExtension> extensions = userDao.getAllExtensionsForAssessment(assessmentId);
+		if(!extensions.isEmpty()) {
+			logger.info("Deleting " + extensions.size() + " extensions for assessment " + assessmentId);
+			for(AssessmentExtension ext : extensions) {
+				userDao.deleteExtension(ext);
+			}
+		}
 	}
 }

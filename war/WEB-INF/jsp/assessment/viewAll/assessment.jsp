@@ -108,10 +108,7 @@ either expressed or implied, of the PASTA Project.
 							</div>
 							<c:if test="${user.instructor}">
 								<div class='horizontal-block no-margin'>
-									<button style="float: left;" onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-									<button style="float: left; display: none;"
-										onclick="location.href='./delete/${assessment.id}/'"
-										onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+									<button class='deleteAssessment' assessment='${assessment.id}'>Delete</button>
 								</div> 
 							</c:if>
 							<c:if test="${fn:length(assessment.allUnitTests) != 0}">
@@ -187,7 +184,17 @@ either expressed or implied, of the PASTA Project.
 				e.preventDefault();
 				$('#newAssessment').bPopup();
 			});
-
+			
+			$('.deleteAssessment').on('click', function(e) {
+				e.preventDefault();
+				var confirmResult = confirm("If you delete this assessment, you will also delete any submissions, ratings and groups for this assessment.");
+				if(confirmResult) {
+					var id = $(this).attr("assessment");
+					if(id) {
+						location.href='delete/' + id + '/'
+					}
+				}
+			});
 		});
 
 		<spring:hasBindErrors name='newAssessmentForm'>

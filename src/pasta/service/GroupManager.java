@@ -249,4 +249,13 @@ public class GroupManager {
 		group.setLocked(lock);
 		userDAO.update(group);
 	}
+
+	public void deleteAllAssessmentGroups(long assessmentId) {
+		List<PASTAGroup> groups = userDAO.getAssessmentGroups(assessmentId);
+		for(PASTAGroup group : groups) {
+			group.removeAllMembers();
+			logger.info("Deleting group " + group.getName());
+			userDAO.delete(group);
+		}
+	}
 }

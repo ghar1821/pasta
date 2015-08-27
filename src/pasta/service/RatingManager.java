@@ -115,4 +115,10 @@ public class RatingManager {
 	public List<AssessmentRating> getRatingsForAssessment(Assessment assessment) {
 		return ratingDAO.getAllRatingsForAssessment(assessment);
 	}
+
+	public void deleteAllRatingsForAssessment(long assessmentId) {
+		for(AssessmentRating rating : ratingDAO.getAllRatingsForAssessment(assessmentId)) {
+			ratingDAO.delete(rating);
+		}
+	}
 }
