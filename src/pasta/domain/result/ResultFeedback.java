@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -22,10 +23,9 @@ public class ResultFeedback implements Serializable, UserType, Comparable<Result
 		feedback = "";
 	}
 	
-	public ResultFeedback(String base) {
-		String[] parts = base.split("\\|", 2);
-		category = parts[0];
-		feedback = parts[1];
+	public ResultFeedback(String feedback) {
+		this.category = "";
+		this.feedback = feedback;
 	}
 	
 	public ResultFeedback(String category, String feedback) {
@@ -33,6 +33,12 @@ public class ResultFeedback implements Serializable, UserType, Comparable<Result
 		this.feedback = feedback;
 	}
 	
+	private ResultFeedback(String base, char separator) {
+		String[] parts = base.split(Pattern.quote(String.valueOf(separator)), 2);
+		category = parts[0];
+		feedback = parts[1];
+	}
+
 	@Override
 	public String toString() {
 		return category + "|" + feedback;
@@ -119,7 +125,7 @@ public class ResultFeedback implements Serializable, UserType, Comparable<Result
 	public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException, SQLException {
 		String value = StandardBasicTypes.STRING.nullSafeGet(rs, names[0], session);
-		return ((value != null) ? new ResultFeedback(value) : null);
+		return ((value != null) ? new ResultFeedback(value, '|') : null);
 	}
 
 	@Override
@@ -130,7 +136,7 @@ public class ResultFeedback implements Serializable, UserType, Comparable<Result
 
 	@Override
 	public Object deepCopy(Object value) throws HibernateException {
-		return value == null ? null : new ResultFeedback(((ResultFeedback)value).toString());
+		return value == null ? null : new ResultFeedback(((ResultFeedback)value).toString(), '|');
 	}
 
 	@Override
