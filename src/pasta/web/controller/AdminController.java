@@ -192,7 +192,7 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/updateUsers/", method = RequestMethod.POST)
-	public String updateUsers(@ModelAttribute("user") PASTAUser user, 
+	public String updateUsers(
 			@Valid @ModelAttribute("updateUsersForm") UpdateUsersForm form, BindingResult result, 
 			RedirectAttributes attr, Model model, HttpServletRequest request) {
 		if(form.isUpdateTutors()) {
@@ -229,7 +229,7 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/delete/{deleteUsername}/")
-	public String deleteUser(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
+	public String deleteUser(ModelMap model, HttpServletRequest request,
 			@PathVariable("deleteUsername") String username) {
 				
 		PASTAUser toDelete = userManager.getUser(username);
@@ -260,7 +260,7 @@ public class AdminController {
 	 * @return redirect to the referrer url
 	 */
 	@RequestMapping(value = "/auth/", method = RequestMethod.GET)
-	public String changeAuthType(@ModelAttribute("user") PASTAUser user, ModelMap model, HttpServletRequest request,
+	public String changeAuthType(ModelMap model, HttpServletRequest request,
 			@RequestParam(value="type") String type,
 			@RequestParam(value="address") String[] address) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);

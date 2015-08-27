@@ -162,7 +162,7 @@ public class AllHandMarkingsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:." or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newHandMarking(@ModelAttribute("user") PASTAUser user, 
+	public String newHandMarking(
 			@Valid @ModelAttribute(value = "newHandMarkingModel") NewHandMarkingForm form, BindingResult result,
 			RedirectAttributes attr, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);

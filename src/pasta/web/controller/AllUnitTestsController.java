@@ -168,7 +168,7 @@ public class AllUnitTestsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:/mirror/"
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newUnitTest(@ModelAttribute("user") PASTAUser user, 
+	public String newUnitTest(
 			@Valid @ModelAttribute(value = "newUnitTest") NewUnitTestForm form, BindingResult result,
 			RedirectAttributes attr, Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);

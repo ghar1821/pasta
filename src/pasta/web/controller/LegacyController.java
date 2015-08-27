@@ -53,7 +53,7 @@ public class LegacyController {
 	
 	@RequestMapping(value="convert/", method=RequestMethod.POST)
 	@ResponseBody
-	public String startConvert(@ModelAttribute("user") PASTAUser user, 
+	public String startConvert(
 			@ModelAttribute("assessmentConverter") final AssessmentConverter converter) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		if(converter.isStarted()) {

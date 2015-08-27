@@ -324,7 +324,7 @@ public class AssessmentController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "{assessmentId}/", method = RequestMethod.POST)
-	public String updateAssessment(@ModelAttribute("user") PASTAUser user, 
+	public String updateAssessment(
 			@PathVariable("assessmentId") long assessmentId,
 			@Valid @ModelAttribute(value = "updateAssessmentForm") UpdateAssessmentForm form, BindingResult result,
 			@ModelAttribute(value = "assessment") Assessment assessment,

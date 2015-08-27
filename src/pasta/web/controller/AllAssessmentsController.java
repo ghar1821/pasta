@@ -174,10 +174,10 @@ public class AllAssessmentsController {
 	 * @return "redirect:/login/" or "redirect:/home/" or "redirect:."
 	 */
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String newAssessmentAssessment(@ModelAttribute("user") PASTAUser user,
+	public String newAssessmentAssessment(
 			@Valid @ModelAttribute(value = "newAssessmentForm") NewAssessmentForm form,
 			BindingResult result, RedirectAttributes attr, Model model) {
-		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("newAssessmentForm", form);
@@ -185,10 +185,7 @@ public class AllAssessmentsController {
 			return "redirect:.";
 		}
 		
-		if (user.isInstructor()) {
-			Assessment newAssessment = assessmentManager.addAssessment(form);
-			return "redirect:./" + newAssessment.getId() + "/";
-		}
-		return "redirect:.";
+		Assessment newAssessment = assessmentManager.addAssessment(form);
+		return "redirect:./" + newAssessment.getId() + "/";
 	}
 }
