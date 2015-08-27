@@ -71,7 +71,7 @@
     </target>
     <target name="doTest">
         <script language="javascript"> <![CDATA[
-            arr = project.getProperty('bbTestData').split('\\|');
+            arr = project.getProperty('bbTestData').split('|');
             project.setProperty('bbTestName', arr[0]);
             project.setProperty('bbTestTimeout', arr[1]);
             if(arr[2] == undefined) {
