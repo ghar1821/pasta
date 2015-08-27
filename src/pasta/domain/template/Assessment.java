@@ -164,6 +164,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private boolean countUncompilable = true;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
+	//TODO this doesn't need to be a join table any more: see weighted hand marking
 	@JoinTable(name="assessment_unit_tests",
 	joinColumns=@JoinColumn(name = "assessment_id"),
 	inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
