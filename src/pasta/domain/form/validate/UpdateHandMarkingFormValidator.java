@@ -51,10 +51,13 @@ public class UpdateHandMarkingFormValidator implements Validator {
 		List<WeightedField> rows = form.getNewRowHeader();
 		for(int i = 0; i < rows.size(); i++) {
 			WeightedField row = rows.get(i);
+			if(row == null || row.getName() == null) {
+				continue;
+			}
 			errors.pushNestedPath("newRowHeader[" + i + "]");
 			ValidationUtils.rejectIfEmpty(errors, "name", "NotEmpty");
-			if(row.getName().length() > 128) {
-				errors.rejectValue("name", "Length", new Object[] {0, 128}, "");
+			if(row.getName().length() > 512) {
+				errors.rejectValue("name", "Length", new Object[] {0, 512}, "");
 			}
 			errors.popNestedPath();
 		}
@@ -62,10 +65,13 @@ public class UpdateHandMarkingFormValidator implements Validator {
 		List<WeightedField> cols = form.getNewColumnHeader();
 		for(int i = 0; i < cols.size(); i++) {
 			WeightedField col = cols.get(i);
+			if(col == null || col.getName() == null) {
+				continue;
+			}
 			errors.pushNestedPath("newColumnHeader[" + i + "]");
 			ValidationUtils.rejectIfEmpty(errors, "name", "NotEmpty");
-			if(col.getName().length() > 128) {
-				errors.rejectValue("name", "Length", new Object[] {0, 128}, "");
+			if(col.getName().length() > 512) {
+				errors.rejectValue("name", "Length", new Object[] {0, 512}, "");
 			}
 			errors.popNestedPath();
 		}
@@ -73,6 +79,9 @@ public class UpdateHandMarkingFormValidator implements Validator {
 		List<HandMarkData> newData = form.getNewData();
 		for(int i = 0; i < newData.size(); i++) {
 			HandMarkData datum = newData.get(i);
+			if(datum == null || datum.getData() == null) {
+				continue;
+			}
 			errors.pushNestedPath("newData[" + i + "]");
 			if(datum.getData().length() > 4096) {
 				errors.rejectValue("data", "Length", new Object[] {0, 4096}, "");
