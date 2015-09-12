@@ -110,7 +110,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 	}
 	
 	public HandMarking getHandMarking() {
-		return weightedHandMarking.getHandMarking();
+		return weightedHandMarking == null ? null : weightedHandMarking.getHandMarking();
 	}
 	
 	public boolean isGroupWork() {
@@ -144,6 +144,12 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 
 	@Override
 	public int compareTo(HandMarkingResult other) {
+		if(this.getHandMarking() == null) {
+			return other.getHandMarking() == null ? 0 : 1;
+		}
+		if(other.getHandMarking() == null) {
+			return -1;
+		}
 		return getHandMarking().getName().compareTo(other.getHandMarking().getName());
 	}
 	
