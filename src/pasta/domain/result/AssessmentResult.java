@@ -118,7 +118,6 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		joinColumns=@JoinColumn(name = "assessment_result_id"),
 		inverseJoinColumns=@JoinColumn(name = "hand_marking_result_id"))
 	@LazyCollection(LazyCollectionOption.FALSE)
-	@SortNatural
 	private List<HandMarkingResult> handMarkingResults = new ArrayList<HandMarkingResult>();
 	
 	@ManyToOne
@@ -261,6 +260,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	}
 	
 	public List<HandMarkingResult> getHandMarkingResults() {
+		Collections.sort(handMarkingResults);
 		return handMarkingResults;
 	}
 	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
