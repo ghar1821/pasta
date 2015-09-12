@@ -58,6 +58,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.annotations.SortNatural;
 
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
@@ -117,6 +118,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		joinColumns=@JoinColumn(name = "assessment_result_id"),
 		inverseJoinColumns=@JoinColumn(name = "hand_marking_result_id"))
 	@LazyCollection(LazyCollectionOption.FALSE)
+	@SortNatural
 	private List<HandMarkingResult> handMarkingResults = new ArrayList<HandMarkingResult>();
 	
 	@ManyToOne
