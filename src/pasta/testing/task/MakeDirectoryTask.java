@@ -2,6 +2,8 @@ package pasta.testing.task;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 public class MakeDirectoryTask implements Task {
 
 	protected File file;
@@ -15,6 +17,7 @@ public class MakeDirectoryTask implements Task {
 		if(file.exists() && file.isDirectory()) {
 			return true;
 		}
+		Logger.getLogger(getClass()).debug("Making directories to " + file);
 		return file.mkdirs();
 	}
 	
