@@ -37,8 +37,9 @@
 			<c:when test="${not empty results.assessment.allUnitTests}">
 				<c:if test="${separateGroup}">
 					<div class='align-contents-top'>
+						<c:set var="bothTypes" value="${not empty results.groupUnitTests and not empty results.nonGroupUnitTests}" />
 						<c:if test="${not empty results.groupUnitTests}">
-							<div class='horizontal-block' style='max-width:50%'>
+							<div class='horizontal-block' <c:if test="${bothTypes}">style='max-width:50%'</c:if>>
 								<c:if test="${not empty results.nonGroupUnitTests}">
 									<strong>Group Work:</strong>
 								</c:if>
@@ -47,7 +48,7 @@
 							</div>
 						</c:if>
 						<c:if test="${not empty results.nonGroupUnitTests}">
-							<div class='horizontal-block' style='max-width:50%'>
+							<div class='horizontal-block' <c:if test="${bothTypes}">style='max-width:50%'</c:if>>
 								<c:if test="${not empty results.groupUnitTests}">
 									<strong style='white-space: nowrap'>Individual Work:</strong>
 								</c:if>
