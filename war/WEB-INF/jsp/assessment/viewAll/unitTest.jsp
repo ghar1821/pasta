@@ -64,7 +64,7 @@ either expressed or implied, of the PASTA Project.
 			<td>
 				<!-- buttons -->
 				<div style="float:left">
-					<button style="float:left; text-align: center; " onclick="location.href='./${unitTest.id}/'">Details</button>
+					<a href='./${unitTest.id}/'><button style="float:left; text-align: center; ">Details</button></a>
 				</div>
 				<c:if test="${user.instructor}">
 					<div style="float:left">
