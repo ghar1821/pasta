@@ -1,5 +1,6 @@
 package pasta.scheduler;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -23,22 +24,27 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 	@Autowired protected ExecutionManager executionManager;
 
 	private ConcurrentSkipListSet<Long> processingIds;
+	private ConcurrentSkipListSet<Long> executingIds;
 	private ConcurrentMap<String, Lock> locks;
 	
 	public AssessmentJobExecutor(int corePoolSize, int maxPoolSize) {
 		super(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		locks = new ConcurrentHashMap<String, Lock>();
 		processingIds = new ConcurrentSkipListSet<Long>();
+		executingIds = new ConcurrentSkipListSet<Long>();
 	}
 	
 	public boolean offer(AssessmentJob job) {
+		logger.trace("Offering " + job.toString());
 		if(executionManager == null) {
 			logger.warn("Rejecting job: no execution manager.");
 			return false;
 		}
 		if(hasJob(job)) {
+			logger.trace("Rejecting job - already have it");
 			return false;
 		}
+		logger.trace("Accepting job");
 		processingIds.add(job.getId());
 		execute(new AssessmentJobTask(job, executionManager, locks));
 		return true;
@@ -51,11 +57,15 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
+		AssessmentJobTask task = (AssessmentJobTask) r;
+		executingIds.add(task.job.getId());
+		logger.debug("Starting execution of " + r.toString());
 	}
 	
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
 		super.afterExecute(r, t);
+		logger.debug("Finishing execution of " + r.toString());
 		AssessmentJobTask task = (AssessmentJobTask) r;
 		if(t != null) {
 			logger.error("Error running job: ", t);
@@ -67,7 +77,23 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 			logger.error("Unable to update results from assessment job #" + task.job.getId(), e);
 		}
 		processingIds.remove(task.job.getId());
+		executingIds.remove(task.job.getId());
 		scheduler.delete(task.job);
+	}
+	
+	public void clearAllTasks() {
+		Iterator<Runnable> it = this.getQueue().iterator();
+		while(it.hasNext()) {
+			it.next();
+			it.remove();
+		}
+		processingIds.clear();
+		executingIds.clear();
+		locks.clear();
+	}
+	
+	public boolean isExecuting(AssessmentJob job) {
+		return executingIds.contains(job.getId());
 	}
 	
 	static class AssessmentJobTask implements Runnable {
@@ -111,6 +137,11 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 			this.lock.lock();
 			manager.executeNormalJob(job);
 			this.lock.unlock();
+		}
+		
+		@Override
+		public String toString() {
+			return "Execution task: " + job.toString();
 		}
 	}
 }

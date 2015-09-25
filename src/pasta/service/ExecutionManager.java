@@ -592,6 +592,22 @@ public class ExecutionManager {
 			}
 		}
 	}
+	
+	public void forceSubmissionRefresh() {
+		synchronized (scheduler) {
+			executor.clearAllTasks();
+		}
+	}
+	
+	public List<String> getExecutingTaskDetails() {
+		List<String> results = new LinkedList<String>();
+		int pos = 1;
+		for(AssessmentJob job : scheduler.getOutstandingAssessmentJobs()) {
+			String details = pos++ + ": " + job.toString() + (executor.isExecuting(job) ? " (Running)" : "");
+			results.add(details);
+		}
+		return results;
+	}
 
 	/**
 	 * Get outstanding competition jobs

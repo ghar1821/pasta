@@ -53,6 +53,7 @@ import pasta.domain.form.UpdateUsersForm;
 import pasta.domain.form.validate.UpdateUsersFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
+import pasta.service.ExecutionManager;
 import pasta.service.UserManager;
 import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
@@ -80,6 +81,9 @@ public class AdminController {
 	
 	@Autowired
 	private UserManager userManager;
+	
+	@Autowired
+	private ExecutionManager executionManager;
 	
 	@Autowired
 	private UpdateUsersFormValidator updateValidator;
@@ -139,6 +143,7 @@ public class AdminController {
 		if(user.isTutor()){
 			model.addAttribute("people", userManager.getUserList());
 			model.addAttribute("addresses", ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses());
+			model.addAttribute("taskDetails", executionManager.getExecutingTaskDetails());
 		}
 		return "user/admin";
 	}
@@ -266,6 +271,13 @@ public class AdminController {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 	
 		ProjectProperties.getInstance().changeAuthMethod(type, address);
+		return "redirect:" + request.getHeader("Referer");
+	}
+	
+	@RequestMapping(value = "/forceSubmissionRefresh/", method = RequestMethod.POST)
+	public String forceSubmissionRefresh(HttpServletRequest request) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		executionManager.forceSubmissionRefresh();
 		return "redirect:" + request.getHeader("Referer");
 	}
 }

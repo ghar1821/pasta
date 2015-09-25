@@ -138,7 +138,7 @@ either expressed or implied, of the PASTA Project.
 			<button id="tutorReplace" onclick="popup(true, true);">Replace</button>
 		</c:if>
 	
-	<h2>Students</h2>
+		<h2>Students</h2>
 		<table class='dataTable hover row-border'>
 			<thead>
 				<tr><th>Username</th><th>Stream</th><th>Tutorial</th><th></th></tr>
@@ -189,6 +189,25 @@ either expressed or implied, of the PASTA Project.
 					<button type="submit">Submit</button>
 				</div>
 			</form:form>
+		</div>
+		
+		<div>
+			<h2>Executing Submissions</h2>
+			<div class='vertical-block'>
+				<c:if test="${empty taskDetails}">
+					<p>None
+				</c:if>
+				<c:forEach items="${taskDetails}" var="detail">
+					<pre>${detail}</pre>
+				</c:forEach>
+			</div>
+			<c:if test="${user.instructor}">
+				<div class='vertical-block'>
+					<form action="forceSubmissionRefresh/" method="post">
+						<button type="submit">Force Reload</button>
+					</form>
+				</div>
+			</c:if>
 		</div>
 		
 		<script>

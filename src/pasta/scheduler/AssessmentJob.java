@@ -117,4 +117,12 @@ public class AssessmentJob extends Job implements Serializable{
 	public void setResults(AssessmentResult results) {
 		this.results = results;
 	}
+	
+	@Override
+	public String toString() {
+		return "Assessment " + assessmentId + 
+				" job for " + user.getUsername() + 
+				" submitted at " + results.getSubmissionDate() + 
+				" by " + results.getSubmittedBy().getUsername(); 
+	}
 }
