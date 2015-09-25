@@ -594,4 +594,11 @@ public class PASTAUtil {
 			}
 		}
 	}
+	
+	public static String truncate(String str, int maxLength) {
+		if(str == null || str.length() <= maxLength) {
+			return str;
+		}
+		return str.substring(0, maxLength - 3) + "...";
+	}
 }

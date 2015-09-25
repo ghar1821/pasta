@@ -57,6 +57,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.template.UnitTest;
+import pasta.util.PASTAUtil;
 
 /**
  * Contains the result of a unit test assessment module.
@@ -70,6 +71,11 @@ import pasta.domain.template.UnitTest;
 public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	
 	private static final long serialVersionUID = -4862404513190004578L;
+	
+	private static final int COMPILE_ERROR_MAX_LENGTH = 64000;
+	private static final int RUNTIME_ERROR_MAX_LENGTH = 64000;
+	private static final int FILES_COMPILED_MAX_LENGTH = 64000;
+	private static final int RUNTIME_OUTPUT_MAX_LENGTH = 128000;
 
 	@Id @GeneratedValue
 	@Column (name = "id")
@@ -85,7 +91,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	private boolean groupWork;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn (name = "test_case_id")
+	@JoinColumn (name = "test_case_id") // TODO should be named "unit_test_result_id"
 	@OrderBy ("testName")
 	@LazyCollection (LazyCollectionOption.FALSE)
 	private List<UnitTestCaseResult> testCases;
@@ -103,23 +109,23 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@LazyCollection (LazyCollectionOption.FALSE)
 	private Set<ResultFeedback> validationErrors = new TreeSet<ResultFeedback>();
 	
-	@Column (name = "compile_errors", length = 64000)
-	@Size (max = 64000)
+	@Column (name = "compile_errors", length = COMPILE_ERROR_MAX_LENGTH)
+	@Size (max = COMPILE_ERROR_MAX_LENGTH)
 	private String compileErrors;
 	
-	@Column (name = "runtime_errors", length = 64000)
-	@Size (max = 64000)
+	@Column (name = "runtime_errors", length = RUNTIME_ERROR_MAX_LENGTH)
+	@Size (max = RUNTIME_ERROR_MAX_LENGTH)
 	private String runtimeErrors;
 	
 	@Column (name = "clean_error")
 	private boolean cleanError;
 	
-	@Column (name = "files_compiled", length = 64000)
-	@Size (max = 64000)
+	@Column (name = "files_compiled", length = FILES_COMPILED_MAX_LENGTH)
+	@Size (max = FILES_COMPILED_MAX_LENGTH)
 	private String filesCompiled;
 	
-	@Column (name = "runtime_output", length = 128000)
-	@Size (max = 128000)
+	@Column (name = "runtime_output", length = RUNTIME_OUTPUT_MAX_LENGTH)
+	@Size (max = RUNTIME_OUTPUT_MAX_LENGTH)
 	private String fullOutput;
 
 	public long getId() {
@@ -211,7 +217,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	}
 
 	public void setCompileErrors(String compileErrors) {
-		this.compileErrors = compileErrors;
+		this.compileErrors = PASTAUtil.truncate(compileErrors, COMPILE_ERROR_MAX_LENGTH);
 	}
 
 	public boolean isRuntimeError() {
@@ -221,7 +227,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		return runtimeErrors;
 	}
 	public void setRuntimeErrors(String runtimeErrors) {
-		this.runtimeErrors = runtimeErrors;
+		this.runtimeErrors = PASTAUtil.truncate(runtimeErrors, RUNTIME_ERROR_MAX_LENGTH);
 	}
 
 	public boolean isCleanError() {
@@ -237,7 +243,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	}
 
 	public void setFilesCompiled(String filesCompiled) {
-		this.filesCompiled = filesCompiled;
+		this.filesCompiled = PASTAUtil.truncate(filesCompiled, FILES_COMPILED_MAX_LENGTH);
 	}
 
 	public String getFullOutput() {
@@ -245,7 +251,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	}
 
 	public void setFullOutput(String fullOutput) {
-		this.fullOutput = fullOutput;
+		this.fullOutput = PASTAUtil.truncate(fullOutput, RUNTIME_OUTPUT_MAX_LENGTH);
 	}
 
 	public double getPercentage(){
