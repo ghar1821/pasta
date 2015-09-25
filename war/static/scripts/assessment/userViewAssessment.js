@@ -33,7 +33,8 @@ $('div.submitted-by-panel').on({
 	mouseenter: function () {
 		var $inner = $(this).children().first();
 		$inner.stop();
-		$inner.animate({ left: -$inner.children().last().width()}, "fast");
+		var viewContentWidth = Math.max($inner.children().first().width(), $inner.children().last().width() + 5);
+		$inner.animate({ left: -viewContentWidth}, "fast");
 	},
 	mouseleave: function () {
 		var $inner = $(this).children().first();
