@@ -42,7 +42,7 @@ either expressed or implied, of the PASTA Project.
 <c:set var="effectiveUser" value="${not empty viewedUser ? viewedUser : user}" />
 
 <h1>
-	${effectiveUser.username} - ${assessment.name}
+	<a href='../../home/'>${effectiveUser.username}</a> - ${assessment.name}
 </h1>
 
 <table class='alignCellsTop'>
