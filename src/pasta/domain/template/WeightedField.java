@@ -31,6 +31,7 @@ package pasta.domain.template;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -55,6 +56,7 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 	@GeneratedValue
 	private long id;
 	
+	@Column (length = 512)
 	private String name;
 	private double weight;
 	
