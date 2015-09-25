@@ -53,7 +53,7 @@ either expressed or implied, of the PASTA Project.
 				</c:forEach>
 			</ul>
 		</div>
-		<c:if test="${!user.tutor && assessment.studentsManageGroups && !assessment.groupsLocked}">
+		<c:if test="${user.tutor || (assessment.studentsManageGroups && !assessment.groupsLocked)}">
 			<div class='horizontal-block float-right'>
 				<form class='leaveForm' action="leaveGroup/" method="post">
 					<button>Leave Group</button>
@@ -105,7 +105,7 @@ either expressed or implied, of the PASTA Project.
 						<h2 class='compact'>Group Full</h2>
 					</c:when>
 					<c:otherwise>
-						<c:if test="${!user.tutor && !assessment.groupsLocked && !group.locked}">
+						<c:if test="${user.tutor || (!assessment.groupsLocked && !group.locked)}">
 							<form class='joinForm' action="joinGroup/${group.id}/" method="post">
 								<button>Join Group</button>
 							</form>

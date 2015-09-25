@@ -101,7 +101,7 @@ either expressed or implied, of the PASTA Project.
 									<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
 										<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
 									</c:if>
-									<button onclick="submitAssessment('${assessment.id}');">Submit</button>
+									<button onclick="submitAssessment('${assessment.id}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
 								</div>
 							</div>
 							
@@ -127,12 +127,25 @@ either expressed or implied, of the PASTA Project.
 <div id="submitPopup" class="popup">
 	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
-		<div style="font-size:150%">
-			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a> <br /><br />
-		</div>
-		<form:input path="file" type="file" />
 		<form:input type="hidden" path="assessment" value=""/>
-	   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+		
+		<div class='vertical-block' style="font-size:150%">
+			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a>
+		</div>
+		<div id='groupDeclaration' class='vertical-block' style="font-size:150%">
+			By submitting I also declare that all group members have participated to a satisfactory level in completing this assessment.
+		</div>
+		<div class='vertical-block'>
+			<form:input path="file" type="file" />
+		</div>
+		<div id='groupCheckDiv' class='vertical-block'>
+			<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
+			<label for='groupCheck' style="vertical-align: middle;"></label>
+			<span style="font-size:150%; vertical-align: middle;">I am submitting on behalf of my group.</span>
+		</div>
+		<div class='vertical-block'>
+		   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+		</div>
    	</form:form>
 </div>
 
@@ -145,10 +158,16 @@ either expressed or implied, of the PASTA Project.
 		document.forms['redirect'].submit();
 	}
 	
-	function submitAssessment(assessment){
+	function submitAssessment(assessment, hasGroup, allGroup){
 		document.getElementById('assessment').value=assessment;
-		$('#submitPopup').bPopup();
+		var $popup = $('#submitPopup');
+		$popup.find("#groupCheckDiv").toggle(hasGroup);
+		$popup.find("#groupCheck").prop("checked", allGroup).trigger("change");
+		$popup.bPopup();
 	}
+	$("#groupCheck").on("change", function() {
+		$("#groupDeclaration").toggle($(this).is(":checked"));
+	});
 	
 	$(document).ready(function() {
 		$(".queueInfo").each(function() {

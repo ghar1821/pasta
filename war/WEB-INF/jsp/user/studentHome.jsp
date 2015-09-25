@@ -213,7 +213,7 @@ either expressed or implied, of the PASTA Project.
 			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a>
 		</div>
 		<div id='groupDeclaration' class='vertical-block' style="font-size:150%">
-			By submitting I also declare that all group members have paticipated to a satisfactory level in completing this assessment.
+			By submitting I also declare that all group members have participated to a satisfactory level in completing this assessment.
 		</div>
 		<div class='vertical-block'>
 			<form:input path="file" type="file" />
