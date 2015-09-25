@@ -41,7 +41,7 @@ public class UpdateUnitTestFormValidator implements Validator {
 		HashSet<String> names = new HashSet<String>();
 		for(int i = 0; i < form.getTestCases().size(); i++) {
 			BlackBoxTestCaseForm bbForm = form.getTestCases().get(i);
-			if(names.contains(bbForm.getTestName())) {
+			if(!bbForm.isDeleteMe() && names.contains(bbForm.getTestName())) {
 				errors.rejectValue("testCases", "NotUnique", new Object[]{bbForm.getTestName()}, "");
 			} else {
 				names.add(bbForm.getTestName());
