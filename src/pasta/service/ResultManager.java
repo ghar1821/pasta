@@ -124,7 +124,7 @@ public class ResultManager {
 	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
 	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.CombinedAssessmentResult} assessmentResults) 
 	 */
-	public Map<PASTAUser, Map<Long, CombinedAssessmentResult>> getLatestResultsIncludingGroupQuick(Collection<PASTAUser> allUsers){
+	public Map<PASTAUser, Map<Long, AssessmentResult>> getLatestResultsIncludingGroupQuick(Collection<PASTAUser> allUsers){
 		List<Long> allAssessmentIds = assessmentManager.getAssessmentIDList();
 		Map<PASTAUser, Map<Long, PASTAGroup>> allUserGroups = groupManager.getAllUserGroups(allUsers);
 		
@@ -153,13 +153,13 @@ public class ResultManager {
 			thisUserResults.put(userResult.getAssessment().getId(), userResult);
 		}
 		
-		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> results = new TreeMap<>();
+		Map<PASTAUser, Map<Long, AssessmentResult>> results = new TreeMap<>();
 		for(PASTAUser user : allUsers) {
 			Map<Long, AssessmentResult> thisUserResults = userResultsMap.get(user);
 			Map<Long, PASTAGroup> thisUserGroups = allUserGroups.get(user);
-			Map<Long, CombinedAssessmentResult> thisUserCombinedResults = results.get(user);
+			Map<Long, AssessmentResult> thisUserCombinedResults = results.get(user);
 			if(thisUserCombinedResults == null) {
-				thisUserCombinedResults = new TreeMap<Long, CombinedAssessmentResult>();
+				thisUserCombinedResults = new TreeMap<Long, AssessmentResult>();
 				results.put(user, thisUserCombinedResults);
 			}
 			for(Long assessmentId : allAssessmentIds) {
@@ -170,11 +170,19 @@ public class ResultManager {
 					Map<Long, AssessmentResult> thisGroupResults = groupResultsMap.get(group);
 					groupResult = thisGroupResults == null ? null : thisGroupResults.get(assessmentId);
 				}
-				if(individualResult != null || groupResult != null) {
-					CombinedAssessmentResult combined = new CombinedAssessmentResult(user);
-					combined.addResult(individualResult);
-					combined.addResult(groupResult);
-					thisUserCombinedResults.put(assessmentId, combined);
+				if(individualResult == null) {
+					if(groupResult != null) {
+						thisUserCombinedResults.put(assessmentId, groupResult);
+					}
+				} else {
+					if(groupResult == null) {
+						thisUserCombinedResults.put(assessmentId, individualResult);
+					} else {
+						CombinedAssessmentResult combined = new CombinedAssessmentResult(user);
+						combined.addResult(individualResult);
+						combined.addResult(groupResult);
+						thisUserCombinedResults.put(assessmentId, combined);
+					}
 				}
 			}
 		}
@@ -285,5 +293,15 @@ public class ResultManager {
 
 	public List<AssessmentResult> getWaitingResults() {
 		return resultDAO.getWaitingResults();
+	}
+
+	public void deleteAllResultsForAssessment(long assessmentId) {
+		List<AssessmentResult> results = resultDAO.getAllResults(null, assessmentId, true, true);
+		if(!results.isEmpty()) {
+			logger.info("Deleting " + results.size() + " results for assessment " + assessmentId);
+			for(AssessmentResult result : results) {
+				resultDAO.delete(result);
+			}
+		}
 	}
 }

@@ -79,7 +79,6 @@ import pasta.domain.form.validate.SubmissionValidator;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.Competition;
@@ -1671,7 +1670,7 @@ public class SubmissionController {
 
 		String data = "{\r\n  \"data\": [\r\n";
 		
-		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> allResults = resultManager.getLatestResultsIncludingGroupQuick(usersList);
+		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager.getLatestResultsIncludingGroupQuick(usersList);
 		
 		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
 		for (int i = 0; i < usersList.size(); ++i) {
@@ -1691,7 +1690,7 @@ public class SubmissionController {
 			}
 			userData += "\r\n";
 
-			Map<Long, CombinedAssessmentResult> userResults = allResults.get(user);
+			Map<Long, AssessmentResult> userResults = allResults.get(user);
 			// marks
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
