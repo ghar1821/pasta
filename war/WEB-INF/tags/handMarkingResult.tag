@@ -31,8 +31,8 @@
 			<c:set var="weightedHM" value="${handMarkingResult.weightedHandMarking}" />
 			<c:set var="handMarking" value="${weightedHM.handMarking}" />
 			<div class='hand_marking_wrapper vertical-block'>
+				<h4 class='compact'>${handMarking.name}</h4>
 				<c:if test="${marking}">
-					<h4 class='compact'>${handMarking.name}</h4>
 					<input type='hidden' name="handMarkingResults[${hmResultStatus.index}].id" value="${handMarkingResult.id}" />
 					<input type="hidden" name="handMarkingResults[${hmResultStatus.index}].weightedHandMarking.id" value="${weightedHM.id}" />
 				</c:if>
