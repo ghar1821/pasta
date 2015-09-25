@@ -21,6 +21,7 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 		addOption("bbuseroutfile", UnitTest.BB_OUTPUT_FILENAME);
 		addOption("bbexpectedfile", UnitTest.BB_EXPECTED_OUTPUT_FILENAME);
 		addOption("bbinputfile", UnitTest.BB_INPUT_FILENAME);
+		addOption("bbmetafile", UnitTest.BB_META_FILENAME);
 	}
 
 	public void setTestData(List<BlackBoxTestCase> testCases) {

@@ -56,6 +56,7 @@ import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.TestUnitTestForm;
 import pasta.domain.form.UpdateUnitTestForm;
 import pasta.domain.result.UnitTestResult;
+import pasta.domain.template.BlackBoxOptions;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 import pasta.repository.AssessmentDAO;
@@ -100,6 +101,7 @@ public class UnitTestManager {
 	
 	final static String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
 	final static String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
+	final static String BB_TEST_VARIABLES_TEMPLATE = "PASTABlackBoxTestVariables.template";
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
@@ -348,10 +350,20 @@ public class UnitTestManager {
 		runner.setMaxRunTime(totalTime);
 		runner.setSolutionName(solutionName);
 		
-		String[] targets = new String[] {"build", "run", "test", "clean"};
-		File testLoc = test.getGeneratedCodeLocation();
+		if(subLanguage == Language.C) {
+			((CBlackBoxTestRunner) runner).setGCCArguments(test.getBlackBoxOptions().getGccCommandLineArgs());
+		}
 		
-		doTest(runner, targets, testLoc, sandboxLoc, utResults, context);
+		String[] targets = null;
+		if(test.hasBlackBoxTestsWithOutputCheck()) {
+			targets = new String[] {"build", "run", "test", "clean"};
+		} else {
+			targets = new String[] {"build", "run", "clean"};
+		}
+		File testLoc = test.getGeneratedCodeLocation();
+		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
+		
+		doTest(runner, targets, testLoc, sandboxLoc, utResults, context, accessoryFiles);
 	}
 	
 	public void runJUnitTests(UnitTest test, 
@@ -369,31 +381,36 @@ public class UnitTestManager {
 		runner.setFilterStackTraces(false);
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
-		doTest(runner, targets, testLoc, sandboxLoc, utResults, context);
+		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
+		doTest(runner, targets, testLoc, sandboxLoc, utResults, context, accessoryFiles);
 	}
 	
 	private void doTest(Runner runner, String[] targets, File testCode, File sandboxLoc, 
-			UnitTestResult utResults, List<String> context) {
+			UnitTestResult utResults, List<String> context, File accessoryFiles) {
 		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
 		antJob.addDependency("test", "build");
 		antJob.addDependency("run", "build");
 		
-		logger.debug("Copying " + testCode + " to " + sandboxLoc);
 		antJob.addSetupTask(new DirectoryCopyTask(testCode, sandboxLoc));
+		if(accessoryFiles != null) {
+			antJob.addSetupTask(new DirectoryCopyTask(accessoryFiles, sandboxLoc, true));
+		}
 		
 		File binLoc = new File(sandboxLoc, "bin/");
-		logger.debug("Making directories to " + binLoc);
 		antJob.addSetupTask(new MakeDirectoryTask(binLoc));
-		logger.debug("Making directories to " + new File(binLoc, UnitTest.BB_OUTPUT_FILENAME + File.separatorChar));
 		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, UnitTest.BB_OUTPUT_FILENAME + File.separatorChar)));
+		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, UnitTest.BB_META_FILENAME + File.separatorChar)));
 		
 		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, sandboxLoc, false));
 		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, binLoc, false));
 		
+		logger.debug("Starting run of ant job");
 		antJob.run();
+		logger.debug("Ant job completed");
 		
 		AntResults results = antJob.getResults();
 		
+		logger.debug("Reading results from disk");
 		// Get results from ant output
 		UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
 				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context);
@@ -402,21 +419,40 @@ public class UnitTestManager {
 			thisResult.setRuntimeErrors("Could not read unit test results from disk.");
 		}
 		
+		logger.debug("Extracting compiled files");
 		thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
+		
 		if(!results.isSuccess("build")) {
 			thisResult.setBuildError(true);
 			thisResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
+			if(thisResult.getCompileErrors() != null && !thisResult.getCompileErrors().isEmpty()) {
+				logger.debug("Test ran with compile error");
+			} else {
+				logger.debug("Test ran with build error");
+			}
 		}
 		
 		File errorFile = new File(sandboxLoc, "run.errors");
 		if(errorFile.exists()) {
 			String errorContents = PASTAUtil.scrapeFile(errorFile);
+			FileUtils.deleteQuietly(errorFile);
+			if(runner instanceof CBlackBoxTestRunner || runner instanceof CPPBlackBoxTestRunner) {
+				// C/CPP build file notifies of segfault already, and replaces it with a fail
+				errorContents = errorContents.replaceAll(".*: the monitored command dumped core", "").trim();
+			}
 			thisResult.setRuntimeErrors(errorContents.replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
+			if(thisResult.getRuntimeErrors() != null && !thisResult.getRuntimeErrors().isEmpty()) {
+				logger.debug("Test ran with runtime errors");
+			}
 		}
 		
-		thisResult.setCleanError(!results.isSuccess("clean"));
-		thisResult.setFullOutput(results.getFullOutput());
+		boolean cleanError = !results.isSuccess("clean");
+		if(cleanError) {
+			logger.debug("Test ran with clean errors");
+		}
+		thisResult.setCleanError(cleanError);
 		
+		thisResult.setFullOutput(results.getFullOutput());
 		utResults.combine(thisResult);
 	}
 	
@@ -452,6 +488,8 @@ public class UnitTestManager {
 		createInputFiles(test);
 		createExpectedOutputFiles(test);
 		
+		test.getBlackBoxOptions().update(updateForm.getBlackBoxOptions());
+		
 		updateUnitTest(test);
 	}
 
@@ -478,6 +516,8 @@ public class UnitTestManager {
 				String line = testScn.nextLine();
 				if(line.contains("${tests}")) {
 					testContent.append(getTestsContent(test)).append(System.lineSeparator());
+				} else if (line.contains("${variables}")) {
+					testContent.append(getVariablesContent(test)).append(System.lineSeparator());
 				} else {
 					testContent.append(line).append(System.lineSeparator());
 				}
@@ -523,11 +563,38 @@ public class UnitTestManager {
 				String content = new String(methodTemplate.toString());
 				content = content.replaceAll("\\$\\{timeout\\}", String.valueOf(testCase.getTimeout()));
 				content = content.replaceAll("\\$\\{testName\\}", testCase.getTestName());
+				content = content.replaceAll("\\$\\{actualDir\\}", UnitTest.BB_OUTPUT_FILENAME);
+				content = content.replaceAll("\\$\\{expectedDir\\}", UnitTest.BB_EXPECTED_OUTPUT_FILENAME);
+				content = content.replaceAll("\\$\\{timeoutDir\\}", UnitTest.BB_META_FILENAME);
 				allTests.append(content);
 			}
 		}
 		
 		return allTests.toString();
+	}
+	
+	private String getVariablesContent(UnitTest test) {
+		StringBuilder variablesContent = new StringBuilder();
+		File bbVariablesTemplateFile = null;
+		try {
+			bbVariablesTemplateFile = PASTAUtil.getTemplateResource("build_templates/" + BB_TEST_VARIABLES_TEMPLATE);
+			Scanner variablesScn = new Scanner(bbVariablesTemplateFile);
+			while(variablesScn.hasNextLine()) {
+				variablesContent.append(variablesScn.nextLine()).append(System.lineSeparator());
+			}
+			variablesScn.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Could not read black box variables template at " + bbVariablesTemplateFile);
+		} 
+		
+		String content = new String(variablesContent.toString());
+		BlackBoxOptions options = test.getBlackBoxOptions();
+		if(options == null) {
+			options = new BlackBoxOptions();
+		}
+		content = content.replaceAll("\\$\\{detailedErrors\\}", String.valueOf(options.isDetailedErrors()));
+		
+		return content;
 	}
 	
 	private void createExpectedOutputFiles(UnitTest test) {
@@ -609,7 +676,7 @@ public class UnitTestManager {
 					String location = expandNode.getLocation().substring(dirStart);
 					if(location.endsWith(".java")) {
 						if(location.endsWith("Test.java")) {
-							test.setMainClassName(PASTAUtil.extractQualifiedName(location));
+							test.setMainClassName(PASTAUtil.extractQualifiedName(expandNode.getLocation()));
 						}
 					}
 					if(!expandNode.isLeaf()) {
@@ -625,7 +692,41 @@ public class UnitTestManager {
 			test.setTestResult(null);
 			updateUnitTest(test);
 		} catch (Exception e) {
-			(new File(test.getFileLocation())).delete();
+			test.getCodeLocation().delete();
+			logger.error("Unit test code for " + test.getName()
+					+ " could not be updated successfully!", e);
+		}
+	}
+	
+	public void copyAccessoryFiles(UnitTest test, UpdateUnitTestForm updateForm) {
+		try {
+			File accessoryLocation = test.getAccessoryLocation();
+			
+			// force delete old location
+			FileUtils.deleteDirectory(accessoryLocation);
+			
+			// create space on the file system.
+			accessoryLocation.mkdirs();
+			
+			CommonsMultipartFile submission = updateForm.getAccessoryFile();
+			// unzip the uploaded code into the code folder. (if exists)
+			if (submission != null && !submission.isEmpty()) {
+				// unpack
+				submission.getInputStream().close();
+				File newLocation = new File(accessoryLocation, submission.getOriginalFilename());
+				submission.transferTo(newLocation);
+				if(newLocation.getName().endsWith(".zip")) {
+					PASTAUtil.extractFolder(newLocation.getAbsolutePath());
+					try{
+						FileUtils.forceDelete(newLocation);
+					} catch (Exception e) {
+						logger.error("Could not delete the zip for "
+								+ test.getName());
+					}
+				}
+			}
+		} catch (IOException e) {
+			test.getAccessoryLocation().delete();
 			logger.error("Unit test code for " + test.getName()
 					+ " could not be updated successfully!", e);
 		}
@@ -636,6 +737,14 @@ public class UnitTestManager {
 			FileUtils.deleteDirectory(test.getCodeLocation());
 		} catch (IOException e) {
 			logger.error("Cannot delete code for unit test " + test.getId(), e);
+		}
+	}
+
+	public void deleteAccessoryFiles(UnitTest test) {
+		try {
+			FileUtils.deleteDirectory(test.getAccessoryLocation());
+		} catch (IOException e) {
+			logger.error("Cannot delete accessory files for unit test " + test.getId(), e);
 		}
 	}
 }

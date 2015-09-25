@@ -38,6 +38,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.domain.template.BlackBoxOptions;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 
@@ -60,10 +61,14 @@ public class UpdateUnitTestForm {
 	
 	private CommonsMultipartFile file;
 	
+	private CommonsMultipartFile accessoryFile;
+	
 	private String mainClassName;
 	private String submissionCodeRoot;
 	
 	private List<BlackBoxTestCaseForm> testCases;
+	
+	private BlackBoxOptions blackBoxOptions;
 	
 	public UpdateUnitTestForm(UnitTest base) {
 		this.id = base.getId();
@@ -71,8 +76,10 @@ public class UpdateUnitTestForm {
 		this.mainClassName = base.getMainClassName();
 		this.submissionCodeRoot = base.getSubmissionCodeRoot();
 		this.testCases = createTestCaseForms(base.getTestCases());
+		this.blackBoxOptions = new BlackBoxOptions(base.getBlackBoxOptions());
 		
 		this.file = null;
+		this.accessoryFile = null;
 	}
 	private List<BlackBoxTestCaseForm> createTestCaseForms(List<BlackBoxTestCase> testCases) {
 		List<BlackBoxTestCaseForm> forms = new ArrayList<BlackBoxTestCaseForm>();
@@ -100,6 +107,12 @@ public class UpdateUnitTestForm {
 	public void setFile(CommonsMultipartFile file) {
 		this.file = file;
 	}
+	public CommonsMultipartFile getAccessoryFile() {
+		return accessoryFile;
+	}
+	public void setAccessoryFile(CommonsMultipartFile accessoryFile) {
+		this.accessoryFile = accessoryFile;
+	}
 	
 	//JUnitTests
 	public String getMainClassName() {
@@ -126,6 +139,12 @@ public class UpdateUnitTestForm {
 			this.testCases.clear();
 			this.testCases.addAll(testCases);
 		}
+	}
+	public BlackBoxOptions getBlackBoxOptions() {
+		return blackBoxOptions;
+	}
+	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
+		this.blackBoxOptions = blackBoxOptions;
 	}
 	public List<BlackBoxTestCase> getPlainTestCases() {
 		List<BlackBoxTestCase> testCases = new ArrayList<BlackBoxTestCase>();

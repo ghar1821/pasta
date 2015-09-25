@@ -182,14 +182,16 @@ public class UnitTestController {
 
 		model.addAttribute("latestResult", test.getTestResult());
 		
-		FileTreeNode node = PASTAUtil.generateFileTree(test.getCodeLocation().getAbsolutePath());
-		model.addAttribute("node", node);
+		FileTreeNode codeNode = PASTAUtil.generateFileTree(test.getCodeLocation().getAbsolutePath());
+		model.addAttribute("codeNode", codeNode);
+		FileTreeNode accessoryNode = PASTAUtil.generateFileTree(test.getAccessoryLocation().getAbsolutePath());
+		model.addAttribute("accessoryNode", accessoryNode);
 		
 		if(test.hasCode()) {
 			Map<String, String> candidateFiles = new HashMap<String, String>();
 			Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
-			toExpand.push(node);
-			int dirStart = node.getLocation().length();
+			toExpand.push(codeNode);
+			int dirStart = codeNode.getLocation().length();
 			
 			while(!toExpand.isEmpty()) {
 				FileTreeNode expandNode = toExpand.pop();
@@ -298,6 +300,10 @@ public class UnitTestController {
 			if(updateForm.getFile() != null && !updateForm.getFile().isEmpty()) {
 				unitTestManager.updateUnitTestCode(test, updateForm);
 			}
+			
+			if(updateForm.getAccessoryFile() != null && !updateForm.getAccessoryFile().isEmpty()) {
+				unitTestManager.copyAccessoryFiles(test, updateForm);
+			}
 		}
 
 		return "redirect:/mirror/";
@@ -311,6 +317,17 @@ public class UnitTestController {
 			unitTestManager.deleteUserCode(test);
 		}
 
+		return "redirect:/mirror/";
+	}
+	
+	@RequestMapping(value = "{testId}/clearAccessory/", method = RequestMethod.POST)
+	public String clearAccessoryFiles(@ModelAttribute(value = "unitTest") UnitTest test, Model model) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		if(test.hasAccessoryFiles()) {
+			unitTestManager.deleteAccessoryFiles(test);
+		}
+		
 		return "redirect:/mirror/";
 	}
 	

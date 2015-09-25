@@ -8,6 +8,8 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class PASTABlackBoxTest extends PASTAJUnitTest {
+${variables}
+
 ${tests}
 
     private void compareOutput(String testName, File expectedFile, File actualFile) {
@@ -38,20 +40,34 @@ ${tests}
 
         int e = expectedLines.size();
         int a = actualLines.size();
-        boolean plural = Math.abs(a - e) > 1;
-        if(e > a) {
-            String message = "Missing " + (e - a) + " line" + (plural ? "s" : "") + " of output.";
-            fail(message);
-        } else if(a > e) {
-            String message = "You produced " + (a - e) + " line" + (plural ? "s" : "") + " of extra output.";
-            fail(message);
+        if(e != a) {
+        	if(detailedErrors) {
+        		boolean plural = Math.abs(a - e) > 1;
+		        if(e > a) {
+		            String message = "Missing " + (e - a) + " line" + (plural ? "s" : "") + " of output.";
+		            fail(message);
+		        } else if(a > e) {
+		            String message = "You produced " + (a - e) + " line" + (plural ? "s" : "") + " of extra output.";
+		            fail(message);
+		        }
+        	} else {
+        		String message = "Incorrect output produced";
+            	fail(message);
+        	}
         }
 
         for(int i = 0; i < e; i++) {
-            String message = "Line " + (i + 1) + " incorrect;";
             String expected = expectedLines.get(i);
             String actual = actualLines.get(i);
-            assertEquals(message, expected, actual);
+            if(detailedErrors) {
+            	String message = "Line " + (i + 1) + " incorrect;";
+            	assertEquals(message, expected, actual);
+            } else {
+            	if(!expected.equals(actual)) {
+            		String message = "Incorrect output produced";
+            		fail(message);
+            	}
+            }
         }
     }
 }

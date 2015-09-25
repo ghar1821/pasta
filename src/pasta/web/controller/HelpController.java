@@ -35,6 +35,7 @@ public class HelpController {
 	public String unitTestHelp(Model model) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		model.addAttribute("userout", UnitTest.BB_OUTPUT_FILENAME);
+		model.addAttribute("usermeta", UnitTest.BB_META_FILENAME);
 		try {
 			model.addAttribute("PASTAJUnitTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/PASTAJUnitTest.java")));
 			model.addAttribute("HelloWorldTest", PASTAUtil.scrapeFile(PASTAUtil.getTemplateResource("help_templates/HelloWorldTest.java")));

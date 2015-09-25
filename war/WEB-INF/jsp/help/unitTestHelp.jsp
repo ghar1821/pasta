@@ -79,6 +79,27 @@ either expressed or implied, of the PASTA Project.
 	
 	<p>If your test requires multiple classes, simple zip the code into a .zip file and submit that.
 	
+	<h4>Reading test meta-information</h4>
+	<p>When writing your tests, you can read some information about each test, including running time, memory usage and exit code. Unit test meta information for a test called <code>testCase1</code> can be found in the relative directory "<code>${usermeta}/testCase1</code>".
+	<p>An example of the contents of a file:
+	<pre>
+real 0.36
+user 0.07
+sys 0.00
+memory 25400
+exit 0
+	</pre>
+	<p>This means that the test had the following attributes:
+	<ul>
+		<li>Time spent processing was 0.36 seconds
+		<li>Time spent processing in user mode was 0.07 seconds
+		<li>Time spent processing in kernel mode was 0.00 seconds
+		<li>Maximum resident set size of the process was 25400 kB
+		<li>The exit code of the process was 0
+	</ul>
+	
+	<p><strong>Note:</strong> if a black box test times out, the meta information will not be saved to the expected file.
+	
 	<h3>Choosing a main file</h3>
 	<p>Every custom JUnit test requires a main test file. You can choose this file from the drop down box on the unit test details page.
 	

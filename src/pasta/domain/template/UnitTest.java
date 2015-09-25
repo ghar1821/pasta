@@ -79,6 +79,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public static String BB_INPUT_FILENAME = "bbinput";
 	public static String BB_EXPECTED_OUTPUT_FILENAME = "bbexpected";
 	public static String BB_OUTPUT_FILENAME = "userout";
+	public static String BB_META_FILENAME = "usermeta";
 
 	@Id @GeneratedValue
 	private long id;
@@ -101,6 +102,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@JoinColumn (name="unit_test_id")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<BlackBoxTestCase> testCases;
+	
+	@OneToOne (cascade=CascadeType.ALL, orphanRemoval = true, optional = true)
+	@JoinColumn (name="black_box_options_id")
+	private BlackBoxOptions blackBoxOptions;
 
 	/**
 	 * Default constructor
@@ -138,6 +143,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		return new File(getFileLocation(), "code");
 	}
 	
+	public File getAccessoryLocation() {
+		return new File(getFileLocation(), "accessory");
+	}
+	
 	public File getGeneratedCodeLocation() {
 		return new File(getFileLocation(), "generated");
 	}
@@ -147,6 +156,12 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 	public boolean isHasCode() {
 		return hasCode();
+	}
+	public boolean hasAccessoryFiles() {
+		return getAccessoryLocation().exists();
+	}
+	public boolean isHasAccessoryFiles() {
+		return hasAccessoryFiles();
 	}
 
 	public boolean isTested() {
@@ -245,6 +260,17 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		}
 	}
 
+	public BlackBoxOptions getBlackBoxOptions() {
+		if(blackBoxOptions == null) {
+			blackBoxOptions = new BlackBoxOptions();
+		}
+		return blackBoxOptions;
+	}
+
+	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
+		this.blackBoxOptions = blackBoxOptions;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -269,6 +295,14 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public boolean hasBlackBoxTests() {
 		return !getTestCases().isEmpty();
+	}
+	public boolean hasBlackBoxTestsWithOutputCheck() {
+		for(BlackBoxTestCase testCase : testCases) {
+			if(testCase.isToBeCompared()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	public boolean isHasBlackBoxTests() {
 		return hasBlackBoxTests();

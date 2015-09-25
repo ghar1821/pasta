@@ -64,6 +64,7 @@ public class AntJob {
 		setup();
 		
 		File buildFile = runner.createBuildFile(new File(homeDirectory, "build.xml"));
+		logger.debug("Created build file " + buildFile);
 		
 		ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
 		Project project = new Project();
@@ -79,24 +80,30 @@ public class AntJob {
 		consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
 		project.addBuildListener(consoleLogger);
 		project.init();
-
+		
 		project.addReference("ant.projectHelper", projectHelper);
 		projectHelper.parse(project, buildFile);			
 		
+		logger.debug("Executing targets...");
 		for(String target : this.targets) {
 			doTarget(project, target, output);
 		}
+		logger.debug("Finished executing targets");
 		
 		runErrors.close();
 		
+		logger.debug("Cleaning up...");
 		cleanup();
+		logger.debug("Cleanup finished");
 	}
 	
 	private void doTarget(Project project, String target, ByteArrayOutputStream output) {
+		logger.debug("Executing target \"" + target + "\"");
 		List<String> dependsOn = dependencies.get(target);
 		if(dependsOn != null) {
 			for(String other : dependsOn) {
 				if(!results.isSuccess(other)) {
+					logger.debug("Skipping target due to failure of \"" + other + "\"");
 					return;
 				}
 			}
@@ -105,14 +112,21 @@ public class AntJob {
 		boolean success = true;
 		try {
 			project.executeTarget(target);
+			logger.debug("Target finished successfully.");
 		} catch (BuildException e) {
-			if(!e.getMessage().contains("Compile failed")) {
+			logger.debug("Target not successful.");
+			if(!e.getMessage().contains("Compile failed") && !e.getMessage().contains("apply returned: 1")) {
 				logger.error("Error on task " + target + " at " + homeDirectory, e);
 			}
+			success = false;
+		} catch (Exception e) {
+			logger.debug("Target not successful - unknown error");
+			logger.error("Error on task " + target + " at " + homeDirectory, e);
 			success = false;
 		}
 		
 		String contents = output.toString();
+		logger.trace("Target content:\n" + contents);
 		results.append(target, contents);
 		results.setSuccess(target, success);
 		output.reset();

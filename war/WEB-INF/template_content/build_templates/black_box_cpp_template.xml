@@ -107,23 +107,50 @@
             arr = project.getProperty('bbTestData').split('|');
             project.setProperty('bbTestName', arr[0]);
             project.setProperty('bbTestTimeout', arr[1]);
+        	project.setProperty('bbTestTimeoutFraction', parseFloat(arr[1]) / 1000.0);
             if(arr[2] == undefined) {
                 project.setProperty('bbTestCommandLine', "");
             } else {
                 project.setProperty('bbTestCommandLine', arr[2]);
             }
         ]]></script>
-        <echo message="Running ./${solutionName} ${bbTestCommandLine}"/>
-        <exec
-			executable="./${solutionName}"
+    	<echo message="Running ./${solutionName} ${bbTestCommandLine}"/>
+    	<exec
+    		executable="/usr/bin/time"
 			dir="bin"
 			input="bin/${bbinputfile}/${bbTestName}"
             output="bin/${bbuseroutfile}/${bbTestName}"
 			error="${runErrorsFile}"
-			append="true"
-			timeout="${bbTestTimeout}">
+			append="true">
+    		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
+    		<arg value="/usr/local/bin/pastarun" /> 
+    		<arg line="/home/tomcat/timeout ${bbTestTimeoutFraction}" /> 
+    		<arg value="./${solutionName}" /> 
 			<arg line="${bbTestCommandLine}" />
 		</exec>
+    	<script language="javascript"><![CDATA[
+    		var errorCode = parseInt(project.getProperty('errorCode'));
+			// 124 = timeout, 143 = SIGTERM
+    		if(errorCode == 124 || errorCode == 143) {
+    			project.setProperty('timedOut', true);
+			}
+    		// 139 = SIGSEGV (11 + 128)
+			if(errorCode == 11 || errorCode == 139) {
+    			project.setProperty('segFault', true);
+			}
+    	]]></script>
+    	<if>
+    	    <isset property="timedOut"/>
+    	    <then>
+    	        <touch file="bin/${bbmetafile}/${bbTestName}.timedout"/>
+    	    </then>
+    	</if>
+    	<if>
+    	    <isset property="segFault"/>
+    	    <then>
+    	        <touch file="bin/${bbmetafile}/${bbTestName}.segfault"/>
+    	    </then>
+    	</if>
     </target>
 
 	<target name="test">

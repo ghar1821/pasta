@@ -44,153 +44,197 @@ either expressed or implied, of the PASTA Project.
 </div>
 
 <form:form commandName="updateUnitTest" enctype="multipart/form-data" method="POST">
-	<table class='vertical-block noGaps'>
-		<tr class='spaceBelow'>
-			<td><strong>Compatible languages:</strong></td>
-			<td>
-				Java, Python, C, C++
-				<span class='help'>If an assessment is to run student submissions as code using this test, these are the languages that can be run using this test type.</span>
-			</td>
-		</tr>
-		
-		<tr><td>Name:</td><td><form:input path="name" /> <form:errors path="name" /></td></tr>
-		<tr class='spaceBelow'><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
-		
-		<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
-		<c:if test="${unitTest.hasCode}">
-			<tr>
-				<td>Current Code: <a id='del-code'>(Delete)</a></td>
+	<div class='boxCard vertical-block'>
+		<table class='noGaps'>
+			<tr class='spaceBelow'>
+				<td><strong>Compatible languages:</strong></td>
 				<td>
-					<jsp:include page="../../recursive/fileWriterRoot.jsp">
-						<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
-					</jsp:include>
+					Java, Python, C, C++
+					<span class='help'>If an assessment is to run student submissions as code using this test, these are the languages that can be run using this test type.</span>
 				</td>
 			</tr>
-			<tr>
-				<td>Main class:</td>
+			
+			<tr><td>Name:</td><td><form:input path="name" /> <form:errors path="name" /></td></tr>
+			<tr class='spaceBelow'><td>Has been tested:</td><td class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</td></tr>
+			
+			<tr><td colspan='2'><strong>Custom JUnit Test Code</strong></td></tr>
+			<tr><td>Upload Code:</td><td><form:input type="file" path="file"/></td></tr>
+			<c:if test="${unitTest.hasCode}">
+				<tr>
+					<td>Current Code: <a id='del-code'>(Delete)</a></td>
+					<td>
+						<c:set var="node" value="${codeNode}" scope="request"/>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp">
+							<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
+						</jsp:include>
+					</td>
+				</tr>
+				<tr>
+					<td>Main class:</td>
+					<td>
+						<form:select path="mainClassName">
+							<form:option value="" label="--- Select ---"/>
+							<form:options items="${candidateMainFiles}" />
+						</form:select>
+					</td>
+				</tr>
+			</c:if>
+			<tr class='spaceBelow'>
+				<td>Submission base directory:</td>
 				<td>
-					<form:select path="mainClassName">
-						<form:option value="" label="--- Select ---"/>
-						<form:options items="${candidateMainFiles}" />
-					</form:select>
+					<form:input path="submissionCodeRoot"/> <span class='help'>The expected base directory of students' code (where the root is their code submission); e.g. "<code>src</code>". If their code is not to be submitted in a directory, leave this blank.</span>
 				</td>
 			</tr>
-		</c:if>
-		<tr class='spaceBelow'>
-			<td>Submission base directory:</td>
-			<td>
-				<form:input path="submissionCodeRoot"/> <span class='help'>The expected base directory of students' code (where the root is their code submission); e.g. "<code>src</code>". If their code is not to be submitted in a directory, leave this blank.</span>
-			</td>
-		</tr>
-		
-		<tr><td colspan='2'><input type="submit" value="Save Changes" id="submit" /></td></tr>
-	</table> 
-	<div id='allTestCases' class='vertical-block'>
-		<h2>Black Box Tests</h2>
+			
+			<tr><td colspan='2'><strong>Accessory Files</strong> <span class='help'>These files will be available to any custom or black box tests when they are run, and will be readable by student submissions. Files are available from the same directory as running code.</span></td></tr>
+			<tr <c:if test="${!unitTest.hasAccessoryFiles}">class='spaceBelow'</c:if>><td>Upload New Files:</td><td><form:input type="file" path="accessoryFile"/></td></tr>
+			<c:if test="${unitTest.hasAccessoryFiles}">
+				<tr class='spaceBelow'>
+					<td>Current Accessory Files: <a id='del-accessory'>(Delete)</a></td>
+					<td>
+						<c:set var="node" value="${accessoryNode}" scope="request"/>
+						<jsp:include page="../../recursive/fileWriterRoot.jsp">
+							<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
+						</jsp:include>
+					</td>
+				</tr>
+			</c:if>
+			
+			<tr><td colspan='2'><input type="submit" value="Save Changes" id="submit" /></td></tr>
+		</table> 
+	</div>
+	<div class='boxCard vertical-block'>
+		<h2 class='compact'>Black Box Tests</h2>
 		<p>These tests will be run automatically before any custom code you submit (above).
-		<form:errors path="testCases" element="div" />
-		<c:forEach var="testCase" items="${updateUnitTest.testCases}" varStatus="testStatus">
-			<div class='testCase boxCard vertical-block'>
-				<form:hidden path="testCases[${testStatus.index}].id"/>
-				<div class='float-right'>
-					<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
-					<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
-					<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+		<div class='vertical-block'>
+			<h3 class='compact'>Options</h3>
+			<table class='noGaps'>
+				<tr class='spaceBelow'>
+					<td colspan='2'>
+						<form:checkbox path="blackBoxOptions.detailedErrors" label="Detailed error messages"/>
+						<span class='help'>With this option, users will see messages displaying the difference between their output and the expected output. Otherwise they will just see whether they were correct or not.</span>
+					</td>
+				</tr>
+				<tr>
+					<td colspan='2'>
+						<strong>Only relevant to unit tests that will be running on C code:</strong>
+					</td>
+				</tr>
+				<tr>
+					<td>GCC Command Line Arguments</td>
+					<td>
+						<form:input path="blackBoxOptions.gccCommandLineArgs"/>
+					</td>
+				</tr>
+				
+			</table>
+		</div>
+		<div id='allTestCases' class='vertical-block'> 
+			<h3 class='compact'>Tests</h3>
+			<form:errors path="testCases" element="div" cssClass="vertical-block" />
+			<c:if test="${empty updateUnitTest.testCases}">
+				No black box tests.
+			</c:if>
+			<c:forEach var="testCase" items="${updateUnitTest.testCases}" varStatus="testStatus">
+				<div class='testCase boxCard vertical-block'>
+					<form:hidden path="testCases[${testStatus.index}].id"/>
+					<div class='float-right'>
+						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
+						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+					</div>
+					<div class='vertical-block showHide'>
+						<p>Test Name: <form:input path="testCases[${testStatus.index}].testName"/> <form:errors path="testCases[${testStatus.index}].testName" />
+					</div>
+					<div class='vertical-block'>
+						<table class='alignCellsTop'>
+							<tr>
+								<td>Timeout (ms):</td>
+								<td><form:input path="testCases[${testStatus.index}].timeout"/> <form:errors path="testCases[${testStatus.index}].timeout" /></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Command Line Arguments:</td>
+								<td><form:textarea path="testCases[${testStatus.index}].commandLine" cols="40" rows="3"/></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Console Input:</td>
+								<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].input" cols="40" rows="7"/></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
+							</tr>
+							<tr>
+								<td colspan='3'>
+									<form:checkbox cssClass='toggleOutput' path="testCases[${testStatus.index}].toBeCompared" label="Compare user output"/>
+								</td>
+							</tr>
+							<tr>
+								<td>Expected Console Output:</td>
+								<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].output" cols="40" rows="7"/></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
+							</tr>
+						</table>
+					</div>
 				</div>
-				<div class='vertical-block showHide'>
-					<p>Test Name: <form:input path="testCases[${testStatus.index}].testName"/> <form:errors path="testCases[${testStatus.index}].testName" />
-				</div>
-				<div class='vertical-block'>
-					<table class='alignCellsTop'>
-						<tr>
-							<td>Timeout (ms):</td>
-							<td><form:input path="testCases[${testStatus.index}].timeout"/> <form:errors path="testCases[${testStatus.index}].timeout" /></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>Command Line Arguments:</td>
-							<td><form:textarea path="testCases[${testStatus.index}].commandLine" cols="40" rows="3"/></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>Console Input:</td>
-							<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].input" cols="40" rows="7"/></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
-						</tr>
-						<tr>
-							<td colspan='3'>
-								<form:checkbox cssClass='toggleOutput' path="testCases[${testStatus.index}].toBeCompared" label="Compare user output"/>
-							</td>
-						</tr>
-						<tr>
-							<td>Expected Console Output:</td>
-							<td><form:textarea cssClass="console" path="testCases[${testStatus.index}].output" cols="40" rows="7"/></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
-						</tr>
-					</table>
-				</div>
-			</div>
-		</c:forEach>
-		<div id='emptyTest' class='hidden'>
-			<div class='testCase boxCard vertical-block'>
-				<div class='float-right'>
-					<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
-					<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
-					<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
-				</div>
-				<div class='vertical-block showHide'>
-					<p>Test Name: <input id="testCases0.testName" name="testCases[0].testName" type="text" value=""/>
-				</div>
-				<div class='vertical-block'>
-					<table class='alignCellsTop'>
-						<tr>
-							<td>Timeout (ms):</td>
-							<td><input id="testCases0.timeout" name="testCases[0].timeout" type="text" value="2000"/></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>Command Line Arguments:</td>
-							<td><textarea id="testCases0.commandLine" name="testCases[0].commandLine" rows="3" cols="40"></textarea></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td>Console Input:</td>
-							<td><textarea id="testCases0.input" name="testCases[0].input" class="console" rows="7" cols="40"></textarea></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
-						</tr>
-						<tr>
-							<td colspan='3'>
-								<input id="testCases0.toBeCompared1" name="testCases[0].toBeCompared" class="toggleOutput" type="checkbox" value="true" checked="checked">
-								<label for="testCases0.toBeCompared1">Compare user output</label>
-								<input type="hidden" name="_testCases[0].toBeCompared" value="on">
-							</td>
-						</tr>
-						<tr>
-							<td>Expected Console Output:</td>
-							<td><textarea id="testCases0.output" name="testCases[0].output" class="console" rows="7" cols="40"></textarea></td>
-							<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
-						</tr>
-					</table>
+			</c:forEach>
+			<div id='emptyTest' class='hidden'>
+				<div class='testCase boxCard vertical-block'>
+					<div class='float-right'>
+						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
+						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+					</div>
+					<div class='vertical-block showHide'>
+						<p>Test Name: <input id="testCases0.testName" name="testCases[0].testName" type="text" value=""/>
+					</div>
+					<div class='vertical-block'>
+						<table class='alignCellsTop'>
+							<tr>
+								<td>Timeout (ms):</td>
+								<td><input id="testCases0.timeout" name="testCases[0].timeout" type="text" value="2000"/></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Command Line Arguments:</td>
+								<td><textarea id="testCases0.commandLine" name="testCases[0].commandLine" rows="3" cols="40"></textarea></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>Console Input:</td>
+								<td><textarea id="testCases0.input" name="testCases[0].input" class="console" rows="7" cols="40"></textarea></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
+							</tr>
+							<tr>
+								<td colspan='3'>
+									<input id="testCases0.toBeCompared1" name="testCases[0].toBeCompared" class="toggleOutput" type="checkbox" value="true" checked="checked">
+									<label for="testCases0.toBeCompared1">Compare user output</label>
+									<input type="hidden" name="_testCases[0].toBeCompared" value="on">
+								</td>
+							</tr>
+							<tr>
+								<td>Expected Console Output:</td>
+								<td><textarea id="testCases0.output" name="testCases[0].output" class="console" rows="7" cols="40"></textarea></td>
+								<td>Preview (showing whitespace):<br/><div class='boxCard consolePreview'></div></td>
+							</tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class='vertical-block'>
-		<button id='addTest'>Add Test</button>
+		<div class='vertical-block'>
+			<button id='addTest'>Add Test</button>
+		</div>
 	</div>
 	<div class='vertical-block'>
 		<input type="submit" value="Save Changes" id="submit" />
+		<c:if test="${(not unitTest.hasCode and unitTest.hasBlackBoxTests) or (unitTest.hasCode and not empty unitTest.mainClassName)}">
+			<button id="testPopup"> Test Unit Test </button>
+		</c:if>
+		<c:if test="${unitTest.hasCode}">
+			<a href="./download/"><button id="downloadTest"> Download Test </button></a>
+		</c:if>
 	</div>
 </form:form>
-
-<div class='vertical-block'>
-	<c:if test="${(not unitTest.hasCode and unitTest.hasBlackBoxTests) or (unitTest.hasCode and not empty unitTest.mainClassName)}">
-		<button id="testPopup"> Test Unit Test </button>
-	</c:if>
-	<c:if test="${unitTest.hasCode}">
-		<a href="./download/"><button id="downloadTest"> Download Test </button></a>
-	</c:if>
-</div>
 
 <c:if test="${not empty latestResult}">
 	<h2>Latest Test results
@@ -364,6 +408,15 @@ either expressed or implied, of the PASTA Project.
             	if(confirmResult) {
             		$("<form />", {
             			action : "clearCode/",
+            			method : "post"
+            		}).submit();
+            	}
+            });
+            $("#del-accessory").on("click", function() {
+            	var confirmResult = confirm("Are you sure you wish to delete the accessory files for this unit test?");
+            	if(confirmResult) {
+            		$("<form />", {
+            			action : "clearAccessory/",
             			method : "post"
             		}).submit();
             	}
