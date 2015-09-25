@@ -107,7 +107,10 @@ public class PASTAJUnitTest {
     
     protected final String readFile(File file) throws FileNotFoundException {
     	Scanner scn = new Scanner(new FileInputStream(file)).useDelimiter("\\Z");
-    	String content = scn.next();
+    	String content = "";
+    	if(scn.hasNext()) {
+    		content = scn.next();
+    	}
     	scn.close();
     	return content;
     }
