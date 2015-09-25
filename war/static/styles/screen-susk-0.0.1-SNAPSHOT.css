@@ -135,7 +135,7 @@ p.compact {
 div.consolePreview {
 	font-family: monospace;
 	white-space: pre-wrap;
-	overflow: scroll;
+	overflow: auto;
 	width: 400px;
 }
 
