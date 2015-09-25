@@ -294,10 +294,13 @@
 			DROP TABLE IF EXISTS assessment_groups;
 			DROP TABLE IF EXISTS assessment_languages;
 			DROP TABLE IF EXISTS assessment_ratings;
-			DROP TABLE IF EXISTS student_assessment_extensions;
+			DROP TABLE IF EXISTS assessment_extensions;
 			DROP TABLE IF EXISTS assessment_jobs;
 			DROP TABLE IF EXISTS assessment_results;
 			DROP TABLE IF EXISTS assessments;
+			
+			DROP TABLE IF EXISTS authentication_settings;
+			DROP TABLE IF EXISTS server_addresses;
 
 		</sql>
 	</target>
