@@ -4,16 +4,24 @@ $(function() {
 
 function loadEvents() {
 	reloadEvents($(".first"));
+	checkFullConjunctions();
 }
 
 function reloadEvents($parentDiv) {
 	$parentDiv.find( ".strDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
+	
+	// Adding nested form:form elements should merge the forms, but it doesn't always do so
+	// This line "fixes" that issue, though the underlying issue cannot be found.
+	$parentDiv.find("form").each(function() {
+		$(this).children().first().unwrap();
+	});
 	
 	$parentDiv.find(".chosen").chosen({width: "22em"});
 	$parentDiv.find('.chosen-toggle').on('click', function(){
 		$(this).parent().siblings().find('.selectAll option').prop('selected', $(this).hasClass('select')).parent().trigger('chosen:updated');
 		return false;
 	});
+	
 	
 	$parentDiv.find(".changeRule, .setSubrule").chosen().on('change', function() {
 		var $closestParent = $(this).closest('.ruleParent');
@@ -30,7 +38,7 @@ function reloadEvents($parentDiv) {
 			}	
 			if(type){
 				var confirmMessage = "This will change the current rule into a sub-rule of an " + type.toUpperCase() + " rule.\n\n";
-				var currentRuleName = $closestParent.children("#ruleName").val();
+				var currentRuleName = $closestParent.children("[id$='ruleName']").val();
 				var currentConj;
 				if(currentRuleName.endsWith("ReleaseAndRule")) {
 					currentConj = "AND";
@@ -72,10 +80,6 @@ function reloadEvents($parentDiv) {
 			addRule($closestParent, ruleName, pathPrefix);
 		}
 	});
-	
-	// Adding nested form:form elements should merge the forms, but it doesn't always do so
-	// This line "fixes" that issue, though the underlying issue cannot be found.
-	$parentDiv.find("form").children().first().unwrap();
 	
 	// controls for the "delete rule" button
 	$parentDiv.find(".deleteRule").on('click', function() {
@@ -133,7 +137,9 @@ function reloadEvents($parentDiv) {
 	
 	// Allows looping of nested colours infinitely
 	$("div.first > div > div > div.subRule > div > div > div.subRule > div > div > div.subRule").addClass("first");
-	
+}
+
+function checkFullConjunctions() {
 	// Add the option to add a new subrule when all subrules have been set.
 	$('.ruleParent').has('.subRule').each(function() {
 		$parent = $(this);
@@ -141,7 +147,7 @@ function reloadEvents($parentDiv) {
 		$conjunction = $();
 		$subRules = $parent.children().children().children('.subRule');
 		$subRules.each(function() {
-			if($(this).children().length <= 1) {
+			if($(this).children().length <= 1 && !$(this).children().first().is("form")) {
 				full = false;
 			}
 			$conjunction = $(this).siblings(".conjunction").first();
@@ -173,6 +179,9 @@ function addRule($parentDiv, ruleName, pathPrefix) {
 	$parentDiv.load("load/", {"ruleName":ruleName, "pathPrefix":(pathPrefix ? pathPrefix : "")}, function(text, status) {
 		if(status !== "error") {
 			reloadEvents($parentDiv);
+			if(ruleName) {
+				checkFullConjunctions();
+			}
 		}
 	});
 }
