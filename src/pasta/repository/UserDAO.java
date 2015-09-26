@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -475,6 +476,9 @@ public class UserDAO {
 
 	@SuppressWarnings("unchecked")
 	public List<PASTAGroup> getGroups(Collection<PASTAUser> users, long assessmentId) {
+		if(users == null || users.isEmpty()) {
+			return new ArrayList<PASTAGroup>();
+		}
 		Set<Long> ids = new HashSet<Long>();
 		for(PASTAUser user : users) {
 			ids.add(user.getId());
@@ -493,7 +497,10 @@ public class UserDAO {
 	
 	@SuppressWarnings("unchecked")
     public List<Long[]> getAllUserGroups(Collection<PASTAUser> users) {
-        Set<Long> ids = new HashSet<Long>();
+        if(users == null || users.isEmpty()) {
+        	return new ArrayList<Long[]>();
+        }
+    	Set<Long> ids = new HashSet<Long>();
         for(PASTAUser user : users) {
             ids.add(user.getId());
         }
