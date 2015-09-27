@@ -1668,7 +1668,7 @@ public class SubmissionController {
 		
 		DecimalFormat df = new DecimalFormat("#.###");
 
-		String data = "{\r\n  \"data\": [\r\n";
+		StringBuilder data = new StringBuilder("{\r\n  \"data\": [\r\n");
 		
 		Map<PASTAUser, Map<Long, AssessmentResult>> allResults = resultManager.getLatestResultsIncludingGroupQuick(usersList);
 		
@@ -1676,26 +1676,26 @@ public class SubmissionController {
 		for (int i = 0; i < usersList.size(); ++i) {
 			PASTAUser user = usersList.get(i);
 
-			String userData = "    {\r\n";
+			data.append("    {\r\n");
 
 			// name
-			userData += "      \"name\": \"" + user.getUsername() + "\",\r\n";
+			data.append("      \"name\": \"" + user.getUsername() + "\",\r\n");
 			// stream
-			userData += "      \"stream\": \"" + user.getStream() + "\",\r\n";
+			data.append("      \"stream\": \"" + user.getStream() + "\",\r\n");
 			// class
-			userData += "      \"class\": \"" + user.getFullTutorial() + "\"";
+			data.append("      \"class\": \"" + user.getFullTutorial() + "\"");
 					
 			if(allAssessments.length > 0) {
-				userData += ",";
+				data.append(",");
 			}
-			userData += "\r\n";
+			data.append("\r\n");
 
 			Map<Long, AssessmentResult> userResults = allResults.get(user);
 			// marks
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
 				Assessment currAssessment = allAssessments[j];
-				userData += "      \"" + currAssessment.getId() + "\": {\r\n";
+				data.append("      \"" + currAssessment.getId() + "\": {\r\n");
 				String mark = "";
 				String percentage = "";
 				
@@ -1704,28 +1704,26 @@ public class SubmissionController {
 					mark = df.format(latestResult.getMarks());
 					percentage = String.valueOf(latestResult.getPercentage());
 				}
-				userData += "        \"mark\": \"" + mark + "\",\r\n";
-				userData += "        \"percentage\": \"" + percentage + "\",\r\n";
-				userData += "        \"max\": \"" + currAssessment.getMarks() + "\",\r\n";
-				userData += "        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n";
-				userData += "      }";
+				data.append("        \"mark\": \"" + mark + "\",\r\n");
+				data.append("        \"percentage\": \"" + percentage + "\",\r\n");
+				data.append("        \"max\": \"" + currAssessment.getMarks() + "\",\r\n");
+				data.append("        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n");
+				data.append("      }");
 
 				if (j < allAssessments.length - 1) {
-					userData += ",";
+					data.append(",");
 				}
-				userData += "\r\n";
+				data.append("\r\n");
 			}
 
-			userData += "    }";
+			data.append("    }");
 			if (i < usersList.size() - 1) {
-				userData += ",";
+				data.append(",");
 			}
-			userData += "\r\n";
-
-			data += userData;
+			data.append("\r\n");
 		}
-		data += "  ]\r\n}";
-		return data;
+		data.append("  ]\r\n}");
+		return data.toString();
 	}
 
 	/**
