@@ -123,5 +123,6 @@ th, td{
 <script>
 	$(function() {
 		$(".save_hand_marking").val('${empty last ? "Save and continue" : "Save and exit"}');
+		registerEvents();
 	});
 </script>
