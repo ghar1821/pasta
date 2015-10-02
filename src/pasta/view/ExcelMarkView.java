@@ -41,7 +41,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.web.servlet.view.document.AbstractExcelView;
 
-import pasta.domain.result.CombinedAssessmentResult;
+import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 
@@ -60,7 +60,7 @@ public class ExcelMarkView extends AbstractExcelView{
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		// get data
-		Map<PASTAUser, Map<Long, CombinedAssessmentResult>> resultList = (Map<PASTAUser, Map<Long, CombinedAssessmentResult>>) map.get("latestResults");
+		Map<PASTAUser, Map<Long, AssessmentResult>> resultList = (Map<PASTAUser, Map<Long, AssessmentResult>>) map.get("latestResults");
 		ArrayList<Assessment> assList = new ArrayList<Assessment>((Collection<Assessment>) map.get("assessmentList"));
 		Collection<PASTAUser> userList = (Collection<PASTAUser>)map.get("userList");
 		

@@ -590,7 +590,7 @@ public class SubmissionController {
 			userList = userManager.getUserList();
 		}
 		data.put("userList", userList);
-		data.put("latestResults", resultManager.getLatestResultsIncludingGroup(userList));
+		data.put("latestResults", resultManager.getLatestResultsIncludingGroupQuick(userList));
 
 		return new ModelAndView(new ExcelMarkView(), data);
 	}
@@ -635,7 +635,7 @@ public class SubmissionController {
 			userList = userManager.getUserList();
 		}
 		data.put("userList", userList);
-		data.put("latestResults", resultManager.getLatestResultsIncludingGroup(userList));
+		data.put("latestResults", resultManager.getLatestResultsIncludingGroupQuick(userList));
 
 		return new ModelAndView(new ExcelAutoMarkView(), data);
 	}
