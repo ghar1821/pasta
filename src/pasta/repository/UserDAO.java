@@ -104,10 +104,10 @@ public class UserDAO {
 	 */
 	public void delete(PASTAUser user) {
 		if(user instanceof PASTAGroup) {
+			logger.info("Deleting group " + ((PASTAGroup) user).getName());
 			((PASTAGroup) user).setAssessment(null);
 			((PASTAGroup) user).removeAllMembers();
 			update(user);
-			logger.info("Deleting group " + ((PASTAGroup) user).getName());
 			sessionFactory.getCurrentSession().delete(user);
 		} else {
 			user.setActive(false);
