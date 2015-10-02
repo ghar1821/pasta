@@ -107,10 +107,11 @@ $(document).ready(function() {
 	
 	$(".ratingSubmit").on('click', function() {
 		var assessment = $(this).attr('assessment');
-		$form = $('.ratingForm' + assessment);
-		var $comment = $('#extraComments' + assessment).find(".ratingComment");
+		$form = $('.ratingForm' + assessment).first();
+		var $popup = $(this).closest('#extraComments' + assessment);
+		var $comment = $popup.find(".ratingComment");
 		$form.children('#comment').val($comment.val());
-		$('#extraComments' + assessment).bPopup().close();
+		$popup.bPopup().close();
 		sendRating($form);
 	});
 	
