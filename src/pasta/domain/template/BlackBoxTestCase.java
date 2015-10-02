@@ -28,8 +28,10 @@ public class BlackBoxTestCase implements Serializable {
 	@Column(name = "command_line_args")
 	private String commandLine;
 	
+	@Column(columnDefinition="TEXT")
 	private String input;
 	
+	@Column(columnDefinition="TEXT")
 	private String output;
 	
 	@Column(name="compare")

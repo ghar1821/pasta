@@ -2,6 +2,7 @@ package pasta.domain.ratings;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -31,6 +32,8 @@ public class AssessmentRating implements Serializable {
 	private Assessment assessment;
 	
 	private int rating;
+	
+	@Column(columnDefinition="TEXT")
 	private String comment;
 	
 	public AssessmentRating() {
