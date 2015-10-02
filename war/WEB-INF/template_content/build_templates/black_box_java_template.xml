@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- WARNING: auto-generated file. -->
 <project basedir="." default="build" name="assessment">
-
+	<property name='binDir' value='bin'/>
+	<property name='sandboxUser' value='pastasandbox'/>
+	
 	<target name="makeBin">
-		<mkdir dir="bin"/>
+		<mkdir dir="${binDir}"/>
+		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
+		<chmod file="${binDir}" perm="g+ws" type="dir" />
 	</target>
 	<target name="copyNonJava">
-        <echo message="Copying non-code from '${basedir}' to 'bin'"/>
-		<copy includeemptydirs="false" todir="bin">
+        <echo message="Copying non-code from '${basedir}' to '${binDir}'"/>
+		<copy includeemptydirs="false" todir="${binDir}">
             <fileset dir="${basedir}">
                 <exclude name="**/*.java"/>
                 <exclude name="build.xml"/>
             	<exclude name="result.xml"/>
             	<exclude name="run.errors"/>
-            	<exclude name="bin/**/*"/>
+            	<exclude name="${binDir}/**/*"/>
             </fileset>
         </copy>
 	</target>
@@ -31,7 +35,7 @@
     		</fileset>
     	</path>
         <path id="assessment.classpath">
-            <pathelement location="bin"/>
+            <pathelement location="${binDir}"/>
             <path refid="lib.jars"/>
         </path>
         <taskdef resource="net/sf/antcontrib/antcontrib.properties">
@@ -44,24 +48,24 @@
     <target name="setup" depends="makeBin, copyNonJava">
     </target>
     <target name="clean">
-        <echo message="Deleting .class files from 'bin'"/>
+        <echo message="Deleting .class files from '${binDir}'"/>
 		<delete>
-			<fileset dir="bin" includes="**/*.class"/>
+			<fileset dir="${binDir}" includes="**/*.class"/>
 		</delete>
     </target>
     <target name="build" depends="init, setup">
-        <echo message="Using javac to compile Java code in 'bin'"/>
+        <echo message="Using javac to compile Java code in '${binDir}'"/>
         <javac
             fork="yes"
             includeantruntime="false"
             debug="true"
             debuglevel="${debuglevel}"
         	srcdir="${basedir}" 
-            destdir="bin"
+            destdir="${binDir}"
             source="${source}"
             target="${target}">
         	<exclude name="origSubmission/**/*"/>
-        	<exclude name="bin/**/*"/>
+        	<exclude name="${binDir}/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
     </target>
@@ -84,9 +88,9 @@
         <echo message="Running java ${solutionName} ${bbTestCommandLine}"/>
     	<exec
     		executable="/usr/bin/time"
-			dir="bin"
-			input="bin/${bbinputfile}/${bbTestName}"
-            output="bin/${bbuseroutfile}/${bbTestName}"
+			dir="${binDir}"
+			input="${binDir}/${bbinputfile}/${bbTestName}"
+            output="${binDir}/${bbuseroutfile}/${bbTestName}"
 			error="${runErrorsFile}"
 			append="true">
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
@@ -105,7 +109,7 @@
     	<if>
     	    <isset property="timedOut"/>
     	    <then>
-    	        <touch file="bin/${bbmetafile}/${bbTestName}.timedout"/>
+    	        <touch file="${binDir}/${bbmetafile}/${bbTestName}.timedout"/>
     	    </then>
     	</if>
     </target>
@@ -115,7 +119,7 @@
             filtertrace="${filterStackTraces}"
             fork="yes"
             timeout="${maxtimeallowed}"
-            dir="bin">
+            dir="${binDir}">
 			<formatter type="xml" />
             <test name="${testName}" outfile="${testOutputFile}" />
             <classpath refid="assessment.classpath"/>
