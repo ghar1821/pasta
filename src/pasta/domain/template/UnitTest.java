@@ -94,6 +94,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@Column (name = "submission_code_root")
 	private String submissionCodeRoot;
 	
+	@Column (name = "allow_accessory_write")
+	private boolean allowAccessoryFileWrite;
+	
 	@OneToOne (cascade=CascadeType.ALL)
 	@JoinColumn (name="test_result_id")
 	private UnitTestResult testResult;
@@ -125,6 +128,8 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.tested = tested;
 		this.submissionCodeRoot = "";
 		this.testCases = new ArrayList<BlackBoxTestCase>();
+		this.blackBoxOptions = new BlackBoxOptions();
+		this.allowAccessoryFileWrite = false;
 	}
 
 	public String getName() {
@@ -269,6 +274,14 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
 		this.blackBoxOptions = blackBoxOptions;
+	}
+
+	public boolean isAllowAccessoryFileWrite() {
+		return allowAccessoryFileWrite;
+	}
+
+	public void setAllowAccessoryFileWrite(boolean allowAccessoryFileWrite) {
+		this.allowAccessoryFileWrite = allowAccessoryFileWrite;
 	}
 
 	@Override

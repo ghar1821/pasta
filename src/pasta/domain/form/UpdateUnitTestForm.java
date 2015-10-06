@@ -61,6 +61,7 @@ public class UpdateUnitTestForm {
 	
 	private CommonsMultipartFile file;
 	
+	private boolean allowAccessoryWrite;
 	private CommonsMultipartFile accessoryFile;
 	
 	private String mainClassName;
@@ -77,6 +78,7 @@ public class UpdateUnitTestForm {
 		this.submissionCodeRoot = base.getSubmissionCodeRoot();
 		this.testCases = createTestCaseForms(base.getTestCases());
 		this.blackBoxOptions = new BlackBoxOptions(base.getBlackBoxOptions());
+		this.allowAccessoryWrite = base.isAllowAccessoryFileWrite();
 		
 		this.file = null;
 		this.accessoryFile = null;
@@ -145,6 +147,12 @@ public class UpdateUnitTestForm {
 	}
 	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
 		this.blackBoxOptions = blackBoxOptions;
+	}
+	public boolean isAllowAccessoryWrite() {
+		return allowAccessoryWrite;
+	}
+	public void setAllowAccessoryWrite(boolean allowAccessoryWrite) {
+		this.allowAccessoryWrite = allowAccessoryWrite;
 	}
 	public List<BlackBoxTestCase> getPlainTestCases() {
 		List<BlackBoxTestCase> testCases = new ArrayList<BlackBoxTestCase>();

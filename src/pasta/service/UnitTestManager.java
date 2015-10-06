@@ -361,9 +361,7 @@ public class UnitTestManager {
 			targets = new String[] {"build", "run", "clean"};
 		}
 		File testLoc = test.getGeneratedCodeLocation();
-		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
-		
-		doTest(runner, targets, testLoc, sandboxLoc, utResults, context, accessoryFiles);
+		doTest(runner, targets, test, testLoc, sandboxLoc, utResults, context);
 	}
 	
 	public void runJUnitTests(UnitTest test, 
@@ -381,19 +379,34 @@ public class UnitTestManager {
 		runner.setFilterStackTraces(false);
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
-		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
-		doTest(runner, targets, testLoc, sandboxLoc, utResults, context, accessoryFiles);
+		doTest(runner, targets, test, testLoc, sandboxLoc, utResults, context);
 	}
 	
-	private void doTest(Runner runner, String[] targets, File testCode, File sandboxLoc, 
-			UnitTestResult utResults, List<String> context, File accessoryFiles) {
+	private void populateWritableAccessoryFiles(File accessory, String accessoryPath, Runner runner) {
+		if(accessory.isDirectory()) {
+			for(File child : accessory.listFiles()) {
+				populateWritableAccessoryFiles(child, accessoryPath, runner);
+			}
+		} else {
+			String newAccessory = accessory.getAbsolutePath().substring(accessoryPath.length() + 1);
+			runner.addWritableFilePaths(newAccessory);
+		}
+	}
+	
+	private void doTest(Runner runner, String[] targets, UnitTest test, File testCode, File sandboxLoc, 
+			UnitTestResult utResults, List<String> context) {
 		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
 		antJob.addDependency("test", "build");
 		antJob.addDependency("run", "build");
 		
 		antJob.addSetupTask(new DirectoryCopyTask(testCode, sandboxLoc));
+		
+		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
 		if(accessoryFiles != null) {
 			antJob.addSetupTask(new DirectoryCopyTask(accessoryFiles, sandboxLoc, true));
+			if(test.isAllowAccessoryFileWrite()) {
+				populateWritableAccessoryFiles(accessoryFiles, accessoryFiles.getAbsolutePath(), runner);
+			}
 		}
 		
 		File binLoc = new File(sandboxLoc, "bin/");
@@ -460,6 +473,7 @@ public class UnitTestManager {
 		test.setName(updateForm.getName());
 		test.setMainClassName(updateForm.getMainClassName());
 		test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
+		test.setAllowAccessoryFileWrite(updateForm.isAllowAccessoryWrite());
 		
 		List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
 		ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();

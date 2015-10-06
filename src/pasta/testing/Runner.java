@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -18,6 +20,7 @@ public abstract class Runner {
 
 	private File templateFile;
 	private Map<String, String> options;
+	private List<String> writableFiles;
 	
 	public Runner(File templateFile) {
 		this.templateFile = templateFile;
@@ -28,6 +31,7 @@ public abstract class Runner {
 			templateFile = null;
 		}
 		options = new HashMap<String, String>();
+		writableFiles = new LinkedList<String>();
 		setLibDirectory(ProjectProperties.getInstance().getProjectLocation() + "lib/");
 	}
 	
@@ -58,11 +62,17 @@ public abstract class Runner {
 		options.put(key, sb.toString());
 	}
 	
+	public void addWritableFilePaths(String... paths) {
+		writableFiles.addAll(Arrays.asList(paths));
+	}
+	
 	public String getOption(String key) {
 		return options.get(key);
 	}
 
 	public String getBuildFileContents() {
+		compileWritableFilesList();
+		
 		StringBuilder template = new StringBuilder();
 		try {
 			Scanner scn = new Scanner(templateFile);
@@ -112,7 +122,19 @@ public abstract class Runner {
 			//		{$<name>}
 			templateText = templateText.replaceAll("(?i)\\$\\{" + option.getKey() + "\\}", Matcher.quoteReplacement(option.getValue()));
 		}
+		
 		return templateText;
+	}
+	
+	private void compileWritableFilesList() {
+		StringBuilder str = new StringBuilder();
+		for(String path : writableFiles) {
+			str.append("<include name=\"" + path + "\"/>");
+		}
+		options.put("writableFiles", str.toString());
+		if(str.length() > 0) {
+			options.put("hasWritable", "yes");
+		}
 	}
 	
 	public File createBuildFile(String filename) {

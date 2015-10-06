@@ -9,6 +9,20 @@
 		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
 		<chmod file="${binDir}" perm="g+ws" type="dir" />
 	</target>
+	<target name="makeWritable">
+		{$?{hasWritable}
+		<chgrp group="${sandboxUser}" type="file">
+			<fileset dir="${binDir}">
+				${writableFiles}
+			</fileset>
+		</chgrp>
+		<chmod perm="g+w" type="file">
+			<fileset dir="${binDir}">
+				${writableFiles}
+			</fileset>
+		</chmod>
+		}
+	</target>
 	<target name="copyNonJava">
         <echo message="Copying non-code from '${basedir}' to '${binDir}'"/>
 		<copy includeemptydirs="false" todir="${binDir}">
@@ -45,7 +59,7 @@
         </taskdef>
     </target>
 
-    <target name="setup" depends="makeBin, copyNonJava">
+    <target name="setup" depends="makeBin, copyNonJava, makeWritable">
     </target>
     <target name="clean">
         <echo message="Deleting .class files from '${binDir}'"/>

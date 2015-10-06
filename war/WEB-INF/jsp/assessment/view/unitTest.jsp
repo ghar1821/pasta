@@ -89,6 +89,11 @@ either expressed or implied, of the PASTA Project.
 			<tr><td colspan='2'><strong>Accessory Files</strong> <span class='help'>These files will be available to any custom or black box tests when they are run, and will be readable by student submissions. Files are available from the same directory as running code.</span></td></tr>
 			<tr <c:if test="${!unitTest.hasAccessoryFiles}">class='spaceBelow'</c:if>><td>Upload New Files:</td><td><form:input type="file" path="accessoryFile"/></td></tr>
 			<c:if test="${unitTest.hasAccessoryFiles}">
+				<tr>
+					<td colspan='2'>
+						<form:checkbox path="allowAccessoryWrite" label="Allow students to write to accessory files"/>
+					</td>
+				</tr>
 				<tr class='spaceBelow'>
 					<td>Current Accessory Files: <a id='del-accessory'>(Delete)</a></td>
 					<td>
