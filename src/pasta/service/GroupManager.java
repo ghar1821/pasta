@@ -94,8 +94,8 @@ public class GroupManager {
 		List<Long[]> joins = userDAO.getAllUserGroups(users);
 		Map<PASTAUser, Map<Long, PASTAGroup>> results = new TreeMap<>();
 		for(Object[] join : joins) {
-			PASTAUser user = userLookup.get(join[0]);
-			PASTAGroup group = groupLookup.get(join[1]);
+			PASTAGroup group = groupLookup.get(join[0]);
+			PASTAUser user = userLookup.get(join[1]);
 			if(user != null) {
 				Map<Long, PASTAGroup> userGroups = results.get(user);
 				if(userGroups == null) {
