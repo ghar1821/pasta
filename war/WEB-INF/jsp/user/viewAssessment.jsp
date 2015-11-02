@@ -129,7 +129,7 @@ either expressed or implied, of the PASTA Project.
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
 							<button onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 						</c:if>
-						<button onclick="window.location.href='${pathPrefix}/download/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+						<button onclick="window.location.href='${pathPrefix}/download/${result.user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 					</div>
 				</c:if>
 				<c:if test="${groupResult}">
