@@ -21,6 +21,7 @@ public class PASTASecurityManager extends SecurityManager{
 				perm.implies(new PropertyPermission("user.dir", "read")) ||
 				perm.implies(new PropertyPermission("java.home", "read")) ||
 				perm.implies(new PropertyPermission("line.separator", "read")) ||
+				perm.implies(new PropertyPermission("jdk.internal.lambda.dumpProxyClasses", "read")) ||
 				perm.implies(new RuntimePermission("setContextClassLoader"))||
 				perm.implies(new RuntimePermission("accessDeclaredMembers"))||
 				perm.implies(new RuntimePermission("createClassLoader"))||
