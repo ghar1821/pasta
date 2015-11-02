@@ -239,26 +239,46 @@ either expressed or implied, of the PASTA Project.
 	}
 
 	$(document).ready(function() {
-		$(".queueInfo").each(function() {
-			var $span = $(this);
-			(function checkQueue() {
-				var done = false;
+		
+		var assessmentIds = {};
+		var $uniqueQueueInfo = $('.queueInfo').filter(function(){
+		    var id = $(this).attr("assessment");
+		    if(assessmentIds[id]){
+		        return false;   
+		    } else {
+		        assessmentIds[id] = true;
+		        return true;
+		    }
+		});
+		
+		$uniqueQueueInfo.each(function() {
+			var assessmentId = $(this).attr("assessment");
+			var $span = $('.queueInfo[assessment="' + assessmentId + '"]');
+			(function checkQueue(timeout) {
 				$.ajax({
-					url : '../checkJobQueue/' + $span.attr("assessment") + '/',
+					url : '../checkJobQueue/' + assessmentId + '/',
 					success : function(data) {
+						var done = false;
 						if (data == "error") {
 							$span.html("There was an error while running your submission.");
+							done = true;
 						} else if(data) {
 							$span.html(data);
 						} else {
 							$span.html("Refresh for results.");
 							done = true;
 						}
+						if(!done) {
+							if(!timeout) {
+								timeout = 0;
+							}
+							timeout += 3000;
+							setTimeout(function() {
+								checkQueue(timeout);
+							}, timeout);
+						}
 					}
 				});
-				if(!done) {
-					setTimeout(checkQueue, 3000);
-				}
 			})();
 		});
 		
