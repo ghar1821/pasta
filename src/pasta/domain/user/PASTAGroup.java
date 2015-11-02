@@ -7,8 +7,8 @@ import java.util.TreeSet;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -32,7 +32,7 @@ import pasta.domain.template.Assessment;
 public class PASTAGroup extends PASTAUser implements Comparable<PASTAUser> {
 	private static final long serialVersionUID = -5991364679026799465L;
 
-	@OneToMany
+	@ManyToMany
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name="assessment_group_members", 
 			joinColumns=@JoinColumn(name = "assessment_group_id"),

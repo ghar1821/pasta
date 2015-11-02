@@ -51,6 +51,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
@@ -284,7 +285,10 @@ public class ResultDAO{
 			}
 			groupCr.createAlias("members", "member");
 			groupCr.add(Restrictions.eq("member.id", user.getId()));
-			cr.add(Restrictions.or(Restrictions.eq("user", user), Subqueries.propertyEq("user.id", groupCr)));
+			Criterion userGroupCr = assessmentId > 0 ?
+					Subqueries.propertyEq("user.id", groupCr) :
+					Subqueries.propertyIn("user.id", groupCr);
+			cr.add(Restrictions.or(Restrictions.eq("user", user), userGroupCr));
 		} else {
 			cr.add(Restrictions.eq("user", user));
 		}
