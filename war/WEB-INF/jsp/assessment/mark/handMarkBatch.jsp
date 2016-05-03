@@ -66,7 +66,7 @@ either expressed or implied, of the PASTA Project.
 </div>
 
 <c:set var="username" value="${student.group ? student.name : student.username}" />
-<h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username} - Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /></h1>
+<h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username} - Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}" /></h1>
 
 <jsp:include page="../../recursive/fileWriterRoot.jsp">
 	<jsp:param name="owner" value="${username}"/>

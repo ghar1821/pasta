@@ -86,11 +86,18 @@ either expressed or implied, of the PASTA Project.
 					<form:errors path="marks"/>
 				</td>
 			</tr>
-			<tr class='spaceBelow'>
+			<tr>
 				<td>Assessment due date:</td>
 				<td>
 					<form:input type="text" path="strDate" />
 					<form:errors path="dueDate"/>
+				</td>
+			</tr>
+			<tr class='spaceBelow'>
+				<td>Late submissions allowed until: <span class='help'>Leave blank to not allow late submissions.</span></td>
+				<td>
+					<form:input type="text" path="strLateDate" />
+					<form:errors path="lateDate"/>
 				</td>
 			</tr>
 			<tr>
@@ -314,6 +321,7 @@ either expressed or implied, of the PASTA Project.
 <script>
     $(function() {
     	$( "#strDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
+    	$( "#strLateDate" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
     	$( "#strGroupLock" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
     	
     	$( ".moduleTable input:text" ).each(function() {

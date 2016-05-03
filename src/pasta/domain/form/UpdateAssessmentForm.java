@@ -77,6 +77,7 @@ public class UpdateAssessmentForm {
 	
 	@NotNull
 	private Date dueDate;
+	private Date lateDate;
 	
 	@Min(0)
 	private int numSubmissionsAllowed;
@@ -112,6 +113,7 @@ public class UpdateAssessmentForm {
 		this.category = base.getCategory();
 		this.marks = base.getMarks();
 		this.dueDate = base.getDueDate();
+		this.lateDate = base.getLateDate();
 		this.numSubmissionsAllowed = base.getNumSubmissionsAllowed();
 		this.countUncompilable = base.isCountUncompilable();
 		this.description = base.getDescription();
@@ -161,6 +163,13 @@ public class UpdateAssessmentForm {
 	}
 	public void setDueDate(Date dueDate) {
 		this.dueDate = dueDate;
+	}
+	
+	public Date getLateDate() {
+		return lateDate;
+	}
+	public void setLateDate(Date lateDate) {
+		this.lateDate = lateDate;
 	}
 
 	public int getNumSubmissionsAllowed() {
@@ -270,6 +279,23 @@ public class UpdateAssessmentForm {
 			dueDate = NewAssessmentForm.sdf.parse(date);
 		} catch (ParseException e) {
 			dueDate = null;
+		}
+	}
+	
+	public String getStrLateDate() {
+		if(lateDate == null) {
+			return "";
+		}
+		return NewAssessmentForm.sdf.format(lateDate);
+	}
+	public void setStrLateDate(String date) {
+		if(date == null || date.isEmpty()) {
+			lateDate = null;
+		}
+		try {
+			lateDate = NewAssessmentForm.sdf.parse(date);
+		} catch (ParseException e) {
+			lateDate = null;
 		}
 	}
 	

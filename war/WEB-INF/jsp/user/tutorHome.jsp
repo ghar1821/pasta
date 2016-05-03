@@ -101,7 +101,7 @@ either expressed or implied, of the PASTA Project.
 									<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
 										<button onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
 									</c:if>
-									<button onclick="submitAssessment('${assessment.id}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
+									<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
 								</div>
 							</div>
 							
@@ -129,6 +129,9 @@ either expressed or implied, of the PASTA Project.
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<form:input type="hidden" path="assessment" value=""/>
 		
+		<div id='lateNotice' class='vertical-block' style="text-align:center;font-size:200%; color:red">
+			You are submitting this assessment late.
+		</div>
 		<div class='vertical-block' style="font-size:150%">
 			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a>
 		</div>
@@ -158,11 +161,13 @@ either expressed or implied, of the PASTA Project.
 		document.forms['redirect'].submit();
 	}
 	
-	function submitAssessment(assessment, hasGroup, allGroup){
+	function submitAssessment(assessment, dueDate, hasGroup, allGroup){
 		document.getElementById('assessment').value=assessment;
 		var $popup = $('#submitPopup');
 		$popup.find("#groupCheckDiv").toggle(hasGroup);
 		$popup.find("#groupCheck").prop("checked", allGroup).trigger("change");
+		var late = new Date().getTime() > new Date(dueDate).getTime();
+		$popup.find("#lateNotice").toggle(late);
 		$popup.bPopup();
 	}
 	$("#groupCheck").on("change", function() {

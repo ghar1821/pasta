@@ -111,7 +111,7 @@ either expressed or implied, of the PASTA Project.
 			<%--Heading and button panel--%>
 			<div class='vertical-block float-container'>
 				<div class='float-left'>
-					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /></h4>
+					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /><c:out value="${lateString[result.id]}"/></h4>
 				</div>
 				<c:if test="${ user.tutor }" >
 					<div id='buttonPanel' class='float-right horizontal-block'>

@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -600,5 +601,33 @@ public class PASTAUtil {
 			return str;
 		}
 		return str.substring(0, maxLength - 3) + "...";
+	}
+	
+	public static String dateDiff(Date d1, Date d2) {
+		if(d2.before(d1)) {
+			Date temp = d1;
+			d1 = d2;
+			d2 = temp;
+		}
+		long diff = d2.getTime() - d1.getTime();
+		String time = "";
+		long dayDiff = TimeUnit.MILLISECONDS.toDays(diff);
+		if(dayDiff > 0) {
+			time += dayDiff + " day" + (dayDiff == 1 ? "" : "s");
+			diff -= TimeUnit.DAYS.toMillis(dayDiff);
+		}
+		long hoursDiff = TimeUnit.MILLISECONDS.toHours(diff);
+		if(hoursDiff > 0) {
+			if(!time.isEmpty()) time += ", ";
+			time += hoursDiff + " hr" + (hoursDiff == 1 ? "" : "s");
+			diff -= TimeUnit.HOURS.toMillis(hoursDiff);
+		}
+		long minsDiff = TimeUnit.MILLISECONDS.toMinutes(diff);
+		if(minsDiff > 0) {
+			if(!time.isEmpty()) time += ", ";
+			time += minsDiff + " min" + (minsDiff == 1 ? "" : "s");
+			diff -= TimeUnit.MINUTES.toMillis(minsDiff);
+		}
+		return time;
 	}
 }

@@ -33,6 +33,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="tag" tagdir="/WEB-INF/tags"%>
+<%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <c:set var="owner" value="${assessmentName} - ${student.username}" />
 <c:if test="${student.group}">
@@ -40,6 +41,8 @@ either expressed or implied, of the PASTA Project.
 </c:if>
 
 <h1>${owner}</h1>
+
+<h4>Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/></h4>
 
 <div class='vertical-block'>
 	<jsp:include page="../../recursive/fileWriterRoot.jsp">

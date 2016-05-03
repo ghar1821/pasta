@@ -535,8 +535,19 @@ public class SubmissionController {
 		model.addAttribute("assessment", assessment);
 		model.addAttribute("closed", assessment.isClosedFor(user, userManager.getExtension(user, assessment)));
 		model.addAttribute("extension", userManager.getExtension(user, assessment));
-		model.addAttribute("history",
-				resultManager.getAssessmentHistory(user, assessmentId));
+		
+		List<AssessmentResult> history = resultManager.getAssessmentHistory(user, assessmentId);
+		model.addAttribute("history", history);
+		
+		Map<Long, String> lateString = new HashMap<Long, String>();
+		for(AssessmentResult result : history) {
+			Date due = result.getAssessment().getDueDate();
+			Date submitted = result.getSubmissionDate();
+			if(submitted.after(due)) {
+				lateString.put(result.getId(), " (" + PASTAUtil.dateDiff(due, submitted) + " late)");
+			}
+		}
+		model.addAttribute("lateString", lateString);
 		
 		Map<String, FileTreeNode> nodes = PASTAUtil.generateFileTree(user, assessmentId);
 		PASTAUser group = groupManager.getGroup(user, assessmentId);
@@ -1234,6 +1245,11 @@ public class SubmissionController {
 		AssessmentResult result = resultManager.loadAssessmentResult(viewedUser, assessmentId,
 				assessmentDate);
 		model.addAttribute("assessmentResult", result);
+		Date due = result.getAssessment().getDueDate();
+		Date submitted = result.getSubmissionDate();
+		if(submitted.after(due)) {
+			model.addAttribute("lateString", " (" + PASTAUtil.dateDiff(due, submitted) + " late)");
+		}
 		model.addAttribute("handMarkingResultList", result.getHandMarkingResults());
 		
 		PASTAUser student;
@@ -1471,6 +1487,11 @@ public class SubmissionController {
 						PASTAUtil.generateFileTree(currStudent, assessmentId,
 								result.getFormattedSubmissionDate()));
 				model.addAttribute("assessmentResult", result);
+				Date due = result.getAssessment().getDueDate();
+				Date submitted = result.getSubmissionDate();
+				if(submitted.after(due)) {
+					model.addAttribute("lateString", " (" + PASTAUtil.dateDiff(due, submitted) + " late)");
+				}
 				model.addAttribute("handMarkingList", result.getAssessment().getHandMarking());
 				model.addAttribute("handMarkingResultList", result.getHandMarkingResults());
 				model.addAttribute("savingStudentIndex", i_studentIndex);

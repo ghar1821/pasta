@@ -301,6 +301,7 @@ public class AssessmentManager {
 		assessment.setName(form.getName());
 		assessment.setCategory(form.getCategory());
 		assessment.setDueDate(form.getDueDate());
+		assessment.setLateDate(form.getLateDate());
 		assessment.setMarks(form.getMarks());
 		assessment.setNumSubmissionsAllowed(form.getNumSubmissionsAllowed());
 		assessment.setCountUncompilable(form.isCountUncompilable());

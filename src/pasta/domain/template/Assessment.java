@@ -143,6 +143,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
+	private Date lateDate = new Date();
 	
 	@Column (length = 64000) // Controls database column size
 	@Size (max = 64000) // Validates max length when attempting to insert into database
@@ -229,6 +230,23 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 	public void setDueDate(Date dueDate) {
 		this.dueDate = dueDate;
+	}
+	
+	public Date getLateDate() {
+		return lateDate;
+	}
+	public void setLateDate(Date lateDate) {
+		this.lateDate = lateDate;
+	}
+	
+	public Date getLastSubmitDate() {
+		if(getLateDate() == null) {
+			return getDueDate();
+		}
+		if(getLateDate().after(getDueDate())) {
+			return getLateDate();
+		}
+		return getDueDate();
 	}
 	
 	public String getDescription() {
@@ -504,7 +522,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if(!isReleasedTo(user)) {
 			return true;
 		}
-		Date dueDate = getDueDate();
+		Date dueDate = getLastSubmitDate();
 		if(dueDate == null) {
 			return false;
 		}
@@ -624,7 +642,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	}
 
 	public boolean isClosed() {
-		return (new Date()).after(getDueDate());
+		return (new Date()).after(getLastSubmitDate());
 	}  
 	
 	public double getWeighting(UnitTest test){
