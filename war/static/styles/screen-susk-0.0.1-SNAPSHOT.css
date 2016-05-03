@@ -412,6 +412,10 @@ div.group td.dataTables_empty {
     behavior: url(PIE.htc); /* remove if you don't care about IE8 */
 }
 
+.hm-cell.empty {
+	background-color: #EEE;
+}
+
 /* conjunction release rule separation */
 div.conjunction {
 	padding-left: 0.2em;
