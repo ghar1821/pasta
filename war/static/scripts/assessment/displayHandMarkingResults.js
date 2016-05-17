@@ -7,6 +7,7 @@ function fillCell($cell, weight, data) {
 	$cell.append($span);
 	$cell.append($("<br/>"));
 	$cell.append(data);
+	$cell.removeClass("empty");
 }
 
 $(function() {
