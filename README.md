@@ -20,8 +20,8 @@ PASTA Arrabbiata requires
 ### Configure ###
 * Go to the deployment directory (e.g., /opt/tomcat/webapps, /var/lib/tomcat8/webapps)
 * Configure file ./PASTA/WEB-INF/classes/database.properties with
-  1. database URL
-  2. database credentials (username and password) with write permissions
+  - database URL
+  - database credentials (username and password) with write permissions
 * Configure ./PASTA/WEB-INFO/classes/project.properties and
   - set project.location to the PASTA directory
 * Configure ./PASTA/WEB-INFO/classes/log4j.properties and
