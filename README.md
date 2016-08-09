@@ -30,6 +30,7 @@ PASTA Arrabbiata requires
   - set UOS to the desired name for this Unit of Study or Course
 * Configure the database with a new user with identifier (e.g., unikey) 'login':
   - INSERT INTO users(active, permission_level, username) VALUES (1, 'INSTRUCTOR', 'login');
+* Restart the application from the tomcat management interface
 
 ### Test ###
 
