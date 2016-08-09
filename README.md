@@ -6,9 +6,9 @@ their ability to design algorithms, understand network protocols, test databases
 ### Requirements ###
 
 PASTA Arrabbiata requires
-* Apache Tomcat 8 or later
-* Java 8 or later
-* MySQL (tested with Ver 14.14 Distrib 5.5.50)
+  * Apache Tomcat 8 or later
+  * Java 8 or later
+  * MySQL (tested with Ver 14.14 Distrib 5.5.50)
 
 ### Setup ###
   * Create a database called 'pasta'
@@ -34,11 +34,11 @@ PASTA Arrabbiata requires
 
 ### Test ###
 
-* Go to http://localhost:8080 and click on the 'Manage App' button
-* Login as a tomcat manager and start the PASTA app
-* Click on the app or go to http://localhost:8080/PASTA/login/
+  * Go to http://localhost:8080 and click on the 'Manage App' button
+  * Login as a tomcat manager and start the PASTA app
+  * Click on the app or go to http://localhost:8080/PASTA/login/
 
 ### Who do I talk to? ###
 
-* Vincent Gramoli <vincent.gramoli@sydney.edu.au>
-* Martin McGrane <mmcg5982@uni.sydney.edu.au>
+  * Vincent Gramoli <vincent.gramoli@sydney.edu.au>
+  * Martin McGrane <mmcg5982@uni.sydney.edu.au>
