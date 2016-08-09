@@ -1,0 +1,15 @@
+#news, #info, #teach, #cv {
+    font: normal 12pt courier, sans-serif;
+}
+
+#news a:link, #news a:visited, #news a:hover, #news a:active {
+	font: normal 10pt courier, sans-serif; 
+	color: #000000;
+	text-decoration: underline;
+	background-color: #fff;
+}
+
+#title {
+   font: normal 22pt courier, sans-serif;
+   float:right;
+}

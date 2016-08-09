@@ -8,7 +8,7 @@
 <html lang="en-AU">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<meta name="Author" content="Alex Radu, Joshua Stretton" />
+		<meta name="Author" content="Alex Radu, Joshua Stretton, Vincent Gramoli" />
 		<title><spring:message code="UOS" /> </title>
 		
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
@@ -22,6 +22,7 @@
 		<link href="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/essaiv2.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
@@ -112,9 +113,36 @@
 		</script>
 	</head>
 	<body id="home" class="tex2jax_ignore">
+	
 		<div id="w1">
 			<div id="w2">
-				<div id="w3">
+					<img src="http://poseidon.it.usyd.edu.au/~gramoli/web/img/usyd-100.svg"/><span id="title"><spring:message code="UOS" /></span>
+					<div id="news">	
+							<a href="<c:url value="/home/"/>">Home</a>
+               						<c:if test="${not empty user and user.tutor}">&nbsp;&nbsp;
+								<a href="<c:url value="/gradeCentre/"/>"><span>Grade Centre</span></a>&nbsp;&nbsp;
+								<c:if test="${ not empty user.tutorial }">
+									<a href="<c:url value="/myTutorials/"/>"><span>My Tutorials</span></a>&nbsp;&nbsp;
+								</c:if>
+								<a href="<c:url value="/assessments/"/>"><span>Assessments</span></a>&nbsp;&nbsp;
+								<a href="<c:url value="/unitTest/"/>"><span>Unit Tests</span></a>&nbsp;&nbsp;
+								<a href="<c:url value="/handMarking/"/>"><span>Hand Marking</span></a>
+							</c:if>
+							<c:if test="${not empty user}">&nbsp;&nbsp;
+								<a href="<c:url value="/competition/"/>"><span>Competitions</span></a>&nbsp;&nbsp;
+								<a href="<c:url value="/admin/"/>"><span>Admin</span></a>
+							</c:if>
+                                                        <c:choose>
+                                                               	<c:when test="${not empty user}">
+                                                                	&nbsp;&nbsp;<a href="<c:url value="/home/"/>"><span>${user.username}</span></a>|<a href="<c:url value="/login/exit"/>"><span>logout</span></a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                        &nbsp;&nbsp;<a href="<c:url value="/login/"/>"><span>Login</span></a>
+                                                                </c:otherwise>
+                                                        </c:choose>
+
+					</div>
+				<!--div id="w3">
 					<div id="head">
 						<div id="masthead">
 							<h1>
@@ -203,7 +231,7 @@
 							<decorator:body />
 						</div>
 					</div>
-				</div>
+				</div-->
 			</div>
 		</div>
 		<div id="lbOverlay" style="display: none;"></div>
