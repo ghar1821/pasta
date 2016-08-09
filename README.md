@@ -14,18 +14,18 @@ PASTA Arrabbiata requires
 * Create a database called 'pasta'
 * Create a directory on which user 'tomcat' has write permissions (e.g., 'submissions')
 * Create a new WAR file from the source: 
-  > ant deploywar
+  * `ant deploywar`
 * Deploy the war file using the standard tomcat manager interface
 
 ### Configure ###
-* Go to the deployment directory (e.g., /opt/tomcat/webapps, /var/lib/tomcat8/webapps)
-* Configure file ./PASTA/WEB-INF/classes/database.properties with
-  - database URL
-  - database credentials (username and password) with write permissions
-* Configure ./PASTA/WEB-INFO/classes/project.properties and
-  - set project.location to the PASTA directory
-* Configure ./PASTA/WEB-INFO/classes/log4j.properties and
-  - set log4j.appender.file.File to the desired log file
+* Go to the deployment directory (e.g., `/opt/tomcat/webapps`, `/var/lib/tomcat8/webapps`)
+* Configure file `./PASTA/WEB-INF/classes/database.properties` with
+  * database URL
+  * database credentials (username and password) with write permissions
+* Configure `./PASTA/WEB-INFO/classes/project.properties` and
+  - set `project.location` to the PASTA directory
+* Configure `./PASTA/WEB-INFO/classes/log4j.properties` and
+  - set `log4j.appender.file.File` to the desired log file
 * Configure ./PASTA/WEB-INFO/classes/messages.properties and 
   - set UOS to the desired name for this Unit of Study or Course
 * Configure the database with a new user with identifier (e.g., unikey) 'login':
