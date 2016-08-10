@@ -6,6 +6,7 @@ their ability to design algorithms, understand network protocols, test databases
 ### Requirements ###
 
 PASTA Arrabbiata requires
+
   * Apache Tomcat 8 or later
   * Java 8 or later
   * MySQL (tested with Ver 14.14 Distrib 5.5.50)
