@@ -37,8 +37,8 @@ either expressed or implied, of the PASTA Project.
 <p> PASTA helps instructors assessing the skills of
 students and provides these students with instant feedback
 not exclusively based on their programming skills but also on
-their ability to design algorithms, understand network pro-
-tocols, test databases, reason logically, measure complexity,
+their ability to design algorithms, understand network protocols, 
+test databases, reason logically, measure complexity,
 etc.
 
 <h1 style='text-align:center'>Login to PASTA</h1>
