@@ -42,7 +42,8 @@ a:not([href]) {
 }
 
 [id$=".errors"] {
-	color: red;
+	color: #cc3300;
+	/*color: red;*/
 }
 
 h1.compact,h2.compact,h3.compact,h4.compact,h5.compact,h6.compact {
@@ -234,7 +235,7 @@ table.moduleTable tr.lastSelected td {
 }
 
 div.boxCard, .box-shadow, div.unitTestResult {
-	box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.1),
+	box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1),
 				0px 2px 10px 0px rgba(0, 0, 0, 0.1);
 	margin:4px;
 }
@@ -387,14 +388,16 @@ div.group td.dataTables_empty {
 }
 
 .handMarkingStudent.submittedtrue{
-	background-color: #0C0;
+	background-color: #009933;
+	/*background-color: #0C0;*/
 	border-style: solid;
 	border-color: white;
 }
 
 .handMarkingStudent.current{
 	border-style: outset;
-	border-color: #0C0;
+	border-color: #009933;
+	/*border-color: #0C0;*/
 }
 
 .handMarkingStudent.submittedfalse.current{
@@ -429,7 +432,8 @@ div.subRule.first {
 	border-left: 2px solid #f5af00;
 }
 div.first > div > div > div.subRule {
-	border-left: 2px solid red;
+	border-left: 2px solid #cc3300;
+	/*border-left: 2px solid red;i*/
 }
 div.first > div > div > div.subRule > div > div > div.subRule {
 	border-left: 2px solid #12416c;
@@ -516,23 +520,28 @@ a.gc-link {
 }
 
 div.unitTestResult {
-	width: 1em;
+	width: 2em;
 	height: 2em;
 	float: left;
-	margin: 1px;
-	border-style: outset;
-	border-width: 3px;
+	margin: 2px;
+	border-style: solid;
+	border-radius:2px;
+        border-width: 2px;
 	cursor: pointer;
 }
 
 
 div.unitTestResult.pass {
-	background-color: #0C0;
-	border-color: #0C0;
+	/*background-color: #0C0;
+	border-color: #0C0;*/
+	background-color:#0a0;
+        border-color:#070;
 }
 div.unitTestResult.failure, div.unitTestResult.error {
-	background-color: red;
-	border-color: red;
+	/*background-color: red;
+	border-color: red;*/
+	background-color: #a00;
+	border-color: #700;
 }
 div.unitTestResult.secret:not(.revealed) {
 	background-color: lightgrey;
@@ -541,10 +550,14 @@ div.unitTestResult.secret, div.unitTestResult.revealed {
 	border-color: lightgrey;
 }
 div.unitTestResult.revealed.pass {
-	background: linear-gradient(to top left, lightgrey 30%, #0C0 50%);
+	background: linear-gradient(to top left, lightgrey 50%, #0a0 50%);
+	/**background: linear-gradient(to top left, lightgrey 30%, #0C0 50%);**/
+	border-color: #070;
 }
 div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
-	background: linear-gradient(to top left, lightgrey 30%, red 50%);
+	background: linear-gradient(to top left, lightgrey 50%, #a00 50%);
+	/*background: linear-gradient(to top left, lightgrey 30%, red 50%);*/
+	border-color: #700;
 }
 
 /* Buttons */
@@ -703,23 +716,28 @@ td.cellCenter{
 }
 
 .pastaUnitTestResultpass,.pastaTFtrue {
-	color: #0C0;
+	/*color: #0C0;*/
+	color: #009933;
 }
 
 .pastaUnitTestBoxResultpass {
-	background-color: #0C0;
+	/*background-color: #0C0;*/
+	background-color: #009933;
 	height: 100%;
 	width: 100%;
 	border-style:outset;
-	border-color:#0C0;
+	/*border-color:#0C0;*/
+	border-color:#009933;
 }
 
 .pastaTFfalse{
-	color: red;
+	color: #cc3300;
+	/*color: red;*/
 }
 
 .pastaUnitTestResulterror,.pastaUnitTestResultfailure {
-	color: red;
+	color: #cc3300;
+	/*color: red;*/
 }
 
 .labelEasy {
@@ -732,7 +750,8 @@ td.cellCenter{
 }
 
 .pastaUnitTestBoxResultSecretpass{
-	background-color: #0C0;
+	/*background-color: #0C0;*/
+	background-color: #009933;
 	border-style:outset;
 	border-color:lightgray;
 }
@@ -744,7 +763,8 @@ td.cellCenter{
 }
 
 .pastaUnitTestResultSecreterror, .pastaUnitTestResultSecretfailure{
-	color: red;
+	/*color: red;*/
+	color: #cc3300;
 	border-style:outset;
 	border-color:lightgray;
 }
