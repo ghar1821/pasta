@@ -8,7 +8,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentSummary;
 import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
@@ -116,6 +119,30 @@ public class ResultManager {
 		}
 		
 		return results;
+	}
+	
+	/**
+	 * Get the latest result for the collection of users, including their marks from the group.
+	 * 
+	 * @param allUsers the collection of {@link pasta.domain.user.PASTAUser} that are being queried
+	 * @return the map (Long userId , Long assessmentId, {@link pasta.domain.result.CombinedAssessmentResult} assessmentResults) 
+	 */
+	public Map<PASTAUser, Map<Long, Double>> getLatestResultsIncludingGroupEvenQuicker(Collection<PASTAUser> allUsers){
+		Map<PASTAUser, Map<Long, Double>> results = new TreeMap<>();
+		
+		Set<PASTAUser> users = new TreeSet<>(allUsers);
+		List<AssessmentSummary> userResults = resultDAO.getSummaryResultsForMultiUser(users);
+		
+		for(AssessmentSummary userResult : userResults) {
+			Map<Long, Double> thisUserResults = results.get(userResult.getUser());
+			if(thisUserResults == null) {
+				thisUserResults = new TreeMap<>();
+				results.put(userResult.getUser(), thisUserResults);
+			}
+			thisUserResults.put(userResult.getAssessment().getId(), userResult.getPercentage());
+		}
+		return results;
+		
 	}
 	
 	/**
@@ -285,6 +312,16 @@ public class ResultManager {
 
 	public void save(AssessmentResult result) {
 		resultDAO.save(result);
+	}
+
+	public void saveOrUpdate(AssessmentSummary summary) {
+		AssessmentSummary existing = resultDAO.getAssessmentSummary(summary.getUser(), summary.getAssessment());
+		if (existing == null) {
+			resultDAO.saveOrUpdate(summary);
+		} else {
+			existing.setPercentage(summary.getPercentage());
+			resultDAO.saveOrUpdate(existing);
+		}
 	}
 
 	public void update(AssessmentResult result) {

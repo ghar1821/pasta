@@ -1733,6 +1733,73 @@ public class SubmissionController {
 		if(allUsers.isEmpty()) {
 			return "{\"data\": []}";
 		}
+
+		List<PASTAUser> usersList = new ArrayList<>(allUsers);
+
+		DecimalFormat df = new DecimalFormat("#.###");
+
+		StringBuilder data = new StringBuilder("{\r\n  \"data\": [\r\n");
+
+		Map<PASTAUser, Map<Long, Double>> allResults = resultManager.getLatestResultsIncludingGroupEvenQuicker(usersList);
+
+		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
+		for (int i = 0; i < usersList.size(); ++i) {
+			PASTAUser user = usersList.get(i);
+
+			data.append("    {\r\n");
+
+			// name
+			data.append("      \"name\": \"" + user.getUsername() + "\",\r\n");
+			// stream
+			data.append("      \"stream\": \"" + user.getStream() + "\",\r\n");
+			// class
+			data.append("      \"class\": \"" + user.getFullTutorial() + "\"");
+
+			if(allAssessments.length > 0) {
+				data.append(",");
+			}
+			data.append("\r\n");
+
+			Map<Long, Double> userResults = allResults.get(user);
+			// marks
+			for (int j = 0; j < allAssessments.length; j++) {
+				// assessment mark
+				Assessment currAssessment = allAssessments[j];
+				data.append("      \"" + currAssessment.getId() + "\": {\r\n");
+				String mark = "";
+				String percentage = "";
+
+				Double latestResult = userResults == null ? null : userResults.get(currAssessment.getId());
+				if (latestResult != null) {
+					percentage = String.valueOf(latestResult);
+					mark = df.format(latestResult * currAssessment.getMarks());
+				}
+				data.append("        \"mark\": \"" + mark + "\",\r\n");
+				data.append("        \"percentage\": \"" + percentage + "\",\r\n");
+				data.append("        \"max\": \"" + currAssessment.getMarks() + "\",\r\n");
+				data.append("        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n");
+				data.append("      }");
+
+				if (j < allAssessments.length - 1) {
+					data.append(",");
+				}
+				data.append("\r\n");
+			}
+
+			data.append("    }");
+			if (i < usersList.size() - 1) {
+				data.append(",");
+			}
+			data.append("\r\n");
+		}
+		data.append("  ]\r\n}");
+		return data.toString();	}
+
+	private String generateJSON_old(Collection<PASTAUser> allUsers) {
+
+		if(allUsers.isEmpty()) {
+			return "{\"data\": []}";
+		}
 		
 		List<PASTAUser> usersList = new ArrayList<>(allUsers);
 		

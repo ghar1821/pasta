@@ -67,6 +67,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentSummary;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.CompetitionResultData;
@@ -129,6 +130,16 @@ public class ResultDAO{
 		return (AssessmentResult) sessionFactory.getCurrentSession().get(AssessmentResult.class, id);
 	}
 	
+	public AssessmentSummary getAssessmentSummary(PASTAUser user, Assessment assessment) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentSummary.class);
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessment.getId()));
+		cr.add(Restrictions.eq("user", user));
+
+		@SuppressWarnings("unchecked")
+		AssessmentSummary result = (AssessmentSummary) DataAccessUtils.uniqueResult(cr.list());
+		return result;
+	}
+
 	public int getSubmissionCount(PASTAUser user, long assessmentId, boolean includeGroup, boolean includeCompileErrors) {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
 		cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
@@ -255,27 +266,47 @@ public class ResultDAO{
 		return results;
 	}
 	
-    @SuppressWarnings("unchecked")
-	public List<AssessmentResult> getLatestResultsForMultiUser(List<PASTAUser> users) {
-		if(users.isEmpty()) {
-			return new LinkedList<AssessmentResult>();
-		}
-    	
-    	DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentResult.class);
-		latestSub.setProjection(
-				Projections.projectionList()
+		@SuppressWarnings("unchecked")
+		public List<AssessmentResult> getLatestResultsForMultiUser(List<PASTAUser> users) {
+			if(users.isEmpty()) {
+				return new LinkedList<AssessmentResult>();
+			}
+
+			DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentResult.class);
+			latestSub.setProjection(
+					Projections.projectionList()
 					.add(Projections.groupProperty("user"))
 					.add(Projections.groupProperty("assessment"))
 					.add(Projections.max("submissionDate"))
-		);
-		latestSub.add(Restrictions.in("user", users));
+					);
+			latestSub.add(Restrictions.in("user", users));
+
+			Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class)
+					.add(Subqueries.propertiesIn(new String[] {"user", "assessment", "submissionDate"}, latestSub));
+
+			return cr.list();
+		}
+
+		@SuppressWarnings("unchecked")
+		public List<AssessmentSummary> getSummaryResultsForMultiUser(Set<PASTAUser> users) {
+			if(users.isEmpty()) {
+				return new LinkedList<AssessmentSummary>();
+			}
 		
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class)
-				.add(Subqueries.propertiesIn(new String[] {"user", "assessment", "submissionDate"}, latestSub));
+			DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentSummary.class);
+			latestSub.setProjection(
+					Projections.projectionList()
+					.add(Projections.groupProperty("user"))
+					.add(Projections.groupProperty("assessment"))
+					);
+			latestSub.add(Restrictions.in("user", users));
 		
-		return cr.list();
-	}
-	
+			Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentSummary.class)
+					.add(Subqueries.propertiesIn(new String[] {"user", "assessment"}, latestSub));
+
+			return cr.list();
+		}
+
 	private void restrictCriteriaUser(Criteria cr, PASTAUser user, boolean includeGroup, long assessmentId) {
 		if(includeGroup) {
 			DetachedCriteria groupCr = DetachedCriteria.forClass(PASTAGroup.class);
@@ -446,8 +477,8 @@ public class ResultDAO{
 									caseResult.setType((failedUnitTestElement.getAttribute("type")));
 								}
 								// extended message
-								if(failedUnitTestElement.getTextContent() != null){
-									String message = failedUnitTestElement.getTextContent();
+								if(getText(failedUnitTestElement) != null){
+									String message = getText(failedUnitTestElement);
 									caseResult.setExtendedMessage(message);
 									
 									// Include error line number for Java submissions
@@ -588,6 +619,15 @@ public class ResultDAO{
 	}
 
 	/**
+	 * Save the assessment summary to the database.
+	 *
+	 * @param result the assessment summary being saved
+	 */
+	public void saveOrUpdate(AssessmentSummary result) {
+		sessionFactory.getCurrentSession().saveOrUpdate(result);
+	}
+
+	/**
 	 * Save the assessment result to the database.
 	 * 
 	 * @param result the assessment result being saved
@@ -666,5 +706,19 @@ public class ResultDAO{
 				.createCriteria(AssessmentResult.class)
 				.add(Restrictions.eq("waitingToRun", true))
 				.list();
+	}
+
+	private static String getText(Element element) {
+		StringBuffer stringBuffer = new StringBuffer();
+		NodeList elementChildren = element.getChildNodes();
+		boolean found = false;
+		for (int i = 0; i < elementChildren.getLength(); i++) {
+		  Node node = elementChildren.item(i);
+		  if (node.getNodeType() == Node.TEXT_NODE) {
+		    stringBuffer.append(node.getNodeValue());
+		    found = true;
+		  }
+		}
+		return found ? stringBuffer.toString() : null;
 	}
 }

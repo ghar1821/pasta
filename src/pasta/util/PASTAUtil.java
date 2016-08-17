@@ -238,8 +238,7 @@ public class PASTAUtil {
 	 */
 	public static FileTreeNode generateFileTree(PASTAUser user,
 			long assessmentId, String assessmentDate) {
-		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
-				+ user.getUsername()
+		return generateFileTree(user.getUsername()
 				+ "/assessments/"
 				+ assessmentId
 				+ "/"
@@ -254,17 +253,17 @@ public class PASTAUtil {
 	 * @return the root node for the file system
 	 */
 	public static FileTreeNode generateFileTree(String location){
-		File[] subDirectories = new File(location).listFiles();
+		File[] subDirectories = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location).listFiles();
 		if(subDirectories == null || subDirectories.length == 0){
 			FileTreeNode current = new FileTreeNode(location, null);
-			if(new File(location).isDirectory()){
+			if(new File(ProjectProperties.getInstance().getSubmissionsLocation() + location).isDirectory()){
 				current.setLeaf(false);
 			}
 			return current;
 		}
 		List<FileTreeNode> children = new LinkedList<FileTreeNode>();
 		for(File subDirectory: subDirectories){
-			children.add(generateFileTree(subDirectory.getAbsolutePath()));
+			children.add(generateFileTree(location + "/" + subDirectory.getName()));
 		}
 		return new FileTreeNode(location, children);
 	}
