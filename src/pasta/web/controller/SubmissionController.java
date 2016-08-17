@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +59,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -67,6 +69,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -725,26 +729,39 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
 	public void downloadFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
-		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
-		if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
-			try {
-				// get your file as InputStream
-				InputStream is = new FileInputStream(fileName.replace("\"", ""));
-				// copy it to response's OutputStream
-				response.setContentType("application/octet-stream;");
-				response.setHeader(
-						"Content-Disposition",
-						"attachment; filename="
-								+ fileName.replace("\"", "")
-										.substring(
-												fileName.replace("\"", "").replace("\\", "/")
-														.lastIndexOf("/") + 1));
-				IOUtils.copy(is, response.getOutputStream());
-				response.flushBuffer();
-				is.close();
-			} catch (IOException ex) {
-				throw new RuntimeException("IOError writing file to output stream");
-			}
+
+		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + fileName.replace("\"", ""));
+
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException e) {
+			logger.info("Request was made for an invalid file: '" + file.toString() + "'");
+			return;
+		}
+		PASTAUser user = (PASTAUser) RequestContextHolder
+				.currentRequestAttributes().getAttribute("user",
+						RequestAttributes.SCOPE_SESSION);
+		if (!testFileReadingIsAllowed(user, file)) {
+			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
+		}
+		try {
+			// get your file as InputStream
+			InputStream is = new FileInputStream(file);
+			// copy it to response's OutputStream
+			response.setContentType("application/octet-stream;");
+			response.setHeader(
+					"Content-Disposition",
+					"attachment; filename="
+							+ fileName.replace("\"", "")
+									.substring(
+											fileName.replace("\"", "").replace("\\", "/")
+													.lastIndexOf("/") + 1));
+			IOUtils.copy(is, response.getOutputStream());
+			response.flushBuffer();
+			is.close();
+		} catch (IOException ex) {
+			logger.info("IOException thrown", ex);
+			return;
 		}
 	}
 
@@ -791,12 +808,11 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@RequestParam("location") String location, 
+	public String viewFile(@ModelAttribute("user") PASTAUser user, @RequestParam("location") String location, 
 			@RequestParam("owner") String owner, Model model,
 			HttpServletResponse response) {
-		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
+		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
 
-		File file = new File(location);
 		model.addAttribute("filename", file.getName());
 		
 		String fileEnding = location.substring(location.lastIndexOf(".") + 1);
@@ -811,13 +827,46 @@ public class SubmissionController {
 		model.addAttribute("codeStyle", codeStyle);
 		model.addAttribute("fileEnding", fileEnding.toLowerCase());
 		
-		if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1)) || PASTAUtil.canDisplayFile(location)) {
-			model.addAttribute("fileContents",
-					PASTAUtil.scrapeFile(location));
+		if (testFileReadingIsAllowed(user, file)) {
+			if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
+					|| PASTAUtil.canDisplayFile(location)) {
+				model.addAttribute("fileContents",
+						PASTAUtil.scrapeFile(ProjectProperties.getInstance().getSubmissionsLocation() + location));
+			}
+		} else {
+			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
 		}
 		return "assessment/mark/viewFile";
 	}
 
+	private boolean testFileReadingIsAllowed(PASTAUser user, File file) {
+		if (user.isTutor()) {
+			return true;
+		}
+		// Allow access to user's own directory and that for any groups they are in.
+		Set<File> allowedDirectories = new TreeSet<>();
+		allowedDirectories.add(new File(ProjectProperties.getInstance()
+				.getSubmissionsLocation() + user.getUsername()));
+		for (PASTAGroup group : groupManager.getAllUserGroups(user)) {
+			allowedDirectories.add(new File(ProjectProperties.getInstance()
+					.getSubmissionsLocation() + group.getUsername()));
+		}
+		File parentFile = null;
+		try {
+			parentFile = file.getCanonicalFile();
+		} catch (IOException e) {
+			logger.info(user.getUsername() + " attempted to read invalid file <" + file.toString() + ">");
+			return false;
+		}
+
+		while (parentFile != null) {
+			if (allowedDirectories.contains(parentFile)) {
+				return true;
+			}
+			parentFile = parentFile.getParentFile();
+		}
+		return false;
+	}
 	/**
 	 * $PASTAUrl$/student/{studentUsername}/home/
 	 * <p>
