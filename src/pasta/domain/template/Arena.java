@@ -269,16 +269,4 @@ public class Arena {
 		return players.size();
 	}
 	
-	/**
-	 * @deprecated use hasPlayers (i think) (PASTAUser)
-	 */
-	@Deprecated
-	public boolean hasUser(String username) {
-		for(PASTAPlayer player : getPlayers()) {
-			if(player.getUser().getUsername().equals(username)) {
-				return true;
-			}
-		}
-		return false;
-	}
 }

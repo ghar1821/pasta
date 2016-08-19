@@ -476,18 +476,6 @@ public class CompetitionManager {
 	}
 	
 	/**
-	 * Get the latest history of the player for a user in a competition
-	 * 
-	 * @see pasta.repository.PlayerDAO#loadPlayerHistories(String, String)
-	 * @param user the user
-	 * @param competitionId the id of the competition
-	 * @return a list of the collection of player history, empty map if no players or competition/username is invalid
-	 */
-	@Deprecated public List<PlayerHistory> getLatestPlayers(PASTAUser user, long competitionId) {
-		return getPlayers(user, competitionId);
-	}
-
-	/**
 	 * Add a player to an arena
 	 * 
 	 * @param username the name of the user
