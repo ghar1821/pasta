@@ -66,8 +66,8 @@
 	</bean>
 	
 	<bean id="assessmentJobExecutor" class="pasta.scheduler.AssessmentJobExecutor">
-	    <constructor-arg name="corePoolSize" value="5" />
-	    <constructor-arg name="maxPoolSize" value="10" />
+	    <constructor-arg name="corePoolSize" value="2" />
+	    <constructor-arg name="maxPoolSize" value="3" />
 	</bean>
 	<bean name="executionManager" class="pasta.service.ExecutionManager">
 		<constructor-arg ref="assessmentJobExecutor" />
@@ -112,6 +112,7 @@
 				<value>pasta.domain.release.SubmissionCountRule</value>
 				<value>pasta.domain.release.UsernameRule</value>
 				<value>pasta.domain.result.AssessmentResult</value>
+				<value>pasta.domain.result.AssessmentResultSummary</value>
 				<value>pasta.domain.result.CompetitionMarks</value>
 				<value>pasta.domain.result.CompetitionPosition</value>
 				<value>pasta.domain.result.CompetitionResult</value>

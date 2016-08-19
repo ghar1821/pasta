@@ -53,7 +53,7 @@ import pasta.domain.PASTAPlayer;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.AssessmentSummary;
+import pasta.domain.result.AssessmentResultSummary;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
@@ -559,19 +559,18 @@ public class ExecutionManager {
 				user,
 				job.getResults().getAssessment().getId());
 		if (latest.getSubmissionDate().equals(job.getResults().getSubmissionDate())) {
-			AssessmentSummary summaryResult = new AssessmentSummary(
+			resultManager.saveOrUpdate(new AssessmentResultSummary(
 					user,
 					job.getResults().getAssessment(),
-					job.getResults().getPercentage());
-			resultManager.saveOrUpdate(summaryResult);
-		}
-		if (job.getUser().isGroup()) {
-			for (PASTAUser groupMember : groupManager.getGroup(user.getId()).getMembers()) {
-				AssessmentSummary summaryResult = new AssessmentSummary(
-						groupMember,
-						assessment,
-						job.getResults().getPercentage());
-				resultManager.saveOrUpdate(summaryResult);
+					job.getResults().getPercentage()));
+
+			if (job.getUser().isGroup()) {
+				for (PASTAUser groupMember : groupManager.getGroup(user.getId()).getMembers()) {
+					resultManager.saveOrUpdate(new AssessmentResultSummary(
+							groupMember,
+							job.getResults().getAssessment(),
+							job.getResults().getPercentage()));
+				}
 			}
 		}
 	}

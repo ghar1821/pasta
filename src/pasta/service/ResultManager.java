@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.AssessmentSummary;
+import pasta.domain.result.AssessmentResultSummary;
 import pasta.domain.result.CombinedAssessmentResult;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
@@ -131,9 +131,9 @@ public class ResultManager {
 		Map<PASTAUser, Map<Long, Double>> results = new TreeMap<>();
 		
 		Set<PASTAUser> users = new TreeSet<>(allUsers);
-		List<AssessmentSummary> userResults = resultDAO.getSummaryResultsForMultiUser(users);
+		List<AssessmentResultSummary> userResults = resultDAO.getResultsSummaryForMultiUser(users);
 		
-		for(AssessmentSummary userResult : userResults) {
+		for(AssessmentResultSummary userResult : userResults) {
 			Map<Long, Double> thisUserResults = results.get(userResult.getUser());
 			if(thisUserResults == null) {
 				thisUserResults = new TreeMap<>();
@@ -314,14 +314,8 @@ public class ResultManager {
 		resultDAO.save(result);
 	}
 
-	public void saveOrUpdate(AssessmentSummary summary) {
-		AssessmentSummary existing = resultDAO.getAssessmentSummary(summary.getUser(), summary.getAssessment());
-		if (existing == null) {
-			resultDAO.saveOrUpdate(summary);
-		} else {
-			existing.setPercentage(summary.getPercentage());
-			resultDAO.saveOrUpdate(existing);
-		}
+	public void saveOrUpdate(AssessmentResultSummary summary) {
+		resultDAO.saveOrUpdate(summary);
 	}
 
 	public void update(AssessmentResult result) {

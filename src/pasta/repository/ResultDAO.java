@@ -67,7 +67,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.AssessmentSummary;
+import pasta.domain.result.AssessmentResultSummary;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.CompetitionResultData;
@@ -130,13 +130,13 @@ public class ResultDAO{
 		return (AssessmentResult) sessionFactory.getCurrentSession().get(AssessmentResult.class, id);
 	}
 	
-	public AssessmentSummary getAssessmentSummary(PASTAUser user, Assessment assessment) {
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentSummary.class);
-		cr.createCriteria("assessment").add(Restrictions.eq("id", assessment.getId()));
-		cr.add(Restrictions.eq("user", user));
+	public AssessmentResultSummary getAssessmentResultSummary(PASTAUser user, Assessment assessment) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResultSummary.class);
+		cr.add(Restrictions.eq("id.assessment", assessment));
+		cr.add(Restrictions.eq("id.user", user));
 
 		@SuppressWarnings("unchecked")
-		AssessmentSummary result = (AssessmentSummary) DataAccessUtils.uniqueResult(cr.list());
+		AssessmentResultSummary result = (AssessmentResultSummary) DataAccessUtils.uniqueResult(cr.list());
 		return result;
 	}
 
@@ -287,24 +287,17 @@ public class ResultDAO{
 			return cr.list();
 		}
 
-		@SuppressWarnings("unchecked")
-		public List<AssessmentSummary> getSummaryResultsForMultiUser(Set<PASTAUser> users) {
+		public List<AssessmentResultSummary> getResultsSummaryForMultiUser(Set<PASTAUser> users) {
 			if(users.isEmpty()) {
-				return new LinkedList<AssessmentSummary>();
+				return new LinkedList<AssessmentResultSummary>();
 			}
 		
-			DetachedCriteria latestSub = DetachedCriteria.forClass(AssessmentSummary.class);
-			latestSub.setProjection(
-					Projections.projectionList()
-					.add(Projections.groupProperty("user"))
-					.add(Projections.groupProperty("assessment"))
-					);
-			latestSub.add(Restrictions.in("user", users));
-		
-			Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentSummary.class)
-					.add(Subqueries.propertiesIn(new String[] {"user", "assessment"}, latestSub));
+			Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResultSummary.class)
+					.add(Restrictions.in("id.user", users));
 
-			return cr.list();
+			@SuppressWarnings("unchecked")
+			List<AssessmentResultSummary> list = (List<AssessmentResultSummary>)cr.list();
+			return list;
 		}
 
 	private void restrictCriteriaUser(Criteria cr, PASTAUser user, boolean includeGroup, long assessmentId) {
@@ -623,7 +616,7 @@ public class ResultDAO{
 	 *
 	 * @param result the assessment summary being saved
 	 */
-	public void saveOrUpdate(AssessmentSummary result) {
+	public void saveOrUpdate(AssessmentResultSummary result) {
 		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}
 
