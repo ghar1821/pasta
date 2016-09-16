@@ -684,7 +684,7 @@ public class UnitTestManager {
 				}
 				
 				// Automatically set the main class name according to any *Test.java files.
-				FileTreeNode node = PASTAUtil.generateFileTree(codeLocation.getAbsolutePath());
+				FileTreeNode node = PASTAUtil.generateFileTree("", codeLocation.getAbsolutePath());
 				Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
 				toExpand.push(node);
 				int dirStart = node.getLocation().length();

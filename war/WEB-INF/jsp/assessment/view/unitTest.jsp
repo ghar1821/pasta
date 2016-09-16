@@ -65,7 +65,8 @@ either expressed or implied, of the PASTA Project.
 					<td>
 						<c:set var="node" value="${codeNode}" scope="request"/>
 						<jsp:include page="../../recursive/fileWriterRoot.jsp">
-							<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
+							<jsp:param name="owner" value="unitTest"/> 
+							<jsp:param name="fieldId" value="${unitTest.id}"/> 
 						</jsp:include>
 					</td>
 				</tr>
@@ -99,7 +100,8 @@ either expressed or implied, of the PASTA Project.
 					<td>
 						<c:set var="node" value="${accessoryNode}" scope="request"/>
 						<jsp:include page="../../recursive/fileWriterRoot.jsp">
-							<jsp:param name="owner" value="Unit Test - ${unitTest.name}"/>
+							<jsp:param name="owner" value="unitTest"/> 
+							<jsp:param name="fieldId" value="${unitTest.id}"/> 
 						</jsp:include>
 					</td>
 				</tr>

@@ -808,9 +808,47 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@ModelAttribute("user") PASTAUser user, @RequestParam("location") String location, 
-			@RequestParam("owner") String owner, Model model,
+	public String viewFile(@ModelAttribute("user") PASTAUser user,
+			@RequestParam("location") String location,
+			@RequestParam("owner") String owner,
+			@RequestParam(value = "fieldId", required = false) String id,
+			Model model,
 			HttpServletResponse response) {
+		if (id != null && !id.isEmpty()) {
+			WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
+			logger.debug("Tutor <" + user.getUsername() + "> is viewing file <" + location + "> with id <" + id + ">.");
+
+			File file = null;
+			if (owner.equals("unitTest")) {
+				file = new File(ProjectProperties.getInstance().getUnitTestsLocation()
+						+ "/" + id + "/"
+						+ location);
+			} else if (owner.equals("assessment")){
+				file = new File(ProjectProperties.getInstance().getAssessmentValidatorLocation()
+						+ "/" + id + "/"
+						+ location);
+			} else if (owner.equals("competition")){
+				file = new File(ProjectProperties.getInstance().getCompetitionsLocation()
+						+ "/" + id + "/"
+						+ location);
+			} else {
+				throw new InsufficientAuthenticationException(
+						"You do not have sufficient access for id = '" + id + "'");
+			}
+			String fileEnding = location.substring(location.lastIndexOf(".") + 1).toLowerCase();
+
+			model.addAttribute("filename", file.getName());
+			model.addAttribute("location", location);
+			model.addAttribute("owner", owner);
+			model.addAttribute("codeStyle", codeStyle);
+			model.addAttribute("fileEnding", fileEnding);
+
+			if(codeStyle.containsKey(fileEnding)
+					|| PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
+				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file));
+			}
+			return "assessment/mark/viewFile";
+		}
 		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
 
 		model.addAttribute("filename", file.getName());

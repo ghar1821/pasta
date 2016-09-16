@@ -180,7 +180,8 @@ either expressed or implied, of the PASTA Project.
 					<td>Current validator:</td>
 					<td>
 						<jsp:include page="../../recursive/fileWriterRoot.jsp">
-							<jsp:param name="owner" value="Validator - ${assessment.name}"/>
+							<jsp:param name="owner" value="assessment"/>
+							<jsp:param name="fieldId" value="${assessment.id}"/>
 						</jsp:include>
 					</td>
 				</tr>

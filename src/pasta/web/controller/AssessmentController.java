@@ -294,7 +294,8 @@ public class AssessmentController {
 		model.addAttribute("allLanguages", Language.values());
 		
 		if(currAssessment.isCustomValidator()) {
-			model.addAttribute("node", PASTAUtil.generateFileTree(currAssessment.getCustomValidator().getAbsolutePath()));
+			File assessmentFile = currAssessment.getCustomValidator().getAbsoluteFile();
+			model.addAttribute("node", PASTAUtil.generateFileTree(assessmentFile.getParent(), assessmentFile.getName()));
 		}
 		
 		model.addAttribute("tutorCategoryPrefix", Assessment.TUTOR_CATEGORY_PREFIX);

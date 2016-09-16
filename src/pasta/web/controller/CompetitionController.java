@@ -180,7 +180,7 @@ public class CompetitionController {
 
 		//model.addAttribute("competition", competitionManager.getCompetition(competitionId));
 		model.addAttribute("node", PASTAUtil.generateFileTree(competitionManager
-				.getCompetition(competitionId).getFileLocation() + "/code"));
+				.getCompetition(competitionId).getFileLocation(), "/code"));
 		model.addAttribute("liveAssessmentCount", competitionManager.getLiveAssessmentCount(user, competitionManager.getCompetition(competitionId)));
 		
 		Competition comp = competitionManager.getCompetition(competitionId);

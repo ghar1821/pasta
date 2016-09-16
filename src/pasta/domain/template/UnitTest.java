@@ -144,6 +144,15 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		return ProjectProperties.getInstance().getUnitTestsLocation() + getId();
 	}
 	
+	public String getRelativeFileLocation() {
+		String location = getFileLocation();
+		String base = ProjectProperties.getInstance().getProjectLocation();
+		if (location.startsWith(base)) {
+			return location.substring(base.length());
+		}
+		return location;
+	}
+
 	public File getCodeLocation() {
 		return new File(getFileLocation(), "code");
 	}
