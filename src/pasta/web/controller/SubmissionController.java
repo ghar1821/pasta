@@ -1803,7 +1803,7 @@ public class SubmissionController {
 			for (int j = 0; j < allAssessments.length; j++) {
 				// assessment mark
 				Assessment currAssessment = allAssessments[j];
-				data.append("      \"" + currAssessment.getId() + "\": {\r\n");
+				data.append("      \"" + currAssessment.getId() + "\": {");
 				String mark = "";
 				String percentage = "";
 
@@ -1812,19 +1812,18 @@ public class SubmissionController {
 					percentage = String.valueOf(latestResult);
 					mark = df.format(latestResult * currAssessment.getMarks());
 				}
-				data.append("        \"mark\": \"" + mark + "\",\r\n");
-				data.append("        \"percentage\": \"" + percentage + "\",\r\n");
-				data.append("        \"max\": \"" + currAssessment.getMarks() + "\",\r\n");
-				data.append("        \"assessmentid\": \"" + currAssessment.getId() + "\"\r\n");
-				data.append("      }");
+				data.append("\"mark\": \"" + mark + "\",");
+				data.append("\"percentage\": \"" + percentage + "\",");
+				data.append("\"max\": \"" + currAssessment.getMarks() + "\",");
+				data.append("\"assessmentid\": \"" + currAssessment.getId() + "\"");
+				data.append("}");
 
 				if (j < allAssessments.length - 1) {
 					data.append(",");
 				}
-				data.append("\r\n");
 			}
 
-			data.append("    }");
+			data.append("}");
 			if (i < usersList.size() - 1) {
 				data.append(",");
 			}
