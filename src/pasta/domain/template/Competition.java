@@ -200,23 +200,6 @@ public class Competition implements Serializable, Comparable<Competition> {
 		this.completedArenas.addAll(completedArenas);
 	}
 
-	@Deprecated public Arena getArena(String name) {
-		if (name.replace(" ", "").toLowerCase().equals("officialarena")) {
-			return officialArena;
-		}
-		for(Arena arena : completedArenas) {
-			if(arena.getName().replace(" ", "").equals(name.replace(" ", ""))) {
-				return arena;
-			}
-		}
-		for(Arena arena : outstandingArenas) {
-			if(arena.getName().replace(" ", "").equals(name.replace(" ", ""))) {
-				return arena;
-			}
-		}
-		return null;
-	}
-	
 	public Arena getArena(Long id) {
 		if(officialArena.getId() == id) {
 			return officialArena;

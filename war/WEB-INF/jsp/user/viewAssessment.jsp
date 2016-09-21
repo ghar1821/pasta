@@ -144,14 +144,12 @@ either expressed or implied, of the PASTA Project.
 			</div>
 			
 			<%--Submission contents--%>
-			<c:if test="${user.tutor}">
-				<div class='vertical-block'>
-					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-					<jsp:include page="../recursive/fileWriterRoot.jsp">
-						<jsp:param name="owner" value="${result.user.group ? result.user.name : result.user.username}"/>
-					</jsp:include>
-				</div>
-			</c:if>
+			<div class='vertical-block'>
+				<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
+				<jsp:include page="../recursive/fileWriterRoot.jsp">
+					<jsp:param name="owner" value="${result.user.group ? result.user.name : result.user.username}"/>
+				</jsp:include>
+			</div>
 			
 			<%--Summary of results--%>
 			<h5 class='compact'>Summary</h5>

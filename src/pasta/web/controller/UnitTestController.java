@@ -182,9 +182,15 @@ public class UnitTestController {
 
 		model.addAttribute("latestResult", test.getTestResult());
 		
-		FileTreeNode codeNode = PASTAUtil.generateFileTree(test.getCodeLocation().getAbsolutePath());
+		String unitTestLocation = ProjectProperties.getInstance().getUnitTestsLocation();
+		String codeLocation = test.getCodeLocation().getPath().substring(unitTestLocation.length());
+		String accessoryLocation = test.getAccessoryLocation().getPath().substring(unitTestLocation.length());
+
+		// Strip base unitTestLocation off code and accessory paths then build fileTree from that.
+
+		FileTreeNode codeNode = PASTAUtil.generateFileTree(unitTestLocation, codeLocation);
 		model.addAttribute("codeNode", codeNode);
-		FileTreeNode accessoryNode = PASTAUtil.generateFileTree(test.getAccessoryLocation().getAbsolutePath());
+		FileTreeNode accessoryNode = PASTAUtil.generateFileTree(unitTestLocation, accessoryLocation);
 		model.addAttribute("accessoryNode", accessoryNode);
 		
 		if(test.hasCode()) {
@@ -197,7 +203,7 @@ public class UnitTestController {
 				FileTreeNode expandNode = toExpand.pop();
 				String location = expandNode.getLocation().substring(dirStart);
 				if(location.endsWith(".java")) {
-					String qualified = PASTAUtil.extractQualifiedName(expandNode.getLocation());
+					String qualified = PASTAUtil.extractQualifiedName(unitTestLocation + expandNode.getLocation());
 					candidateFiles.put(qualified, location + " [" + qualified + "]");
 				}
 				if(!expandNode.isLeaf()) {

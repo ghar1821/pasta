@@ -36,6 +36,11 @@ public class UnitTestDAO {
 		logger.info("Deleted unit test " + test.getName());
 	}
 	
+	public void deleteTestTests(UnitTest test) {
+		sessionFactory.getCurrentSession().delete(test.getTestResult());
+		logger.info("Deleted unit test test result" + test.getName());
+	}
+	
 	@SuppressWarnings("unchecked")
 	public List<UnitTest> getAllUnitTests() {
 		return sessionFactory.getCurrentSession().createCriteria(UnitTest.class).list();

@@ -238,8 +238,8 @@ public class PASTAUtil {
 	 */
 	public static FileTreeNode generateFileTree(PASTAUser user,
 			long assessmentId, String assessmentDate) {
-		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation()
-				+ user.getUsername()
+		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation(),
+				user.getUsername()
 				+ "/assessments/"
 				+ assessmentId
 				+ "/"
@@ -248,23 +248,25 @@ public class PASTAUtil {
 	}
 	
 	/**
-	 * Recursively generate the FileTreeNode based on a location.
+	 * Recursively generate the FileTreeNode based on a root directory and a
+	 * relative location.
 	 * 
-	 * @param location the location of the root
+	 * @param rootDirectory the root directory of the relative file tree
+	 * @param location the relative root of the file tree
 	 * @return the root node for the file system
 	 */
-	public static FileTreeNode generateFileTree(String location){
-		File[] subDirectories = new File(location).listFiles();
+	public static FileTreeNode generateFileTree(String rootDirectory, String location){
+		File[] subDirectories = new File(rootDirectory + location).listFiles();
 		if(subDirectories == null || subDirectories.length == 0){
 			FileTreeNode current = new FileTreeNode(location, null);
-			if(new File(location).isDirectory()){
+			if(new File(rootDirectory + location).isDirectory()){
 				current.setLeaf(false);
 			}
 			return current;
 		}
 		List<FileTreeNode> children = new LinkedList<FileTreeNode>();
 		for(File subDirectory: subDirectories){
-			children.add(generateFileTree(subDirectory.getAbsolutePath()));
+			children.add(generateFileTree(rootDirectory, location + "/" + subDirectory.getName()));
 		}
 		return new FileTreeNode(location, children);
 	}
@@ -342,8 +344,8 @@ public class PASTAUtil {
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){
-				FileTreeNode node = generateFileTree(competition.getFileLocation()
-						+ "/players/" + user.getUsername() + "/"
+				FileTreeNode node = generateFileTree(competition.getFileLocation(),
+						"/players/" + user.getUsername() + "/"
 						+ player.getPlayerName()
 						+ "/active/code/");
 				if(node != null){

@@ -196,6 +196,10 @@ public class UnitTestManager {
 	public void testUnitTest(UnitTest test, TestUnitTestForm testForm) {
 		logger.info("Testing unit test " + test.getName());
 		
+		if (test.getTestResult() != null) {
+			ProjectProperties.getInstance().getUnitTestDAO().deleteTestTests(test);
+		}
+
 		// This results object will be updated with the results as we go
 		UnitTestResult utResults = new UnitTestResult();
 		utResults.setTest(test);
@@ -680,7 +684,7 @@ public class UnitTestManager {
 				}
 				
 				// Automatically set the main class name according to any *Test.java files.
-				FileTreeNode node = PASTAUtil.generateFileTree(codeLocation.getAbsolutePath());
+				FileTreeNode node = PASTAUtil.generateFileTree("", codeLocation.getAbsolutePath());
 				Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
 				toExpand.push(node);
 				int dirStart = node.getLocation().length();

@@ -229,21 +229,6 @@ public class AssessmentDAO {
 		updateHandMarking(newMarking);
 	}
 	
-	@Deprecated
-	public void save(Assessment assessment) {
-		saveOrUpdate(assessment);
-	}
-	
-	@Deprecated
-	public void update(Assessment assessment) {
-		saveOrUpdate(assessment);
-	}
-	
-	@Deprecated
-	public void merge(Assessment assessment) {
-		saveOrUpdate(assessment);
-	}
-	
 	public void delete(Assessment assessment) {
 		try {
 			sessionFactory.getCurrentSession().delete(assessment);

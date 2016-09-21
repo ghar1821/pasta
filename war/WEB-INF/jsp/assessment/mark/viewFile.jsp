@@ -56,4 +56,4 @@ either expressed or implied, of the PASTA Project.
 		<c:redirect url='../downloadFile?file_name="${location}"'/>
 	</c:otherwise>
 </c:choose>
-<button onclick='location.href="../downloadFile?file_name=\"${dlc}\"";'>Download file</a>
+<button onclick='location.href="../downloadFile?file_name=\"${dlc}\"";'>Download file</button>

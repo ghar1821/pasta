@@ -82,7 +82,8 @@ either expressed or implied, of the PASTA Project.
 				<td>Current Code:</td>
 				<td>
 					<jsp:include page="../../recursive/fileWriterRoot.jsp">
-						<jsp:param name="owner" value="Competition - ${competition.name}"/>
+						<jsp:param name="owner" value="competition"/>
+						<jsp:param name="fieldId" value="${competition.id}"/>
 					</jsp:include>
 				</td>
 			</tr>

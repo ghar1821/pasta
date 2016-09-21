@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +59,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -67,6 +69,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -725,26 +729,39 @@ public class SubmissionController {
 	 */
 	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
 	public void downloadFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
-		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
-		if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
-			try {
-				// get your file as InputStream
-				InputStream is = new FileInputStream(fileName.replace("\"", ""));
-				// copy it to response's OutputStream
-				response.setContentType("application/octet-stream;");
-				response.setHeader(
-						"Content-Disposition",
-						"attachment; filename="
-								+ fileName.replace("\"", "")
-										.substring(
-												fileName.replace("\"", "").replace("\\", "/")
-														.lastIndexOf("/") + 1));
-				IOUtils.copy(is, response.getOutputStream());
-				response.flushBuffer();
-				is.close();
-			} catch (IOException ex) {
-				throw new RuntimeException("IOError writing file to output stream");
-			}
+
+		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + fileName.replace("\"", ""));
+
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException e) {
+			logger.info("Request was made for an invalid file: '" + file.toString() + "'");
+			return;
+		}
+		PASTAUser user = (PASTAUser) RequestContextHolder
+				.currentRequestAttributes().getAttribute("user",
+						RequestAttributes.SCOPE_SESSION);
+		if (!testFileReadingIsAllowed(user, file)) {
+			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
+		}
+		try {
+			// get your file as InputStream
+			InputStream is = new FileInputStream(file);
+			// copy it to response's OutputStream
+			response.setContentType("application/octet-stream;");
+			response.setHeader(
+					"Content-Disposition",
+					"attachment; filename="
+							+ fileName.replace("\"", "")
+									.substring(
+											fileName.replace("\"", "").replace("\\", "/")
+													.lastIndexOf("/") + 1));
+			IOUtils.copy(is, response.getOutputStream());
+			response.flushBuffer();
+			is.close();
+		} catch (IOException ex) {
+			logger.info("IOException thrown", ex);
+			return;
 		}
 	}
 
@@ -791,33 +808,83 @@ public class SubmissionController {
 	 * @return "redirect:/login/" or "redirect:/home/"
 	 */
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
-	public String viewFile(@RequestParam("location") String location, 
-			@RequestParam("owner") String owner, Model model,
+	public String viewFile(@ModelAttribute("user") PASTAUser user,
+			@RequestParam("location") String location,
+			@RequestParam("owner") String owner,
+			Model model,
 			HttpServletResponse response) {
-		WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
+		File file;
+		if (owner.equals("unitTest") || owner.equals("assessment") || owner.equals("competition")) {
+			WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
+			logger.debug("Tutor <" + user.getUsername() + "> is viewing file <" + location + ".");
 
-		File file = new File(location);
-		model.addAttribute("filename", file.getName());
+			if (owner.equals("unitTest")) {
+				file = new File(ProjectProperties.getInstance().getUnitTestsLocation()
+						+ location);
+			} else if (owner.equals("assessment")){
+				file = new File(ProjectProperties.getInstance().getAssessmentValidatorLocation()
+						+ location);
+			} else { // "competition"
+				file = new File(ProjectProperties.getInstance().getCompetitionsLocation()
+						+ location);
+			}
+		} else {
+			file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
+		}
 		
-		String fileEnding = location.substring(location.lastIndexOf(".") + 1);
+		String fileEnding = location.substring(location.lastIndexOf(".") + 1).toLowerCase();
 //		if(fileEnding.equalsIgnoreCase("pdf")) {
 			//TODO: figure out a way to redirect to pdfs
 //			logger.warn("Redirecting to: redirect:" + location);
 //			return "redirect:" + location;
 //		}
-		
+
+		model.addAttribute("filename", file.getName());
 		model.addAttribute("location", location);
 		model.addAttribute("owner", owner);
 		model.addAttribute("codeStyle", codeStyle);
 		model.addAttribute("fileEnding", fileEnding.toLowerCase());
 		
-		if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1)) || PASTAUtil.canDisplayFile(location)) {
-			model.addAttribute("fileContents",
-					PASTAUtil.scrapeFile(location));
+		if (testFileReadingIsAllowed(user, file)) {
+			if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
+					|| PASTAUtil.canDisplayFile(location)) {
+				model.addAttribute("fileContents",
+						PASTAUtil.scrapeFile(file.getPath()));
+			}
+		} else {
+			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
 		}
 		return "assessment/mark/viewFile";
 	}
 
+	private boolean testFileReadingIsAllowed(PASTAUser user, File file) {
+		if (user.isTutor()) {
+			return true;
+		}
+		// Allow access to user's own directory and that for any groups they are in.
+		Set<File> allowedDirectories = new TreeSet<>();
+		allowedDirectories.add(new File(ProjectProperties.getInstance()
+				.getSubmissionsLocation() + user.getUsername()));
+		for (PASTAGroup group : groupManager.getAllUserGroups(user)) {
+			allowedDirectories.add(new File(ProjectProperties.getInstance()
+					.getSubmissionsLocation() + group.getUsername()));
+		}
+		File parentFile = null;
+		try {
+			parentFile = file.getCanonicalFile();
+		} catch (IOException e) {
+			logger.info(user.getUsername() + " attempted to read invalid file <" + file.toString() + ">");
+			return false;
+		}
+
+		while (parentFile != null) {
+			if (allowedDirectories.contains(parentFile)) {
+				return true;
+			}
+			parentFile = parentFile.getParentFile();
+		}
+		return false;
+	}
 	/**
 	 * $PASTAUrl$/student/{studentUsername}/home/
 	 * <p>
@@ -1681,6 +1748,72 @@ public class SubmissionController {
 	 * @return the JSON string
 	 */
 	private String generateJSON(Collection<PASTAUser> allUsers) {
+		if(allUsers.isEmpty()) {
+			return "{\"data\": []}";
+		}
+
+		List<PASTAUser> usersList = new ArrayList<>(allUsers);
+
+		DecimalFormat df = new DecimalFormat("#.###");
+
+		StringBuilder data = new StringBuilder("{\r\n  \"data\": [\r\n");
+
+		Map<PASTAUser, Map<Long, Double>> allResults = resultManager.getLatestResultsIncludingGroupEvenQuicker(usersList);
+
+		Assessment[] allAssessments = assessmentManager.getAssessmentList().toArray(new Assessment[0]);
+		for (int i = 0; i < usersList.size(); ++i) {
+			PASTAUser user = usersList.get(i);
+
+			data.append("    {\r\n");
+
+			// name
+			data.append("      \"name\": \"" + user.getUsername() + "\",\r\n");
+			// stream
+			data.append("      \"stream\": \"" + user.getStream() + "\",\r\n");
+			// class
+			data.append("      \"class\": \"" + user.getFullTutorial() + "\"");
+
+			if(allAssessments.length > 0) {
+				data.append(",");
+			}
+			data.append("\r\n");
+
+			Map<Long, Double> userResults = allResults.get(user);
+			// marks
+			for (int j = 0; j < allAssessments.length; j++) {
+				// assessment mark
+				Assessment currAssessment = allAssessments[j];
+				data.append("      \"" + currAssessment.getId() + "\": {");
+				String mark = "";
+				String percentage = "";
+
+				Double latestResult = userResults == null ? null : userResults.get(currAssessment.getId());
+				if (latestResult != null) {
+					percentage = String.valueOf(latestResult);
+					mark = df.format(latestResult * currAssessment.getMarks());
+				}
+				data.append("\"mark\": \"" + mark + "\",");
+				data.append("\"percentage\": \"" + percentage + "\",");
+				data.append("\"max\": \"" + currAssessment.getMarks() + "\",");
+				data.append("\"assessmentid\": \"" + currAssessment.getId() + "\"");
+				data.append("}");
+
+				if (j < allAssessments.length - 1) {
+					data.append(",");
+				}
+			}
+
+			data.append("}");
+			if (i < usersList.size() - 1) {
+				data.append(",");
+			}
+			data.append("\r\n");
+		}
+		data.append("  ]\r\n}");
+		return data.toString();	}
+
+	private String generateJSON_old(Collection<PASTAUser> allUsers) {
+
 		if(allUsers.isEmpty()) {
 			return "{\"data\": []}";
 		}

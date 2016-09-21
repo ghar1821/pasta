@@ -53,6 +53,7 @@ import pasta.domain.PASTAPlayer;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentResultSummary;
 import pasta.domain.result.CompetitionMarks;
 import pasta.domain.result.CompetitionResult;
 import pasta.domain.result.UnitTestResult;
@@ -102,6 +103,7 @@ public class ExecutionManager {
 	
 	@Autowired private UnitTestManager unitTestManager;
 	@Autowired private ResultManager resultManager;
+	@Autowired private GroupManager groupManager;
 
 	private ExecutionScheduler scheduler;
 	
@@ -451,8 +453,8 @@ public class ExecutionManager {
 		logger.info("Running " + assessment.getName() + " unit tests for " + user.getUsername());
 		
 		File sandboxRoot = new File(ProjectProperties.getInstance().getSandboxLocation() + 
-				user.getUsername() + "/" + job.getAssessmentId() + 
-				"/" + PASTAUtil.formatDate(job.getRunDate()));	
+				user.getUsername() + "_" + job.getAssessmentId() + 
+				"_" + PASTAUtil.formatDate(job.getRunDate()));	
 		
 		// Set up location where test will be run
 		try {
@@ -551,6 +553,25 @@ public class ExecutionManager {
 			FileUtils.deleteDirectory(sandboxRoot);
 		} catch (IOException e) {
 			logger.error("Error deleting sandbox test at " + sandboxRoot);
+		}
+		// Update the assessment summaries for user/group members if this is the latest submission
+		AssessmentResult latest = resultManager.getLatestResultIncludingGroup(
+				user,
+				job.getResults().getAssessment().getId());
+		if (latest.getSubmissionDate().equals(job.getResults().getSubmissionDate())) {
+			resultManager.saveOrUpdate(new AssessmentResultSummary(
+					user,
+					job.getResults().getAssessment(),
+					job.getResults().getPercentage()));
+
+			if (job.getUser().isGroup()) {
+				for (PASTAUser groupMember : groupManager.getGroup(user.getId()).getMembers()) {
+					resultManager.saveOrUpdate(new AssessmentResultSummary(
+							groupMember,
+							job.getResults().getAssessment(),
+							job.getResults().getPercentage()));
+				}
+			}
 		}
 	}
 
