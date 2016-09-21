@@ -12,6 +12,6 @@
 		</li>
 	</c:when>
 	<c:otherwise>
-		<li class="leaf ext_${node.extension}" location="${node.location}" owner="${param.owner}" fieldId="${param.fieldId}"><a>${node.name}</a></li>
+		<li class="leaf ext_${node.extension}" location="${node.location}" owner="${param.owner}"><a>${node.name}</a></li>
 	</c:otherwise>
 </c:choose>

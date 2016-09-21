@@ -25,19 +25,12 @@ $(function() {
 			name : "owner",
 			value : ""
 		}));
-		$form.append($("<input />", {
-			type : "hidden",
-			id : "fieldId",
-			name : "fieldId",
-			value : ""
-		}));
 		$(document.body).append($form);
 	}
 	
 	$("li.leaf").on("click", function() {
 		$('#viewFileForm').find("input#location").val($(this).attr('location'));
 		$('#viewFileForm').find("input#owner").val($(this).attr('owner'));
-		$('#viewFileForm').find("input#fieldId").val($(this).attr('fieldId'));
 		$('#viewFileForm').submit();
 	});
 });

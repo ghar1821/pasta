@@ -811,55 +811,35 @@ public class SubmissionController {
 	public String viewFile(@ModelAttribute("user") PASTAUser user,
 			@RequestParam("location") String location,
 			@RequestParam("owner") String owner,
-			@RequestParam(value = "fieldId", required = false) String id,
 			Model model,
 			HttpServletResponse response) {
-		if (id != null && !id.isEmpty()) {
+		File file;
+		if (owner.equals("unitTest") || owner.equals("assessment") || owner.equals("competition")) {
 			WebUtils.ensureAccess( UserPermissionLevel.TUTOR);
-			logger.debug("Tutor <" + user.getUsername() + "> is viewing file <" + location + "> with id <" + id + ">.");
+			logger.debug("Tutor <" + user.getUsername() + "> is viewing file <" + location + ".");
 
-			File file = null;
 			if (owner.equals("unitTest")) {
 				file = new File(ProjectProperties.getInstance().getUnitTestsLocation()
-						+ "/" + id + "/"
 						+ location);
 			} else if (owner.equals("assessment")){
 				file = new File(ProjectProperties.getInstance().getAssessmentValidatorLocation()
-						+ "/" + id + "/"
 						+ location);
-			} else if (owner.equals("competition")){
+			} else { // "competition"
 				file = new File(ProjectProperties.getInstance().getCompetitionsLocation()
-						+ "/" + id + "/"
 						+ location);
-			} else {
-				throw new InsufficientAuthenticationException(
-						"You do not have sufficient access for id = '" + id + "'");
 			}
-			String fileEnding = location.substring(location.lastIndexOf(".") + 1).toLowerCase();
-
-			model.addAttribute("filename", file.getName());
-			model.addAttribute("location", location);
-			model.addAttribute("owner", owner);
-			model.addAttribute("codeStyle", codeStyle);
-			model.addAttribute("fileEnding", fileEnding);
-
-			if(codeStyle.containsKey(fileEnding)
-					|| PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
-				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file));
-			}
-			return "assessment/mark/viewFile";
+		} else {
+			file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
 		}
-		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
-
-		model.addAttribute("filename", file.getName());
 		
-		String fileEnding = location.substring(location.lastIndexOf(".") + 1);
+		String fileEnding = location.substring(location.lastIndexOf(".") + 1).toLowerCase();
 //		if(fileEnding.equalsIgnoreCase("pdf")) {
 			//TODO: figure out a way to redirect to pdfs
 //			logger.warn("Redirecting to: redirect:" + location);
 //			return "redirect:" + location;
 //		}
-		
+
+		model.addAttribute("filename", file.getName());
 		model.addAttribute("location", location);
 		model.addAttribute("owner", owner);
 		model.addAttribute("codeStyle", codeStyle);
@@ -869,7 +849,7 @@ public class SubmissionController {
 			if(codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
 					|| PASTAUtil.canDisplayFile(location)) {
 				model.addAttribute("fileContents",
-						PASTAUtil.scrapeFile(ProjectProperties.getInstance().getSubmissionsLocation() + location));
+						PASTAUtil.scrapeFile(file.getPath()));
 			}
 		} else {
 			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
