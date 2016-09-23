@@ -139,7 +139,10 @@ public class ExecutionScheduler {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentJob.class);
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.addOrder(Order.asc("runDate"));
-		return cr.list();
+
+		@SuppressWarnings("unchecked")
+		List<AssessmentJob> list = cr.list();
+		return list;
 	}
 	
 	/**
@@ -152,7 +155,9 @@ public class ExecutionScheduler {
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.add(Restrictions.isNull("arena"));
 		cr.addOrder(Order.asc("runDate"));
-		return cr.list();
+		@SuppressWarnings("unchecked")
+		List<CompetitionJob> list = cr.list();
+		return list;
 	}
 	
 	/**
@@ -165,7 +170,9 @@ public class ExecutionScheduler {
 		cr.add(Restrictions.le("runDate", new Date()));
 		cr.add(Restrictions.isNotNull("arena"));
 		cr.addOrder(Order.asc("runDate"));
-		return cr.list();
+		@SuppressWarnings("unchecked")
+		List<CompetitionJob> list = cr.list();
+		return list;
 	}
 	
 	/**
