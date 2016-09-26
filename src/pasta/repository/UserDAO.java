@@ -130,7 +130,7 @@ public class UserDAO {
 	 * 
 	 * @param users the list of users which will be updated
 	 */
-	public void updateUsers(List<PASTAUser> users){
+	public void updateUsers(Set<PASTAUser> users){
 		Map<String, PASTAUser> currentUsers = getAllUserMap();
 		for(PASTAUser user: users){
 			if(currentUsers.containsKey(user.getUsername())){
@@ -143,6 +143,7 @@ public class UserDAO {
 			}
 			else{
 				save(user);
+				currentUsers.put(user.getUsername(), getUser(user.getUsername()));
 			}
 		}
 	}
@@ -153,7 +154,7 @@ public class UserDAO {
 	 * @param users the list of users which will replace the current list
 	 * @param tutors whether or not you're replacing the list of teaching staff
 	 */
-	public void replaceUsers(List<PASTAUser> users, boolean tutors){
+	public void replaceUsers(Set<PASTAUser> users, boolean tutors){
 		Map<String, PASTAUser> currentUsers;
 		if(tutors)
 			currentUsers = getAllTutorMap();

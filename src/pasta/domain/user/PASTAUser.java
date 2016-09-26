@@ -165,23 +165,22 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 		this.active = active;
 	}
 	
-	public boolean equals(PASTAUser user){
-		if(user == null) {
+	public boolean equals(PASTAUser other){
+		if(other == null) {
 			return false;
 		}
-		return this.id == user.id;
+		return getUsername().equals(other.getUsername());
 	}
 	
 	@Override
-	public int compareTo(PASTAUser o) {
-		return getUsername().trim().compareTo(o.getUsername().trim());
+	public int compareTo(PASTAUser other) {
+		return getUsername().compareTo(other.getUsername());
 	}
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}

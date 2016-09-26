@@ -313,7 +313,7 @@ public class UserManager {
 		}
 		
 		Scanner content = new Scanner(form.getUpdateContents());
-		List<PASTAUser> users = new LinkedList<PASTAUser>();
+		Set<PASTAUser> users = new TreeSet<PASTAUser>();
 		while(content.hasNext()) {
 			String line = content.nextLine().replaceAll("\\s+", "");
 			if(line.isEmpty()) {
