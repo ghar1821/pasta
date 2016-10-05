@@ -125,17 +125,16 @@ either expressed or implied, of the PASTA Project.
 						</div>
 					</div>
 					<div class='button-panel'>
+						<button class='flat' onclick='location.href="${assessment.id}/"'>Details</button>
 						<c:if test="${fn:length(assessment.allUnitTests) != 0}">
-							<button class='flat' style="float: left;"
-								onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
-							<button class='flat' style="float: left; display: none;"
-									onclick="location.href='./${assessment.id}/run/'"
-									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+							<button class='flat' onclick="$(this).toggle().next().toggle()">Re-run</button>
+							<button style="display: none;" onclick="location.href='./${assessment.id}/run/'"
+									onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
 						</c:if>
 						<button class='flat' onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
 						<button class='flat' onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
 						<c:if test="${user.instructor}">
-							<button class='flat' class='deleteAssessment' assessment='${assessment.id}'>Delete</button>
+							<button class='flat deleteAssessment' assessment='${assessment.id}'>Delete</button>
 						</c:if>
 					</div>
 				</div>
