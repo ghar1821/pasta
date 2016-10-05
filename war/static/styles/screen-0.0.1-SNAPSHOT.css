@@ -51,6 +51,9 @@ button.secondary:hover, button.flat:hover {
 .larger-text {
 	font-size: 1.3em;
 }
+.top-align {
+	vertical-align: top;
+}
 
 .part > .button-panel:not(:first-child) {
 	margin-top: 1em;
@@ -164,6 +167,11 @@ div.tab-bar a {
 	display: block;
 	width: 100%;
 	height: 100%;
+}
+
+
+.star-required {
+	color: #CE1126;
 }
 
 .assessment-mark {
