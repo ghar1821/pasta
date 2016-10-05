@@ -50,7 +50,7 @@ either expressed or implied, of the PASTA Project.
 			<c:forEach var="assessment" items="${assessmentCategory.value}">
 				<div class='part assessment-row'>
 					<div class='part-title larger-text'>
-						<a class='assessment-name' href="${assessment.id}/">${assessment.name}</a>
+						<span class='assessment-name'>${assessment.name}</span>
 						<div class='horizontal-block'>
 							<c:if test="${not assessment.completelyTested}">
 								<div class='float-left'>
