@@ -84,6 +84,9 @@ either expressed or implied, of the PASTA Project.
 								<div class='ip-label'>Due Date</div>
 								<div class='ip-desc'><pasta:readableDate date="${assessment.dueDate}" /></div>
 							</div>
+							
+						</div>
+						<div class='info-panel horizontal-block top-align'>
 							<div class='ip-item'>
 								<div class='ip-label'>Submissions Allowed</div>
 								<div class='ip-desc'>
@@ -93,8 +96,6 @@ either expressed or implied, of the PASTA Project.
 									</c:choose>
 								</div>
 							</div>
-						</div>
-						<div class='info-panel horizontal-block top-align'>
 							<div class='ip-item'>
 								<div class='ip-label'>Modules</div>
 								<div class='ip-desc'>
