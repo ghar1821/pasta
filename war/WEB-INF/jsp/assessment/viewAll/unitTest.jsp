@@ -58,7 +58,7 @@ either expressed or implied, of the PASTA Project.
 				</span>
 			</div>
 			<div class='button-panel'>
-				<button class='flat' onclick='window.href="./${unitTest.id}/"'>Details</button>
+				<button class='flat' onclick='location.href="./${unitTest.id}/"'>Details</button>
 				<c:if test="${user.instructor}">
 					<button class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
 					<button style="display:none;" onclick="location.href='./delete/${unitTest.id}/'" 
