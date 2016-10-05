@@ -42,31 +42,36 @@ and lecturers by tutors and lecturers.
 
 <h1 style='text-align:center'>Login to PASTA</h1>
 <br />
-<div class="susk-form" style="text-align:center; width:500px">
-	<form:errors path="loginForm.*">
-		<div class="susk-info-bar error"><span class="image"></span>
-			<p class="message"><spring:message code="errors.message" /></p>
+<form:errors path="loginForm.*">
+	<div class="susk-info-bar error"><span class="image"></span>
+		<p class="message"><spring:message code="errors.message" /></p>
+	</div>
+</form:errors>
+<form:form method="post" commandName="LOGINFORM" autocomplete="off">
+	<div class='part' style="margin:0 auto; display:table;">
+		<div class='info-panel'>
+			<div class='ip-item'>
+				<div class='ip-label'>
+					<form:label for="unikey" path="unikey" cssClass="required">UniKey <span class="star-required">*</span></form:label>
+				</div>
+				<div class='ip-desc'>
+					<form:input path="unikey" size="50" />
+					<form:errors path="unikey" cssClass="susk-form-errors" element="div" />
+					<script>document.getElementById('unikey').focus()</script>
+				</div>
+			</div>
+			<div class='ip-item'>
+				<div class='ip-label'>
+					<form:label path="password" cssClass="required">Password <span class="star-required">*</span></form:label> 
+				</div>
+				<div class='ip-desc'>
+					<form:password path="password" size="50" />
+					<form:errors path="password" cssClass="susk-form-errors" element="div" />
+				</div>
+			</div>
 		</div>
-	</form:errors>
-	<form:form method="post" commandName="LOGINFORM" autocomplete="off">
-		<div>
-			<form:label for="unikey" path="unikey" cssClass="required">UniKey <span class="star-required">*</span></form:label>
-			<form:input path="unikey" size="50" />
-			<form:errors path="unikey" cssClass="susk-form-errors" element="div" />
-			<script>document.getElementById('unikey').focus()</script>
+		<div class='button-panel' style='text-align:center;'>
+			<button type="submit" id="Submit" name="Submit">Login</button>
 		</div>
-		<div class="susk-form-clear"></div>
-		<div>
-			<form:label path="password" cssClass="required">Password <span class="star-required">*</span></form:label> 
-			<form:password path="password" size="50" />
-			<form:errors path="password" cssClass="susk-form-errors" element="div" />
-		</div>
-		<div class="susk-form-clear"></div>
-		
-		<div style="text-align:left">
-			<button type="submit" style= "margin-left: 17.5em; padding-left: 1em;padding-right: 1em;" id="Submit" name="Submit">Login</button>
-		</div>
-		<div class="susk-form-clear"></div>
-	</form:form>
-	<div class="susk-form-clear"></div>
-</div>
+	</div>
+</form:form>
