@@ -64,142 +64,156 @@ either expressed or implied, of the PASTA Project.
 
 <div class="vertical-box padded"> 
 	<c:forEach var="assessmentCategory" items="${assessments}">
-		<div class='category-box'>
+		<div class='section category-box'>
 			<c:if test="${not empty assessmentCategory.key}">
-				<h2>${assessmentCategory.key}</h2>
+				<h2 class='section-title'>${assessmentCategory.key}</h2>
 			</c:if>
-			<div class='pastaQuickFeedback'>
-				<div class='boxCard'>
-					<c:forEach var="assessment" items="${assessmentCategory.value}">
-						<c:set var="closedAssessment" value="false"/>
-						<c:if test="${closed[assessment.id]}">
-							<c:set var="closedAssessment" value="true"/>
-						</c:if>
-						
-						<div class='assessment-box boxCard vertical-block float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
-							<div class='float-container vertical-block'>
-								<div class='horizontal-block float-left'>
-									<a href="../info/${assessment.id}/">${assessment.name}</a> - 
+			<c:forEach var="assessment" items="${assessmentCategory.value}">
+				<c:set var="closedAssessment" value="false"/>
+				<c:if test="${closed[assessment.id]}">
+					<c:set var="closedAssessment" value="true"/>
+				</c:if>
+				
+				<div class='part assessment-box float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+					<div class='part-title larger-text'>
+						<c:if test="${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
+							<div class='star-medal'>
+								<img alt="Good Job"
 									<c:choose>
-										<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
+										<c:when test = "${results[assessment.id].percentage == 1 and results[assessment.id].submissionsMade == 1}">
+											src="<c:url value='/static/images/Diamond_Star.png'/>"
+										</c:when>
+										<c:when test = "${results[assessment.id].percentage == 1}">
+											src="<c:url value='/static/images/Gold_Star.png'/>"
+										</c:when>
+										<c:when test = "${results[assessment.id].percentage >= 0.85}">
+											src="<c:url value='/static/images/Silver_Star.png'/>"
+										</c:when>
 										<c:otherwise>
+											src="<c:url value='/static/images/Bronze_Star.png'/>"
+										</c:otherwise>
+									</c:choose>
+								 />
+							</div>
+						</c:if>
+						<a href="../info/${assessment.id}/">${assessment.name}</a>
+					</div>
+					
+					<div class='clearfix vertical'>
+						<div class='horizontal-block float-left'>
+							<c:choose>
+								<c:when test="${assessment.marks eq 0}">
+									<div class='assessment-ungraded'>Ungraded</div>
+								</c:when>
+								<c:otherwise>
+									<div class='assessment-mark'>
+										<div class='mark-numerator'>
 											<c:choose>
 												<c:when test="${empty results[assessment.id]}">
-													0.0
+													0
 												</c:when>
 												<c:when test="${(not results[assessment.id].finishedHandMarking) or (not closedAssessment and not empty assessment.secretUnitTests)}">
 													???
 												</c:when>
 												<c:otherwise>
-													<fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+													<fmt:formatNumber type="number" minFractionDigits="0" maxFractionDigits="3" value="${results[assessment.id].marks}" />
 												</c:otherwise>
 											</c:choose>
-											/ <fmt:formatNumber type="number" minFractionDigits="1" maxFractionDigits="3" value="${assessment.marks}" />
-										</c:otherwise>
-									</c:choose>
-									<br />
-									Due: ${dueDates[assessment.id]}
-									<c:if test="${hasExtension[assessment.id]}">
-										(with extension)
-									</c:if>
-									<br />
-									<c:if test="${empty results[assessment.id]}">
-										0
-									</c:if>
-									${results[assessment.id].submissionsMadeThatCount} of 
-									<c:choose>
-										<c:when test="${assessment.numSubmissionsAllowed == 0}">
-											&infin;
-										</c:when>
-										<c:otherwise>
-											${assessment.numSubmissionsAllowed} 
-										</c:otherwise>
-									</c:choose>
-									attempts made<br />
-								</div>
-								
-								<div class='horizontal-block float-right'>
-									<c:if test="${ not empty viewedUser}">
-										<!-- tutor is viewing a user and they may give out an extension -->
-										<button onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
-									</c:if>
-									<c:if test="${user.tutor or not closedAssessment}">
-										<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
-									</c:if>
-								</div>
-								
-								<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
-									<div class='horizontal-block float-right'>
-										<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
-											<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
-											<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
-											<div class='vertical'>
-												<div class='ratingVisToggle <c:if test="${!rated}">hidden</c:if>'>
-													<a>Change rating</a>
-												</div>
-												<div class='ratingControls float-container ratingVisToggle <c:if test="${rated}">hidden</c:if>'>
-													<div class='horizontal-block float-left'>
-														<p><span class='labelEasy'>Easy</span>
-													</div>
-													<div class='ratingDots horizontal-block float-left'>
-														<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
-													</div>
-													<div class='horizontal-block float-left'>
-														<p><span class='labelHard'>Hard</span>
-													</div>
-												</div>
-											</div>
-											<div class='vertical small-gap float-container'>
-												<div class='float-left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
-												<div class='float-right' id='confirmRating'></div>
-											</div>
-											<div id='extraComments${assessment.id}' class='popup'>
-												<p><strong>Tell us what you think about this assessment:</strong><br/>
-												<textarea class="ratingComment">${ratingForms[assessment.id].comment}</textarea><br/>
-												<p><button class='ratingSubmit' assessment='${assessment.id}'>Submit</button>
-											</div>
-										</form:form>
+										</div>
+										<div class='mark-separator'>out of</div>
+										<div class='mark-denominator'>
+											<fmt:formatNumber type="number" minFractionDigits="0" maxFractionDigits="3" value="${assessment.marks}" />
+										</div>
 									</div>
-								</c:if>
-							</div>
-							
-							<div class='float-clear float-container vertical-block small-gap'>
-								<div class='horizontal-block float-left star-medal'>
-									<c:if test="${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
-										<img  alt="Good Job"
-											<c:choose>
-												<c:when test = "${results[assessment.id].percentage == 1 and results[assessment.id].submissionsMade == 1}">
-													src="<c:url value='/static/images/Diamond_Star.png'/>"
-												</c:when>
-												<c:when test = "${results[assessment.id].percentage == 1}">
-													src="<c:url value='/static/images/Gold_Star.png'/>"
-												</c:when>
-												<c:when test = "${results[assessment.id].percentage >= 0.85}">
-													src="<c:url value='/static/images/Silver_Star.png'/>"
-												</c:when>
-												<c:otherwise>
-													src="<c:url value='/static/images/Bronze_Star.png'/>"
-												</c:otherwise>
-											</c:choose>
-										 />
-									</c:if>
+								</c:otherwise>
+							</c:choose>
+						</div>
+						<div class='horizontal-block float-left'>
+							<div class='info-panel'>
+								<div class='ip-item'>
+									<div class='ip-label'>Due:</div>
+									<div class='ip-desc'>
+										${dueDates[assessment.id]}
+										<c:if test="${hasExtension[assessment.id]}">
+											(with extension)
+										</c:if>
+									</div>
 								</div>
-								
-								<div class='horizontal-block float-left' style='width:90%'>
-									<tag:unitTestResult results="${results[assessment.id]}" 
-										closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
-										detailsLink="../info/${assessment.id}/"/>
+								<div class='ip-item'>
+									<div class='ip-label'>Attempts:</div>
+									<div class='ip-desc'>
+										<c:if test="${empty results[assessment.id]}">
+											0
+										</c:if>
+										${results[assessment.id].submissionsMadeThatCount} of 
+										<c:choose>
+											<c:when test="${assessment.numSubmissionsAllowed == 0}">
+												&infin;
+											</c:when>
+											<c:otherwise>
+												${assessment.numSubmissionsAllowed} 
+											</c:otherwise>
+										</c:choose>
+									</div>
 								</div>
-								
-								<c:if test="${assessment.groupWork && empty viewedUser}">
-									<div class='horizontal-block float-right editGroup icon-edit-group' 
-									title='Group Details' assessment='${assessment.id}'></div>
-								</c:if>
 							</div>
 						</div>
-					</c:forEach>
+						<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
+							<div class='horizontal-block float-right'>
+								<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
+									<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
+									<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
+									<div class='vertical'>
+										<div class='ratingVisToggle <c:if test="${!rated}">hidden</c:if>'>
+											<a>Change rating</a>
+										</div>
+										<div class='ratingControls float-container ratingVisToggle <c:if test="${rated}">hidden</c:if>'>
+											<div class='horizontal-block float-left'>
+												<span class='labelEasy'>Easy</span>
+											</div>
+											<div class='ratingDots horizontal-block float-left'>
+												<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
+											</div>
+											<div class='horizontal-block float-left'>
+												<span class='labelHard'>Hard</span>
+											</div>
+										</div>
+									</div>
+									<div class='vertical small-gap float-container'>
+										<div class='float-left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
+										<div class='float-right' id='confirmRating'></div>
+									</div>
+									<div id='extraComments${assessment.id}' class='popup'>
+										<p><strong>Tell us what you think about this assessment:</strong><br/>
+										<textarea class="ratingComment">${ratingForms[assessment.id].comment}</textarea><br/>
+										<p><button class='ratingSubmit' assessment='${assessment.id}'>Submit</button>
+									</div>
+								</form:form>
+							</div>
+						</c:if>
+					</div>
+					
+					<div class='vertical'>
+						<tag:unitTestResult results="${results[assessment.id]}" 
+							closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
+							detailsLink="../info/${assessment.id}/"/>
+					</div>
+					
+					<div class='button-panel'>
+						<c:if test="${user.tutor or not closedAssessment}">
+							<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
+						</c:if>
+						<button class='flat' onclick="location.href='../info/${assessment.id}/'">Details</button>
+						<c:if test="${assessment.groupWork && empty viewedUser}">
+							<button class='flat' onclick="location.href='../groups/${assessment.id}/'">Group Details</button>
+						</c:if>
+						<c:if test="${ not empty viewedUser}">
+							<!-- tutor is viewing a user and they may give out an extension -->
+							<button class='flat' onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
+						</c:if>
+					</div>
 				</div>
-			</div>
+			</c:forEach>
 		</div>
 	</c:forEach>
 </div>
@@ -296,8 +310,8 @@ either expressed or implied, of the PASTA Project.
 		});
 		
 		$(".category-box,.assessment-box").searchNode();
-		$(".category-box").find("h2:first").searchable();
-		$(".assessment-box").find("a:first").searchable();
+		$(".category-box").find(".section-title").searchable();
+		$(".assessment-box").find(".part-title").searchable();
 		var searchBox = $("#search").searchBox({
 			onReset : function() {
 				askForRating();

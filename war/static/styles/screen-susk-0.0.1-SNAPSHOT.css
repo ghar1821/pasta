@@ -241,12 +241,6 @@ div.boxCard, .box-shadow, div.unitTestResult {
 div.boxCard {
 	padding: 0.6em;
 }
-div.group-highlight {
-   -moz-box-shadow: inset 0 0 1em #12416c;
-   -webkit-box-shadow: inset 0 0 1em #12416c;
-   box-shadow: inset 0 0 1em #12416c;
-   padding: 1em;
-}
 
 div.search-box {
 	width: 150px;
@@ -287,53 +281,7 @@ table.dragRows td:last-child {
 	border-width: 1px 1px 1px 0px;
 }
 
-div.star-medal {
-	width: 44px;
-}
-div.star-medal img {
-	height: 44px;
-	padding: 0px !important;
-	width: 100%;
-}
-div.star-medal + div.float-left {
-	max-width:85%;
-}
 
-div.ratingDot {
-	background-repeat: no-repeat;
-	cursor: pointer;
-	display: inline-block;
-	height: 24px;
-	margin-left: 0 !important;
-	margin-right: 0 !important;
-	padding: 0 !important;
-	width: 26px;
-}
-div.ratingDot.empty {
-	background-image: url("../images/rating_dot_empty.png");
-}
-div.ratingDot.full.r1 {
-	background-image: url("../images/rating_dot_1.png");
-}
-div.ratingDot.full.r2 {
-	background-image: url("../images/rating_dot_2.png");
-}
-div.ratingDot.full.r3 {
-	background-image: url("../images/rating_dot_3.png");
-}
-div.ratingDot.full.r4 {
-	background-image: url("../images/rating_dot_4.png");
-}
-div.ratingDot.full.r5 {
-	background-image: url("../images/rating_dot_5.png");
-}
-
-textarea.ratingComment {
-	width: 50vw;
-	height: 15vh;
-	min-width: 200px;
-	min-height: 100px;
-}
 
 div.icon-edit-group {
 	background-repeat: no-repeat;
@@ -445,10 +393,6 @@ pre {
 	white-space: pre-wrap;
 }
 
-.pastaQuickFeedback {
-	font-size:1.1em;
-}
-
 #ui-datepicker-div {
 	display: none;
 }
@@ -549,6 +493,7 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 
 /* Buttons */
 
+/*
 button,smallbutton,#submit,.button {
 
 	cursor: pointer;
@@ -563,7 +508,9 @@ button:disabled,smallbutton:disabled,#submit:disabled,.button:disabled {
 	background-color: lightgray;
 	color: gray;
 }
+*/
 /* button size */
+/*
 button,#submit,.button {
 line-height: 2em;
 padding: 3px 20px;
@@ -572,6 +519,7 @@ button:hover:enabled,#submit:hover:enabled,.button:hover:enabled,smallbutton:hov
 	border-color: #DBD3C2;
 	background-color: #12416C;
 }
+*/
 /* button size and positioning */
 smallbutton{
 	line-height: 1em;
@@ -605,69 +553,6 @@ smallbutton{
 	background-color: #CE1126;
 	color: white;
 	cursor: pointer;
-}
-
-#dialog-overlay { /* set it to fill the whole screen */
-	width: 100%;
-	height: 100%;
-	/* transparency for different browsers */
-	filter: alpha(opacity = 50);
-	-moz-opacity: 0.5;
-	-khtml-opacity: 0.5;
-	opacity: 0.5;
-	background: #000;
-	margin: auto;
-	/* make sure it appear behind the dialog box but above everything else */
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 3000;
-	/* hide it by default */
-	display: none;
-}
-
-#dialog-box { /* css3 drop shadow */
-	-webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-	-moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-	/* css3 border radius */
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	background: #eee;
-	/* styling of the dialog box, i have a fixed dimension for this demo */
-	width: 328px;
-	/* make sure it has the highest z-index */
-	position: absolute;
-	z-index: 5000;
-	/* hide it by default */
-	display: none;
-}
-
-#dialog-box .dialog-content { /* style the content */
-	text-align: left;
-	padding: 10px;
-	margin: 13px;
-	color: #666;
-	font-family: arial;
-	font-size: 11px;
-}
-
-/* extra styling */
-#dialog-box .dialog-content p {
-	font-weight: 700;
-	margin: 0;
-}
-
-ul#dialog-box ul.dialog-content{
-	margin: 10px 0 10px 20px;
-	padding: 0;
-	height: 50px;
-}
-
-.susk-detail {
-	margin: 0 auto;
-	padding: 15px;
-	border: solid 1px #DBD3C2;
-	background: #FDFCDE;
 }
 
 .pastaTable {
@@ -722,14 +607,7 @@ td.cellCenter{
 	color: red;
 }
 
-.labelEasy {
-	color: #080;
-	font-weight: bold;
-}
-.labelHard {
-	color: #D00;
-	font-weight: bold;
-}
+
 
 .pastaUnitTestBoxResultSecretpass{
 	background-color: #0C0;
@@ -747,201 +625,4 @@ td.cellCenter{
 	color: red;
 	border-style:outset;
 	border-color:lightgray;
-}
-
-.susk-detail label {
-	display: block;
-	font-weight: bold;
-	font-size: 12px;
-	line-height: 2em;
-	height: 2em;
-	width: 140px;
-	float: left;
-}
-
-.susk-detail span {
-	display: block;
-	font-size: 12px;
-	line-height: 2em;
-	height: 2em;
-}
-
-.susk-detail-clear {
-	clear: both;
-	height: 1px;
-}
-
-/** Susk-form */
-.susk-form {
-	margin: 0 auto;
-	padding: 15px;
-	border: solid 1px #DBD3C2;
-	background: #FDFCDE;
-}
-/*.susk-form p,*/
-.susk-form form,.susk-form button {
-	border: 0px;
-	margin: 0px;
-	padding: 0px;
-}
-
-.susk-form-clear {
-	clear: both;
-	height: 1px;
-}
-/*
-.susk-form form>p {
-	font-size: 0.7em;
-	color: #545456;
-	margin-bottom: 20px;
-	border-bottom: solid 1px #BBBBBB;
-	padding-bottom: 10px;
-}
-/*
-.susk-form-h1,.susk-detail-h1 {
-	font-size: 1.5em;
-	color: #CE1126;
-	margin-top: 0.5em;
-	margin-bottom: 0.5em;
-}*/
-/*
-.susk-form .small {
-	font-size: 0.65em;
-}*/
-
-.susk-form label {
-	display: block;
-	font-weight: bold;
-	font-size: 12px;
-	line-height: 2em;
-	height: 2em;
-	width: 140px;
-	float: left;
-}
-/*
-input[type=radio].susk-radio {
-	float: left;
-	margin: 0px 5px 0px 0px !important;
-	width: auto !important;
-}
-
-label.susk-radio {
-	margin-bottom: 5px;
-	width: auto !important;
-}
-
-.susk-form-radio {
-	margin-left: 150px;
-}
-
-.susk-form-radio label {
-	float: none;
-	width: auto;
-	line-height: 16px;
-}
-*/
-/*,.susk-form textarea,.susk-form select*/
-.susk-form input {
-	padding: 4px 2px;
-	border: solid 1px #DDDDDD;
-	margin: 2px 0 20px 10px;
-	font-size: 12px;
-	margin-right: 10px;
-	float: left;
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-.susk-form input {
-	width: 300px;
-}
-/*
-.susk-form button {
-	cursor: pointer;
-	clear: both;
-	border: 1px solid #DBD3C2;
-	margin-left: 150px;
-	width: 125px;
-	height: 2em;
-	font-weight: bold;
-	background-color: #CE1126;
-	text-align: center;
-	line-height: 2em;
-	color: #FFFFFF;
-	text-align: center;
-}
-
-.susk-form button:hover {
-	border-color: #DBD3C2;
-	background-color: #12416C;
-}
-*/
-/** Errors */
-.susk-form .susk-form-errors,.susk-form .susk-form-error {
-	color: #CE1126;
-	font-size: 1.1em;
-	line-height: 2em;
-	float: left;
-}
-
-/** Susk Info Bar */
-/*
-.susk-info-bar {
-	background-color: #fffff4;
-	border: 1px solid #999999;
-	padding: 0.25em;
-	margin-bottom: 0.65em;
-}
-
-.susk-info-bar .image {
-	background-image: url("../images/icons/24x24/info.png");
-	margin-right: 0.25em;
-	width: 24px;
-	height: 24px;
-	float: left;
-}
-
-.susk-info-bar .message {
-	margin: 0px !important;
-	line-height: 2em !important;
-}
-
-.susk-info-bar.warning {
-	color: #F5AF00;
-	border-color: #FDEBC5;
-}
-
-.susk-info-bar.warning .image {
-	background-image: url("../images/icons/24x24/warning.png");
-}
-
-.susk-info-bar.success {
-	color: #6dc80d;
-	border-color: #6dc80d;
-}
-
-.susk-info-bar.success .image {
-	background-image: url("../images/icons/24x24/accept.png");
-}
-
-.susk-info-bar.error {
-	color: #CE1126;
-	border-color: #CE1126;
-}
-
-.susk-info-bar.error .image {
-	background-image: url("../images/icons/24x24/warning_red.png");
-}
-
-/* Required */
-.star-required {
-	color: #CE1126;
-}
-
-/* susk-toolbar */
-.susk-toolbar {
-	line-height: 2em;
-}
-
-.susk-toolbar a {
-	font-size: 12px;
 }
