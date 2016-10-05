@@ -44,18 +44,19 @@ either expressed or implied, of the PASTA Project.
 <div class='section'>
 	<c:forEach var="unitTest" items="${allUnitTests}">
 		<div class='unitTest part'>
-			<h3 class='part-title'>${unitTest.name} -
-			<span class="pastaTF pastaTF${unitTest.tested}">
-				<c:choose>
-					<c:when test="${unitTest.tested}">
-						Tested
-					</c:when>
-					<c:otherwise>
-						Untested
-					</c:otherwise>
-				</c:choose>
-			</span>
-			</h3>
+			<div class='part-title'>
+				<span class='larger-text'>${unitTest.name}</span> -
+				<span class="pastaTF pastaTF${unitTest.tested}">
+					<c:choose>
+						<c:when test="${unitTest.tested}">
+							Tested
+						</c:when>
+						<c:otherwise>
+							Untested
+						</c:otherwise>
+					</c:choose>
+				</span>
+			</div>
 			<div class='button-panel'>
 				<button class='flat' onclick='window.href="./${unitTest.id}/"'>Details</button>
 				<c:if test="${user.instructor}">
