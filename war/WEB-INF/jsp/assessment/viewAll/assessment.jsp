@@ -43,14 +43,15 @@ either expressed or implied, of the PASTA Project.
 
 <div class='vertical-block float-container' style='width:100%'>
 	<c:forEach var="assessmentCategory" items="${allAssessments}">
-		<div class='category-box'>
+		<div class='section category-box'> <!-- Find category-box and fix -->
 			<c:if test="${not empty assessmentCategory.key}">
-				<h2 class="compact">${assessmentCategory.key}</h2>
+				<h2 class='section-title'>${assessmentCategory.key}</h2>
 			</c:if>
-			<div class='boxCard'>
-				<c:forEach var="assessment" items="${assessmentCategory.value}">
-					<div class='assessment-row vertical-block no-margin align-contents-middle separated'>
-						<div class='horizontal-block' style='width:6%'>
+			<c:forEach var="assessment" items="${assessmentCategory.value}">
+				<div class='part assessment-row'>
+					<div class='part-title larger-text'>
+						<a class='assessment-name' href="${assessment.id}/">${assessment.name}</a>
+						<div class='horizontal-block'>
 							<c:if test="${not assessment.completelyTested}">
 								<div class='float-left'>
 									<span class="ui-icon ui-icon-alert" title="Contains untested unit tests." ></span>
@@ -67,63 +68,77 @@ either expressed or implied, of the PASTA Project.
 								</div>
 							</c:if>
 						</div>
-						<div class='horizontal-block' style='width:25%'>
-							<p class='compact'><a class='assessment-name' href="${assessment.id}/">${assessment.name}</a> -
-							<c:choose>
-								<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
-								<c:otherwise>Out of ${assessment.marks}</c:otherwise>
-							</c:choose>
-							<br/>
-							<pasta:readableDate date="${assessment.dueDate}" />
-							<br/>
-							<c:choose>
-								<c:when test="${assessment.numSubmissionsAllowed == 0}">&infin;</c:when>
-								<c:otherwise>${assessment.numSubmissionsAllowed}</c:otherwise>
-							</c:choose> submissions allowed
-							<br/>
-							<c:choose>
-								<c:when test="${not assessment.hasWork}">No modules</c:when>
-								<c:otherwise>
-									<c:if test="${fn:length(assessment.unitTests) > 0}">
-										${fn:length(assessment.unitTests)} Unit Tests <br />
-									</c:if>
-									<c:if test="${fn:length(assessment.secretUnitTests) > 0}">
-										${fn:length(assessment.secretUnitTests)} Secret Unit Tests <br />
-									</c:if>
-									<c:if test="${fn:length(assessment.handMarking) > 0}">
-										${fn:length(assessment.handMarking)} Hand marking templates <br />
-									</c:if>
-									<c:if test="${fn:length(assessment.competitions) > 0}">
-										${fn:length(assessment.competitions)} Competitions <br />
-									</c:if>
-								</c:otherwise>
-							</c:choose>
-						</div>
-						<div class='horizontal-block' style='width:65%'>
-							<div class='horizontal-block no-margin'>
-								<button onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
-							</div>
-							<div class="horizontal-block no-margin">
-								<button onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
-							</div>
-							<c:if test="${user.instructor}">
-								<div class='horizontal-block no-margin'>
-									<button class='deleteAssessment' assessment='${assessment.id}'>Delete</button>
-								</div> 
-							</c:if>
-							<c:if test="${fn:length(assessment.allUnitTests) != 0}">
-								<div class='horizontal-block no-margin'>
-									<button style="float: left;"
-										onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
-									<button style="float: left; display: none;"
-										onclick="location.href='./${assessment.id}/run/'"
-										onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+					</div>
+					<div>
+						<div class='info-panel horizontal-block top-align'>
+							<div class='ip-item'>
+								<div class='ip-label'>Marks</div>
+								<div class='ip-desc'>
+									<c:choose>
+										<c:when test="${assessment.marks eq 0}">Ungraded</c:when>
+										<c:otherwise>Out of ${assessment.marks}</c:otherwise>
+									</c:choose>
 								</div>
-							</c:if>
+							</div>
+							<div class='ip-item'>
+								<div class='ip-label'>Due Date</div>
+								<div class='ip-desc'><pasta:readableDate date="${assessment.dueDate}" /></div>
+							</div>
+							<div class='ip-item'>
+								<div class='ip-label'>Submissions Allowed</div>
+								<div class='ip-desc'>
+									<c:choose>
+										<c:when test="${assessment.numSubmissionsAllowed == 0}">&infin;</c:when>
+										<c:otherwise>${assessment.numSubmissionsAllowed}</c:otherwise>
+									</c:choose>
+								</div>
+							</div>
+						</div>
+						<div class='info-panel horizontal-block top-align'>
+							<div class='ip-item'>
+								<div class='ip-label'>Modules</div>
+								<div class='ip-desc'>
+									<c:choose>
+										<c:when test="${not assessment.hasWork}">No modules</c:when>
+										<c:otherwise>
+											<c:set scope="request" var="ut" value="${fn:length(assessment.unitTests)}" />
+											<c:if test="${ut > 0}">
+												${ut} Unit Test${ut == 1 ? '' : 's'}<br />
+											</c:if>
+											<c:set scope="request" var="sut" value="${fn:length(assessment.secretUnitTests)}" />
+											<c:if test="${sut > 0}">
+												${sut} Secret Unit Test${sut == 1 ? '' : 's'}<br />
+											</c:if>
+											<c:set scope="request" var="hm" value="${fn:length(assessment.handMarking)}" />
+											<c:if test="${hm > 0}">
+												${hm} Hand marking template${hm == 1 ? '' : 's'}<br />
+											</c:if>
+											<c:set scope="request" var="com" value="${fn:length(assessment.competitions)}" />
+											<c:if test="${com > 0}">
+												${com} Competition${com == 1 ? '' : 's'}<br />
+											</c:if>
+										</c:otherwise>
+									</c:choose>
+								</div>
+							</div>
 						</div>
 					</div>
-				</c:forEach>
-			</div>
+					<div class='button-panel'>
+						<c:if test="${fn:length(assessment.allUnitTests) != 0}">
+							<button class='flat' style="float: left;"
+								onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Re-run</button>
+							<button class='flat' style="float: left; display: none;"
+									onclick="location.href='./${assessment.id}/run/'"
+									onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
+						</c:if>
+						<button class='flat' onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
+						<button class='flat' onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
+						<c:if test="${user.instructor}">
+							<button class='flat' class='deleteAssessment' assessment='${assessment.id}'>Delete</button>
+						</c:if>
+					</div>
+				</div>
+			</c:forEach>
 		</div>
 	</c:forEach>
 </div>
@@ -203,7 +218,7 @@ either expressed or implied, of the PASTA Project.
 	    
 	    $(".category-box,.assessment-row").searchNode();
 		$(".assessment-name").searchable();
-		$(".category-box").find("h2:first").searchable();
+		$(".category-box").find(".section-title").searchable();
 		var searchBox = $("#search").searchBox();
 	})(jQuery);
 </script>
