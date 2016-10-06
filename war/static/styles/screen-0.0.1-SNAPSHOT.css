@@ -44,6 +44,23 @@ button.secondary, button.flat {
 button.secondary:hover, button.flat:hover {
 	background-color: #EEE;
 }
+button.floating {
+	position: fixed;
+	height: 56px;
+	width: 56px;
+	border-radius: 28px;
+	right: 30px;
+	bottom: 30px;
+	padding: 0;
+	box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);
+}
+button.floating.plus:before {
+	content: "+";
+}
+button.floating.plus {
+	font-size: 38px;
+	padding-bottom: 8px;
+}
 
 .large-text {
 	font-size: 1.2em;

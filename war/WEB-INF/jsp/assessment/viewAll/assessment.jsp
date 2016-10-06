@@ -144,7 +144,7 @@ either expressed or implied, of the PASTA Project.
 </div>
 
 <c:if test="${user.instructor}">
-	<button id="newPopup">Add a new Assessment</button>
+	<button id="newPopup" class='floating plus'></button>
 	
 	<div id="newAssessment" class='popup'>
 		<span class="button bClose"> <span><b>X</b></span>

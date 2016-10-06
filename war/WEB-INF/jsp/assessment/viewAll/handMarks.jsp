@@ -57,7 +57,7 @@ either expressed or implied, of the PASTA Project.
 </div>
 
 <c:if test="${user.instructor}">
-	<button id="newPopup">Add a new Hand marking template</button>
+	<button id="newPopup" class='floating plus'></button>
 </c:if>
 
 <div id="confirmPopup" class='popup'>
