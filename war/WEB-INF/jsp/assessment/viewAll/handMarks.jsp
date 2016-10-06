@@ -42,8 +42,8 @@ either expressed or implied, of the PASTA Project.
 
 <div class='section'>
 	<c:forEach var="handMarking" items="${allHandMarking}">
-		<div class='part handMarking'>
-			<div class='part-title larger-text'>${handMarking.name}</div>
+		<div class='part row handMarking'>
+			<div class='hmName larger-text'>${handMarking.name}</div>
 			<div class='button-panel'>
 				<button class='flat' onclick="location.href='./${handMarking.id}/'">Details</button>
 				<c:if test="${user.instructor}">
@@ -92,7 +92,7 @@ either expressed or implied, of the PASTA Project.
 		</spring:hasBindErrors>
 		
 		$(".handMarking").searchNode();
-		$(".handMarking").find(".part-title").searchable();
+		$(".handMarking").find(".hmName").searchable();
 		var searchBox = $("#search").searchBox();
 	});
 </script>

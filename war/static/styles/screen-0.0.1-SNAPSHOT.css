@@ -108,6 +108,22 @@ div.part.no-line + div.part.no-line {
 	margin: 0px;
 }
 
+.part.row > div.button-panel {
+	float: right;
+	margin: 0;
+	margin-left: auto;
+}
+.part.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+.part.row {
+	display: flex;
+	align-items: center;
+	padding: 0.7em;
+}
+
 .ip-item:not(:first-child) {
 	margin-top: 0.5em;
 }

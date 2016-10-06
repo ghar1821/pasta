@@ -43,9 +43,9 @@ either expressed or implied, of the PASTA Project.
 
 <div class='section'>
 	<c:forEach var="unitTest" items="${allUnitTests}">
-		<div class='unitTest part'>
-			<div class='part-title'>
-				<span class='larger-text'>${unitTest.name}</span> -
+		<div class='unitTest part row'>
+			<div>
+				<span class='testName larger-text'>${unitTest.name}</span> -
 				<span class="pastaTF pastaTF${unitTest.tested}">
 					<c:choose>
 						<c:when test="${unitTest.tested}">
@@ -99,6 +99,6 @@ either expressed or implied, of the PASTA Project.
 	</spring:hasBindErrors>
 	
 	$(".unitTest").searchNode();
-	$(".unitTest").find(".part-title").searchable();
+	$(".unitTest").find(".testName").searchable();
 	var searchBox = $("#search").searchBox();
 </script>
