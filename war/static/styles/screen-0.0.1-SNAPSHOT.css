@@ -72,7 +72,7 @@ button.floating.plus {
 	vertical-align: top;
 }
 
-.part > .button-panel:not(:first-child) {
+.part .button-panel:not(:first-child) {
 	margin-top: 1em;
 }
 .button-panel > button {
