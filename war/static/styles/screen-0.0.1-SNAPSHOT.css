@@ -163,6 +163,12 @@ div.part.no-line + div.part.no-line {
 .pasta-form {
 	width: 600px;
 }
+.pasta-form.wide {
+	width: 800px;
+}
+.pasta-form.narrow {
+	width: 400px;
+}
 .pf-section:not(:first-child) {
 	padding-top: 1em;
 	border-top: 1px solid lightgray;
@@ -209,6 +215,7 @@ div.part.no-line + div.part.no-line {
 	min-height: 1.2em;
 }
 .pasta-form input[type="text"],
+.pasta-form input[type="password"],
 .pasta-form input[type="number"] {
 	border: none;
 	background-color: #FFECD9;
@@ -216,13 +223,16 @@ div.part.no-line + div.part.no-line {
 	padding: 0.8em;
 }
 .pasta-form input[type="text"]:disabled,
+.pasta-form input[type="password"]:disabled,
 .pasta-form input[type="number"]:disabled {
 	color: #999;
 	background-color: #EEE;
 }
 .pf-horizontal input[type="text"],
+.pf-horizontal input[type="password"],
 .pf-horizontal input[type="number"],
 .pf-item.one-col input[type="text"],
+.pf-item.one-col input[type="password"],
 .pf-item.one-col input[type="number"] {
 	box-sizing: border-box;
 	width: 100%;

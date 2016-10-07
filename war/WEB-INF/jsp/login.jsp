@@ -49,27 +49,28 @@ and lecturers by tutors and lecturers.
 </form:errors>
 <form:form method="post" commandName="LOGINFORM" autocomplete="off">
 	<div class='part' style="margin:0 auto; display:table;">
-		<div class='info-panel'>
-			<div class='ip-item'>
-				<div class='ip-label'>
+		<div class='pasta-form narrow'>
+			<div class='pf-item one-col'>
+				<div class='pf-label'>
 					<form:label for="unikey" path="unikey" cssClass="required">UniKey <span class="star-required">*</span></form:label>
 				</div>
-				<div class='ip-desc'>
+				<div class='pf-input'>
 					<form:input path="unikey" size="50" />
 					<form:errors path="unikey" cssClass="susk-form-errors" element="div" />
 					<script>document.getElementById('unikey').focus()</script>
 				</div>
 			</div>
-			<div class='ip-item'>
-				<div class='ip-label'>
-					<form:label path="password" cssClass="required">Password <span class="star-required">*</span></form:label> 
+			<div class='pf-item one-col'>
+				<div class='pf-label'>
+					<form:label path="password" cssClass="required">Password <span class="star-required">*</span></form:label>
 				</div>
-				<div class='ip-desc'>
+				<div class='pf-input'>
 					<form:password path="password" size="50" />
 					<form:errors path="password" cssClass="susk-form-errors" element="div" />
 				</div>
 			</div>
 		</div>
+		
 		<div class='button-panel' style='text-align:center;'>
 			<button type="submit" id="Submit" name="Submit">Login</button>
 		</div>
