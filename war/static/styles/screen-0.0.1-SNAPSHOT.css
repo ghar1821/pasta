@@ -369,6 +369,37 @@ textarea.ratingComment {
 	min-height: 100px;
 }
 
+div.unitTestResult {
+	width: 1.5em;
+	height: 1.5em;
+	float: left;
+	margin-right: 2px;
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+div.unitTestResult.pass {
+	background-color: #0C0;
+	border-color: #080;
+}
+div.unitTestResult.failure, div.unitTestResult.error {
+	background-color: red;
+	border-color: #800;
+}
+div.unitTestResult.secret:not(.revealed) {
+	background-color: lightgrey;
+}
+div.unitTestResult.secret:not(.revealed) {
+	border-color: #999;
+}
+div.unitTestResult.revealed.pass {
+	background: linear-gradient(to top left, lightgrey 30%, #0C0 30%);
+}
+div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
+	background: linear-gradient(to top left, lightgrey 30%, red 30%);
+}
+
 table.moduleTable th {
 	text-align: left;
 }
