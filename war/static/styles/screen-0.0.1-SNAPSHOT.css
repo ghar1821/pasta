@@ -16,7 +16,7 @@ a:hover {
 	color: #EDA054;
 }
 
-button {
+button, input[type="submit"] {
 	padding: 0.7em 0.8em;
 	color: white;
 	background-color: #DC740E;
@@ -28,23 +28,29 @@ button {
 	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2),
 				0px 1px 2px 0px rgba(0, 0, 0, 0.2);
 }
-button:hover {
+button:hover,
+input[type="submit"]:hover {
 	background-color: #EDA054;
 }
-button.flat {
+button.flat,
+input[type="submit"].flat {
 	background: none;
 	box-shadow: none;
 }
-button.secondary {
+button.secondary,
+input[type="submit"].secondary {
 	background-color: white;
 }
-button.secondary, button.flat {
+button.secondary, button.flat,
+input[type="submit"].secondary, input[type="submit"].flat {
 	color: #DC740E;
 }
-button.secondary:hover, button.flat:hover {
+button.secondary:hover, button.flat:hover,
+input[type="submit"].secondary:hover, input[type="submit"].flat:hover {
 	background-color: #EEE;
 }
-button.floating {
+button.floating,
+input[type="submit"].floating {
 	position: fixed;
 	height: 56px;
 	width: 56px;
@@ -75,10 +81,15 @@ button.floating.plus {
 .part .button-panel:not(:first-child) {
 	margin-top: 1em;
 }
-.button-panel > button {
+.section > .button-panel {
+	padding: 1em;
+}
+.button-panel > button,
+.button-panel > input[type=submit] {
 	padding: 0.6em 0.8em;
 }
-.button-panel > button:not(:first-child) {
+.button-panel > button:not(:first-child),
+.button-panel > input[type=submit]:not(:first-child) {
 	margin-left: 0.4em;
 }
 
@@ -148,6 +159,75 @@ div.part.no-line + div.part.no-line {
 	font-weight: bold;
 	margin-bottom: 0.25em;
 }
+
+.pasta-form {
+	width: 600px;
+}
+.pf-section:not(:first-child) {
+	padding-top: 1em;
+	border-top: 1px solid lightgray;
+}
+.pf-section:not(:last-child) {
+	padding-bottom: 1em;
+}
+.pf-horizontal:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+.pf-horizontal .pf-item {
+	float: left;
+}
+.pf-horizontal > .pf-item + .pf-item{
+	margin-left: 1em;
+}
+.pf-horizontal.one-col .pf-item, .pf-item.one-col {
+	width: 100%;
+	width: calc(100%);
+}
+.pf-horizontal.two-col .pf-item {
+	width: 45%;
+	width: calc(50% - 0.5em);
+}
+.pf-horizontal.three-col .pf-item {
+	width: 30%;
+	width: calc(33.33% - 0.6666em);
+}
+.pf-horizontal.four-col .pf-item {
+	width: 22.5%;
+	width: calc(25% - 0.75em);
+}
+:not(.pf-horizontal) > .pf-item:not(:first-child), 
+.pf-horizontal + .pf-horizontal, 
+.pf-item + .pf-horizontal {
+	padding-top: 0.7em;
+}
+.pf-label + .pf-input {
+	margin-top: 0.25em;
+}
+.pf-label {
+	min-height: 1.2em;
+}
+.pasta-form input[type="text"],
+.pasta-form input[type="number"] {
+	border: none;
+	background-color: #FFECD9;
+	font-size: 13px;
+	padding: 0.8em;
+}
+.pasta-form input[type="text"]:disabled,
+.pasta-form input[type="number"]:disabled {
+	color: #999;
+	background-color: #EEE;
+}
+.pf-horizontal input[type="text"],
+.pf-horizontal input[type="number"],
+.pf-item.one-col input[type="text"],
+.pf-item.one-col input[type="number"] {
+	box-sizing: border-box;
+	width: 100%;
+}
+
 
 div#head {
 	margin-top: 1em;
@@ -277,4 +357,8 @@ textarea.ratingComment {
 	height: 15vh;
 	min-width: 200px;
 	min-height: 100px;
+}
+
+table.moduleTable th {
+	text-align: left;
 }
