@@ -179,6 +179,7 @@ either expressed or implied, of the PASTA Project.
 				<div class='testCase part no-line'>
 					<form:hidden path="testCases[${testStatus.index}].id"/>
 					<div class='float-right'>
+						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
 						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
 						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
 						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
@@ -245,6 +246,7 @@ either expressed or implied, of the PASTA Project.
 			<div id='emptyTest' class='hidden'>
 				<div class='testCase part no-line'>
 					<div class='float-right'>
+						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
 						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
 						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
 						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
@@ -521,25 +523,35 @@ either expressed or implied, of the PASTA Project.
             
             $("#addTest").on("click", function(e) {
             	e.preventDefault();
+            	addTest();
+            });
+            $(document).on("click", ".copyCase", function(e){
+            	addTest($(this).closest(".testCase"));
+            });
+            function addTest($baseTest) {
             	var newIndex = $("#allTestCases").children(".testCase").length;
-            	var $emptyTest = $("#emptyTest").children().first().clone();
+            	if(!$baseTest) {
+            		$baseTest = $("#emptyTest").children().first();
+            	}
+            	$baseTest = $baseTest.clone();
             	if(newIndex > 0) {
-	            	$emptyTest.find("input,textarea").each(function() {
-	            		$(this).attr("name", $(this).attr("name").replace(/0/g, newIndex));
+	            	$baseTest.find("input,textarea").each(function() {
+	            		$(this).attr("name", $(this).attr("name").replace(/[0-9]+/g, newIndex));
 	            		if($(this).attr("id")) {
-	            			$(this).attr("id", $(this).attr("id").replace(/0/g, newIndex));
+	            			$(this).attr("id", $(this).attr("id").replace(/[0-9]+/g, newIndex));
 	            		}
 	            	});
-	            	$emptyTest.find("label").each(function() {
-	            		$(this).attr("for", $(this).attr("for").replace(/0/g, newIndex));
+	            	$baseTest.find("label").each(function() {
+	            		$(this).attr("for", $(this).attr("for").replace(/[0-9]+/g, newIndex));
 	            	});
             	}
-            	$emptyTest.insertBefore($("#emptyTest"));
-            	$emptyTest.find("a.showHide").trigger("click");
-            	$emptyTest.find("textarea.console").allowTabChar();
+            	$baseTest.insertBefore($("#emptyTest"));
+            	$baseTest.find("a.showHide").trigger("click");
+            	$baseTest.find("textarea.console").allowTabChar();
             	$("#allTestCases > .testCase:not(:last)").removeClass("no-line");
-            	$emptyTest.addClass("no-line");
-            });
+            	$baseTest.addClass("no-line");
+            }
+            
             $(document).on("click", "input.toggleOutput", function() {
             	toggleOutput($(this));
             });
