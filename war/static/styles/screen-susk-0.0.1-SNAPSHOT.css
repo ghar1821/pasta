@@ -132,12 +132,7 @@ p.compact {
 	line-height: normal;
 }
 
-div.consolePreview {
-	font-family: monospace;
-	white-space: pre-wrap;
-	overflow: auto;
-	width: 400px;
-}
+
 
 span.help {
 	background-image: url("../images/help_small.png");
@@ -147,41 +142,7 @@ span.help {
 	width: 16px;
 }
 
-span.icon_toggle_plus, div.icon_toggle_plus {
-	background-image: url("../images/toggle_plus.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
-span.icon_toggle_minus, div.icon_toggle_minus {
-	background-image: url("../images/toggle_minus.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
-span.icon_delete, div.icon_delete {
-	background-image: url("../images/delete.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
-span.icon_delete_confirm, div.icon_delete_confirm {
-	background-image: url("../images/delete_confirm.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
-span.icon_undo, div.icon_undo {
-	background-image: url("../images/undo.png");
-	cursor: pointer;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
+
 span.icon_locked, div.icon_locked {
 	background-image: url("../images/padlock_closed.png");
 	display: inline-block;

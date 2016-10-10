@@ -161,6 +161,7 @@ div.part.no-line + div.part.no-line {
 	margin-bottom: 0.25em;
 }
 
+/* TODO: made these values reactively smaller*/
 .pasta-form {
 	width: 600px;
 }
@@ -170,12 +171,22 @@ div.part.no-line + div.part.no-line {
 .pasta-form.narrow {
 	width: 400px;
 }
+
 .pf-section:not(:first-child) {
 	padding-top: 1em;
 	border-top: 1px solid lightgray;
 }
 .pf-section:not(:last-child) {
 	padding-bottom: 1em;
+}
+.pf-section-title, .pf-section-title h1, .pf-section-title h2, .pf-section-title h3, .pf-section-title h4, .pf-section-title h5, .pf-section-title h6 {
+	margin: 0;
+}
+.pf-section-title > * {
+	display: inline-block;
+}
+.pf-section-title {
+	margin-bottom: 0.5em;
 }
 .pf-horizontal:after {
 	content: "";
@@ -217,6 +228,7 @@ div.part.no-line + div.part.no-line {
 }
 .pasta-form input[type="text"],
 .pasta-form input[type="password"],
+.pasta-form textarea,
 .pasta-form input[type="number"] {
 	border: none;
 	background-color: #FFECD9;
@@ -225,18 +237,26 @@ div.part.no-line + div.part.no-line {
 }
 .pasta-form input[type="text"]:disabled,
 .pasta-form input[type="password"]:disabled,
+.pasta-form textarea:disabled,
 .pasta-form input[type="number"]:disabled {
 	color: #999;
 	background-color: #EEE;
 }
 .pf-horizontal input[type="text"],
 .pf-horizontal input[type="password"],
+.pf-horizontal textarea,
 .pf-horizontal input[type="number"],
 .pf-item.one-col input[type="text"],
 .pf-item.one-col input[type="password"],
+.pf-item.one-col textarea,
 .pf-item.one-col input[type="number"] {
 	box-sizing: border-box;
 	width: 100%;
+}
+
+.pasta-form textarea {
+	height: 7em;
+	padding: 0.5em;
 }
 
 
@@ -413,7 +433,6 @@ div.search-box input[type='text'] {
 	outline: 0;
 	border: 1px solid #aaa;
 	background: white url("../images/chosen-sprite.png") no-repeat 100% -20px;
-/* 	background: url("../images/chosen-sprite.png") no-repeat 100% -20px; */
 	font-size: 1.1em;
 	font-family: sans-serif;
 	line-height: normal;
@@ -425,4 +444,59 @@ div.search-box input[type='text'] {
 
 table.moduleTable th {
 	text-align: left;
+}
+
+textarea.console {
+	font-family: monospace;
+}
+div.consolePreview {
+	border: 1px solid lightgray;
+	box-sizing: border-box;
+	font-family: monospace;
+	font-size: 13px;
+	overflow: auto;
+	padding: 0.5em;
+	white-space: pre-wrap;
+	width: 100%;
+}
+div.testCase {
+	padding: 0.7em;
+}
+input.code {
+	font-family: monospace;
+}
+span.icon_toggle_plus, div.icon_toggle_plus {
+	background-image: url("../images/toggle_plus.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_toggle_minus, div.icon_toggle_minus {
+	background-image: url("../images/toggle_minus.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_delete, div.icon_delete {
+	background-image: url("../images/delete.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_delete_confirm, div.icon_delete_confirm {
+	background-image: url("../images/delete_confirm.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_undo, div.icon_undo {
+	background-image: url("../images/undo.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
 }
