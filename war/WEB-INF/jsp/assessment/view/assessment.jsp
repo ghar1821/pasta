@@ -199,23 +199,25 @@ either expressed or implied, of the PASTA Project.
 						</div>
 					</div>
 					<div class='pf-section'>
-						<div class='pf-item'>
-							<div class='pf-label'>Upload custom validator <a href="../../help/customValidation/" target="_blank"><span class='help'>Click here for information about custom validators.</span></a></div>
-							<div class='pf-input'>
-								<form:input type="file" path="validatorFile"/> <form:errors path="validatorFile"/>
-							</div>
-						</div>
-						<c:if test="${assessment.customValidator}">
+						<div class='pf-horizontal two-col'>
 							<div class='pf-item'>
-								<div class='pf-label'>Current validator</div>
+								<div class='pf-label'>Upload custom validator <a href="../../help/customValidation/" target="_blank"><span class='help'>Click here for information about custom validators.</span></a></div>
 								<div class='pf-input'>
-									<jsp:include page="../../recursive/fileWriterRoot.jsp">
-										<jsp:param name="owner" value="assessment"/>
-										<jsp:param name="fieldId" value="${assessment.id}"/>
-									</jsp:include>
+									<form:input type="file" path="validatorFile"/> <form:errors path="validatorFile"/>
 								</div>
 							</div>
-						</c:if>
+							<c:if test="${assessment.customValidator}">
+								<div class='pf-item'>
+									<div class='pf-label'>Current validator</div>
+									<div class='pf-input'>
+										<jsp:include page="../../recursive/fileWriterRoot.jsp">
+											<jsp:param name="owner" value="assessment"/>
+											<jsp:param name="fieldId" value="${assessment.id}"/>
+										</jsp:include>
+									</div>
+								</div>
+							</c:if>
+						</div>
 					</div>
 					<div class='button-panel'>
 						<button type="submit">Save Assessment</button>
