@@ -1,15 +1,14 @@
 ul.jqueryFileTree {
-	line-height: 2em;
 	padding: 0px;
 	margin: 0px;
 }
 
 ul.jqueryFileTree li {
-	line-height: 2em;
 	list-style: none;
 	padding: 0px;
 	padding-left: 20px;
 	margin: 0px;
+	margin-top: 0.5em;
 	white-space: nowrap;
 	cursor: pointer;
 }
