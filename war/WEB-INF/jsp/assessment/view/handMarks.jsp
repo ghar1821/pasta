@@ -43,53 +43,88 @@ th, td{
 </style>
 
 <form:form commandName="updateHandMarkingForm" enctype="multipart/form-data" method="POST">
-	<div class='vertical-block'>
-		New Name: <form:input path="name" /> <form:errors path="name" />
+	<div class='section'>
+		<h2 class='section-title'>Details</h2>
+		<div class='part pasta-form'>
+			<div class='pf-item one-col'>
+				<div class='pf-label'>Name</div>
+				<div class='pf-input'>
+					<form:input path="name" />
+					<form:errors path="name" />
+				</div>
+			</div>
+			<div class='button-panel'>
+				<button type="submit" onclick="updateRows();updateColumns();updateCells();">Save changes</button>
+			</div>
+		</div>
 	</div>
-	<div class='vertical-block'>
-		<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();"/>
-	</div>
-<div style="width:100%; overflow:auto">
-	<table id="handMarkingTable" >
-		<thead>
-			<tr>
-				<th class="notdraggable"></th> <!-- empty on purpose -->
+	<div class='section part'>
+		<div id="handMarkingTable" class='pasta-form wide banded'>
+			<div class='pf-horizontal four-col'>
+				<div class='pf-item'></div>
 				<c:forEach var="column" items="${allColumns}" varStatus="columnStatus">
-					<th>
+					<div class='pf-item compact column header'>
 						<form:errors path="newColumnHeader[${columnStatus.index}].name" element="div" />
-						<form:input type="text" path="newColumnHeader[${columnStatus.index}].name" value="${column.name}"/><br />
-						<form:input type="text" path="newColumnHeader[${columnStatus.index}].weight" value="${column.weight}"/>
+						<div class='pf-item'>
+							<div class='pf-label'>
+								Name
+								<div class='pf-item float-right'>
+									<button type="button" class="flat delButton delButtonDelColumn">Delete</button>
+									<button type="button" class='confButton confButtonDelColumn' style="display:none;">Confirm</button>
+								</div>
+							</div>
+							<div class='pf-input'>
+								<form:input type="text" path="newColumnHeader[${columnStatus.index}].name" value="${column.name}"/>
+							</div>
+						</div>
+						<div class='pf-item'>
+							<div class='pf-label'>Weight</div>
+							<div class='pf-input'>
+								<form:input type="text" path="newColumnHeader[${columnStatus.index}].weight" value="${column.weight}"/>
+							</div>
+						</div>
 						<form:input type="hidden" path="newColumnHeader[${columnStatus.index}].id" value="${column.id}"/>
-						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Column</div>
-						<div class="button" style="display:none; text-align: center; " onclick="deleteColumn(this.parentNode.cellIndex);updateColumns()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
-					</th>
+					</div>
 				</c:forEach>
-			</tr>
-		</thead>
-		<tbody class="sortable">
+			</div>
 			<c:forEach var="row" items="${allRows}" varStatus="rowStatus">
-				<tr>
-					<th>
+				<div class='pf-horizontal four-col'>
+					<div class='pf-item compact row header'> 
 						<form:errors path="newRowHeader[${rowStatus.index}].name" element="div" />
-						<form:input type="text" path="newRowHeader[${rowStatus.index}].name" value="${row.name}"/><br />
-						<form:input type="text" path="newRowHeader[${rowStatus.index}].weight" value="${row.weight}"/>
+						<div class='pf-item'>
+							<div class='pf-label'>
+								Name
+								<div class='pf-item float-right'>
+									<button type="button" class="flat delButton delButtonDelRow">Delete</button>
+									<button type="button" class="confButton confButtonDelRow" style="display:none;">Confirm</button>
+								</div>
+							</div>
+							<div class='pf-input'>
+								<form:input type="text" path="newRowHeader[${rowStatus.index}].name" value="${row.name}"/>
+							</div>
+						</div>
+						<div class='pf-item'>
+							<div class='pf-label'>Weight</div>
+							<div class='pf-input'>
+								<form:input type="text" path="newRowHeader[${rowStatus.index}].weight" value="${row.weight}"/>
+							</div>
+						</div>
 						<form:input type="hidden" path="newRowHeader[${rowStatus.index}].id" value="${row.id}"/>
-						<div class="button" style="text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete Row</div>
-						<div class="button" style="display:none; text-align: center; " onclick="deleteRow(this.parentNode.parentNode.rowIndex);updateRows()" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</div>
-					</th>
+					</div>
 					<c:forEach var="column" items="${handMarking.columnHeader}">
-						<td id="cell_${column.id}_${row.id}" class="emptyCell"><%-- to be filled by JavaScript --%></td>
+						<div id="cell_${column.id}_${row.id}" class="emptyCell pf-item compact cell"><%-- to be filled by JavaScript --%></div>
 					</c:forEach>
-				</tr>
+				</div>
 			</c:forEach>
-		</tbody>
-	</table>
+		</div>
+		<div class='button-panel'>
+			<button type="submit" onclick="updateRows();updateColumns();updateCells();">Save changes</button>
+			<button type="button" class='flat' onclick="addColumn();">More columns</button>
+			<button type="button" class='flat' onclick="addRow()">More rows</button>
+		</div>
 	</div>
-	<input type="submit" value="Save changes" id="submit" onclick="updateRows();updateColumns();updateCells();" style="margin-top:1em;"/>
 </form:form>
 
-<button onclick="addColumn()">More columns</button>
-<button onclick="addRow()">More rows</button>
 
 <script src='<c:url value="/static/scripts/assessment/viewHandMarking.js"/>'></script>
 <script>
@@ -98,7 +133,7 @@ th, td{
 	function fillCells() {
 		var cell;
 		<c:forEach var="datum" items="${allData}" varStatus="datumStatus">
-			cell = document.getElementById("cell_${datum.column.id}_${datum.row.id}");
+			cell = $("#cell_${datum.column.id}_${datum.row.id}");
 			<c:choose>
 			<c:when test="${not empty datum.data or datum.data == \"\"}">
 				var errorData = <c:out value="'" escapeXml="false" /><form:errors path="updateHandMarkingForm.newData[${datumStatus.index}].data"/><c:out value="'"  escapeXml="false" />;
@@ -106,8 +141,6 @@ th, td{
 					<fmt:formatNumber type='number' maxIntegerDigits='3' value='${datum.row.weight * datum.column.weight}' />,
 					"${datumStatus.index}",
 					"${datum.id}",
-					"${datum.column.id}",
-					"${datum.row.id}",
 					"<c:out value='${pasta:escapeNewLines(datum.data)}' />",
 					$(errorData));
 			</c:when>

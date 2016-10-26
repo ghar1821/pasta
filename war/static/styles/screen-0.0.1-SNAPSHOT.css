@@ -28,6 +28,9 @@ button, input[type="submit"] {
 	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2),
 				0px 1px 2px 0px rgba(0, 0, 0, 0.2);
 }
+button.compact, .compact button {
+	padding: 0.4em 0.6em;
+}
 button:hover,
 input[type="submit"]:hover {
 	background-color: #EDA054;
@@ -161,7 +164,6 @@ div.part.no-line + div.part.no-line {
 	margin-bottom: 0.25em;
 }
 
-/* TODO: made these values reactively smaller*/
 .pasta-form {
 	width: 600px;
 }
@@ -170,6 +172,17 @@ div.part.no-line + div.part.no-line {
 }
 .pasta-form.narrow {
 	width: 400px;
+}
+@media only screen and (max-width: 1100px) {
+	.pasta-form {
+		width: 400px;
+	}
+	.pasta-form.wide {
+		width: 600px;
+	}
+	.pasta-form.narrow {
+		width: 300px;
+	}
 }
 
 .pf-section:not(:first-child) {
@@ -193,35 +206,78 @@ div.part.no-line + div.part.no-line {
 	display: table;
 	clear: both;
 }
-.pf-horizontal .pf-item {
+.pf-horizontal > .pf-item {
 	float: left;
+	min-height: 1em;
 }
 .pf-horizontal > .pf-item + .pf-item{
 	margin-left: 1em;
 }
-.pf-horizontal.one-col .pf-item, .pf-item.one-col {
+#handMarkingTable {
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+#handMarkingTable .pf-horizontal {
+	white-space: nowrap;
+	background-color: inherit;
+}
+#handMarkingTable .pf-horizontal > .pf-item {
+	display: inline-block;
+	vertical-align: top;
+	float: none;
+	min-height: 1em;
+}
+#handMarkingTable .pf-horizontal > .pf-item + .pf-item{
+	margin-left: 0.7em;
+}
+#handMarkingTable button{
+	padding: 0;
+}
+.pf-horizontal.one-col > .pf-item, .pf-item.one-col {
 	width: 100%;
 	width: calc(100%);
 }
-.pf-horizontal.two-col .pf-item {
+.pf-horizontal.two-col > .pf-item {
 	width: 45%;
 	width: calc(50% - 0.5em);
 }
-.pf-horizontal.three-col .pf-item {
+.pf-horizontal.three-col > .pf-item {
 	width: 30%;
 	width: calc(33.33% - 0.6666em);
 }
-.pf-horizontal.four-col .pf-item {
+.pf-horizontal.four-col > .pf-item {
 	width: 22.5%;
 	width: calc(25% - 0.75em);
+}
+.pf-horizontal.n-col > .pf-item {
+	width: 20%;
+}
+.pasta-form.banded .pf-horizontal:not(:first-child) {
+	border-top: 1px solid lightgray;
+}
+.pasta-form.banded .pf-horizontal:not(:last-child) {
+	margin-bottom: 0.7em;
 }
 :not(.pf-horizontal) > .pf-item:not(:first-child), 
 .pf-horizontal + .pf-horizontal, 
 .pf-item + .pf-horizontal {
 	padding-top: 0.7em;
 }
-.pf-label + .pf-input {
+:not(.pf-horizontal) > .compact.pf-item:not(:first-child),
+.compact:not(.pf-horizontal) > .pf-item:not(:first-child) {
+	padding-top: 0.5em;
+}
+.pf-item.inline * {
+	display: inline-block;
+}
+.pf-item.inline *:not(:last-child) {
+	margin-right: 0.1em;
+}
+.pf-item:not(.inline) .pf-label + .pf-input {
 	margin-top: 0.25em;
+}
+.compact.pf-item:not(.inline) .pf-label + .pf-input {
+	margin-top: 0.1em;
 }
 .pf-label {
 	min-height: 1.2em;
@@ -234,6 +290,12 @@ div.part.no-line + div.part.no-line {
 	background-color: #FFECD9;
 	font-size: 13px;
 	padding: 0.8em;
+}
+.pasta-form .pf-item.compact input[type="text"],
+.pasta-form .pf-item.compact input[type="password"],
+.pasta-form .pf-item.compact textarea,
+.pasta-form .pf-item.compact input[type="number"] {
+	padding: 0.4em;
 }
 .pasta-form input[type="text"]:disabled,
 .pasta-form input[type="password"]:disabled,
