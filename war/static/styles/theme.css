@@ -100,3 +100,10 @@ div.unitTestResult.revealed.pass {
 div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 	background: linear-gradient(to top left, lightgrey 30%, red 30%);
 }
+
+.hm-table th {
+	background-color: #FFECD9;
+}
+.hm-table td.selectedMark {
+	background-color: #DDF;
+}

@@ -488,3 +488,18 @@ span.icon_undo, div.icon_undo {
 	height: 16px;
 	width: 16px;
 }
+
+.hm-table {
+	table-layout: fixed;
+	overflow: auto;
+	width: 100%;
+}
+.hm-table th {
+	text-align: left;
+}
+.hm-table th, .hm-table td {
+	padding: 0.5em;
+}
+.hm-table td {
+	vertical-align: top;
+}

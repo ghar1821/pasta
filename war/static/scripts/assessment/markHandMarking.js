@@ -6,75 +6,53 @@ function registerEvents() {
 	});
 
 	$('#detailsToggle').on('click', function() {
-		$("div.unitTestDetails").slideToggle('fast');
+		$("div.resultDetails").slideToggle('fast');
 		$(this).text($(this).text() == "Show Details" ? "Hide Details" : "Show Details");
 	});
 }
 
-$("div.unitTestDetails").hide();
-$("table.unitTestDetailsTable").css("width", "100%");
-
 (function($) {
-	$(document).ready(function() {	
-		$('#comments').wysiwyg({
-			initialContent: function() {
-				return "";
-			},
-		  controls: {
-			bold          : { visible : true },
-			italic        : { visible : true },
-			underline     : { visible : true },
-			strikeThrough : { visible : true },
-			
-			justifyLeft   : { visible : true },
-			justifyCenter : { visible : true },
-			justifyRight  : { visible : true },
-			justifyFull   : { visible : true },
+	$(document).ready(function() {
+		
+		tinymce.init({
+            selector: "#comments",
+            plugins: "table code link textcolor",
+            toolbar: "undo redo | styleselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | code-styles-split | bullist numlist outdent indent | link | code",
+            setup: function(editor) {
+                editor.addButton('code-styles-split', {
+                    type: 'splitbutton',
+                    text: 'code',
+                    title: 'Toggle <code> tags',
+                    icon: false,
+                    onclick: function() {
+                    	editor.execCommand('mceToggleFormat', false, 'code');
+                    },
+                    menu: [
+                        {text: 'Inline <code>', onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, 'code');
+                        }},
+                        {text: 'Block <pre>', onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, 'pre');
+                        }}
+                    ]
+                });
+            },
+            style_formats_merge: true,
+        });
 
-			indent  : { visible : true },
-			outdent : { visible : true },
-
-			subscript   : { visible : true },
-			superscript : { visible : true },
-			
-			undo : { visible : true },
-			redo : { visible : true },
-			
-			insertOrderedList    : { visible : true },
-			insertUnorderedList  : { visible : true },
-			insertHorizontalRule : { visible : true },
-
-			h4: {
-				visible: true,
-				className: 'h4',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h4>' : 'h4',
-				tags: ['h4'],
-				tooltip: 'Header 4'
-			},
-			h5: {
-				visible: true,
-				className: 'h5',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h5>' : 'h5',
-				tags: ['h5'],
-				tooltip: 'Header 5'
-			},
-			h6: {
-				visible: true,
-				className: 'h6',
-				command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-				arguments: ($.browser.msie || $.browser.safari) ? '<h6>' : 'h6',
-				tags: ['h6'],
-				tooltip: 'Header 6'
-			},
-			cut   : { visible : true },
-			copy  : { visible : true },
-			paste : { visible : true },
-			html  : { visible: true },
-			increaseFontSize : { visible : true },
-			decreaseFontSize : { visible : true }
-		  }
+		registerEvents();
+		
+		$("div.resultDetails").hide();
+		$("table.unitTestDetailsTable").css("width", "100%");
+		$("table.unitTestDetailsTable").DataTable({
+			retrieve: true,
+			"searching" : false,
+			"paging" : false,
+			"info" : false,
+			language : {
+				emptyTable: "No unit test cases to display."
+			}
 		});
 	});
 })(jQuery);
+

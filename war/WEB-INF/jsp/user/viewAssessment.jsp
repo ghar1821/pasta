@@ -201,7 +201,7 @@ either expressed or implied, of the PASTA Project.
 				
 				<tag:unitTestResult closedAssessment="${closed}" results="${result}" />
 				
-				<tag:handMarkingResult results="${result}" marking="false" headingLevel="h5"/>
+				<tag:handMarkingResult results="${result}" marking="false"/>
 				
 				<div class='vertical-block'>
 					<h4>Comments</h4>

@@ -42,42 +42,47 @@ either expressed or implied, of the PASTA Project.
 
 <h1>${owner}</h1>
 
-<h4>Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/></h4>
-
-<div class='vertical-block'>
-	<jsp:include page="../../recursive/fileWriterRoot.jsp">
-		<jsp:param name="owner" value="${owner}"/>
-	</jsp:include>
+<div class='section'>
+	<div class='part no-line'>
+		<h3 class='part-title'>Submitted:</h3>
+		<pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/>
+	</div>
+	<div class='part no-line'>
+		<h3 class='part-title'>Submission:</h3>
+		<jsp:include page="../../recursive/fileWriterRoot.jsp">
+			<jsp:param name="owner" value="${owner}"/>
+		</jsp:include>
+	</div>
 </div>
-<div class='vertical-block'>
-	<form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
-	
-		<div class='vertical-block boxCard'>
-			<h3 class='compact'>Automatic Marking Results</h3>
-			<div class='vertical-block'>
-				<h4 class='compact'>Summary</h4>
-				<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" summary="true" />
-			</div>
-					
-			<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
-				<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
-				<tag:unitTestResult closedAssessment="false" 
-					results="${assessmentResult}" />
-			</div>
+
+<form:form commandName="assessmentResult" enctype="multipart/form-data" method="POST">
+	<div class='section'>
+		<h3 class='section-title'>Automatic Marking Results</h3>
+		<div class='part no-line'>
+			<h4 class='part-title'>Summary</h4>
+			<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" summary="true" />
 		</div>
-		
-		<div class='vertical-block boxCard'>
-			<tag:handMarkingResult results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines" />
+		<div class='button-panel'>
+			<button class='flat' type='button' id='detailsToggle'>Show Details</button>
+		</div>			
+		<div id="${assessmentResult.id}" class='resultDetails part'>
+			<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" />
 		</div>
+	</div>
+	<div class='section'>
+		<tag:handMarkingResult results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines" />
+	</div>
 	
-		<div class='vertical-block boxCard'>
+	<div class='section'>
+		<h3 class='section-title'>Comments</h3>
+		<div class='part no-line'>
 			<form:textarea style="height:200px; width:100%" path="comments"/>
 		</div>
-		
-		<input type="submit" value="Save changes" id="submit" style="margin-top:1em;"/>
-		
-	</form:form>
-</div>
+		<div class='button-panel'>
+			<button type="submit">Save Changes</button>
+		</div>
+	</div>
+</form:form>
 
 
 <script src='<c:url value="/static/scripts/assessment/markHandMarking.js"/>'></script>
