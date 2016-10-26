@@ -1,25 +1,14 @@
 body {
 	font: normal 14px Arial, Helvetica, sans-serif;
 	padding: 0 10%;
-	background: #f5f5f5;
-	color: #333;
 }
 
 a {
-	color: #DC740E;
 	text-decoration: none;
-}
-/* a:visited { */
-/* 	color: #AC5500; */
-/* } */
-a:hover {
-	color: #EDA054;
 }
 
 button, input[type="submit"] {
 	padding: 0.7em 0.8em;
-	color: white;
-	background-color: #DC740E;
 	transition: background 0.2s, box-shadow 0.2s;
 	cursor: pointer;
 	border: 1px solid black;
@@ -31,26 +20,10 @@ button, input[type="submit"] {
 button.compact, .compact button {
 	padding: 0.4em 0.6em;
 }
-button:hover,
-input[type="submit"]:hover {
-	background-color: #EDA054;
-}
 button.flat,
 input[type="submit"].flat {
 	background: none;
 	box-shadow: none;
-}
-button.secondary,
-input[type="submit"].secondary {
-	background-color: white;
-}
-button.secondary, button.flat,
-input[type="submit"].secondary, input[type="submit"].flat {
-	color: #DC740E;
-}
-button.secondary:hover, button.flat:hover,
-input[type="submit"].secondary:hover, input[type="submit"].flat:hover {
-	background-color: #EEE;
 }
 button.floating,
 input[type="submit"].floating {
@@ -105,7 +78,6 @@ button.floating.plus {
 div.section {
 	box-shadow: 2px 2px 3px 2px rgba(0, 0, 0, 0.1);
 	margin: 3px 6px 6px 3px;
-	background-color: white;
 }
 div.section:not(:last-child) {
 	margin-bottom: 1.5em;
@@ -219,7 +191,6 @@ div.part.no-line + div.part.no-line {
 }
 #handMarkingTable .pf-horizontal {
 	white-space: nowrap;
-	background-color: inherit;
 }
 #handMarkingTable .pf-horizontal > .pf-item {
 	display: inline-block;
@@ -287,7 +258,6 @@ div.part.no-line + div.part.no-line {
 .pasta-form textarea,
 .pasta-form input[type="number"] {
 	border: none;
-	background-color: #FFECD9;
 	font-size: 13px;
 	padding: 0.8em;
 }
@@ -296,13 +266,6 @@ div.part.no-line + div.part.no-line {
 .pasta-form .pf-item.compact textarea,
 .pasta-form .pf-item.compact input[type="number"] {
 	padding: 0.4em;
-}
-.pasta-form input[type="text"]:disabled,
-.pasta-form input[type="password"]:disabled,
-.pasta-form textarea:disabled,
-.pasta-form input[type="number"]:disabled {
-	color: #999;
-	background-color: #EEE;
 }
 .pf-horizontal input[type="text"],
 .pf-horizontal input[type="password"],
@@ -351,7 +314,6 @@ div.link-bar:not(.no-bars) a:not(:first-child) {
 
 div.tab-bar {
 	margin: 1em 0;
-	background-color: #DC740E;
 }
 div.tab-bar:after {
 	content: "";
@@ -359,24 +321,14 @@ div.tab-bar:after {
 	clear: both;
 }
 div.tab-bar .tab {
-	background-color: #DC740E;
 	transition: background 0.2s;
 	float: left;
 }
-div.tab-bar .tab:hover,
-div.tab-bar .tab.current {
-	background-color: #EDA054;
-}
 div.tab-bar a {
-	color: #333;
 	padding: 1em 1em;
 	display: block;
 	width: 100%;
 	height: 100%;
-}
-
-.star-required {
-	color: #CE1126;
 }
 
 .assessment-mark {
@@ -433,12 +385,6 @@ div.ratingDot.full.r4 {
 div.ratingDot.full.r5 {
 	background-image: url("../images/rating_dot_5.png");
 }
-.labelEasy {
-	color: #080;
-}
-.labelHard {
-	color: #D00;
-}
 .labelEasy, .labelHard {
 	font-weight: bold;
 	line-height: 24px;
@@ -459,26 +405,6 @@ div.unitTestResult {
 	border-width: 2px;
 	border-radius: 4px;
 	cursor: pointer;
-}
-div.unitTestResult.pass {
-	background-color: #0C0;
-	border-color: #080;
-}
-div.unitTestResult.failure, div.unitTestResult.error {
-	background-color: red;
-	border-color: #800;
-}
-div.unitTestResult.secret:not(.revealed) {
-	background-color: lightgrey;
-}
-div.unitTestResult.secret:not(.revealed) {
-	border-color: #999;
-}
-div.unitTestResult.revealed.pass {
-	background: linear-gradient(to top left, lightgrey 30%, #0C0 30%);
-}
-div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
-	background: linear-gradient(to top left, lightgrey 30%, red 30%);
 }
 
 div.search-box {
