@@ -114,7 +114,7 @@
 	<body id="home" class="tex2jax_ignore">
 		<div id='header'>
 			<div id='head'>
-				<img src="http://poseidon.it.usyd.edu.au/~gramoli/web/img/usyd-100.svg">
+				<img src="<c:url value="/static/images/usyd-100.svg"/>">
 				<div class='horizontal float-right'><span class="title"><spring:message code="UOS" /></span></div>
 			</div>
 			
