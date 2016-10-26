@@ -76,35 +76,47 @@ either expressed or implied, of the PASTA Project.
 
 <c:if test="${not empty assessment.description}">
 	<h2>Assessment Description</h2>
-	<div class='show-math'>
-		${assessment.description}
+	<div class='section'>
+		<div class='show-math part'>
+			${assessment.description}
+		</div>
 	</div>
 </c:if>
 
 <c:if test="${assessment.autoMarked}">
 	<h2>General Submission Instructions</h2>
-	<c:if test="${not empty assessment.solutionName}">
-	<c:choose>
-		<c:when test="${empty assessment.submissionLanguages}">
-			<p>Your submission must be in a file named <code>${assessment.solutionName}</code>.
-		</c:when>
-		<c:otherwise>
-			<p>Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.shortSolutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
-		</c:otherwise>
-	</c:choose>
-	</c:if>
-	<c:choose>
-		<c:when test="${fn:length(assessment.expectedDirectories) == 1}">
-			<p>Your code submission must be in a directory called <code>${assessment.expectedDirectories[0]}</code>.
-		</c:when>
-		<c:when test="${not empty assessment.expectedDirectories}">
-			<p>Your code submission must contain the following code directories:
-			<c:forEach var="dir" items="${assessment.expectedDirectories}" varStatus="loop">
-				<code>${dir}</code><c:if test="${!loop.last}">, </c:if>
-			</c:forEach>
-		</c:when>
-	</c:choose>
-	<p><c:if test="${empty assessment.expectedDirectories}">If your submission contains multiple files, </c:if><strong>zip</strong> your submission into a <code>.zip</code> file and submit that. Do not use any other zip format (e.g. <code>.rar</code> or <code>.7z</code>).
+	<div class='section'>
+		<c:if test="${not empty assessment.solutionName}">
+			<div class='part'>
+				<c:choose>
+					<c:when test="${empty assessment.submissionLanguages}">
+						Your submission must be in a file named <code>${assessment.solutionName}</code>.
+					</c:when>
+					<c:otherwise>
+						Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.shortSolutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
+					</c:otherwise>
+				</c:choose>
+			</div>
+		</c:if>
+		<c:choose>
+			<c:when test="${fn:length(assessment.expectedDirectories) == 1}">
+				<div class='part'>
+					Your code submission must be in a directory called <code>${assessment.expectedDirectories[0]}</code>.
+				</div>
+			</c:when>
+			<c:when test="${not empty assessment.expectedDirectories}">
+				<div class='part'>
+					Your code submission must contain the following code directories:
+					<c:forEach var="dir" items="${assessment.expectedDirectories}" varStatus="loop">
+						<code>${dir}</code><c:if test="${!loop.last}">, </c:if>
+					</c:forEach>
+				</div>
+			</c:when>
+		</c:choose>
+		<div class='part'>
+			<c:if test="${empty assessment.expectedDirectories}">If your submission contains multiple files, </c:if><strong>zip</strong> your submission into a <code>.zip</code> file and submit that. Do not use any other zip format (e.g. <code>.rar</code> or <code>.7z</code>).
+		</div>
+	</div>
 </c:if>
 
 <c:choose>
