@@ -104,7 +104,7 @@
 	            	});
 	            });
 	            
-	            var specificTitle = $('.pageContent h1:first').text();
+	            var specificTitle = $('#body h1:first').text();
 	            if(specificTitle) {
 		            document.title = specificTitle;
 	            }
