@@ -135,7 +135,7 @@ public class GroupManager {
 	}
 
 	public boolean joinGroup(PASTAUser user, Assessment assessment, PASTAGroup group) {
-		if(assessment.isGroupsLocked() || group.isLocked()) {
+		if(!user.isTutor() && (assessment.isGroupsLocked() || group.isLocked())) {
 			return false;
 		}
 		if(assessment.isUnlimitedGroupSize() || group.getSize() < assessment.getGroupSize()) {
