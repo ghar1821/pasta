@@ -34,6 +34,10 @@ button.secondary:hover, button.flat:hover,
 input[type="submit"].secondary:hover, input[type="submit"].flat:hover {
 	background-color: #EEE;
 }
+button:disabled {
+	color: #999;
+	background-color: #EEE;
+}
 
 div.section {
 	background-color: white;
@@ -106,4 +110,14 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 }
 .hm-table td.selectedMark {
 	background-color: #DDF;
+}
+
+#groupSelection input.editing {
+	background-color: #FFD0A1;
+}
+.group-size.overFull {
+	background-color: #FCC;
+}
+.group-size.full {
+	background-color: #FFC;
 }

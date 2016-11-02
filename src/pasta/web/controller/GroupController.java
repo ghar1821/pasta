@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -122,10 +123,17 @@ public class GroupController {
 		model.addAttribute("otherGroups", otherGroups);
 		
 		Set<PASTAUser> noGroupUsers = new TreeSet<PASTAUser>(userManager.getStudentList());
+		Set<PASTAUser> allUsers = new TreeSet<PASTAUser>(userManager.getStudentList());
+		HashMap<String, Integer> userGroups = new HashMap<>();
 		for(PASTAGroup group : allGroups) {
 			noGroupUsers.removeAll(group.getMembers());
+			for(PASTAUser member : group.getMembers()) {
+				userGroups.put(member.getUsername(), group.getNumber());
+			}
 		}
-		model.addAttribute("allStudents", noGroupUsers);
+		model.addAttribute("noGroupStudents", noGroupUsers);
+		model.addAttribute("allStudents", allUsers);
+		model.addAttribute("studentGroups", userGroups);
 		
 		return "user/assessmentGroups";
 	}

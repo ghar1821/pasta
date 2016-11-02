@@ -116,6 +116,7 @@ div.part.no-line + div.part.no-line {
 	float: right;
 	margin: 0;
 	margin-left: auto;
+	white-space: nowrap;
 }
 .part.row:after {
 	content: "";
@@ -136,7 +137,7 @@ div.part.no-line + div.part.no-line {
 	margin-bottom: 0.25em;
 }
 
-.pasta-form {
+.pasta-form:not(.no-width) {
 	width: 600px;
 }
 .pasta-form.wide {
@@ -146,7 +147,7 @@ div.part.no-line + div.part.no-line {
 	width: 400px;
 }
 @media only screen and (max-width: 1100px) {
-	.pasta-form {
+	.pasta-form:not(.no-width) {
 		width: 400px;
 	}
 	.pasta-form.wide {
@@ -502,4 +503,19 @@ span.icon_undo, div.icon_undo {
 }
 .hm-table td {
 	vertical-align: top;
+}
+
+span.group-member {
+	display: inline-block;
+	min-width: 8em;
+	margin-left: 2em;
+	margin-top: 0.3em;
+}
+
+.group-size {
+	white-space: nowrap;
+}
+.no-members {
+	font-style: italic;
+	color: lightgray;
 }

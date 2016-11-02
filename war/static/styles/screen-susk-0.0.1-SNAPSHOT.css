@@ -18,9 +18,9 @@ div.optionset {
 	background-color:#DDD;
 }
 
-.handMarkingHighlight{
-	background-color:#EEE;
-}
+/* .handMarkingHighlight{ */
+/* 	background-color:#EEE; */
+/* } */
 
 .tutorHighlight{
 	background-color:#EEE;
@@ -231,20 +231,7 @@ div.icon-group {
 	width: 32px;
 }
 
-div.group.allStudents {
-	vertical-align: top;
-	width: 30%;
-}
-div.group.allGroups {
-	vertical-align: top;
-	width: 60%;
-}
-div.group.allGroups div.overFull {
-	background-color: #FCC;
-}
-div.group.allGroups div.full {
-	background-color: #FFC;
-}
+
 div.group.separator {
 	display: inline-block;
 	font-size: 4em;
