@@ -37,40 +37,55 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="pasta" uri="pastaTag"%>
 
 <c:set var="nextStudent" value="-1"/>
-<div class='vertical-block float-container'>
-	<c:if test="${not empty myStudents}">
-		<h3 class='compact'>Individual Submissions</h3>
-	</c:if>
-	<c:forEach var='submittingUser' items="${allUsers}" varStatus="loop">
-		<c:set var="name" value="${loop.index < fn:length(myStudents) ? submittingUser.username : submittingUser.name}" />
-		<c:set var="submission" value="${hasSubmission[loop.index]}" />
-		<c:set var="completed" value="${completedMarking[loop.index]}" />
-		<c:set var="current" value="${loop.index == savingStudentIndex}" />
-		<c:set var="divClass" value="handMarkingStudent ${submission ? 'submitted' : 'didnotsubmit'}${submission ? completed : ''} ${current ? 'current' : ''}" />
-		<c:if test="${loop.index == fn:length(myStudents)}">
-			</div>
-			<div class='vertical-block float-container'>
-				<h3 class='compact'>Group Submissions</h3>
+
+<div class='section'>
+	<div class='part float-container'>
+		<c:if test="${not empty myStudents}">
+			<h3 class='part-title'>Individual Submissions</h3>
 		</c:if>
-		<c:if test="${submission}">
-			<c:if test="${savingStudentIndex < loop.index && nextStudent == -1}">
-				<c:set var="nextStudent" value="${loop.index}"/>
+		<c:forEach var='submittingUser' items="${allUsers}" varStatus="loop">
+			<c:set var="name" value="${loop.index < fn:length(myStudents) ? submittingUser.username : submittingUser.name}" />
+			<c:set var="submission" value="${hasSubmission[loop.index]}" />
+			<c:set var="completed" value="${completedMarking[loop.index]}" />
+			<c:set var="current" value="${loop.index == savingStudentIndex}" />
+			<c:set var="divClass" value="handMarkingStudent ${submission ? 'submitted' : 'didnotsubmit'}${submission ? completed : ''} ${current ? 'current' : ''}" />
+			<c:if test="${loop.index == fn:length(myStudents)}">
+				</div>
+				<div class='part float-container'>
+					<h3 class='part-title'>Group Submissions</h3>
 			</c:if>
-			<a href="../${loop.index}/" >
-		</c:if>
-		<div title="${name}" class="${divClass}">&nbsp;</div>
-		<c:if test="${submission}">
-			</a>
-		</c:if>
-	</c:forEach>
+			<c:if test="${submission}">
+				<c:if test="${savingStudentIndex < loop.index && nextStudent == -1}">
+					<c:set var="nextStudent" value="${loop.index}"/>
+				</c:if>
+				<a href="../${loop.index}/" >
+			</c:if>
+			<div title="${name}" class="${divClass}">&nbsp;</div>
+			<c:if test="${submission}">
+				</a>
+			</c:if>
+		</c:forEach>
+	</div>
 </div>
 
-<c:set var="username" value="${student.group ? student.name : student.username}" />
-<h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username} - Submitted: <pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}" /></h1>
 
-<jsp:include page="../../recursive/fileWriterRoot.jsp">
-	<jsp:param name="owner" value="${username}"/>
-</jsp:include>
+
+
+<c:set var="username" value="${student.group ? student.name : student.username}" />
+<h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username}</h1>
+
+<div class='section'>
+	<div class='part no-line'>
+		<h3 class='part-title'>Submitted:</h3>
+		<pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/>
+	</div>
+	<div class='part no-line'>
+		<h3 class='part-title'>Submission:</h3>
+		<jsp:include page="../../recursive/fileWriterRoot.jsp">
+			<jsp:param name="owner" value="${username}"/>
+		</jsp:include>
+	</div>
+</div>
 
 <style>
 th, td{
@@ -81,29 +96,34 @@ th, td{
 	<c:when test="${not empty student}">
 		<form:form commandName="assessmentResult" action="../${nextStudent}/" enctype="multipart/form-data" method="POST">
 			<input type="hidden" name="student" value="${student.username}"/>
-			<div class='vertical-block boxCard'>
-				<h3 class='compact'>Automatic Marking Results</h3>
-				<div class='vertical-block'>
-					<h4 class='compact'>Summary</h4>
+			<div class='section'>
+				<h3 class='section-title'>Automatic Marking Results</h3>
+				<div class='part'>
+					<h4 class='part-title'>Summary</h4>
 					<tag:unitTestResult closedAssessment="false" results="${assessmentResult}" summary="true" />
 				</div>
-						
-				<div id="${assessmentResult.id}" class='resultDetails vertical-block'>
-					<h4 class='compact'><a id='detailsToggle'>Show Details</a></h4>
-					<tag:unitTestResult closedAssessment="false" 
-						results="${assessmentResult}" />
+				<div class='part'>
+					<h4 class='part-title'><a id='detailsToggle'>Show Details</a></h4>
+					<div id="${assessmentResult.id}" class='resultDetails'>
+						<tag:unitTestResult closedAssessment="false" 
+							results="${assessmentResult}" />
+					</div>
 				</div>
 			</div>
 
-			<div class='vertical-block boxCard'>
+			<div class='section'>
 				<tag:handMarkingResult results="${assessmentResult}" marking="true" heading="Hand Marking Guidelines"/>
 			</div>
 			
-			<div class='vertical-block boxCard'>
-				<form:textarea style="height:200px; width:95%" path="comments" />
+			<div class='section'>
+				<div class='part no-line'>
+					<h3 class='part-title'>Comments</h3>
+					<form:textarea style="height:200px;" path="comments" />
+				</div>
+				<div class='button-panel'>
+					<button type="submit" class='save_hand_marking' id="submit">Save and continue</button>
+				</div>
 			</div>
-			
-			<input type="submit" class='save_hand_marking' value="Save and continue" id="submit" style="margin-top:1em;"/>
 		</form:form>
 	</c:when>
 	<c:otherwise>
@@ -121,8 +141,7 @@ th, td{
 
 <script src='<c:url value="/static/scripts/assessment/markHandMarking.js"/>'></script>
 <script>
-	$(function() {
-		$(".save_hand_marking").val('${empty last ? "Save and continue" : "Save and exit"}');
-		registerEvents();
+	$(function() {registerEvents
+		$(".save_hand_marking").text('${empty last ? "Save and continue" : "Save and exit"}');
 	});
 </script>
