@@ -121,3 +121,20 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 .group-size.full {
 	background-color: #FFC;
 }
+
+/* Nested release rule highlighting */
+/* '>' selector necessary to add specificity */
+div.subRule.first {
+	border-left-color: #f5af00;
+}
+div.first > div > div > div > div.subRule {
+	border-left-color: red;
+}
+div.first > div > div > div > div.subRule > div > div > div > div.subRule {
+	border-left-color: #12416c;
+}
+
+/* Release rules */
+div.toDelete {
+	background-color: lightgray;
+}

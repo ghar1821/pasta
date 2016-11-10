@@ -14,13 +14,14 @@
 	</div>
 </spring:hasBindErrors>
 
-<div class='vertical-block' style='font-size: 1.1em; padding-bottom:20em'>
+<div class='section'>
 	<form:form commandName="releaseRuleForm">
-		<div>
-			<div class='boxCard vertical-block ruleParent first' pathPrefix='releaseRuleForm'>
-				<tag:releaseRule rule="${releaseRuleForm}" pathPrefix="releaseRuleForm" />
-			</div>
-			<button type='submit'>Submit</button>
+		<div class='ruleParent first' pathPrefix='releaseRuleForm'>
+			<tag:releaseRule rule="${releaseRuleForm}" pathPrefix="releaseRuleForm" />
+		</div>
+		<div class='button-panel'>
+			<%-- Not a proper submit button as for some reason the button renders outside of the form --%>
+			<button type='button' id='submitButton'>Submit</button>
 		</div>
 	</form:form>
 </div>

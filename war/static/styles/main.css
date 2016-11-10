@@ -519,3 +519,23 @@ span.group-member {
 	font-style: italic;
 	color: lightgray;
 }
+
+/* conjunction release rule separation */
+div.conjunction {
+	padding-left: 0.2em;
+	font-size: 1.5em;
+	text-transform: uppercase;
+	margin-top: -0.33em;
+	margin-bottom: 0.66em;
+}
+div.subRule {
+	border-left-width: 2px;
+	border-left-style: solid;
+}
+.rule-title {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+#deleteMessage {
+	font-style: italic;
+}
