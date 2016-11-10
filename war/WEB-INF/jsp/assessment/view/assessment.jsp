@@ -235,7 +235,7 @@ either expressed or implied, of the PASTA Project.
 				<div class='button-panel'>
 					<c:set var="buttonText" value="Set" />
 					<c:if test="${assessment.released}"><c:set var="buttonText" value="Modify" /></c:if>
-					<button class='flat' onclick='location.href="../release/${assessment.id}/"'><c:out value="${buttonText}" /> Release Rule</button>
+					<button type='button' class='flat' onclick='location.href="../release/${assessment.id}/"'><c:out value="${buttonText}" /> Release Rule</button>
 				</div>
 			</div>
 		</div>
