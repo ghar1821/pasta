@@ -108,6 +108,10 @@ div.part.no-line + div.part.no-line {
 	margin: 0px;
 	margin-bottom: 0.3em;
 }
+.subtitle {
+	font-style: italic;
+	color: gray;
+}
 .part-title > h1, .part-title > h2, .part-title > h3, .part-title > h4, .part-title > h5, .part-title > h6 {
 	margin: 0px;
 }
