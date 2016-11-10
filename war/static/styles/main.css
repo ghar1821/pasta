@@ -228,6 +228,10 @@ div.part.no-line + div.part.no-line {
 .pf-horizontal.n-col > .pf-item {
 	width: 20%;
 }
+.pf-horizontal.five-col > .pf-item {
+	width: 17.5%;
+	width: calc(20% - 0.8em);
+}
 .pasta-form.banded .pf-horizontal:not(:first-child) {
 	border-top: 1px solid lightgray;
 }
