@@ -79,10 +79,18 @@ either expressed or implied, of the PASTA Project.
 	</span>
 	<h1> New Unit Test </h1>
 	<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Unit Test Name:</td><td><form:input path="name"/> <form:errors path="name" /></td></tr>
-		</table>
-    	<input type="submit" value="Create" id="submit"/>
+		<div class='pasta-form narrow part'>
+			<div class='pf-item one-col'>
+				<div class='pf-label'>Name</div>
+				<div class='pf-input'>
+					<form:errors path="name" element="div" />
+					<form:input autocomplete="off" type="text" path="name" />
+				</div>
+			</div>
+			<div class='button-panel'>
+				<button type="submit" id="submit">Create</button>
+			</div>
+		</div>
 	</form:form>
 </div>
 

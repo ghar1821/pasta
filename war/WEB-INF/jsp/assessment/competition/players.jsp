@@ -150,10 +150,17 @@ either expressed or implied, of the PASTA Project.
 		</span>
 		<h1> New Player </h1>
 		<form:form commandName="newPlayerModel" enctype="multipart/form-data" method="POST">
-			<table>
-				<tr><td>Player Code:</td><td><form:input type="file" path="file"/></td></tr>
-			</table>
-	    	<input type="submit" value="Create" id="submit"/>
+			<div class='pasta-form narrow part'>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Player Code</div>
+					<div class='pf-input'>
+						<form:input type="file" path="file"/>
+					</div>
+				</div>
+				<div class='button-panel'>
+					<button type="submit" id="submit">Create</button>
+				</div>
+			</div>
 		</form:form>
 	</div>
 	

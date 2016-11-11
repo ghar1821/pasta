@@ -114,24 +114,28 @@ either expressed or implied, of the PASTA Project.
 		</span>
 		<h1> New Competition </h1>
 		<form:form commandName="newCompetitionModel" enctype="multipart/form-data" method="POST">
-			<table>
-				<tr><td>Competition Name:</td>
-					<td>
-						<form:input path="name"/> 
-						<form:errors path="name" />
-					</td>
-				</tr>
-				<tr><td>Competition Type:</td>
-					<td>
+			<div class='pasta-form narrow part'>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Name</div>
+					<div class='pf-input'>
+						<form:errors path="name" element="div" />
+						<form:input autocomplete="off" type="text" path="name" />
+					</div>
+				</div>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Type</div>
+					<div class='pf-input'>
+						<form:errors path="type" element="div" />
 						<form:select path="type">
 							<option value="calculated">Calculated</option>
 							<option value="arena">Arena</option>
 						</form:select> 
-						<form:errors path="type" />
-					</td>
-				</tr>
-			</table>
-	    	<input type="submit" value="Create" id="submit"/>
+					</div>
+				</div>
+				<div class='button-panel'>
+					<button type="submit" id="submit">Create</button>
+				</div>
+			</div>
 		</form:form>
 	</div>
 	
@@ -142,6 +146,8 @@ either expressed or implied, of the PASTA Project.
                 e.preventDefault();
                 $('.popup').bPopup();
             });
+            
+            $("#newCompetition select").chosen({width: "100%", disable_search:true});
             
 	        <spring:hasBindErrors name='newCompetitionModel'>
 				$('.popup').bPopup();

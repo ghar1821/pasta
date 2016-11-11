@@ -125,49 +125,71 @@ either expressed or implied, of the PASTA Project.
 		<h1>New Arena</h1>
 		<form:form commandName="newArenaModel" enctype="multipart/form-data"
 			method="POST">
-			<table>
-				<tr>
-					<td>Arena Name:</td>
-					<td><form:input autocomplete="off" type="text" path="name"
-							value="" /></td>
-				</tr>
-				<tr>
-					<td>First run:</td>
-					<td><form:input path="firstStartDateStr" /></td>
-				</tr>
+			<div class='pasta-form narrow part'>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Name</div>
+					<div class='pf-input'>
+						<form:errors path="name" element="div" />
+						<form:input autocomplete="off" type="text" path="name" />
+					</div>
+				</div>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>First run</div>
+					<div class='pf-input'>
+						<form:input path="firstStartDateStr" />
+					</div>
+				</div>
 				<c:if
 					test="${user.instructor || (user.tutor && competition.tutorCreatableRepeatableArena) || competition.studentCreatableRepeatableArena}">
-					<tr>
-						<td>Repeat every:</td>
-						<td>
-							<c:if test="${user.tutor}">
-								<form:input type="number" path="frequency.years" style="width:3em;" /> years 
-							</c:if>
-							<form:input type="number" path="frequency.days" style="width:3em;" /> days 
-							<form:input	type="number" path="frequency.hours" style="width:3em;" /> hours
-							
-							<c:if test="${user.tutor}">
-								<form:input type="number" path="frequency.minutes" style="width:3em;" /> minutes 
-								<form:input type="number" path="frequency.seconds" style="width:3em;" /> seconds
-							</c:if>
-						</td>
-					</tr>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>Repeat every</div>
+					</div>
+					<div class='pf-horizontal five-col'>
+						<c:if test="${user.tutor}">
+							<div class='pf-item'>
+								<div class='pf-label'>Years</div>
+								<div class='pf-input'><form:input type="number" path="frequency.years" /></div>
+							</div>
+						</c:if>
+						<div class='pf-item'>
+							<div class='pf-label'>Days</div>
+							<div class='pf-input'><form:input type="number" path="frequency.days" /></div>
+						</div>
+						<div class='pf-item'>
+							<div class='pf-label'>Hours</div>
+							<div class='pf-input'><form:input type="number" path="frequency.hours" /></div>
+						</div>
+						<c:if test="${user.tutor}">
+							<div class='pf-item'>
+								<div class='pf-label'>Minutes</div>
+								<div class='pf-input'><form:input type="number" path="frequency.minutes" /></div>
+							</div>
+							<div class='pf-item'>
+								<div class='pf-label'>Seconds</div>
+								<div class='pf-input'><form:input type="number" path="frequency.seconds" /></div>
+							</div>
+						</c:if>
+					</div>
 				</c:if>
-				<!-- 
-				<tr>
-					<td>Password:</td>
-					<td><input autocomplete="off" type="password" path="password"
-						onkeyup="checkPasswords();" value="" /></td>
-				</tr>
-				<tr>
-					<td>Confirm Password:</td>
-					<td><input autocomplete="off" type="password"
-						onkeyup="checkPasswords();" value="" /></td>
-				</tr>
-				 -->
-			</table>
+				<%--
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Password</div>
+					<div class='pf-input'>
+						<form:input autocomplete="off" type="password" path="password" onkeyup="checkPasswords();" value="" />
+					</div>
+				</div>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Confirm password</div>
+					<div class='pf-input'>
+						<form:input autocomplete="off" type="password" onkeyup="checkPasswords();" value="" />
+					</div>
+				</div>
+				--%>
+				<div class='button-panel'>
+					<button type="submit" id="submit">Create</button>
+				</div>
+			</div>
 			<form:input type="hidden" path="competition.id" value="${competition.id}"/>
-			<button type="submit" id="submit">Create</button>
 		</form:form>
 	</div>
 
