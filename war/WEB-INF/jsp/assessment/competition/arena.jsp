@@ -33,73 +33,89 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
-<h1>Official Arena</h1>
-<table style="width: 100%;">
-	<tr>
-		<th>Name</th>
-		<th>Number of Players</th>
-		<th>Next Execution Date</th>
-	</tr>
-	<tr>
-		<td><a href="${competition.officialArena.id}/">${competition.officialArena.name}</a></td>
-		<td>${competition.officialArena.numPlayers}</td>
-		<td>${competition.officialArena.nextRunDate}</td>
-	</tr>
-</table>
+<h1>Arena Details - ${competition.name}</h1>
 
-<h1>Unofficial Arenas</h1>
+<div class='section'>
+	<h2 class='section-title'>Official Arena</h2>
+	<div class='part'>
+		<table id='officialArena'>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Number of Players</th>
+					<th>Next Execution Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><a href="${competition.officialArena.id}/">${competition.officialArena.name}</a></td>
+					<td>${competition.officialArena.numPlayers}</td>
+					<td>${competition.officialArena.nextRunDate}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class='section'>
+	<h2 class='section-title' class='display'>Unofficial Arenas</h2>
+	<div class='part'>
+		<table id='unofficialArenas'>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Number of Players</th>
+					<th>Next Execution Date</th>
+					<!--  <th>Password protected</th> -->
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="arena" items="${competition.outstandingArenas}">
+					<tr>
+						<td><a href="${arena.id}/">${arena.name}</a></td>
+						<td>${arena.numPlayers}</td>
+						<td>${arena.nextRunDate}</td>
+						<!-- 
+						<td><c:choose>
+								<c:when test="${arena.passwordProtected}">
+								YES 
+							</c:when>
+								<c:otherwise>
+								NO
+							</c:otherwise>
+							</c:choose>
+						</td>
+						 -->
+					</tr>
+				</c:forEach>
+				<c:forEach var="arena" items="${competition.completedArenas}">
+					<tr>
+						<td><a href="${arena.id}/">${arena.name}</a></td>
+						<td>${arena.numPlayers}</td>
+						<td>Completed</td>
+						<!-- 
+						<td><c:choose>
+								<c:when test="${arena.passwordProtected}">
+								YES 
+							</c:when>
+								<c:otherwise>
+								NO
+							</c:otherwise>
+							</c:choose>
+						</td>	
+						 -->		
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+	</div>
+</div>
 
 <c:if test="${competition.studentCanCreateArena || user.tutor}">
-	<div style="float: left">
-		<button style="float: left; text-align: center;" id="newPopup">Add
-			Arena</button>
-	</div>
+	<button type='button' class='floating plus' id="newPopup"></button>
 </c:if>
 
-<table style="width: 100%;">
-	<tr>
-		<th>Name</th>
-		<th>Number of Players</th>
-		<th>Next Execution Date</th>
-		<!--  <th>Password protected</th> -->
-	</tr>
-	<c:forEach var="arena" items="${competition.outstandingArenas}">
-		<tr>
-			<td><a href="${arena.id}/">${arena.name}</a></td>
-			<td>${arena.numPlayers}</td>
-			<td>${arena.nextRunDate}</td>
-			<!-- 
-			<td><c:choose>
-					<c:when test="${arena.passwordProtected}">
-					YES 
-				</c:when>
-					<c:otherwise>
-					NO
-				</c:otherwise>
-				</c:choose>
-			</td>
-			 -->
-		</tr>
-	</c:forEach>
-	<c:forEach var="arena" items="${competition.completedArenas}">
-		<tr>
-			<td><a href="${arena.id}/">${arena.name}</a></td>
-			<td>${arena.numPlayers}</td>
-			<td>Completed</td>
-			<!-- 
-			<td><c:choose>
-					<c:when test="${arena.passwordProtected}">
-					YES 
-				</c:when>
-					<c:otherwise>
-					NO
-				</c:otherwise>
-				</c:choose>
-			</td>	
-			 -->		
-		</tr>
-	</c:forEach>
-</table>
+
 
 <c:if test="${competition.studentCanCreateArena || user.tutor}">
 
@@ -175,21 +191,23 @@ either expressed or implied, of the PASTA Project.
 
 			// DOM Ready
 			$(function() {
-				
 				$( "#firstStartDateStr" ).datetimepicker({timeformat: 'hh:mm', dateFormat: 'dd/mm/yy'});
 
-				// Binding a click event
-				// From jQuery v.1.7.0 use .on() instead of .bind()
-				$('#newPopup').bind('click', function(e) {
-
-					// Prevents the default action to be triggered. 
-					e.preventDefault();
-
-					// Triggering bPopup when click event is fired
-					$('#newArena').bPopup();
-
+				$("#officialArena").DataTable({
+					paging: false,
+					ordering: false,
+					searching: false,
+					info: false
 				});
-
+				$("#unofficialArenas").DataTable({
+					language: {
+						emptyTable: "No unofficial arenas created"
+					}
+				});
+				
+				$('#newPopup').on('click', function(e) {
+					$('#newArena').bPopup();
+				});
 			});
 
 		})(jQuery);

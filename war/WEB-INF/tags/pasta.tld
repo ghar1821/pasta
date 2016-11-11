@@ -13,6 +13,12 @@
 			<rtexprvalue>true</rtexprvalue>
 			<required>true</required>
 		</attribute>
+		<attribute>
+			<name>nullString</name>
+			<type>java.lang.String</type>
+			<rtexprvalue>true</rtexprvalue>
+			<required>false</required>
+		</attribute>
 	</tag>
 	<tag>
 		<name>escapeNewLines</name>
