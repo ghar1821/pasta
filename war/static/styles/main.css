@@ -759,3 +759,7 @@ th.handMarkingTable,td.handMarkingTable {
 	width: 200px;
 	word-wrap: break-word;
 }
+
+#ui-datepicker-div {
+	display: none;
+}
