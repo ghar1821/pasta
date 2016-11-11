@@ -111,6 +111,9 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 .hm-table td.selectedMark {
 	background-color: #DDF;
 }
+.hm-cell.empty {
+	background-color: #EEE;
+}
 
 #groupSelection input.editing {
 	background-color: #FFD0A1;
@@ -137,4 +140,52 @@ div.first > div > div > div > div.subRule > div > div > div > div.subRule {
 /* Release rules */
 div.toDelete {
 	background-color: lightgray;
+}
+
+.pastaUnitTestResultpass,.pastaTFtrue {
+	color: #0C0;
+}
+.pastaTFfalse,.pastaUnitTestResulterror,.pastaUnitTestResultfailure{
+	color: red;
+}
+
+[id$=".errors"] {
+	color: red;
+}
+
+.closedAssessment{
+	background-color:#DDD;
+}
+
+.gradeCentreMarkGood{
+	background-color: #1FCB4A; 
+}
+.gradeCentreMarkBad{
+	background-color: #FFFFFF; 
+}
+.gradeCentreMarkNoSub{
+	background-color: #FF7575; 
+}
+
+.handMarkingStudent.didnotsubmit{
+	background-color: lightgray;
+	border-color: white;
+}
+.handMarkingStudent.submittedfalse{
+	background-color: gold;
+	border-color: white;
+}
+.handMarkingStudent.submittedtrue{
+	background-color: #0C0;
+	border-color: white;
+}
+.handMarkingStudent.current{
+	border-color: #0C0;
+}
+.handMarkingStudent.submittedfalse.current{
+	border-color: gold;
+}
+
+table.moduleTable tr.selected {
+	background-color:#DDF;
 }

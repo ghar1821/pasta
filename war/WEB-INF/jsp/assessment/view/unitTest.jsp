@@ -411,7 +411,7 @@ either expressed or implied, of the PASTA Project.
 						</c:forEach>
 					</div>
 					<div class='part no-line' style='overflow:hidden;'>
-						<table class="pastaTable">
+						<table>
 							<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
 							<c:forEach var="testCase" items="${latestResult.testCases}">
 								<tr>

@@ -42,27 +42,25 @@ either expressed or implied, of the PASTA Project.
 				<tr>
 					<td><form:label path="oldPassword" cssClass="required">Old Password <span class="star-required">*</span></form:label></td> 
 					<td><form:password path="oldPassword" size="50" name="oldPassword" id="oldPassword" />
-					<form:errors path="oldPassword" cssClass="susk-form-errors" element="div" /></td>
+					<form:errors path="oldPassword" element="div" /></td>
 				</tr>
 				<tr>
 					<td><form:label path="newPassword" cssClass="required">New Password<span class="star-required">*</span></form:label></td> 
 					<td><form:password path="newPassword" size="50" name="newPassword" id="newPassword" onkeyup="checkPasswords();"/>
-					<form:errors path="newPassword" cssClass="susk-form-errors" element="div" /></td>
+					<form:errors path="newPassword" element="div" /></td>
 				</tr>
 				<tr>
 					<td><form:label path="confirmPassword" cssClass="required">Confirm Password <span class="star-required">*</span></form:label></td> 
 					<td><form:password path="confirmPassword" size="50" name="confirmPassword" id="confirmPassword" onkeyup="checkPasswords();"/>
-					<form:errors path="confirmPassword" cssClass="susk-form-errors" element="div" /></td>
+					<form:errors path="confirmPassword" element="div" /></td>
 				</tr>
 			</table>
 			
 			<div>
 				<button type="submit" id="Submit" name="Submit">Change Password</button>
 			</div>
-			<div class="susk-form-clear"></div>
 			
 		</form:form>
-		<div class="susk-form-clear"></div>
 	</div>
 </c:if>
 

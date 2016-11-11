@@ -293,6 +293,68 @@ div.part.no-line + div.part.no-line {
 	padding: 0.5em;
 }
 
+.vertical-block {
+	display: block;
+}
+.horizontal-block {
+	display: inline-block;
+}
+.horizontal:not(.float-right)+.horizontal:not(.float-right), 
+.horizontal-block:not(.float-right) + .horizontal-block:not(.float-right) {
+	margin-left: 1em;
+}
+.horizontal.float-right + .horizontal.float-right,
+.horizontal-block.float-right + .horizontal-block.float-right {
+	margin-right: 1em;
+}
+.vertical+.vertical,
+.vertical-block+.vertical-block {
+	margin-top: 1em;
+}
+.horizontal:not(.float-right) + .horizontal:not(.float-right).small-gap,
+.horizontal-block:not(.float-right) + .horizontal-block:not(.float-right).small-gap {
+	margin-left: 0.5em;
+}
+.horizontal.float-right + .horizontal.float-right.small-gap,
+.horizontal-block.float-right + .horizontal-block.float-right.small-gap {
+	margin-right: 0.5em;
+}
+.vertical+.vertical.small-gap,
+.vertical-block+.vertical-block.small-gap {
+	margin-top: 0.5em;
+}
+.float-right {
+	float:right;
+}
+.float-left {
+	float:left;
+}
+.float-clear {
+	clear:both;
+}
+.float-container {
+	overflow:hidden;
+}
+.padded {
+	padding:0.5em;
+}
+.align-contents-bottom .horizontal-block {
+	vertical-align: bottom;
+}
+.align-contents-middle .horizontal-block {
+	vertical-align: middle;
+}
+.align-contents-top .horizontal-block {
+	vertical-align: top;
+}
+
+a:not([href]) {
+	cursor:pointer;
+}
+
+.hidden {
+	display:none;
+}
 
 div#head {
 	margin-top: 1em;
@@ -546,4 +608,154 @@ div.subRule {
 }
 #deleteMessage {
 	font-style: italic;
+}
+
+.pastaTF,.pastaUnitTestResult {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+a.gc-link {
+	color: black;
+	display: block;
+	height: 100%;
+	text-decoration: none;
+	width: 100%;
+}
+
+.handMarkingStudent.didnotsubmit{
+	cursor: default;
+}
+.handMarkingStudent.submittedfalse,
+.handMarkingStudent.submittedtrue,
+.handMarkingStudent.didnotsubmit {
+	border-style: solid;
+}
+.handMarkingStudent.current{
+	border-style: outset;
+}
+.handMarkingStudent{
+	width: 1em;
+	height: 1em;
+	float: left;
+	margin: 1px;
+	cursor: pointer;
+	border-radius: 50%;
+    behavior: url(PIE.htc); /* remove if you don't care about IE8 */
+}
+
+pre {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+div.icon-edit-group {
+	background-repeat: no-repeat;
+	background-image: url("../images/group-edit.png");
+	cursor: pointer;
+	height: 32px;
+	width: 32px;
+}
+div.icon-group {
+	background-repeat: no-repeat;
+	background-image: url("../images/group.png");
+	height: 32px;
+	width: 32px;
+}
+span.help {
+	background-image: url("../images/help_small.png");
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_locked, div.icon_locked {
+	background-image: url("../images/padlock_closed.png");
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_unlocked, div.icon_unlocked {
+	background-image: url("../images/padlock_open.png");
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+span.icon_help, div.icon_help {
+	background-image: url("../images/help.png");
+	display: inline-block;
+	height: 32px;
+	width: 32px;
+}
+
+
+input[type=checkbox].custom-check {
+	display:none;
+}
+input[type=checkbox].custom-check + label,
+input[type=checkbox].custom-check + input[type=hidden] + label { 
+	background-image: url("../images/check_box_unchecked.png");
+	height: 32px;
+	width: 32px;
+	display:inline-block;
+	padding: 0 0 0 0px;
+}
+input[type=checkbox].custom-check + label:active,
+input[type=checkbox].custom-check + input[type=hidden] + label:active { 
+	background-image: url("../images/check_box_unchecked_pressed.png");
+}
+input[type=checkbox]:checked.custom-check + label,
+input[type=checkbox]:checked.custom-check + input[type=hidden] + label {
+	background-image: url("../images/check_box_checked.png");
+}
+input[type=checkbox]:checked.custom-check + label:active,
+input[type=checkbox]:checked.custom-check + input[type=hidden] + label:active {
+	background-image: url("../images/check_box_checked_pressed.png");
+}
+
+table.moduleTable tr.lastSelected td {
+	border-bottom: 2px dotted gray;
+}
+
+table.alignCellsTop td, table.alignCellsTop th {
+	vertical-align: top;
+}
+
+.largeOutputBox {
+	width: 60vw;
+	height: 50vh;
+	overflow: auto;
+}
+
+span.expanded-icon {
+	font-size: 1.5em;
+}
+
+.popup, #released, #newArena
+	{
+	background-color: white;
+	border-radius: 10px 10px 10px 10px;
+	box-shadow: 0 0 25px 5px #999;
+	color: #111;
+	display: none;
+	padding: 25px;
+}
+.bClose {
+	border-radius: 7px 7px 7px 7px;
+	box-shadow: none;
+	font: bold 131% sans-serif;
+	padding: 0 6px 2px;
+	position: absolute;
+	right: -7px;
+	top: -7px;
+	background-color: #CE1126;
+	color: white;
+	cursor: pointer;
+}
+
+th.handMarkingTable,td.handMarkingTable {
+	table-layout: fixed;
+	padding: 15px;
+	width: 200px;
+	word-wrap: break-word;
 }

@@ -47,7 +47,7 @@ either expressed or implied, of the PASTA Project.
 	<h1 class='section-title' style='text-align:center'>Login to PASTA</h1>
 	<br />
 	<form:errors path="loginForm.*">
-		<div class="susk-info-bar error"><span class="image"></span>
+		<div class="error"><span class="image"></span>
 			<p class="message"><spring:message code="errors.message" /></p>
 		</div>
 	</form:errors>
@@ -60,7 +60,7 @@ either expressed or implied, of the PASTA Project.
 					</div>
 					<div class='pf-input'>
 						<form:input path="unikey" size="50" />
-						<form:errors path="unikey" cssClass="susk-form-errors" element="div" />
+						<form:errors path="unikey" element="div" />
 						<script>document.getElementById('unikey').focus()</script>
 					</div>
 				</div>
@@ -70,7 +70,7 @@ either expressed or implied, of the PASTA Project.
 					</div>
 					<div class='pf-input'>
 						<form:password path="password" size="50" />
-						<form:errors path="password" cssClass="susk-form-errors" element="div" />
+						<form:errors path="password" element="div" />
 					</div>
 				</div>
 			</div>
