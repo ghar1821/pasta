@@ -31,20 +31,25 @@ either expressed or implied, of the PASTA Project.
 
 <h1>Convert Legacy PASTA Content</h1>
 
-<div class='vertical-block'>
-	<p>Use this page to convert old PASTA content into current PASTA content. 
-	
-	<p>Place the old <code>content</code> folder inside the current <code>content</code> folder, and name the old content folder "<code>legacy</code>", then press "Convert".
-	
-	<p>This requires instructor level access.
-	
-	<p>It is suggested that you delete the legacy content from the legacy folder after running this, as running it again will create duplicate components.
+<div class='section'>
+	<div class='part'>
+		<p>Use this page to convert old PASTA content into current PASTA content. 
+		
+		<p>Place the old <code>content</code> folder inside the current <code>content</code> folder, and name the old content folder "<code>legacy</code>", then press "Convert".
+		
+		<p>This requires instructor level access.
+		
+		<p>It is suggested that you delete the legacy content from the legacy folder after running this, as running it again will create duplicate components.
+		
+		<div class='button-pannel'>
+			<button class='button' id='convert-button'>Convert</button>
+		</div>
+	</div>
 </div>
-<div id='button-div' class='vertical-block'>
-	<button id='convert-button'>Convert</button>
-</div>
-<div id='output-div' class='vertical-block'>
-	<textarea id='output' rows="30" style='width:90%' readonly="readonly"></textarea>
+<div id='output-div' class='section'>
+	<div class='part'>
+		<textarea id='output' rows="30" style='width:90%' readonly="readonly"></textarea>
+	</div>
 </div>
 
 <script>

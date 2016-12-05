@@ -16,13 +16,18 @@ import pasta.util.PASTAUtil;
  */
 public class ReadableDateTagHandler extends TagSupport{
 	private Date inputDate;
+	private String nullString = "";
 	
 	@Override
     public int doStartTag() throws JspException {
         try {
-        	String readable = PASTAUtil.formatDateReadable(inputDate);
-            JspWriter out = pageContext.getOut();
-            out.print(readable);
+        	JspWriter out = pageContext.getOut();
+        	if(inputDate == null) {
+        		out.print(nullString);
+        	} else {
+        		String readable = PASTAUtil.formatDateReadable(inputDate);
+        		out.print(readable);
+        	}
         } catch (IOException e) {}
         return SKIP_BODY;
     }
@@ -33,5 +38,13 @@ public class ReadableDateTagHandler extends TagSupport{
 
 	public void setDate(Date inputDate) {
 		this.inputDate = inputDate;
+	}
+
+	public String getNullString() {
+		return nullString;
+	}
+
+	public void setNullString(String nullString) {
+		this.nullString = nullString;
 	}
 }

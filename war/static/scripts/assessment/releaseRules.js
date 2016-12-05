@@ -5,6 +5,9 @@ $(function() {
 function loadEvents() {
 	reloadEvents($(".first"));
 	checkFullConjunctions();
+	$("#submitButton").on('click', function() {
+		$("#releaseRuleForm").submit();
+	});
 }
 
 function reloadEvents($parentDiv) {
@@ -17,8 +20,9 @@ function reloadEvents($parentDiv) {
 	});
 	
 	$parentDiv.find(".chosen").chosen({width: "22em"});
+	$parentDiv.find(".chosen-no-search").chosen({width: "22em", disable_search: true});
 	$parentDiv.find('.chosen-toggle').on('click', function(){
-		$(this).parent().siblings().find('.selectAll option').prop('selected', $(this).hasClass('select')).parent().trigger('chosen:updated');
+		$(this).parent().find('.selectAll option').prop('selected', $(this).hasClass('select')).parent().trigger('chosen:updated');
 		return false;
 	});
 	
@@ -38,7 +42,7 @@ function reloadEvents($parentDiv) {
 			}	
 			if(type){
 				var confirmMessage = "This will change the current rule into a sub-rule of an " + type.toUpperCase() + " rule.\n\n";
-				var currentRuleName = $closestParent.children("[id$='ruleName']").val();
+				var currentRuleName = $closestParent.find("[id$='ruleName']").val();
 				var currentConj;
 				if(currentRuleName.endsWith("ReleaseAndRule")) {
 					currentConj = "AND";
@@ -83,7 +87,7 @@ function reloadEvents($parentDiv) {
 	
 	// controls for the "delete rule" button
 	$parentDiv.find(".deleteRule").on('click', function() {
-		var $container = $(this).parent().parents("div").first();
+		var $container = $(this).closest(".ruleParent");
 		
 		var deleting = !$container.is(".toDelete"); 
 		$container.toggleClass("toDelete");
@@ -117,7 +121,7 @@ function reloadEvents($parentDiv) {
 	});
 	
 	$parentDiv.find("input.percentCheck").on("change", function() {
-		var $cell = $(this).closest("tr").children("td").first();
+		var $cell = $(this).closest(".pf-item").children(".pf-label").first();
 		$cell.text($(this).is(":checked") ? "Percent (0.0 - 1.0):" : "Mark:");
 	});
 	$parentDiv.find("input.setMark").tipsy({trigger: 'focus', gravity: 'e', title: function() {
@@ -136,7 +140,7 @@ function reloadEvents($parentDiv) {
 	});
 	
 	// Allows looping of nested colours infinitely
-	$("div.first > div > div > div.subRule > div > div > div.subRule > div > div > div.subRule").addClass("first");
+	$("div.first > div > div > div > div.subRule > div > div > div > div.subRule > div > div > div > div.subRule").addClass("first");
 }
 
 function checkFullConjunctions() {
@@ -145,15 +149,15 @@ function checkFullConjunctions() {
 		$parent = $(this);
 		var full = true;
 		$conjunction = $();
-		$subRules = $parent.children().children().children('.subRule');
+		$subRules = $parent.children().children().children().children('.subRule');
 		$subRules.each(function() {
-			if($(this).children().length <= 1 && !$(this).children().first().is("form")) {
+			if($(this).children().children().length <= 1 && !$(this).children().children().first().is("form")) {
 				full = false;
 			}
 			$conjunction = $(this).siblings(".conjunction").first();
 			if($conjunction.length == 0) {
 				$conjunction = jQuery("<div/>", {
-					class : 'vertical-block conjunction',
+					class : 'conjunction',
 					text : $(this).attr('conjunction')
 				});
 			}
@@ -166,7 +170,7 @@ function checkFullConjunctions() {
 			var pathPrefix = $(this).attr('pathPrefix');
 			var newPathPrefix = (pathPrefix ? pathPrefix : "") +".rules[" + $subRules.length + "]";
 			$newParent = jQuery("<div />", {
-				class: "boxCard vertical-block ruleParent subRule",
+				class: "section ruleParent subRule",
 				pathPrefix: newPathPrefix
 			});
 			$conjClone.after($newParent);

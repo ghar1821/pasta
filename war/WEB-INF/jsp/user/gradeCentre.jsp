@@ -65,36 +65,27 @@ either expressed or implied, of the PASTA Project.
 	<c:set var="myClassesQuery" value="myClasses=true&" />
 </c:if>
 
-<div class='vertical-block'>
-	<div class='horizontal-block'>
-		<button onclick="window.location = '${pathBack}/downloadMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Marks</button>
+<div class='section'>
+	<div class='part'>
+		<table id="gradeCentreTable" class="display compact">
+			<thead>
+				<tr>
+					<th>Username</th>
+					<th>Stream</th>
+					<th>Class</th>
+					<c:forEach var="assessment" items="${assessmentList}">
+						<th>${assessment.name}</th>
+					</c:forEach>
+				</tr>
+			</thead>
+		</table>
 	</div>
-	<div class='horizontal-block'>
-		<button onclick="window.location = '${pathBack}/downloadAutoMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Auto Marks ONLY</button>
+	<div class='button-panel'>
+		<button class='flat' onclick="window.location = '${pathBack}/downloadMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Marks</button>
+		<button class='flat' onclick="window.location = '${pathBack}/downloadAutoMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Auto Marks ONLY</button>
 	</div>
-</div>
-<div class='vertical-block'>
-	<table id="gradeCentreTable" class="display compact">
-		<thead>
-			<tr>
-				<th>Username</th>
-				<th>Stream</th>
-				<th>Class</th>
-				<c:forEach var="assessment" items="${assessmentList}">
-					<th>${assessment.name}</th>
-				</c:forEach>
-			</tr>
-		</thead>
-	</table>
 </div>
 
-<style>
-	th, td { white-space: nowrap; }
-	div.dataTables_wrapper {
-		width: 100%;
-		margin: 0 auto;
-	}
-</style>
 <script>
 	$(document).ready(function() 
 	    { 			
@@ -159,6 +150,15 @@ either expressed or implied, of the PASTA Project.
 				    "emptyTable": "No students to display."
 				}
 			} );
+			
+			if(!location.href.endsWith("/gradeCentre/")) {
+				$(".button-panel").prepend(
+						$("<button/>")
+							.addClass("flat")
+							.text("Full Grade Centre")
+							.on("click", function(){location.href = "<c:url value='/gradeCentre/'/>"})
+				);
+			}
 	    } 
 	); 
 

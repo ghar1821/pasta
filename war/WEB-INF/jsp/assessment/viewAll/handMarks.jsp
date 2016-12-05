@@ -33,29 +33,31 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<h1>Hand Marking Templates</h1>
+<div class='float-container'>
+	<div class='horizontal-block'>
+		<h1>Hand Marking Templates</h1>
+	</div>
+	<input id='search' type='text' />
+</div>
 
-<table class="pastaTable">
+<div class='section'>
 	<c:forEach var="handMarking" items="${allHandMarking}">
-		<tr>
-			<td><b>${handMarking.name}</b></td>
-			<td>
-				<div style="float:left">
-					<button style="float:left; text-align: center; " onclick="location.href='./${handMarking.id}/'">Details</button>
-				</div>
+		<div class='part row handMarking'>
+			<div class='hmName larger-text'>${handMarking.name}</div>
+			<div class='button-panel'>
+				<button class='flat' onclick="location.href='./${handMarking.id}/'">Details</button>
 				<c:if test="${user.instructor}">
-					<div style="float:left">
-						<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-						<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${handMarking.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-					</div>
+					<button class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
+					<button style="display:none" onclick="location.href='./delete/${handMarking.id}/'" 
+						onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
 				</c:if>
-			</td>
-		</tr>
+			</div>
+		</div>
 	</c:forEach>
-</table>
+</div>
 
 <c:if test="${user.instructor}">
-	<button id="newPopup">Add a new Hand marking template</button>
+	<button id="newPopup" class='floating plus'></button>
 </c:if>
 
 <div id="confirmPopup" class='popup'>
@@ -71,10 +73,18 @@ either expressed or implied, of the PASTA Project.
 	</span>
 	<h1> New Hand Marking </h1>
 	<form:form commandName="newHandMarkingModel" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Hand Marking template name:</td><td><form:input path="name"/> <form:errors path="name"/></td></tr>
-		</table>
-    	<input type="submit" value="Create" id="submit"/>
+		<div class='pasta-form narrow part'>
+			<div class='pf-item one-col'>
+				<div class='pf-label'>Name</div>
+				<div class='pf-input'>
+					<form:errors path="name" element="div" />
+					<form:input autocomplete="off" type="text" path="name" />
+				</div>
+			</div>
+			<div class='button-panel'>
+				<button type="submit" id="submit">Create</button>
+			</div>
+		</div>
 	</form:form>
 </div>
 
@@ -88,5 +98,9 @@ either expressed or implied, of the PASTA Project.
 	    <spring:hasBindErrors name='newHandMarkingModel'>
 	    	$('#newHandMarking').bPopup();
 		</spring:hasBindErrors>
+		
+		$(".handMarking").searchNode();
+		$(".handMarking").find(".hmName").searchable();
+		var searchBox = $("#search").searchBox();
 	});
 </script>

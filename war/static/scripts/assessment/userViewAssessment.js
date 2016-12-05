@@ -63,8 +63,8 @@ function setupTable($table) {
 	});
 }
 
-var updateComment = function($comments, $textarea) {
-	$comments.html($textarea.wysiwyg("getContent"));
+var updateComment = function($comments) {
+	$comments.html(tinymce.activeEditor.getContent());
 };
 
 $(".modifyCommentsBtn").on("click", function() {
@@ -74,75 +74,38 @@ $(".modifyCommentsBtn").on("click", function() {
 		var $textarea = $(this);
 		var $comments = $("#" + $textarea.attr("id").replace("modifyC", "c"));
 		
-		$textarea.wysiwyg({
-			initialContent: function() {
-				return "";
-			},
-			events: {
-				keyup : function() {
-					clearTimeout(timer);
-					timer = setTimeout(function() {updateComment($comments, $textarea);}, 2000);
-				},
-				click : function() {
-					updateComment($comments, $textarea);
-				}
-			},
-			controls: {
-				bold          : { visible : true },
-				italic        : { visible : true },
-				underline     : { visible : true },
-				strikeThrough : { visible : true },
-				
-				justifyLeft   : { visible : true },
-				justifyCenter : { visible : true },
-				justifyRight  : { visible : true },
-				justifyFull   : { visible : true },
-
-				indent  : { visible : true },
-				outdent : { visible : true },
-
-				subscript   : { visible : true },
-				superscript : { visible : true },
-				
-				undo : { visible : true },
-				redo : { visible : true },
-				
-				insertOrderedList    : { visible : true },
-				insertUnorderedList  : { visible : true },
-				insertHorizontalRule : { visible : true },
-
-				h4: {
-					visible: true,
-					className: 'h4',
-					command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-					arguments: ($.browser.msie || $.browser.safari) ? '<h4>' : 'h4',
-					tags: ['h4'],
-					tooltip: 'Header 4'
-				},
-				h5: {
-					visible: true,
-					className: 'h5',
-					command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-					arguments: ($.browser.msie || $.browser.safari) ? '<h5>' : 'h5',
-					tags: ['h5'],
-					tooltip: 'Header 5'
-				},
-				h6: {
-					visible: true,
-					className: 'h6',
-					command: ($.browser.msie || $.browser.safari) ? 'formatBlock' : 'heading',
-					arguments: ($.browser.msie || $.browser.safari) ? '<h6>' : 'h6',
-					tags: ['h6'],
-					tooltip: 'Header 6'
-				},
-				cut   : { visible : true },
-				copy  : { visible : true },
-				paste : { visible : true },
-				html  : { visible: true },
-				increaseFontSize : { visible : true },
-				decreaseFontSize : { visible : true }
-			}
-		});
+		tinymce.init({
+            selector: "#" + $textarea.attr("id"),
+            plugins: "table code link textcolor",
+            toolbar: "undo redo | styleselect | forecolor backcolor | bold italic | alignleft aligncenter alignright alignjustify | code-styles-split | bullist numlist outdent indent | link | code",
+            setup: function(editor) {
+            	editor.on('keyup', function() {
+            		clearTimeout(timer);
+					timer = setTimeout(function() {updateComment($comments);}, 800);
+                });
+                editor.on('change', function() {
+                	updateComment($comments);
+                });
+                editor.addButton('code-styles-split', {
+                    type: 'splitbutton',
+                    text: 'code',
+                    title: 'Toggle <code> tags',
+                    icon: false,
+                    onclick: function() {
+                    	editor.execCommand('mceToggleFormat', false, 'code');
+                    },
+                    menu: [
+                        {text: 'Inline <code>', onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, 'code');
+                        }},
+                        {text: 'Block <pre>', onclick: function() {
+                        	editor.execCommand('mceToggleFormat', false, 'pre');
+                        }}
+                    ]
+                });
+            },
+            style_formats_merge: true,
+        });
 	});
 	$commentDiv.show();
 	$(this).hide();

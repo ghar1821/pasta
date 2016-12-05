@@ -1,0 +1,191 @@
+/* USYD Theme */
+body {
+	color: #333;
+	background: #f5f5f5;
+}
+
+a {
+	color: #DC740E;
+}
+/* a:visited { */
+/* 	color: #AC5500; */
+/* } */
+a:hover {
+	color: #EDA054;
+}
+
+button, input[type="submit"] {
+	color: white;
+	background-color: #DC740E;
+}
+button:hover,
+input[type="submit"]:hover {
+	background-color: #EDA054;
+}
+button.secondary,
+input[type="submit"].secondary {
+	background-color: white;
+}
+button.secondary, button.flat,
+input[type="submit"].secondary, input[type="submit"].flat {
+	color: #DC740E;
+}
+button.secondary:hover, button.flat:hover,
+input[type="submit"].secondary:hover, input[type="submit"].flat:hover {
+	background-color: #EEE;
+}
+button:disabled {
+	color: #999;
+	background-color: #EEE;
+}
+
+div.section {
+	background-color: white;
+}
+
+.pasta-form input[type="text"],
+.pasta-form input[type="password"],
+.pasta-form textarea,
+.pasta-form input[type="number"] {
+	background-color: #FFECD9;
+}
+.pasta-form input[type="text"]:disabled,
+.pasta-form input[type="password"]:disabled,
+.pasta-form textarea:disabled,
+.pasta-form input[type="number"]:disabled {
+	color: #999;
+	background-color: #EEE;
+}
+
+div.tab-bar {
+	background-color: #DC740E;
+}
+}
+div.tab-bar .tab {
+	background-color: #DC740E;
+}
+div.tab-bar .tab:hover,
+div.tab-bar .tab.current {
+	background-color: #EDA054;
+}
+div.tab-bar a {
+	color: #333;
+}
+
+.star-required {
+	color: #CE1126;
+}
+
+
+.labelEasy {
+	color: #080;
+}
+.labelHard {
+	color: #D00;
+}
+
+div.unitTestResult.pass {
+	background-color: #0C0;
+	border-color: #080;
+}
+div.unitTestResult.failure, div.unitTestResult.error {
+	background-color: red;
+	border-color: #800;
+}
+div.unitTestResult.secret:not(.revealed) {
+	background-color: lightgrey;
+}
+div.unitTestResult.secret:not(.revealed) {
+	border-color: #999;
+}
+div.unitTestResult.revealed.pass {
+	background: linear-gradient(to top left, lightgrey 30%, #0C0 30%);
+}
+div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
+	background: linear-gradient(to top left, lightgrey 30%, red 30%);
+}
+
+.hm-table th {
+	background-color: #FFECD9;
+}
+.hm-table td.selectedMark {
+	background-color: #DDF;
+}
+.hm-cell.empty {
+	background-color: #EEE;
+}
+
+#groupSelection input.editing {
+	background-color: #FFD0A1;
+}
+.group-size.overFull {
+	background-color: #FCC;
+}
+.group-size.full {
+	background-color: #FFC;
+}
+
+/* Nested release rule highlighting */
+/* '>' selector necessary to add specificity */
+div.subRule.first {
+	border-left-color: #f5af00;
+}
+div.first > div > div > div > div.subRule {
+	border-left-color: red;
+}
+div.first > div > div > div > div.subRule > div > div > div > div.subRule {
+	border-left-color: #12416c;
+}
+
+/* Release rules */
+div.toDelete {
+	background-color: lightgray;
+}
+
+.pastaUnitTestResultpass,.pastaTFtrue {
+	color: #0C0;
+}
+.pastaTFfalse,.pastaUnitTestResulterror,.pastaUnitTestResultfailure{
+	color: red;
+}
+
+[id$=".errors"] {
+	color: red;
+}
+
+.closedAssessment{
+	background-color:#DDD;
+}
+
+.gradeCentreMarkGood{
+	background-color: #1FCB4A; 
+}
+.gradeCentreMarkBad{
+	background-color: #FFFFFF; 
+}
+.gradeCentreMarkNoSub{
+	background-color: #FF7575; 
+}
+
+.handMarkingStudent.didnotsubmit{
+	background-color: lightgray;
+	border-color: white;
+}
+.handMarkingStudent.submittedfalse{
+	background-color: gold;
+	border-color: white;
+}
+.handMarkingStudent.submittedtrue{
+	background-color: #0C0;
+	border-color: white;
+}
+.handMarkingStudent.current{
+	border-color: #0C0;
+}
+.handMarkingStudent.submittedfalse.current{
+	border-color: gold;
+}
+
+table.moduleTable tr.selected {
+	background-color:#DDF;
+}

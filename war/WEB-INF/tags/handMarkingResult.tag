@@ -22,16 +22,18 @@
 <c:set var="handMarkingResultList" value="${results.handMarkingResults}" />
 
 <c:if test="${marking or (not empty relevantWeightedHandMarking and results.finishedHandMarking)}">
-	<<c:out value="${headingLevel}" default="h3"/> class='compact'><c:out value="${heading}" default="Hand Marking"/></<c:out value="${headingLevel}" default="h3"/>>
-	<div class='all_hand_marking_wrapper vertical-block'>
+	<<c:out value="${headingLevel}" default="h3"/> class='section-title'><c:out value="${heading}" default="Hand Marking"/></<c:out value="${headingLevel}" default="h3"/>>
+	<div class='all_hand_marking_wrapper'>
 		<c:if test="${empty handMarkingResultList}">
-			<p>No hand marking for <c:out value="${results.groupResult ? 'group' : 'individual'}" /> work submissions.
+			<div class='part'>
+				No hand marking for <c:out value="${results.groupResult ? 'group' : 'individual'}" /> work submissions.
+			</div>
 		</c:if>
 		<c:forEach var="handMarkingResult" items="${handMarkingResultList}" varStatus="hmResultStatus">
 			<c:set var="weightedHM" value="${handMarkingResult.weightedHandMarking}" />
 			<c:set var="handMarking" value="${weightedHM.handMarking}" />
-			<div class='hand_marking_wrapper vertical-block'>
-				<h4 class='compact'>${handMarking.name}</h4>
+			<div class='hand_marking_wrapper part'>
+				<h4 class='part-title'>${handMarking.name}</h4>
 				<c:if test="${marking}">
 					<input type='hidden' name="handMarkingResults[${hmResultStatus.index}].id" value="${handMarkingResult.id}" />
 					<input type="hidden" name="handMarkingResults[${hmResultStatus.index}].weightedHandMarking.id" value="${weightedHM.id}" />
@@ -66,7 +68,9 @@
 				</table>
 				
 				<c:if test="${marking}">
-					<input id='submit' class="save_hand_marking" type="submit" value="Save"/>
+					<div class='button-panel'>
+						<button type='submit' class="save_hand_marking">Save</button>
+					</div>
 				</c:if>
 			</div>
 		</c:forEach>

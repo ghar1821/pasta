@@ -33,52 +33,44 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<h1> Unit Tests</h1>
-<div class='align-contents-middle float-right'>
+<div class='float-container'>
 	<div class='horizontal-block'>
-		<h2 class='compact alt'>Help</h2>
+		<h1>Unit Tests</h1>
+		<h4>Click <a href='../help/unitTests/'>here</a> for help with unit tests.</h4>
 	</div>
-	<div class='horizontal-block'>
-		<a href='../help/unitTests/'><span class='icon_help'></span></a>
-	</div>
+	<input id='search' type='text' />
 </div>
 
-<table class="pastaTable">
+<div class='section'>
 	<c:forEach var="unitTest" items="${allUnitTests}">
-		<tr>		
-			<td class="pastaTF pastaTF${unitTest.tested}">
-				<!-- status -->
-				<c:choose>
-					<c:when test="${unitTest.tested}">
-						TESTED
-					</c:when>
-					<c:otherwise>
-						UNTESTED
-					</c:otherwise>
-				</c:choose>
-			</td>
-			<td>
-				<!-- name -->
-				<b>${unitTest.name}</b>
-			</td>
-			<td>
-				<!-- buttons -->
-				<div style="float:left">
-					<a href='./${unitTest.id}/'><button style="float:left; text-align: center; ">Details</button></a>
-				</div>
+		<div class='unitTest part row'>
+			<div>
+				<span class='testName larger-text'>${unitTest.name}</span> -
+				<span class="pastaTF pastaTF${unitTest.tested}">
+					<c:choose>
+						<c:when test="${unitTest.tested}">
+							Tested
+						</c:when>
+						<c:otherwise>
+							Untested
+						</c:otherwise>
+					</c:choose>
+				</span>
+			</div>
+			<div class='button-panel'>
+				<button class='flat' onclick='location.href="./${unitTest.id}/"'>Details</button>
 				<c:if test="${user.instructor}">
-					<div style="float:left">
-						<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-						<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${unitTest.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-					</div>
+					<button class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
+					<button style="display:none;" onclick="location.href='./delete/${unitTest.id}/'" 
+						onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
 				</c:if>
-			</td>
-		</tr>
+			</div>
+		</div>
 	</c:forEach>
-</table>
+</div>
 
 <c:if test="${user.instructor}">
-	<button id="newPopup">Add a new Unit Test</button>
+	<button id="newPopup" class='floating plus'></button>
 </c:if>
 
 <div id="newUnitTestDiv" class='popup' >
@@ -87,10 +79,18 @@ either expressed or implied, of the PASTA Project.
 	</span>
 	<h1> New Unit Test </h1>
 	<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Unit Test Name:</td><td><form:input path="name"/> <form:errors path="name" /></td></tr>
-		</table>
-    	<input type="submit" value="Create" id="submit"/>
+		<div class='pasta-form narrow part'>
+			<div class='pf-item one-col'>
+				<div class='pf-label'>Name</div>
+				<div class='pf-input'>
+					<form:errors path="name" element="div" />
+					<form:input autocomplete="off" type="text" path="name" />
+				</div>
+			</div>
+			<div class='button-panel'>
+				<button type="submit" id="submit">Create</button>
+			</div>
+		</div>
 	</form:form>
 </div>
 
@@ -105,4 +105,8 @@ either expressed or implied, of the PASTA Project.
 	<spring:hasBindErrors name='newUnitTest'>
 		$('#newUnitTestDiv').bPopup();
 	</spring:hasBindErrors>
+	
+	$(".unitTest").searchNode();
+	$(".unitTest").find(".testName").searchable();
+	var searchBox = $("#search").searchBox();
 </script>

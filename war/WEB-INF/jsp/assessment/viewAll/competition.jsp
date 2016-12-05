@@ -35,94 +35,78 @@ either expressed or implied, of the PASTA Project.
 
 <c:choose>
 	<c:when test="${ not empty viewedUser}">
-		<h1>${viewedUser.username}</h1>
 		<c:set var="classes" value="${viewedUser.stream}.${viewedUser.tutorial}"/>
 		<c:set var="releaseUsername" value="${viewedUser.username}"/>
 	</c:when>
 	<c:otherwise>
-		<h1>${user.username}</h1>
 		<c:set var="classes" value="${user.stream}.${user.tutorial}"/>
 		<c:set var="releaseUsername" value="${user.username}"/>
 	</c:otherwise>
 </c:choose>
 
-<h1>Competitions</h1>
+<h1>Competitions - ${releaseUsername}</h1>
 
-<table class="pastaTable">
+<div class='section'>
 	<c:forEach var="competition" items="${allCompetitions}">
 		<c:set var="liveAssessment" value="false"/>
 		<c:if test="${not empty liveAssessmentCounts[competition.id] and liveAssessmentCounts[competition.id] gt 0}">
 			<c:set var="liveAssessment" value="true"/>
 		</c:if>
 		<c:if test="${(liveAssessment and not competition.hidden) or user.tutor}" >
-			<tr>		
-			<!-- 
-				<td class="pastaTF pastaTF${competition.tested}">
-					<!-- status ->
-					<c:choose>
-						<c:when test="${competition.tested}">
-							TESTED
-						</c:when>
-						<c:otherwise>
-							UNTESTED
-						</c:otherwise>
-					</c:choose>
-				</td>
-				 -->
-				<td>
-					<!-- name -->
-					<b>${competition.name}</b><br/>
-					<c:choose>
-						<c:when test="${competition.calculated}">
-							Calculated Competition
-						</c:when>
-						<c:otherwise>
-							Arena Competition <br/>
-							${fn:length(competition.outstandingArenas) + 1} live arenas registered
-						</c:otherwise>
-					</c:choose>
-					<br/>
-					<c:choose>
-						<c:when test="${empty competition.nextRunDate }">
-							Will never run
-						</c:when>
-						<c:otherwise>
-							Next Run: ${competition.nextRunDate}
-						</c:otherwise>
-					</c:choose>
-					<br/>
-					Used in ${liveAssessmentCounts[competition.id]} Assessment<c:if test="${liveAssessmentCounts[competition.id] != 1}">s</c:if>
-				</td>
-				<td>
-					<!-- buttons -->
-					<c:if test="${user.tutor}">
-						<div style="float:left">
-							<button style="float:left; text-align: center; " onclick="location.href='./${competition.id}/'">Details</button>
+			<div class='part'>
+				<div class='part-title larger-text'>${competition.name}</div>
+				<div class='part-title subtitle'>${competition.calculated ? "Calculated Competition" : "Arena Competition"}</div>
+				
+				<div class='info-panel horizontal-block top-align'>
+					<div class='ip-item'>
+						<div class='ip-label'>Used in:</div>
+						<div class='ip-desc'>${liveAssessmentCounts[competition.id]} Assessment<c:if test="${liveAssessmentCounts[competition.id] != 1}">s</c:if></div>
+					</div>
+				</div>
+				<div class='info-panel horizontal-block top-align'>
+					<div class='ip-item'>
+						<div class='ip-label'>Next Run:</div>
+						<div class='ip-desc'>
+							<c:choose>
+								<c:when test="${empty competition.nextRunDate }">
+									Never
+								</c:when>
+								<c:otherwise>
+									${competition.nextRunDate}
+								</c:otherwise>
+							</c:choose>
 						</div>
+					</div>
+				</div>
+				<c:if test="${not competition.calculated}">
+					<div class='info-panel horizontal-block top-align'>
+						<div class='ip-item'>
+							<div class='ip-label'>Live arenas registered:</div>
+							<div class='ip-desc'>${fn:length(competition.outstandingArenas) + 1}</div>
+						</div>
+					</div>
+				</c:if>
+				<div class='button-panel'>
+					<c:if test="${user.tutor}">
+						<button type='button' class='flat' onclick="location.href='./${competition.id}/'">Details</button>
 					</c:if>
 					<c:if test="${not competition.calculated}">
-						<div style="float:left">
-							<button style="float:left; text-align: center; " onclick="location.href='./${competition.id}/myPlayers/'">My Players</button>
-						</div>
+						<button type='button' class='flat' onclick="location.href='./${competition.id}/myPlayers/'">My Players</button>
 					</c:if>
-					<div style="float:left">
-						<button style="float:left; text-align: center; " onclick="location.href='./view/${competition.id}/'">Competition Page</button>
-					</div>
+					<button type='button' class='flat' onclick="location.href='./view/${competition.id}/'">Competition Page</button>
 					<c:if test="${user.instructor}">
-						<div style="float:left">
-							<button style="float:left; text-align: center; " onclick="$(this).slideToggle('fast').next().slideToggle('fast')">Delete</button>
-							<button style="float:left; display:none; text-align: center; " onclick="location.href='./delete/${competition.id}/'" onmouseout="$(this).slideToggle('fast').prev().slideToggle('fast');">Confirm</button>
-						</div>
+						<button type='button' class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
+						<button type='button' style="display:none;" onclick="location.href='./delete/${competition.id}/'" onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
 					</c:if>
-				</td>
-			</tr>
+				</div>
+			</div>
 		</c:if>
 	</c:forEach>
-</table>
+</div>
 				
 <c:if test="${user.instructor}">
 
-	<button id="newPopup">Add a new Competition</button>
+	<button id="newPopup" class='floating plus'></button>
 	
 	<div id="newCompetition" class="popup">
 		<span class="button bClose">
@@ -130,24 +114,28 @@ either expressed or implied, of the PASTA Project.
 		</span>
 		<h1> New Competition </h1>
 		<form:form commandName="newCompetitionModel" enctype="multipart/form-data" method="POST">
-			<table>
-				<tr><td>Competition Name:</td>
-					<td>
-						<form:input path="name"/> 
-						<form:errors path="name" />
-					</td>
-				</tr>
-				<tr><td>Competition Type:</td>
-					<td>
+			<div class='pasta-form narrow part'>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Name</div>
+					<div class='pf-input'>
+						<form:errors path="name" element="div" />
+						<form:input autocomplete="off" type="text" path="name" />
+					</div>
+				</div>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Type</div>
+					<div class='pf-input'>
+						<form:errors path="type" element="div" />
 						<form:select path="type">
 							<option value="calculated">Calculated</option>
 							<option value="arena">Arena</option>
 						</form:select> 
-						<form:errors path="type" />
-					</td>
-				</tr>
-			</table>
-	    	<input type="submit" value="Create" id="submit"/>
+					</div>
+				</div>
+				<div class='button-panel'>
+					<button type="submit" id="submit">Create</button>
+				</div>
+			</div>
 		</form:form>
 	</div>
 	
@@ -158,6 +146,8 @@ either expressed or implied, of the PASTA Project.
                 e.preventDefault();
                 $('.popup').bPopup();
             });
+            
+            $("#newCompetition select").chosen({width: "100%", disable_search:true});
             
 	        <spring:hasBindErrors name='newCompetitionModel'>
 				$('.popup').bPopup();

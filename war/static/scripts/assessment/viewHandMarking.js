@@ -1,105 +1,155 @@
-function fillCell(cell, weight, index, dataId, column, row, data, error) {
-	$(cell).removeClass("emptyCell");
-	$(cell).empty();
+function fillCell(cell, weight, index, dataId, data, error) {
+	cell.removeClass("emptyCell");
+	cell.addClass("cell");
+	cell.empty();
 	
-	var span = document.createElement("span");
-	var value = document.createTextNode(weight);
-	span.appendChild(value);
-	cell.appendChild(span);
-	if(error) {
-		$(cell).append("&nbsp;");
-		$(cell).append(error);
+	var row = cell.closest(".pf-horizontal").find(".header input[id$='id']").val();
+	var rowCells = cell.closest(".pf-horizontal").find(".cell");
+	var colIndex = rowCells.index(cell);
+	var column = columnIdAt(colIndex);
+	
+	cell.append(
+		$("<div/>")
+			.addClass("pf-label")
+			.html("Value:&nbsp")
+			.append(
+				$("<span/>")
+					.addClass("cell-weight")
+					.text(weight)
+			).append(
+				$("<div/>")
+					.addClass("float-right")
+					.append(
+						$("<button/>")
+							.addClass("flat delButton delButtonDelCell")
+							.attr("type", "button")
+							.text("Delete")
+					).append(
+						$("<button/>")
+							.addClass("confButton confButtonDelCell")
+							.attr("type", "button")
+							.css("display", "none")
+							.text("Confirm")
+					)
+			)
+	);
+	
+	if(error && error.length) {
+		$("<div/>")
+			.attr("class", "pf-label")
+			.appendTo(cell)
+			.append(error);
 	}
-	cell.appendChild(document.createElement("br"));
 	
-	var dataBox = document.createElement("textarea");
-	dataBox.setAttribute("name", "newData[" + index + "].data");
-	dataBox.setAttribute("id", "newData" + index + ".data");
-	dataBox.setAttribute("style", "height:90%; width:95%");
-	$(dataBox).append(data);
-	cell.appendChild(dataBox);
-	
-	var dataIdVal = document.createElement("input");
-	dataIdVal.setAttribute("name", "newData[" + index + "].id");
-	dataIdVal.setAttribute("id", "newData" + index + ".id");
-	dataIdVal.setAttribute("value", dataId);
-	dataIdVal.setAttribute("type", "hidden");
-	cell.appendChild(dataIdVal);
-	
-	var colVal = document.createElement("input");
-	colVal.setAttribute("name", "newData[" + index + "].column");
-	colVal.setAttribute("id", "newData" + index + ".column");
-	colVal.setAttribute("value", column);
-	colVal.setAttribute("type", "hidden");
-	cell.appendChild(colVal);
-	
-	var rowVal = document.createElement("input");
-	rowVal.setAttribute("name", "newData[" + index + "].row");
-	rowVal.setAttribute("id", "newData" + index + ".row");
-	rowVal.setAttribute("value", row);
-	rowVal.setAttribute("type", "hidden");
-	cell.appendChild(rowVal);
-	
-	var delButton = document.createElement("div");
-	delButton.setAttribute("class", "button delButton");
-	delButton.setAttribute("style", "text-align: center;");
-	delButton.appendChild(document.createTextNode("Delete Cell"));
-	cell.appendChild(delButton);
-	
-	var confButton = document.createElement("div");
-	confButton.setAttribute("class", "button confButton confButtonDelCell");
-	confButton.setAttribute("style", "display:none; text-align: center;");
-	confButton.appendChild(document.createTextNode("Confirm"));
-	cell.appendChild(confButton);
+	cell.append(
+		$("<div/>")
+			.addClass("pf-input")
+			.append(
+				$("<textarea/>")
+					.attr("name", "newData[" + index + "].data")
+					.attr("id", "newData" + index + ".data")
+					.append(data)
+			)
+	).append(
+		$("<input/>")
+			.attr("type", "hidden")
+			.attr("name", "newData[" + index + "].id")
+			.attr("id", "newData" + index + ".id")
+			.val(dataId)
+	).append(
+		$("<input/>")
+			.attr("type", "hidden")
+			.attr("name", "newData[" + index + "].column")
+			.attr("id", "newData" + index + ".column")
+			.val(column)
+	).append(
+		$("<input/>")
+			.attr("type", "hidden")
+			.attr("name", "newData[" + index + "].row")
+			.attr("id", "newData" + index + ".row")
+			.val(row)
+	)
 }
 
 function fillEmptyCell(cell) {
-	$(cell).removeClass("emptyCell");
-	$(cell).empty();
+	cell.removeClass("emptyCell");
+	cell.empty();
 	
-	var newButton = document.createElement("div");
-	newButton.setAttribute("class", "button newCell");
-	newButton.setAttribute("style", "text-align: center;");
-	newButton.appendChild(document.createTextNode("New Cell"));
-	cell.appendChild(newButton);
+	$("<button/>")
+		.attr("type", "button")
+		.addClass("flat newCell float-right")
+		.text("New Cell")
+		.appendTo(cell);
 }
 
 function fillHeaderCell(cell, newIndex, upperType) {
-	$(cell).empty();
+	cell.empty();
+	cell.addClass("header " + upperType.toLowerCase());
 	
-	var txtName = document.createElement("input");
-	txtName.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].name")
-	txtName.setAttribute("id", "new" + upperType + "Header" + newIndex + ".name")
-	txtName.setAttribute("type", "text");
-	txtName.setAttribute("value", "New " + upperType);
-	cell.appendChild(txtName);
-	cell.appendChild(document.createElement("br"));
+	$("<div/>")
+		.addClass("pf-item")
+		.append(
+			$("<div/>")
+				.addClass("pf-label")
+				.text("Name")
+				.append(
+					$("<div/>")
+						.addClass("pf-item float-right")
+						.append(
+							$("<button/>")
+								.attr("type", "button")
+								.addClass("flat delButton delButtonDel" + upperType)
+								.text("Delete")
+						)
+						.append(
+							$("<button/>")
+								.attr("type", "button")
+								.addClass("confButton confButtonDel" + upperType)
+								.css("display", "none")
+								.text("Confirm")
+						)
+				)
+		)
+		.append(
+			$("<div/>")
+				.addClass("pf-input")
+				.append(
+					$("<input/>")
+						.attr("type", "text")
+						.attr("name", "new" + upperType + "Header[" + newIndex + "].name")
+						.attr("id", "new" + upperType + "Header" + newIndex + ".name")
+						.val("New " + upperType)
+				)
+		)
+		.appendTo(cell);
+		
+	$("<div/>")
+		.addClass("pf-item")
+		.append(
+			$("<div/>")
+				.addClass("pf-label")
+				.text("Weight")
+		)
+		.append(
+			$("<div/>")
+				.addClass("pf-input")
+				.append(
+					$("<input/>")
+						.attr("type", "text")
+						.attr("name", "new" + upperType + "Header[" + newIndex + "].weight")
+						.attr("id", "new" + upperType + "Header" + newIndex + ".weight")
+						.val(0.0)
+				)
+		)
+		.appendTo(cell);
 	
-	var txtWeight = document.createElement("input");
-	txtWeight.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].weight")
-	txtWeight.setAttribute("id", "new" + upperType + "Header" + newIndex + ".weight")
-	txtWeight.setAttribute("type", "text");
-	txtWeight.setAttribute("value", "0.0");
-	cell.appendChild(txtWeight);
+	$("<input/>")
+		.attr("type", "hidden")
+		.attr("name", "new" + upperType + "Header[" + newIndex + "].id")
+		.attr("id", "new" + upperType + "Header" + newIndex + ".id")
+		.val(--newHeaderCount)
+		.appendTo(cell);
 	
-	var valId = document.createElement("input");
-	valId.setAttribute("name", "new" + upperType + "Header[" + newIndex + "].id")
-	valId.setAttribute("id", "new" + upperType + "Header" + newIndex + ".id")
-	valId.setAttribute("type", "hidden");
-	valId.setAttribute("value", --newHeaderCount);
-	cell.appendChild(valId);
-	
-	var delButton = document.createElement("div");
-	delButton.setAttribute("class", "button delButton");
-	delButton.setAttribute("style", "text-align: center;");
-	delButton.appendChild(document.createTextNode("Delete " + upperType));
-	cell.appendChild(delButton);
-	
-	var confButton = document.createElement("div");
-	confButton.setAttribute("class", "button confButton confButtonDel" + upperType);
-	confButton.setAttribute("style", "display:none; text-align: center;");
-	confButton.appendChild(document.createTextNode("Confirm"));
-	cell.appendChild(confButton);
 }
 
 function fillRowHeaderCell(cell, newIndex) {
@@ -112,36 +162,68 @@ function fillColumnHeaderCell(cell, newIndex) {
 
 function registerEvents() {
 	$(document).on('click', '.delButton', function() {
-		$(this).slideToggle("fast").next().slideToggle("fast");
+		$(this).toggle().next().toggle();
 	});
 	$(document).on('click', '.confButtonDelCell', function() {
-		deleteCell(this.parentNode.parentNode.rowIndex, this.parentNode.cellIndex);
+		deleteCell($(this).closest(".cell"));
 	});
 	$(document).on('mouseout', '.confButton', function() {
-		$(this).slideToggle("fast").prev().slideToggle("fast");
+		$(this).toggle().prev().toggle();
 	});
 	$(document).on('click', '.newCell', function() {
-		newCell(this.parentNode.parentNode.rowIndex-1, this.parentNode.cellIndex-1);
+		newCell($(this).closest(".cell"));
 	});
 	$(document).on('click', '.confButtonDelRow', function() {
-		deleteRow(this.parentNode.parentNode.rowIndex);
-		updateRows();
+		deleteRow($(this).closest(".pf-horizontal"));
 	});
 	$(document).on('click', '.confButtonDelColumn', function() {
-		deleteColumn(this.parentNode.cellIndex);
-		updateColumns()
+		var cells = $(this).closest(".pf-horizontal").find(".pf-item.header");
+		var cell = $(this).closest(".pf-item.header");
+		deleteColumn(cells.index(cell));
 	});
+	
+	var delHighlight = "#ffd9d9";
+	function hoverHighlight(selector, getCells) {
+		$(document).on('mouseover', selector, function() {
+			var cells = getCells($(this));
+			cells.find("input, textarea").each(function(i, el){
+				$(el).data("obck", $(el).css("background"))
+					.css("background", delHighlight);
+			});
+		});
+		$(document).on('mouseout', selector, function() {
+			var cells = getCells($(this));
+			cells.find("input, textarea").each(function(i, el){
+				$(el).css("background", $(el).data("obck"));
+			});
+		});
+	}
+	hoverHighlight('.confButtonDelCell,.delButtonDelCell', function(button) {
+		return button.closest(".cell");
+	});
+	hoverHighlight('.confButtonDelRow,.delButtonDelRow', function(button) {
+		return button.closest(".pf-horizontal");
+	});
+	hoverHighlight('.confButtonDelColumn,.delButtonDelColumn', function(button) {
+		var header = button.closest(".header");
+		var colId = header.find("input[id$='id']").val();
+		return $("#handMarkingTable input[id$='column'][value='" + colId + "']").closest(".cell").add(header);
+	});
+
 	$(document).on('blur', 'input', function() {
 		updateColumns();
 		updateRows();
 		updateCells();
+		
+		var table = $("#handMarkingTable");
+		var cols = table.find(".column.header");
+		
 		// sort columns
-		var table=document.getElementById("handMarkingTable");
-		for (var i=1; i<table.rows[0].cells.length; i++) {
-			for (var j=i+1; j<table.rows[0].cells.length; j++) {
-				var row1Value = table.rows[0].cells[i].getElementsByTagName("input")[1].value;
-				var row2Value = table.rows[0].cells[j].getElementsByTagName("input")[1].value;
-				if(parseFloat(row1Value) > parseFloat(row2Value))	{
+		for(var i = 0; i < cols.length; i++) {
+			for(var j = i+1; j < cols.length; j++) {
+				var col1Value = table.find(".column.header").eq(i).find("input[id$='weight']").val();
+				var col2Value = table.find(".column.header").eq(j).find("input[id$='weight']").val();
+				if(parseFloat(col1Value) > parseFloat(col2Value))	{
 					swapColumn(i, j);
 				}
 			}
@@ -149,7 +231,7 @@ function registerEvents() {
 	});
 	$("form").on("submit", function() {
 		var $table = $("#handMarkingTable");
-		var $rowHeads = $("tbody tr th", $table);
+		var $rowHeads = $(".header.row", $table);
 		var total = 0;
 		$rowHeads.each(function() {
 			total += parseFloat($(this).find("input[id$='weight']").val());
@@ -176,146 +258,157 @@ function columnIdAt(index) {
 var newHeaderCount = 0;
 
 function addColumn(){
-	var table=document.getElementById("handMarkingTable");
-	var tblHeadObj = table.tHead;
-	var newIndex = table.rows[0].cells.length-1;
-	for (var i=0; i<tblHeadObj.rows.length; i++) {
-		var newTH = document.createElement('th');
-		tblHeadObj.rows[i].appendChild(newTH);
-		fillColumnHeaderCell(newTH, newIndex);
-	}
-
-	var tblBodyObj = document.getElementById("handMarkingTable").tBodies[0];
-	for (var i=0; i<tblBodyObj.rows.length; i++) {
-		var addedCell = tblBodyObj.rows[i].insertCell(-1);
-		addedCell.setAttribute("id", "cell_" + columnIdAt(newIndex) + "_" + rowIdAt(i));
-		newCell(i, newIndex);
-	}
+	
+	var newIndex = $("#handMarkingTable .pf-horizontal:first .column.header").length;
+	$("#handMarkingTable .pf-horizontal").each(function(i, row) {
+		var cell = $("<div/>").addClass("pf-item compact").appendTo($(row));
+		if(i == 0) {
+			fillColumnHeaderCell(cell, newIndex);
+		} else {
+			cell.attr("id", "cell_" + columnIdAt(newIndex) + "_" + rowIdAt(i-1));
+			newCell(cell);
+		}
+	});
+	updateColumns();
 }
 
-function deleteColumn(column){
-	var table=document.getElementById("handMarkingTable");
-	for (var i=0; i<table.rows.length; i++) {
-		table.rows[i].deleteCell(column);
+function deleteColumn(columnIndex){
+	var rows = $("#handMarkingTable .pf-horizontal");
+	var complete = rows.length;
+	var checkComplete = function(cell) {
+		cell.remove();
+		if(--complete <= 0) {
+			updateColumns();
+		}
 	}
+	rows.each(function(i, row) {
+		if(i == 0) {
+			var cell = $(row).find(".header").eq(columnIndex);
+		} else {
+			var cell = $(row).find(".cell").eq(columnIndex);
+		}
+		cell.animate({width:'toggle'}, "fast", function() {
+			checkComplete(cell);
+		});
+	});
+}
+
+function currColClass() {
+	var numCols = $("#handMarkingTable .header.column").length + 1;
+	return numCols > 4 ? "n-col" : ["one","two","three","four"][numCols-1]+"-col";
 }
 
 function updateColumns(){
-	var table=document.getElementById("handMarkingTable");
-	for (var i=1; i<table.rows[0].cells.length; i++) {
-	
-		var currHeader = table.rows[0].cells[i].getElementsByTagName("input");
-		
-		currHeader[0].id="newColumnHeader"+(i-1)+".name";
-		currHeader[0].name="newColumnHeader["+(i-1)+"].name";
-		
-		currHeader[1].id="newColumnHeader"+(i-1)+".weight";
-		currHeader[1].name="newColumnHeader["+(i-1)+"].weight";
-		
-		currHeader[2].id="newColumnHeader"+(i-1)+".id";
-		currHeader[2].name="newColumnHeader["+(i-1)+"].id";
-	}
+	$("#handMarkingTable .header.column").each(function(i, column) {
+		var header = $(column);
+		var fields = ["name", "weight", "id"];
+		for(var j = 0; j < fields.length; j++) {
+			var field = fields[j];
+			header.find("input[id$='." + field + "']")
+				.attr("id", "newColumnHeader"+i+"." + field)
+				.attr("name", "newColumnHeader["+i+"]." + field)
+		}
+	});
+	$("#handMarkingTable .pf-horizontal[class*='-col']")
+		.removeClass("one-col two-col three-col four-col n-col")
+		.addClass(currColClass());
 }
 
 function addRow(){
-	var table=document.getElementById("handMarkingTable");
-	table.insertRow(table.rows.length)
+	var table=$("#handMarkingTable");
+	var numCols = table.find(".pf-horizontal:first .column.header").length;
+	var numRows = table.find(".pf-horizontal").length - 1;
 	
-	// -2 since the top corner should not be counted and length is 1 greater than index
-	var newIndex = table.rows.length-2;
-	
-	var newTH = document.createElement('th');
-	table.rows[table.rows.length-1].appendChild(newTH);
-	fillRowHeaderCell(newTH, newIndex);
-	
-	
-	for (var i=1; i<table.rows[0].cells.length; i++) {
-		var addedCell = table.rows[table.rows.length-1].insertCell(i);
-		addedCell.setAttribute("id", "cell_" + columnIdAt(i-1) + "_" + rowIdAt(newIndex));
-		newCell(newIndex, i-1);
+	var newRow = $("<div/>").addClass("pf-horizontal " + currColClass());
+	table.append(newRow);
+	for(var i = 0; i <= numCols; i++) {
+		var cell = $("<div/>").addClass("pf-item compact");
+		newRow.append(cell);
+		if(i == 0) {
+			fillRowHeaderCell(cell, numRows);
+		} else {
+			cell.attr("id", "cell_" + columnIdAt(i-1) + "_" + rowIdAt(numRows));
+			newCell(cell);
+		}
 	}
 }
 
 function deleteRow(row){
-	document.getElementById("handMarkingTable").deleteRow(row);
+	row.slideUp("fast", function() {
+		$(this).remove();
+		updateRows();
+	});
 }
 
 function updateRows(){
-	var table=document.getElementById("handMarkingTable");
-	for (var i=1; i<table.rows.length; i++) {
-		var currHeader = table.rows[i].cells[0].getElementsByTagName("input");
-		
-		currHeader[0].id="newRowHeader"+(i-1)+".name";
-		currHeader[0].name="newRowHeader["+(i-1)+"].name";
-		
-		currHeader[1].id="newRowHeader"+(i-1)+".weight";
-		currHeader[1].name="newRowHeader["+(i-1)+"].weight";
-		
-		currHeader[2].id="newRowHeader"+(i-1)+".id";
-		currHeader[2].name="newRowHeader["+(i-1)+"].id";
-	}
+	$("#handMarkingTable .pf-horizontal").slice(1).each(function(i, row) {
+		var header = $(row).find(".header");
+		var fields = ["name", "weight", "id"];
+		for(var j = 0; j < fields.length; j++) {
+			var field = fields[j];
+			header.find("input[id$='." + field + "']")
+				.attr("id", "newRowHeader"+i+"." + field)
+				.attr("name", "newRowHeader["+i+"]." + field)
+		}
+	});
 }
 
 function updateCells(){
-	var table=document.getElementById("handMarkingTable");
-	for (var i=1; i<table.rows.length; i++) {
-		var rowValue = table.rows[i].cells[0].getElementsByTagName("input")[1].value;
-		for (var j=1; j<table.rows[i].cells.length; j++) {
-			if(table.rows[i].cells[j].getElementsByTagName("textarea").length != 0){
-				var columnValue = table.rows[0].cells[j].getElementsByTagName("input")[1].value;
-				var currCellValue = table.rows[i].cells[j].getElementsByTagName("span")[0];
-				currCellValue.innerHTML=parseFloat((rowValue*columnValue).toFixed(3));
-			}
-		}
-	}
+	var table = $("#handMarkingTable");
+	var colVals = table.find(".column.header input[id$='.weight']").map(function() {return $(this).val()});
+	var rowVals = table.find(".row.header input[id$='.weight']").map(function() {return $(this).val()});
+	
+	table.find(".pf-horizontal").slice(1).each(function(rowIndex, row) {
+		$(row).find(".cell").each(function(colIndex, cell) {
+			var value = Number((rowVals[rowIndex] * colVals[colIndex]).toFixed(3));
+			$(cell).find(".cell-weight").text(value);
+		});
+	});
 }	
 
-function deleteCell(row, column){
-	var table=document.getElementById("handMarkingTable");
-	var cell = table.rows[row].cells[column];
+function deleteCell(cell){
 	fillEmptyCell(cell);
 }
 
-function newCell(row, column){
-	var table=document.getElementById("handMarkingTable");
-	var cell = table.rows[row+1].cells[column+1];
-	fillCell(cell, 0.0, newDataPosition++, 0, columnIdAt(column), rowIdAt(row), "");
+function newCell(cell){
+	fillCell(cell, 0.0, newDataPosition++, 0, "");
 	updateCells();
 }
 
 $(function() {
-	$( "tbody.sortable" ).sortable({
-        connectWith: "tbody",
+	$( "#handMarkingTable" ).sortable({
+        connectWith: "#handMarkingTable",
         dropOnEmpty: true,
-        
+        items: "> .pf-horizontal:not(:first)",
         stop: function(event, ui){
         	updateCells();
         }
     });
 	
-	$( "td.emptyCell" ).each(function() {
+	$( ".emptyCell" ).each(function() {
         $(this).removeClass("emptyCell");
-        fillEmptyCell($(this).context);
+        fillEmptyCell($(this));
     });
+	
+	updateColumns();
 });
 
 function swapColumn(column1Index, column2Index){
-	var table=document.getElementById("handMarkingTable");
-	
-	var inputs1 = table.rows[0].cells[column1Index].getElementsByTagName("input");
-	var inputs2 = table.rows[0].cells[column2Index].getElementsByTagName("input");
-	for(var j=0; j<inputs1.length; j++) {
-		var temp = inputs1[j].value;
-		inputs1[j].value = inputs2[j].value;
-		inputs2[j].value = temp;
+	var headers = $("#handMarkingTable").find(".column.header");
+	var head1 = headers.eq(column1Index).find("input");
+	var head2 = headers.eq(column2Index).find("input");
+	for(var i = 0; i < head1.length; i++) {
+		var temp = head1.eq(i).val();
+		head1.eq(i).val(head2.eq(i).val());
+		head2.eq(i).val(temp);
 	}
-
-	$('#handMarkingTable tbody tr').each(function() {
-	    var tr = $(this);
-	    var td1 = tr.find('td:eq(' + (column1Index - 1) + ')');
-	    var td2 = tr.find('td:eq(' + (column2Index - 1) + ')');
-	    td1.detach().insertAfter(td2);
-	    td1 = tr.find('td:eq(' + (column1Index - 1) + ')');
-	    td2.detach().insertBefore(tr.find('td:eq(' + (column1Index - 1) + ')'));
+	
+	var rows = $("#handMarkingTable").find(".pf-horizontal").slice(1);
+	rows.each(function(i, row) {
+		var cell1 = $(row).find(".cell").eq(column1Index);
+		var cell2 = $(row).find(".cell").eq(column2Index);
+		var anchor = cell1.prev();
+		cell1.detach().insertBefore(cell2);
+		cell2.detach().insertAfter(anchor);
 	});
 }

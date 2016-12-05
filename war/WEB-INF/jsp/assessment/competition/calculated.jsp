@@ -35,53 +35,67 @@ either expressed or implied, of the PASTA Project.
 
 <h1>${competition.name}</h1>
 
-<c:choose>
-	<c:when test="${empty marks}">
-		No results available
-	</c:when>
-	<c:otherwise>
-		<table>
-			<tr>
-				<th>Position</th><th>Username</th><th>Percentage</th>
-				<c:choose>
-					<c:when test="${not user.tutor}">
-						<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
-							<th>${category}</th>
+<div class='section'>
+	<div class='part'>
+		<c:choose>
+			<c:when test="${empty marks}">
+				No results available
+			</c:when>
+			<c:otherwise>
+				<table id='resultsTable' class='display'>
+					<thead>
+						<tr>
+							<th>Position</th><th>Username</th><th>Percentage</th>
+							<c:choose>
+								<c:when test="${not user.tutor}">
+									<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
+										<th>${category}</th>
+									</c:forEach>
+								</c:when>
+								<c:otherwise>
+									<c:forEach var="category" items="${arenaResult.categories}">
+										<th>${category}</th>
+									</c:forEach>
+								</c:otherwise>
+							</c:choose>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="positionData" items="${marks.positions}" varStatus="position">
+							<c:forEach var="compResult" items="${positionData.userResults}">
+								<tr>
+									<td>
+										${position.index + 1}
+										<c:if test="${fn:length(positionData.userResults) > 1}">
+											=
+										</c:if>
+									</td>
+									<td>${compResult.username}</td>
+									<td>${compResult.percentage}</td>
+									<c:choose>
+										<c:when test="${not user.tutor}">
+											<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
+												<td>${arenaResult.data[compResult.username][category]}</td>
+											</c:forEach>
+										</c:when>
+										<c:otherwise>
+											<c:forEach var="category" items="${arenaResult.categories}">
+												<td>${arenaResult.data[compResult.username][category]}</td>
+											</c:forEach>
+										</c:otherwise>
+									</c:choose>
+								</tr>
+							</c:forEach>
 						</c:forEach>
-					</c:when>
-					<c:otherwise>
-						<c:forEach var="category" items="${arenaResult.categories}">
-							<th>${category}</th>
-						</c:forEach>
-					</c:otherwise>
-				</c:choose>
-			</tr>
-			<c:forEach var="positionData" items="${marks.positions}" varStatus="position">
-				<c:forEach var="compResult" items="${positionData.userResults}">
-					<tr>
-						<td>
-							${position.index + 1}
-							<c:if test="${fn:length(positionData.userResults) > 1}">
-								=
-							</c:if>
-						</td>
-						<td>${compResult.username}</td>
-						<td>${compResult.percentage}</td>
-						<c:choose>
-							<c:when test="${not user.tutor}">
-								<c:forEach var="category" items="${arenaResult.studentVisibleCategories}">
-									<td>${arenaResult.data[compResult.username][category]}</td>
-								</c:forEach>
-							</c:when>
-							<c:otherwise>
-								<c:forEach var="category" items="${arenaResult.categories}">
-									<td>${arenaResult.data[compResult.username][category]}</td>
-								</c:forEach>
-							</c:otherwise>
-						</c:choose>
-					</tr>
-				</c:forEach>
-			</c:forEach>
-		</table>
-	</c:otherwise>
-</c:choose>
+					</tbody>
+				</table>
+			</c:otherwise>
+		</c:choose>
+	</div>
+</div>
+
+<script>
+	$(function() {
+		$("#resultsTable").DataTable();
+	});
+</script>

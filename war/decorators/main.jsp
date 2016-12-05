@@ -12,8 +12,8 @@
 		<title><spring:message code="UOS" /> </title>
 		
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
-		<link href="<c:url value="/static/styles/screen-0.0.1-SNAPSHOT.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/screen-susk-0.0.1-SNAPSHOT.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/main.css?v=1"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/theme.css?v=1"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/scripts/jqplot/jquery.jqplot.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -104,7 +104,7 @@
 	            	});
 	            });
 	            
-	            var specificTitle = $('.pageContent h1:first').text();
+	            var specificTitle = $('#body h1:first').text();
 	            if(specificTitle) {
 		            document.title = specificTitle;
 	            }
@@ -113,143 +113,53 @@
 		</script>
 	</head>
 	<body id="home" class="tex2jax_ignore">
-	
-		<div id="w1">
-			<div id="w2">
-					<img src="http://poseidon.it.usyd.edu.au/~gramoli/web/img/usyd-100.svg"/><span id="title"><spring:message code="UOS" /></span>
-					<div id="news">	
-							<a href="<c:url value="/home/"/>">Home</a>
-               						<c:if test="${not empty user and user.tutor}">&nbsp;&nbsp;
-								<a href="<c:url value="/gradeCentre/"/>"><span>Grade Centre</span></a>&nbsp;&nbsp;
-								<c:if test="${ not empty user.tutorial }">
-									<a href="<c:url value="/myTutorials/"/>"><span>My Tutorials</span></a>&nbsp;&nbsp;
-								</c:if>
-								<a href="<c:url value="/assessments/"/>"><span>Assessments</span></a>&nbsp;&nbsp;
-								<a href="<c:url value="/unitTest/"/>"><span>Unit Tests</span></a>&nbsp;&nbsp;
-								<a href="<c:url value="/handMarking/"/>"><span>Hand Marking</span></a>
-							</c:if>
-							<c:if test="${not empty user}">&nbsp;&nbsp;
-								<a href="<c:url value="/competition/"/>"><span>Competitions</span></a>&nbsp;&nbsp;
-								<a href="<c:url value="/admin/"/>"><span>Admin</span></a>
-							</c:if>
-                                                        <c:choose>
-                                                               	<c:when test="${not empty user}">
-                                                                	&nbsp;&nbsp;<a href="<c:url value="/home/"/>"><span>${user.username}</span></a>|<a href="<c:url value="/login/exit"/>"><span>logout</span></a>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                        &nbsp;&nbsp;<a href="<c:url value="/login/"/>"><span>Login</span></a>
-                                                                </c:otherwise>
-                                                        </c:choose>
-
-					</div>
-				<!--div id="w3">
-					<div id="head">
-						<div id="masthead">
-							<h1>
-								<a href="http://www.sydney.edu.au" id="logo">The University of Sydney</a> <span id="separator">-</span> <span id="tag-line"><spring:message code="UOS" /></span>
-							</h1>
-						</div>
-						<div id="utilities">
-							<ul id="nav-global">
-								<li class="active">
-									<a href="<c:url value="/"/>">PASTA Home</a>
-								</li>
-								<li>
-									<a href="http://www.sydney.edu.au">University Home</a>
-								</li>
-							</ul>
-							<div id="quicklinks"></div>
-							<div id="login">
-								<c:choose>
-									<c:when test="${not empty user}">
-										<a href="<c:url value="/home/"/>"><span>${user.username}</span></a> |
-										<a href="<c:url value="/login/exit"/>"><span>Logout</span></a>
-									</c:when>
-									<c:otherwise>
-										<a href="<c:url value="/login/"/>"><span>Login</span></a>
-									</c:otherwise>
-								</c:choose>
-							</div>
-						</div>
-					</div>
-					<div id="tabbar">
-						<ul class="horizontal" id="tabs">
-							<li>
-								<span>
-									<a href="<c:url value="/home/"/>"><span>Home</span></a>
-								</span>
-							</li>
-							<c:if test="${not empty user and user.tutor}">
-								<li>
-									<span>
-										<a href="<c:url value="/gradeCentre/"/>"><span>Grade Centre</span></a>
-									</span>
-								</li>
-								<c:if test="${ not empty user.tutorial }">
-									<li>
-										<span>
-											<a href="<c:url value="/myTutorials/"/>"><span>My Tutorials</span></a>
-										</span>
-									</li>
-								</c:if>
-								<li>
-									<span>
-										<a href="<c:url value="/assessments/"/>"><span>Assessments</span></a>
-									</span>
-								</li>
-								<li>
-									<span>
-										<a href="<c:url value="/unitTest/"/>"><span>Unit Tests</span></a>
-									</span>
-								</li>
-								<li>
-									<span>
-										<a href="<c:url value="/handMarking/"/>"><span>Hand Marking</span></a>
-									</span>
-								</li>
-							</c:if>
-							<c:if test="${not empty user}">
-								<li>
-									<span>
-										<a href="<c:url value="/competition/"/>"><span>Competitions</span></a>
-									</span>
-								</li>
-								<li>
-									<span>
-										<a href="<c:url value="/admin/"/>"><span>Admin</span></a>
-									</span>
-								</li>
-							</c:if>
-						</ul>
-					</div>
-					<div id="tabunderscore"></div>
-					<!-- start mid -->
-					<div class="clearfix" id="mid"></div>
-					<!-- start content -->
-					<div class="nomenu nofeature pageContent">
-						<div id="w4">
-							<decorator:body />
-						</div>
-					</div>
-				</div-->
+		<div id='header'>
+			<div id='head'>
+				<img src="<c:url value="/static/images/usyd-100.svg"/>">
+				<div class='horizontal float-right'><span class="title"><spring:message code="UOS" /></span></div>
+			</div>
+			
+			<div id="login" class='link-bar float-right'>
+				<c:choose>
+					<c:when test="${not empty user}">
+						<a href="<c:url value="/home/"/>"><span>${user.username}</span></a>
+						<a href="<c:url value="/login/exit"/>"><span>Logout</span></a>
+					</c:when>
+					<c:otherwise>
+						<a href="<c:url value="/login/"/>"><span>Login</span></a>
+					</c:otherwise>
+				</c:choose>
+			</div>
+			
+			<div class='link-bar'>
+				<a href="<c:url value="/"/>">PASTA Home</a>
+				<a href="http://www.sydney.edu.au">University Home</a>
+			</div>
+			
+			<div class='tab-bar'>
+				<div class='tab'><a href="<c:url value="/home/"/>">Home</a></div>
+				<c:if test="${not empty user and user.tutor}">
+					<div class='tab'><a href="<c:url value="/gradeCentre/"/>">Grade Centre</a></div>
+					<c:if test="${ not empty user.tutorial }">
+						<div class='tab'><a href="<c:url value="/myTutorials/"/>">My Tutorials</a></div>
+					</c:if>
+					<div class='tab'><a href="<c:url value="/assessments/"/>">Assessments</a></div>
+					<div class='tab'><a href="<c:url value="/unitTest/"/>">Unit Tests</a></div>
+					<div class='tab'><a href="<c:url value="/handMarking/"/>">Hand Marking</a></div>
+				</c:if>
+				<c:if test="${not empty user}">
+					<div class='tab'><a href="<c:url value="/competition/"/>">Competitions</a></div>
+					<div class='tab'><a href="<c:url value="/admin/"/>">Admin</a></div>
+				</c:if>
 			</div>
 		</div>
-		<div id="lbOverlay" style="display: none;"></div>
-		<div id="lbCenter" style="display: none;">
-			<div id="lbImage">
-				<div style="position: relative;">
-					<a id="lbPrevLink" href="#"></a>
-					<a id="lbNextLink" href="#"></a>
-				</div>
-			</div>
-		</div>
-		<div id="lbBottomContainer" style="display: none;">
-			<div id="lbBottom">
-				<a id="lbCloseLink" href="#"></a>
-				<div id="lbCaption"></div>
-				<div id="lbNumber"></div>
-				<div style="clear: both;"></div>
-			</div>
+		
+		<script>
+			$("#header .tab-bar .tab a").filter(function(){return window.location.href.indexOf(this.href) === 0;}).parent().addClass("current");
+		</script>
+		
+		<div id="body">
+			<decorator:body />
 		</div>
 	</body>
 </html>

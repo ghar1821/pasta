@@ -45,10 +45,10 @@ either expressed or implied, of the PASTA Project.
 	<a href='../../home/'>${effectiveUser.username}</a> - ${assessment.name}
 </h1>
 
-<table class='alignCellsTop'>
-	<tr>
-		<th>Due Date</th>
-		<td>
+<div class='info-panel'>
+	<div class='ip-item'>
+		<div class='ip-label'>Due Date</div>
+		<div class='ip-desc'>
 			<c:choose>
 				<c:when test="${empty extension}"><pasta:readableDate date="${assessment.dueDate}" /></c:when>
 				<c:otherwise>
@@ -56,49 +56,67 @@ either expressed or implied, of the PASTA Project.
 					<span style='color: red;'><pasta:readableDate date="${extension}" /></span>
 				</c:otherwise>
 			</c:choose>
-		</td>
-	</tr>
-	<tr><th>Possible Marks</th><td>${assessment.marks}</td></tr>
+		</div>
+	</div>
+	<div class='ip-item'>
+		<div class='ip-label'>Possible Marks</div>
+		<div class='ip-desc'>${assessment.marks}</div>
+	</div>
 	<c:if test="${not empty assessment.submissionLanguages}">
-		<tr><th>Allowed Languages</th><td>
-			<c:forEach var="language" items="${assessment.submissionLanguages}">
-				<div><code>${language.description}</code></div>
-			</c:forEach>
-		</td></tr>
+		<div class='ip-item'>
+			<div class='ip-label'>Allowed Languages</div>
+			<div class='ip-desc'>
+				<c:forEach var="language" items="${assessment.submissionLanguages}">
+					<div><code>${language.description}</code></div>
+				</c:forEach>
+			</div>
+		</div>
 	</c:if>
-</table>
+</div>
 
 <c:if test="${not empty assessment.description}">
-	<h4>Assessment Description</h4>
-	<div class='show-math'>
-		${assessment.description}
+	<h2>Assessment Description</h2>
+	<div class='section'>
+		<div class='show-math part'>
+			${assessment.description}
+		</div>
 	</div>
 </c:if>
 
 <c:if test="${assessment.autoMarked}">
-	<h4>General Submission Instructions</h4>
-	<c:if test="${not empty assessment.solutionName}">
-	<c:choose>
-		<c:when test="${empty assessment.submissionLanguages}">
-			<p>Your submission must be in a file named <code>${assessment.solutionName}</code>.
-		</c:when>
-		<c:otherwise>
-			<p>Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.shortSolutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
-		</c:otherwise>
-	</c:choose>
-	</c:if>
-	<c:choose>
-		<c:when test="${fn:length(assessment.expectedDirectories) == 1}">
-			<p>Your code submission must be in a directory called <code>${assessment.expectedDirectories[0]}</code>.
-		</c:when>
-		<c:when test="${not empty assessment.expectedDirectories}">
-			<p>Your code submission must contain the following code directories:
-			<c:forEach var="dir" items="${assessment.expectedDirectories}" varStatus="loop">
-				<code>${dir}</code><c:if test="${!loop.last}">, </c:if>
-			</c:forEach>
-		</c:when>
-	</c:choose>
-	<p><c:if test="${empty assessment.expectedDirectories}">If your submission contains multiple files, </c:if><strong>zip</strong> your submission into a <code>.zip</code> file and submit that. Do not use any other zip format (e.g. <code>.rar</code> or <code>.7z</code>).
+	<h2>General Submission Instructions</h2>
+	<div class='section'>
+		<c:if test="${not empty assessment.solutionName}">
+			<div class='part'>
+				<c:choose>
+					<c:when test="${empty assessment.submissionLanguages}">
+						Your submission must be in a file named <code>${assessment.solutionName}</code>.
+					</c:when>
+					<c:otherwise>
+						Your submission must be written in <c:choose><c:when test="${fn:length(assessment.submissionLanguages) == 1}">the language</c:when><c:otherwise>one of the languages</c:otherwise></c:choose> listed above. It must include a main file named <code>${assessment.shortSolutionName}</code> (for example <code>${assessment.sampleSubmissionName}</code>).
+					</c:otherwise>
+				</c:choose>
+			</div>
+		</c:if>
+		<c:choose>
+			<c:when test="${fn:length(assessment.expectedDirectories) == 1}">
+				<div class='part'>
+					Your code submission must be in a directory called <code>${assessment.expectedDirectories[0]}</code>.
+				</div>
+			</c:when>
+			<c:when test="${not empty assessment.expectedDirectories}">
+				<div class='part'>
+					Your code submission must contain the following code directories:
+					<c:forEach var="dir" items="${assessment.expectedDirectories}" varStatus="loop">
+						<code>${dir}</code><c:if test="${!loop.last}">, </c:if>
+					</c:forEach>
+				</div>
+			</c:when>
+		</c:choose>
+		<div class='part'>
+			<c:if test="${empty assessment.expectedDirectories}">If your submission contains multiple files, </c:if><strong>zip</strong> your submission into a <code>.zip</code> file and submit that. Do not use any other zip format (e.g. <code>.rar</code> or <code>.7z</code>).
+		</div>
+	</div>
 </c:if>
 
 <c:choose>
@@ -107,14 +125,42 @@ either expressed or implied, of the PASTA Project.
 		
 		<c:forEach var="result" items="${history}" varStatus="resultStatus">
 		<c:set var='groupResult' value="${result.user.id != effectiveUser.id}" />
-		<div class='vertical-block boxCard <c:if test="${groupResult}">group-highlight</c:if>'>
-			<%--Heading and button panel--%>
-			<div class='vertical-block float-container'>
-				<div class='float-left'>
-					<h4 class='compact showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /><c:out value="${lateString[result.id]}"/></h4>
+		<div class='section'>
+			<div class='clearfix section-title'>
+				<h3 class='horizontal-block showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /><c:out value="${lateString[result.id]}"/></h3>
+				
+				<%--Group work submission details--%>
+				<c:if test="${groupResult}">
+					<div class='submitted-by-panel float-right'>
+						<div class='align-contents-middle horizontal-block'>
+							<div class='horizontal-block small-gap'><a>Group Submission</a></div>
+							<div class='horizontal-block small-gap icon-group'></div>
+							<div class='horizontal-block small-gap'>Submitted by ${result.submittedBy}.</div>
+						</div>
+					</div>
+				</c:if>
+			</div>
+			
+			<%--Submission contents--%>
+			<div class='part no-line'>
+				<div class='vertical-block'>
+					<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
+					<jsp:include page="../recursive/fileWriterRoot.jsp">
+						<jsp:param name="owner" value="${result.user.group ? result.user.name : result.user.username}"/>
+					</jsp:include>
 				</div>
+			</div>
+			
+			<%--Summary of results--%>
+			<div class='part no-line'>
+				<h3 class='part-title'>Summary</h3>
+				<tag:unitTestResult closedAssessment="${closed}" results="${result}" summary="true" />
+			</div>
+			
+			<%--Button panel--%>
+			<div class='part no-line'>
 				<c:if test="${ user.tutor }" >
-					<div id='buttonPanel' class='float-right horizontal-block'>
+					<div class='button-panel'>
 						<c:set var="pathPrefix" value="../.." />
 						<c:if test="${not empty viewedUser}">
 							<c:set var="pathPrefix" value="../../../.." />
@@ -124,48 +170,28 @@ either expressed or implied, of the PASTA Project.
 							<c:if test="${not empty result.handMarkingResults and result.finishedHandMarking}">
 								<c:set var="markButtonText" value="Edit attempt marks" />
 							</c:if>
-							<button onclick="window.location.href='${pathPrefix}/mark/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
+							<button class='flat' onclick="window.location.href='${pathPrefix}/mark/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
 						</c:if>
 						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<button onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+							<button class='flat' onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
 						</c:if>
-						<button onclick="window.location.href='${pathPrefix}/download/${result.user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
-					</div>
-				</c:if>
-				<c:if test="${groupResult}">
-					<div class='submitted-by-panel float-right'>
-						<div class='align-contents-middle horizontal-block'>
-							<div class='horizontal-block small-gap'><h4 class='alt compact'>Group Submission</h4></div>
-							<div class='horizontal-block small-gap icon-group'></div>
-							<div class='horizontal-block small-gap'><p>Submitted by ${result.submittedBy}.</div>
-						</div>
+						<button class='flat' onclick="window.location.href='${pathPrefix}/download/${result.user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
 					</div>
 				</c:if>
 			</div>
-			
-			<%--Submission contents--%>
-			<div class='vertical-block'>
-				<c:set var="node" value="${nodeList[result.formattedSubmissionDate]}" scope="request"/>
-				<jsp:include page="../recursive/fileWriterRoot.jsp">
-					<jsp:param name="owner" value="${result.user.group ? result.user.name : result.user.username}"/>
-				</jsp:include>
-			</div>
-			
-			<%--Summary of results--%>
-			<h5 class='compact'>Summary</h5>
-			<tag:unitTestResult closedAssessment="${closed}" results="${result}" summary="true" />
 			
 			<%--Details of results--%>
-			<div id="${result.id}" class='resultDetails vertical-block'>
-				<h5 class='compact'>Details</h5>
+			<div id="${result.id}" class='resultDetails part no-line'>
+				<h3 class='part-title'>Details</h3>
+				
 				<%--Files compiled--%>
-				<c:if test="${ user.tutor }" >
+				<c:if test="${ user.tutor and not empty result.unitTests}" >
 					<div class='vertical-block'>
-						<p class='showHide' showhide="files_${resultStatus.index}"><strong>Files Compiled</strong>
-						<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="font-size: 1em;display:none;padding:1em;">
+						<h4 class='showHide' showhide="files_${resultStatus.index}">Files Compiled</h4>
+						<div id="files_${resultStatus.index}" class="ui-state-highlight ui-corner-all" style="display:none;padding:1em;padding-top:0;">
 							<c:forEach var="unitTest" items="${result.unitTests}">
-								<div class='vertical-block'>
-									<h6 class='compact'>${unitTest.test.name}</h6>
+								<div>
+									<h5>${unitTest.test.name}</h5>
 									<pre><c:out value="${unitTest.filesCompiled}" escapeXml="true"/></pre>
 								</div>
 							</c:forEach>
@@ -175,14 +201,14 @@ either expressed or implied, of the PASTA Project.
 				
 				<tag:unitTestResult closedAssessment="${closed}" results="${result}" />
 				
-				<tag:handMarkingResult results="${result}" marking="false" headingLevel="h5"/>
+				<tag:handMarkingResult results="${result}" marking="false"/>
 				
 				<div class='vertical-block'>
-					<h5 class='compact'>Comments</h5>
+					<h4>Comments</h4>
 					<div id="comments${result.id}" class='vertical-block'>
 						<c:choose>
 							<c:when test="${empty result.comments}">
-								No comments
+								<em>No comments</em>
 							</c:when>
 							<c:otherwise>
 								${result.comments}
