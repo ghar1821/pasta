@@ -10,7 +10,7 @@ import java.util.TreeSet;
  * @since 27 Jun 2015
  */
 public enum Language {
-	JAVA("Java", "java"), C("C", "c"), CPP("C++", "cpp", "cc"), PYTHON("Python", "py");
+	JAVA("Java", "java"), C("C", "c"), CPP("C++", "cpp", "cc"), PYTHON("Python", "py"), MATLAB("MATLAB", "m");
 	
 	private String name;
 	private TreeSet<String> extensions;

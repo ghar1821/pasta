@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: auto-generated file. -->
+<project basedir="." default="build" name="assessment">
+	<property name='binDir' value='bin'/>
+	<property name='sandboxUser' value='pastasandbox'/>
+	
+	<target name="makeBin">
+		<mkdir dir="${binDir}"/>
+		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
+		<chmod file="${binDir}" perm="g+ws" type="dir" />
+	</target>
+	<target name="makeWritable">
+		{$?{hasWritable}
+		<chgrp group="${sandboxUser}" type="file">
+			<fileset dir="${binDir}">
+				${writableFiles}
+			</fileset>
+		</chgrp>
+		<chmod perm="g+w" type="file">
+			<fileset dir="${binDir}">
+				${writableFiles}
+			</fileset>
+		</chmod>
+		}
+	</target>
+	<target name="copyNonMatlab">
+        <echo message="Copying non-code from '${basedir}' to '${binDir}'"/>
+		<copy includeemptydirs="false" todir="${binDir}">
+            <fileset dir="${basedir}">
+				<exclude name="**/*.m"/>
+				<exclude name="**/*.java"/>
+                <exclude name="build.xml"/>
+            	<exclude name="result.xml"/>
+            	<exclude name="run.errors"/>
+            	<exclude name="${binDir}/**/*"/>
+            </fileset>
+        </copy>
+	</target>
+	<target name="moveToBin">
+        <echo message="Moving code from '${basedir}' to '${binDir}'"/>
+		<move includeemptydirs="false" todir="${binDir}">
+            <fileset dir="${basedir}">
+				<include name="**/*.m"/>
+            </fileset>
+        </move>
+	</target>
+
+    <target name="init">
+        <property environment="env"/>
+		<property name="debuglevel" value="source,lines,vars"/>
+        <property name="target" value="1.8"/>
+        <property name="source" value="1.8"/>
+    	<path id="lib.jars">
+    		<fileset dir="${libdirectory}">
+                <exclude name="ant-contrib/**"/>
+    			<include name="**/*.jar"/>
+                <include name="**/*.class"/>
+    		</fileset>
+    	</path>
+        <path id="assessment.classpath">
+            <pathelement location="${binDir}"/>
+            <path refid="lib.jars"/>
+        </path>
+		<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+          <classpath>
+            <pathelement location="${libdirectory}/ant-contrib/ant-contrib-1.0b3.jar"/>
+          </classpath>
+        </taskdef>
+    </target>
+
+    <target name="setup" depends="makeBin, copyNonMatlab, makeWritable, moveToBin">
+    </target>
+    <target name="clean">
+    	<echo message="Deleting .class files from '${binDir}'"/>
+		<delete>
+			<fileset dir="${binDir}" includes="**/*.class"/>
+		</delete>
+    </target>
+    <target name="build" depends="init, setup">
+		<echo message="Using javac to compile Java code"/>
+        <javac
+            fork="yes"
+            includeantruntime="false"
+            debug="true"
+            debuglevel="${debuglevel}"
+        	srcdir="${basedir}"
+            destdir="${binDir}"
+            source="${source}"
+            target="${target}">
+        	<exclude name="origSubmission/**/*"/>
+        	<exclude name="${binDir}/**/*"/>
+            <classpath refid="assessment.classpath"/>
+        </javac>
+    </target>
+
+    <target name="run">
+        <echo message="Executing '${testName}'"/>
+        <foreach param="bbTestData" list="${allTestData}" target="doTest"/>
+    </target>
+    <target name="doTest">
+        <script language="javascript"> <![CDATA[
+            arr = project.getProperty('bbTestData').split('|');
+            project.setProperty('bbTestName', arr[0]);
+            project.setProperty('bbTestTimeout', arr[1]);
+        	project.setProperty('bbTestTimeoutFraction', parseFloat(arr[1]) / 1000.0);
+            if(arr[2] == undefined) {
+                project.setProperty('bbTestCommandLine', "");
+            } else {
+                project.setProperty('bbTestCommandLine', arr[2]);
+            }
+        ]]></script>
+        <echo message="Running ./${solutionName} ${bbTestCommandLine}"/>
+    	<exec
+    		executable="/usr/bin/time"
+			dir="${binDir}"
+			input="${binDir}/${bbinputfile}/${bbTestName}"
+            output="${binDir}/${bbuseroutfile}/${bbTestName}"
+			error="${runErrorsFile}"
+			append="true">
+    		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
+    		<arg value="/usr/local/bin/pastarun" /> 
+    		<arg line="/home/tomcat/timeout ${bbTestTimeoutFraction}" /> 
+    		<arg line='/home/tomcat/bin/matlab -nodesktop -nosplash -r ' />
+			<arg value='"${solutionName} ${bbTestCommandLine}"' />
+		</exec>
+    	<script language="javascript"><![CDATA[
+    		var errorCode = parseInt(project.getProperty('errorCode'));
+			// 124 = timeout, 143 = SIGTERM
+    		if(errorCode == 124 || errorCode == 143) {
+    			project.setProperty('timedOut', true);
+			}
+    	]]></script>
+    	<if>
+    	    <isset property="timedOut"/>
+    	    <then>
+    	        <touch file="${binDir}/${bbmetafile}/${bbTestName}.timedout"/>
+    	    </then>
+    	</if>
+    </target>
+
+	<target name="test">
+        <echo message="Running JUnit '${testName}'"/>
+        <junit
+            filtertrace="${filterStackTraces}"
+            fork="yes"
+            timeout="${maxtimeallowed}"
+            dir="${binDir}">
+			<formatter type="xml" />
+            <test name="${testName}" outfile="${testOutputFile}" />
+            <classpath refid="assessment.classpath"/>
+        </junit>
+    </target>
+</project>
