@@ -118,10 +118,10 @@
 			error="${runErrorsFile}"
 			append="true">
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
-    		<arg value="/usr/local/bin/pastarun" /> 
-    		<arg line="/home/tomcat/timeout ${bbTestTimeoutFraction}" /> 
-    		<arg line='/home/tomcat/bin/matlab -nodesktop -nosplash -r ' />
-			<arg value='"${solutionName} ${bbTestCommandLine}"' />
+		<!--	<arg value="/usr/local/bin/pastarun" />  -->
+		<arg line="/home/tomcat/timeout ${bbTestTimeoutFraction}" />
+		<arg line='/home/tomcat/bin/run_matlab ${solutionName} "${bbTestCommandLine}"' />
+		<!--	<arg value='"${bbTestCommandLine}"' /> -->
 		</exec>
     	<script language="javascript"><![CDATA[
     		var errorCode = parseInt(project.getProperty('errorCode'));
