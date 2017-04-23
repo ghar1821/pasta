@@ -33,6 +33,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="pasta" uri="pastaTag"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <h1 style="margin-bottom:0.5em;">${assessment.name}</h1>
 
@@ -229,9 +230,7 @@ either expressed or implied, of the PASTA Project.
 		<div class='section'>
 			<h2 class='section-title'>Release Rule</h2>
 			<div class='part'>
-				<div>
-					${assessment.releaseDescription}
-				</div>
+				<tag:releaseRulePrinted rule="${assessment.releaseRule}" />
 				<div class='button-panel'>
 					<c:set var="buttonText" value="Set" />
 					<c:if test="${assessment.released}"><c:set var="buttonText" value="Modify" /></c:if>

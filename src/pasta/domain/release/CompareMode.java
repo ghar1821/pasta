@@ -1,7 +1,7 @@
 package pasta.domain.release;
 
 public enum CompareMode {
-	LESS_THAN("Less than"), LESS_THAN_OR_EQUAL("Less than or equal to"), EQUAL("Equal to"), GREATER_THAN_OR_EQUAL("Greater than or equal to"), GREATER_THAN("Greater than");
+	LESS_THAN("less than"), LESS_THAN_OR_EQUAL("less than or equal to"), EQUAL("equal to"), GREATER_THAN_OR_EQUAL("greater than or equal to"), GREATER_THAN("greater than");
 	
 	private String text;
 	private CompareMode(String text) {
