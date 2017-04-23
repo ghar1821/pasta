@@ -3,6 +3,7 @@
 <project basedir="." default="build" name="assessment">
 	<property name='binDir' value='bin'/>
 	<property name='sandboxUser' value='pastasandbox'/>
+	${bbTestCaseProperties}
 	
 	<target name="makeBin">
 		<mkdir dir="${binDir}"/>
