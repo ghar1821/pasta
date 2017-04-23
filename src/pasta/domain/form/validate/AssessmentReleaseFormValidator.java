@@ -56,7 +56,7 @@ public class AssessmentReleaseFormValidator implements Validator {
 				errors.rejectValue("markType", "NotNull");
 			}
 			if(form.isAsPercentage()) {
-				if(form.getCompareMark() < 0 || form.getCompareMark() > 1) {
+				if(form.getCompareMark() < 0 || form.getCompareMark() > 100) {
 					errors.rejectValue("compareMark", "NotPercentage");
 				}
 			}

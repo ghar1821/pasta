@@ -122,18 +122,8 @@ function reloadEvents($parentDiv) {
 	
 	$parentDiv.find("input.percentCheck").on("change", function() {
 		var $cell = $(this).closest(".pf-item").children(".pf-label").first();
-		$cell.text($(this).is(":checked") ? "Percent (0.0 - 1.0):" : "Mark:");
+		$cell.text($(this).is(":checked") ? "Percent (0 - 100):" : "Mark:");
 	});
-	$parentDiv.find("input.setMark").tipsy({trigger: 'focus', gravity: 'e', title: function() {
-		if($(this).parent().find("input:checkbox").is(":checked")) {
-			var val = parseFloat($(this).val());
-			if(!isNaN(val)) {
-				return (val.toFixed(2) * 100) + "% of full marks";
-			}
-			return "";
-		}
-		return "";
-	}});
 	$parentDiv.find("input.setMark").on("keyup", function() {
 		$(this).tipsy("hide");
 		$(this).tipsy("show");

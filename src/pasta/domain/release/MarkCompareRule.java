@@ -19,7 +19,7 @@ import pasta.domain.user.PASTAUser;
  * <p>
  * For example, if a {@link MarkCompareRule} is created with {@link MarkType}
  * {@code .AUTO_MARK}, {@link CompareMode}{@code .GREATER_THAN_OR_EQUAL},
- * {@code asPercentage = true} and {@code compareMark = 0.5}, then all students
+ * {@code asPercentage = true} and {@code compareMark = 50}, then all students
  * with an automatic mark of 50% or greater (ignoring hand marks) in the given
  * assessment will be able to see this assessment.
  * 
@@ -65,13 +65,13 @@ public class MarkCompareRule extends ReleaseResultsRule implements Serializable 
 		double mark;
 		switch(markType) {
 		case AUTO_MARK:
-			mark = asPercentage ? latestCompareResult.getAutoMarkPercentage() : latestCompareResult.getAutoMarks();
+			mark = asPercentage ? latestCompareResult.getAutoMarkPercentage() * 100.0 : latestCompareResult.getAutoMarks();
 			break;
 		case MANUAL_MARK:
-			mark = asPercentage ? latestCompareResult.getHandMarkPercentage() : latestCompareResult.getHandMarks();
+			mark = asPercentage ? latestCompareResult.getHandMarkPercentage() * 100.0 : latestCompareResult.getHandMarks();
 			break;
 		case OVERALL:
-			mark = asPercentage ? latestCompareResult.getPercentage() : latestCompareResult.getMarks();
+			mark = asPercentage ? latestCompareResult.getPercentage() * 100.0 : latestCompareResult.getMarks();
 			break;
 		default:
 			return false;
@@ -137,7 +137,7 @@ public class MarkCompareRule extends ReleaseResultsRule implements Serializable 
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release if ").append(markType).append(" mark for assessment ")
 			.append(getCompareAssessment() == null ? "null" : getCompareAssessment().getName())
-			.append(" is ").append(compareMode).append(' ').append(asPercentage ? compareMark*100 : compareMark).append(asPercentage ? "%" : "");
+			.append(" is ").append(compareMode).append(' ').append(compareMark).append(asPercentage ? "%" : "");
 		return sb.toString();
 	}
 }

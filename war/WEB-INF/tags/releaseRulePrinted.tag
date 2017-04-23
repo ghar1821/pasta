@@ -36,7 +36,7 @@
 	
 	<c:when test="${fn:endsWith(ruleName, 'MarkCompareRule')}">
 		the user has a mark (${rule.markType.text}) ${rule.compareMode.text} <c:choose>
-		<c:when test="${rule.asPercentage}"><fmt:formatNumber type="percent" value="${rule.compareMark}" /></c:when>
+		<c:when test="${rule.asPercentage}"><fmt:formatNumber type="number" value="${rule.compareMark}" maxFractionDigits="1" />%</c:when>
 		<c:when test="${not rule.asPercentage}">${rule.compareMark}</c:when>
 		</c:choose>
 		for "${rule.compareAssessment.name}"
