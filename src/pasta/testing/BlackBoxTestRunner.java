@@ -2,6 +2,9 @@ package pasta.testing;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang.StringEscapeUtils;
 
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
@@ -25,17 +28,26 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 	}
 
 	public void setTestData(List<BlackBoxTestCase> testCases) {
-		StringBuilder sb = new StringBuilder();
-		for(BlackBoxTestCase testCase : testCases) {
-			sb.append(testCase.getTestName()).append('|');
-			sb.append(testCase.getTimeout()).append('|');
-			String commandLine = testCase.getCommandLine().replaceAll("\\s+", " ");
-			sb.append(commandLine).append(',');
+		StringBuilder indices = new StringBuilder();
+		StringBuilder properties = new StringBuilder();
+		for(int i = 0; i < testCases.size(); i++) {
+			if(i > 0) {
+				indices.append(",");
+			}
+			indices.append(i);
+			BlackBoxTestCase testCase = testCases.get(i);
+			properties.append("<property name='bbTestName").append(i).append("' value='")
+				.append(testCase.getTestName()).append("'/>\n");
+			properties.append("<property name='bbTestTimeout").append(i).append("' value='")
+				.append(String.valueOf(testCase.getTimeout())).append("'/>\n");
+			properties.append("<property name='bbTestTimeoutSeconds").append(i).append("' value='")
+				.append(String.valueOf(testCase.getTimeout() / 1000.0)).append("'/>\n");
+			String commandLine = StringEscapeUtils.escapeXml(Optional.ofNullable(testCase.getCommandLine()).orElse(""));
+			properties.append("<property name='bbTestCommandLine").append(i).append("' value='")
+				.append(commandLine).append("'/>\n");
 		}
-		if(testCases.size() > 0) {
-			sb.deleteCharAt(sb.length() - 1);
-		}
-		addOption("allTestData", sb.toString());
+		addOption("bbTestCaseProperties", properties.toString());
+		addOption("bbTestIndices", indices.toString());
 	}
 	
 	public void setSolutionName(String solutionName) {

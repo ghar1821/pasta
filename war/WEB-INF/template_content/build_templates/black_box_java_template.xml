@@ -85,20 +85,19 @@
     </target>
     <target name="run">
         <echo message="Executing '${testName}'"/>
-        <foreach param="bbTestData" list="${allTestData}" target="doTest"/>
+    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
     </target>
     <target name="doTest">
         <script language="javascript"> <![CDATA[
-            arr = project.getProperty('bbTestData').split('|');
-            project.setProperty('bbTestName', arr[0]);
-            project.setProperty('bbTestTimeout', arr[1]);
-        	project.setProperty('bbTestTimeoutFraction', parseFloat(arr[1]) / 1000.0);
-            if(arr[2] == undefined) {
-                project.setProperty('bbTestCommandLine', "");
-            } else {
-                project.setProperty('bbTestCommandLine', arr[2]);
-            }
+        	index = project.getProperty('bbTestIndex');
+        	project.setProperty('bbTestName', project.getProperty('bbTestName' + index));
+        	project.setProperty('bbTestTimeout', project.getProperty('bbTestTimeout' + index));
+        	project.setProperty('bbTestTimeoutFraction', project.getProperty('bbTestTimeoutSeconds' + index));
+        	project.setProperty('bbTestCommandLine', project.getProperty('bbTestCommandLine' + index));
         ]]></script>
+        <echo message="Test Name: ${bbTestName}"/>
+        <echo message="Test Timeout: ${bbTestTimeout}"/>
+        <echo message="Test Command Line Arguments: ${bbTestCommandLine}"/>
         <echo message="Running java ${solutionName} ${bbTestCommandLine}"/>
     	<exec
     		executable="/usr/bin/time"
