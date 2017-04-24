@@ -28,7 +28,8 @@ public class PASTASecurityManager extends SecurityManager{
 				perm.implies(new java.lang.reflect.ReflectPermission("suppressAccessChecks"))||
 				perm.implies(new RuntimePermission("getStackTrace"))||
 				perm.implies(new RuntimePermission("accessClassInPackage.sun.reflect"))||
-				perm.implies(new RuntimePermission("getProtectionDomain"))){
+				perm.implies(new RuntimePermission("getProtectionDomain"))||
+				perm.implies(new PropertyPermission("jdk.nio.maxCachedBufferSize", "read"))){
 				// do nothing
 			return;
 		}

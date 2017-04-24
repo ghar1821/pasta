@@ -411,18 +411,22 @@ either expressed or implied, of the PASTA Project.
 						</c:forEach>
 					</div>
 					<div class='part no-line' style='overflow:hidden;'>
-						<table>
-							<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
-							<c:forEach var="testCase" items="${latestResult.testCases}">
-								<tr>
-									<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
-									<td style="text-align:left;">${testCase.testName}</td>
-									<td>${testCase.time}</td>
-									<td>
-										<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
-									</td>
-								</tr>
-							</c:forEach>
+						<table id='testResults'>
+							<thead>
+								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+							</thead>
+							<tbody>
+								<c:forEach var="testCase" items="${latestResult.testCases}">
+									<tr>
+										<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
+										<td style="text-align:left;">${testCase.testName}</td>
+										<td>${testCase.time}</td>
+										<td>
+											<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
+										</td>
+									</tr>
+								</c:forEach>
+							</tbody>
 						</table>
 					</div>
 				</div>
@@ -628,6 +632,16 @@ either expressed or implied, of the PASTA Project.
          	});
          	
          	tabSize = findTabWidth($(".consolePreview").first());
+         	
+         	$("#testResults").addClass("stripe row-border hover").DataTable({
+    			retrieve: true,
+    			"searching" : false,
+    			"paging" : false,
+    			"info" : false,
+    			language : {
+    				emptyTable: "No unit test cases to display."
+    			}
+    		});
         });
         
         function toggleOutput($checkbox) {

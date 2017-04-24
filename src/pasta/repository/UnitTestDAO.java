@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 
@@ -37,7 +38,10 @@ public class UnitTestDAO {
 	}
 	
 	public void deleteTestTests(UnitTest test) {
-		sessionFactory.getCurrentSession().delete(test.getTestResult());
+		UnitTestResult testResult = test.getTestResult();
+		test.setTestResult(null);
+		update(test);
+		sessionFactory.getCurrentSession().delete(testResult);
 		logger.info("Deleted unit test test result" + test.getName());
 	}
 	
