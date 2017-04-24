@@ -2,7 +2,7 @@ package pasta.domain.release;
 
 
 public enum MarkType {
-	OVERALL("Overall"), AUTO_MARK("Auto mark"), MANUAL_MARK("Manual mark");
+	OVERALL("overall mark"), AUTO_MARK("auto mark"), MANUAL_MARK("manual mark");
 	
 	private String text;
 	private MarkType(String text) {

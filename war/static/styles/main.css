@@ -610,6 +610,21 @@ div.subRule {
 	font-style: italic;
 }
 
+.release-rule li {
+	list-style: disc;
+	margin-left: 1em;
+}
+.release-rule ul {
+	border-left-width: 2px;
+	border-left-style: solid;
+ 	padding-left: 0.75em;
+	margin-top: 0.4em;
+}
+.release-rule li, .release-rule ul {
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
+}
+
 .pastaTF,.pastaUnitTestResult {
 	font-weight: bold;
 	text-transform: uppercase;

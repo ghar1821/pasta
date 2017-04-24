@@ -127,12 +127,15 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 
 /* Nested release rule highlighting */
 /* '>' selector necessary to add specificity */
-div.subRule.first {
+div.subRule.first,
+.release-rule ul.first {
 	border-left-color: #f5af00;
 }
-div.first > div > div > div > div.subRule {
+div.first > div > div > div > div.subRule,
+.release-rule ul.first > li > ul {
 	border-left-color: red;
 }
+.release-rule ul.first > li > ul > li > ul,
 div.first > div > div > div > div.subRule > div > div > div > div.subRule {
 	border-left-color: #12416c;
 }
