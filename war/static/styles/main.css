@@ -518,8 +518,8 @@ div.consolePreview {
 	white-space: pre-wrap;
 	width: 100%;
 }
-div.testCase {
-	padding: 0.7em;
+div.testCase + div.testCase {
+	margin-top: 0.7em;
 }
 input.code {
 	font-family: monospace;
