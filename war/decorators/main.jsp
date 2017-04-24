@@ -150,6 +150,11 @@
 		
 		<script>
 			$("#header .tab-bar .tab a").filter(function(){return window.location.href.indexOf(this.href) === 0;}).parent().addClass("current");
+		
+			$.fn.collapsible.defaults.style.hover.background = $("#header .tab-bar").css("background-color");
+			window.setTimeout(function() {
+				$.fn.collapsible.defaults.style.hover.color = $("#header .tab-bar .current").css("background-color");
+			}, 500);
 		</script>
 		
 		<div id="body">
