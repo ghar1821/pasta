@@ -16,7 +16,7 @@ div.clb-content-wrapper {
 	flex-grow: 1;
 }
 
-div.clb-parent.collapsed .clb-content > *:not(.clb-keep) {
+div.clb-parent.collapsed .clb-content *:not(.clb-keep) {
 	display: none;
 }
 .clb-content::before {
