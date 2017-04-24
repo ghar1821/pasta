@@ -68,11 +68,27 @@
 			});
 			
 			var content = $("<div/>").addClass('clb-content');
-			if(settings["heading-selector"]) {
-				div.children().filter(settings["heading-selector"]).addClass("clb-keep");
-			}
 			content = div.wrapInner(content).children().first().textToSpan();
 			contentBar = content.wrap(contentBar).parent();
+			
+			if(settings["heading-selector"]) {
+				var onlyThisCollapsible = function(i, e) {
+					return $(e).closest(".clb-content").is(content);
+				}
+				content.find(".clb-keep").removeClass("clb-keep");
+				content.find(settings["heading-selector"])
+					.filter(onlyThisCollapsible)
+					.addClass("clb-keep");
+				content.find(".clb-keep")
+					.filter(onlyThisCollapsible)
+					.each(function (i, e) {
+						$(e).find("*")
+							.add($(e).parents())
+							.filter(onlyThisCollapsible)
+							.addClass("clb-keep");
+					});
+			}
+			
 			div.prepend(toggleBar);
 		});
 		
