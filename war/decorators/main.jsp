@@ -22,10 +22,7 @@
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/jquery.collapsible.css"/>" rel="stylesheet" type="text/css" media="screen" />
-<<<<<<< Upstream, based on origin/master
 		<link href="<c:url value="/static/styles/font-awesome.min.css"/>" rel="stylesheet" type="text/css" media="screen" />
-=======
->>>>>>> 2ea4794 Added custom jQuery plugin: collapsible
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
@@ -46,11 +43,8 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
-<<<<<<< Upstream, based on origin/master
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
-=======
->>>>>>> 2ea4794 Added custom jQuery plugin: collapsible
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
