@@ -37,7 +37,6 @@
 			toggleBar.css({
 				"color": settings.style.color,
 				"background-color": settings.style.background,
-<<<<<<< Upstream, based on origin/master
 				"border": (settings.border ? "1px solid " + settings.style.hover.background : "none"),
 				"border-radius": settings["border-radius"] + " 0 0 " + settings["border-radius"],
 			});
@@ -91,44 +90,6 @@
 					});
 			}
 			
-=======
-				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
-				"border-radius": settings["border-radius"] + " 0 0 " + settings["border-radius"],
-			});
-			contentBar.css({
-				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
-				"border-radius": "0 " + settings["border-radius"] + " " + settings["border-radius"] + " 0",
-			});
-
-			toggleBar.hover(function(e){
-				$(this).css({
-					"background-color": e.type === "mouseenter" ? settings.style.hover.background : settings.style.background,
-					"color": e.type === "mouseenter" ? settings.style.hover.color : settings.style.color
-				});
-				if(settings.border) {
-					$(this).add(contentBar).css({
-						"border-color":e.type === "mouseenter"?settings.style.hover.background:settings.style.background
-					});
-				}
-			});
-			
-			toggleBar.on("click", function() {
-				var parent = $(this).closest(".clb-parent");
-				var collapsed = parent.is(".collapsed");
-				if(collapsed) {
-					parent.expand();
-				} else {
-					parent.collapse();
-				}
-			});
-			
-			var content = $("<div/>").addClass('clb-content');
-			if(settings["heading-selector"]) {
-				div.children().filter(settings["heading-selector"]).addClass("clb-keep");
-			}
-			content = div.wrapInner(content).children().first().textToSpan();
-			contentBar = content.wrap(contentBar).parent();
->>>>>>> 2ea4794 Added custom jQuery plugin: collapsible
 			div.prepend(toggleBar);
 		});
 		

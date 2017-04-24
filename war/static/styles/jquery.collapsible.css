@@ -2,7 +2,6 @@ div.clb-toggle-bar {
 	display: block;
 	text-decoration: none;
 	width: 15px;
-<<<<<<< Upstream, based on origin/master
 	border-radius: 2px 0 0 2px;
 	transition-property: background-color,border-color,color;
 	transition-duration: 200ms;
@@ -18,23 +17,6 @@ div.clb-content-wrapper {
 }
 
 div.clb-parent.collapsed .clb-content *:not(.clb-keep) {
-=======
-	border-radius: 4px 0 0 4px;
-	transition-property: background-color,border-color,color;
-	transition-duration: 200ms;
-	box-sizing: border-box;
-	text-align: center;
-}
-
-div.clb-content-wrapper {
-	border-radius: 0 4px 4px 0;
-	transition: border-color 200ms;
-	overflow: hidden;
-	flex-grow: 1;
-}
-
-div.clb-parent.collapsed .clb-content > *:not(.clb-keep) {
->>>>>>> 2ea4794 Added custom jQuery plugin: collapsible
 	display: none;
 }
 .clb-content::before {
