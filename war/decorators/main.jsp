@@ -45,6 +45,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
@@ -160,10 +161,12 @@
 		<script>
 			$("#header .tab-bar .tab a").filter(function(){return window.location.href.indexOf(this.href) === 0;}).parent().addClass("current");
 		
-			$.fn.collapsible.defaults.style.hover.background = $("#header .tab-bar").css("background-color");
-			window.setTimeout(function() {
-				$.fn.collapsible.defaults.style.hover.color = $("#header .tab-bar .current").css("background-color");
-			}, 500);
+			var c1 = $("#header .tab-bar").css("background-color");
+			$.fn.collapsible.defaults.style.hover.background = c1;
+			$.fn.collapsible.defaults.style.color = c1;
+			var c2 = Colours.brighter(c1);
+			$.fn.collapsible.defaults.style.hover.color = c2;
+			$.fn.collapsible.defaults.style.background = c2;
 		</script>
 		
 		<div id="body">
