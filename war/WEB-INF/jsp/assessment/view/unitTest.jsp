@@ -326,7 +326,7 @@ either expressed or implied, of the PASTA Project.
 	<c:set var="showTest" value="true" />
 </c:if>
 <c:if test="${showMarkAsWorking or showTest}">
-	<div class='section'>
+	<div class='section section-above'>
 		<h2 class='section-title'>Check that everything works</h2>
 		<div class='part no-line'>
 			Before using this unit test module in an assessment, it is advisable that you run a sample submission first. Upload a submission and confirm that it works here.
