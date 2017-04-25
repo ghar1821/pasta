@@ -41,7 +41,11 @@
 				"border-radius": settings["border-radius"] + " 0 0 " + settings["border-radius"],
 			});
 			contentBar.css({
+<<<<<<< Upstream, based on origin/master
 				"border": (settings.border ? "1px solid " + settings.style.hover.background : "none"),
+=======
+				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
+>>>>>>> 85d877f Fixed 1px offset from collapsible toggle bar.
 				"border-left-width": "0",
 				"border-radius": "0 " + settings["border-radius"] + " " + settings["border-radius"] + " 0",
 			});
