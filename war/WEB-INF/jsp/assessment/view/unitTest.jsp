@@ -75,9 +75,9 @@ either expressed or implied, of the PASTA Project.
 				<div class='testCase'>
 					<form:hidden path="testCases[${testStatus.index}].id"/>
 					<div class='controls float-right'>
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
+						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
 						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
 					</div>
 					
 					<div class='pasta-form wide'>
@@ -138,9 +138,9 @@ either expressed or implied, of the PASTA Project.
 			<div id='emptyTest' class='hidden'>
 				<div class='testCase'>
 					<div class='controls float-right'>
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
+						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
 						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
+						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
 					</div>
 					
 					<div class='pasta-form wide'>
@@ -605,9 +605,9 @@ either expressed or implied, of the PASTA Project.
         		var deleting = !collapsibleWrapper.is(".toDelete");
         		collapsibleWrapper.toggleClass("toDelete");
         		
-        		$(this).children().first().toggleClass("icon_delete icon_undo");
-        		$(".icon_delete").attr("title", "Delete");
-        		$(".icon_undo").attr("title", "Undo Delete");
+        		$(this).children().first().toggleClass("fa-trash-o fa-undo");
+        		$(".fa-trash-o").attr("title", "Delete");
+        		$(".fa-undo").attr("title", "Undo Delete");
         		$(this).prev().val(deleting);
         		
         		$container.find("input[type!='hidden'],textarea").prop("disabled", deleting);
