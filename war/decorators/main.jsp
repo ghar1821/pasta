@@ -88,6 +88,7 @@
 	            $(".help").each(function() {
 	            	$(this).attr("helpText", $(this).html());
 	            	$(this).empty();
+	            	$(this).addClass("loaded")
 	            	$(this).tipsy({
 	            		gravity: "w",
 	            		title: "helpText",

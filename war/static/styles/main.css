@@ -680,9 +680,12 @@ div.icon-group {
 span.help {
 	background-image: url("../images/help_small.png");
 	cursor: pointer;
-	display: inline-block;
+	display: none;
 	height: 16px;
 	width: 16px;
+}
+span.help.loaded {
+	display: inline-block;
 }
 span.icon_locked, div.icon_locked {
 	background-image: url("../images/padlock_closed.png");
