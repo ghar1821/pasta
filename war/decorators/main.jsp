@@ -16,27 +16,18 @@
 		<link href="<c:url value="/static/styles/theme.css?v=1"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/scripts/jqplot/jquery.jqplot.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
-		<link href="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
-		<link href="<c:url value="/static/styles/essaiv2.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/roundTableCorners.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.snippet.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tablesorter.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.7.0.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/FixedColumns.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tristate.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jqplot/jquery.jqplot.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jwysiwyg/jquery.wysiwyg.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.allowTab.min.js"/>"></script>
