@@ -42,6 +42,7 @@
 			});
 			contentBar.css({
 				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
+				"border-left-width": "0",
 				"border-radius": "0 " + settings["border-radius"] + " " + settings["border-radius"] + " 0",
 			});
 
