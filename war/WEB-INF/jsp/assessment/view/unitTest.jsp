@@ -75,17 +75,9 @@ either expressed or implied, of the PASTA Project.
 				<div class='testCase'>
 					<form:hidden path="testCases[${testStatus.index}].id"/>
 					<div class='controls float-right'>
-<<<<<<< Upstream, based on origin/master
 						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
-=======
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
 						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
-<<<<<<< Upstream, based on origin/master
 						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
-=======
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
 					</div>
 					
 					<div class='pasta-form wide'>
@@ -146,17 +138,9 @@ either expressed or implied, of the PASTA Project.
 			<div id='emptyTest' class='hidden'>
 				<div class='testCase'>
 					<div class='controls float-right'>
-<<<<<<< Upstream, based on origin/master
 						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
-=======
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
 						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
-<<<<<<< Upstream, based on origin/master
 						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
-=======
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
 					</div>
 					
 					<div class='pasta-form wide'>
@@ -342,11 +326,7 @@ either expressed or implied, of the PASTA Project.
 	<c:set var="showTest" value="true" />
 </c:if>
 <c:if test="${showMarkAsWorking or showTest}">
-<<<<<<< Upstream, based on origin/master
 	<div id='checkWorking' class='section section-above'>
-=======
-	<div class='section'>
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
 		<h2 class='section-title'>Check that everything works</h2>
 		<div class='part no-line'>
 			Before using this unit test module in an assessment, it is advisable that you run a sample submission first. Upload a submission and confirm that it works here.
@@ -602,14 +582,11 @@ either expressed or implied, of the PASTA Project.
             	$baseTest.collapsible({
             		"heading-selector": ".pf-item:first,.controls"
             	});
-<<<<<<< Upstream, based on origin/master
             	if($baseTest.is(".clb-content")) {
             		$baseTest.toggleClass("clb-content testCase");
             	}
             	
             	$baseTest.find("input[name$='.testName']").focus().select();
-=======
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
             }
             
             $(document).on("click", "input.toggleOutput", function() {
@@ -633,15 +610,9 @@ either expressed or implied, of the PASTA Project.
         		var deleting = !collapsibleWrapper.is(".toDelete");
         		collapsibleWrapper.toggleClass("toDelete");
         		
-<<<<<<< Upstream, based on origin/master
         		$(this).children().first().toggleClass("fa-trash-o fa-undo");
         		$(".fa-trash-o").attr("title", "Delete");
         		$(".fa-undo").attr("title", "Undo Delete");
-=======
-        		$(this).children().first().toggleClass("icon_delete icon_undo");
-        		$(".icon_delete").attr("title", "Delete");
-        		$(".icon_undo").attr("title", "Undo Delete");
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
         		$(this).prev().val(deleting);
         		
         		$container.find("input[type!='hidden'],textarea").prop("disabled", deleting);
@@ -681,14 +652,11 @@ either expressed or implied, of the PASTA Project.
          		"heading-selector": ".pf-item:first,.controls"
          	});
          	
-<<<<<<< Upstream, based on origin/master
   			<c:if test="${not empty sessionScope.ts}">
   				<c:remove var="ts" scope="session" />
   				$("#checkWorking")[0].scrollIntoView(true);
   			</c:if>
   			
-=======
->>>>>>> 96cc111 Updated unit test view page to clarify workflow.
          	<spring:hasBindErrors name='updateUnitTest'>
          		$("[id$='.errors']").closest(".testCase").expand();
          		var offset = $("[id$='.errors']").first().closest(".pf-item").offset();

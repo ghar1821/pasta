@@ -44,7 +44,10 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
+<<<<<<< Upstream, based on origin/master
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
+=======
+>>>>>>> 25b2760 Updated colours of collapsible elements.
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({

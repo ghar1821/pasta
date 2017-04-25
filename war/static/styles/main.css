@@ -85,6 +85,9 @@ div.section:not(:last-child), div.section.section-below {
 div.section.section-above {
 	margin-top: 1.5em;
 }
+div.section.section-above {
+	margin-top: 1.5em;
+}
 .section-title {
 	margin: 0px;
 	padding-top: 0.8em;
