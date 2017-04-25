@@ -79,8 +79,11 @@ div.section {
 	box-shadow: 2px 2px 3px 2px rgba(0, 0, 0, 0.1);
 	margin: 3px 6px 6px 3px;
 }
-div.section:not(:last-child) {
+div.section:not(:last-child), div.section.section-below {
 	margin-bottom: 1.5em;
+}
+div.section.section-above {
+	margin-top: 1.5em;
 }
 .section-title {
 	margin: 0px;
