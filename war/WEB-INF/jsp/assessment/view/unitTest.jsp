@@ -582,6 +582,9 @@ either expressed or implied, of the PASTA Project.
             	$baseTest.collapsible({
             		"heading-selector": ".pf-item:first,.controls"
             	});
+            	if($baseTest.is(".clb-content")) {
+            		$baseTest.toggleClass("clb-content testCase");
+            	}
             }
             
             $(document).on("click", "input.toggleOutput", function() {
