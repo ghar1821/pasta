@@ -326,7 +326,7 @@ either expressed or implied, of the PASTA Project.
 	<c:set var="showTest" value="true" />
 </c:if>
 <c:if test="${showMarkAsWorking or showTest}">
-	<div class='section section-above'>
+	<div id='checkWorking' class='section section-above'>
 		<h2 class='section-title'>Check that everything works</h2>
 		<div class='part no-line'>
 			Before using this unit test module in an assessment, it is advisable that you run a sample submission first. Upload a submission and confirm that it works here.
@@ -650,6 +650,11 @@ either expressed or implied, of the PASTA Project.
          		"heading-selector": ".pf-item:first,.controls"
          	});
          	
+  			<c:if test="${not empty sessionScope.ts}">
+  				<c:remove var="ts" scope="session" />
+  				$("#checkWorking")[0].scrollIntoView(true);
+  			</c:if>
+  			
          	<spring:hasBindErrors name='updateUnitTest'>
          		$("[id$='.errors']").closest(".testCase").expand();
          		var offset = $("[id$='.errors']").first().closest(".pf-item").offset();
