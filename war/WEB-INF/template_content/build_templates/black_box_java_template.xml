@@ -106,6 +106,7 @@
 			input="${binDir}/${bbinputfile}/${bbTestName}"
             output="${binDir}/${bbuseroutfile}/${bbTestName}"
 			error="${runErrorsFile}"
+    		resultproperty="errorCode"
 			append="true">
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
     		<arg value="/usr/local/bin/pastarun" /> 
