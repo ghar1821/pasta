@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import pasta.util.PASTAUtil;
+import pasta.util.WhichProgram;
 
 /**
  * @author Joshua Stretton
@@ -16,6 +17,8 @@ public class MatlabBlackBoxTestRunner extends BlackBoxTestRunner {
 	
 	public MatlabBlackBoxTestRunner() throws FileNotFoundException {
 		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
+		addOption("mccPath", WhichProgram.getInstance().path("mcc"));
+		addOption("matlabInstall", WhichProgram.getInstance().path("matlab.install"));
 	}
 	
 	@Override

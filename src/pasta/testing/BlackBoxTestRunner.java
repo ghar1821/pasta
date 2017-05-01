@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
+import pasta.util.WhichProgram;
 
 /**
  * @author Joshua Stretton
@@ -25,6 +26,8 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 		addOption("bbexpectedfile", UnitTest.BB_EXPECTED_OUTPUT_FILENAME);
 		addOption("bbinputfile", UnitTest.BB_INPUT_FILENAME);
 		addOption("bbmetafile", UnitTest.BB_META_FILENAME);
+		addOption("timeoutPath", WhichProgram.getInstance().path("timeout"));
+		addOption("timePath", WhichProgram.getInstance().path("time"));
 	}
 
 	public void setTestData(List<BlackBoxTestCase> testCases) {

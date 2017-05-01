@@ -3,6 +3,7 @@ package pasta.testing;
 import java.io.FileNotFoundException;
 
 import pasta.util.PASTAUtil;
+import pasta.util.WhichProgram;
 
 /**
  * @author Joshua Stretton
@@ -15,6 +16,7 @@ public class PythonBlackBoxTestRunner extends BlackBoxTestRunner {
 	
 	public PythonBlackBoxTestRunner() throws FileNotFoundException {
 		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
+		addOption("pythonPath", WhichProgram.getInstance().path("python3"));
 	}
 
 	@Override
