@@ -163,12 +163,15 @@
 		</if>
 		<loadfile srcfile="${binDir}/${bbuseroutfile}/${bbTestName}" property="trimmedOutput">
 			<filterchain>
-				<headfilter lines="-4" skip="4"/>
+				<headfilter lines="-1" skip="4"/>
 			</filterchain>
 		</loadfile>
 		<if><isset property="trimmedOutput"/><then>
 			<echo message="${trimmedOutput}" file="${binDir}/${bbuseroutfile}/${bbTestName}" append="false" />
-		</then></if>
+		</then><else>
+			<delete file="${binDir}/${bbuseroutfile}/${bbTestName}"/>
+			<touch file="${binDir}/${bbuseroutfile}/${bbTestName}"/>
+		</else></if>
 		
 	</target>
 
