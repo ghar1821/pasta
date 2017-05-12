@@ -554,6 +554,7 @@ public class PASTAUtil {
 			}
 			logger.info("Copying template file " + from + " to " + to);
 			try {
+				Files.createDirectories(to.getParentFile().toPath());
 				Files.copy(from.toPath(), to.toPath(), 
 						StandardCopyOption.COPY_ATTRIBUTES, 
 						StandardCopyOption.REPLACE_EXISTING);
