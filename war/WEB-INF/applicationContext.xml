@@ -55,6 +55,11 @@
 		<constructor-arg ref="programProperties" />
 	</bean>
 	
+	<util:properties id="dockerProperties" location="classpath:docker.properties" />
+	<bean class="pasta.docker.DockerProperties">
+		<constructor-arg ref="dockerProperties" />
+	</bean>
+	
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="${jdbc.driverClassName}" />
