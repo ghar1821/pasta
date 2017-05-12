@@ -209,8 +209,6 @@ public class ProjectProperties {
 			authenticationValidator = new DummyAuthValidator();
 			logger.info("Using dummy authentication");
 		}
-		
-		DockerManager.instance();
 	}
 	
 	/**
