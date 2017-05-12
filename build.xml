@@ -58,7 +58,7 @@
 	     </copy>
 	</target>
 	
-	<target name="cycle" depends="stop,clean,retrieve,deploy,start">
+	<target name="cycle" depends="stop,clean,retrieve,deploy,fix-pastarun-permissions,start">
 	</target>
 
 	<target name="quick-cycle" depends="stop,clean-classes,clean-static,deploy-classes,deploy-static,start">
@@ -93,7 +93,7 @@
 			tofile="${deploy.path}/${name}/WEB-INF/classes/messages.properties" preservelastmodified="true"/>
 	</target>
 
-	<target name="cycle-templates" depends="stop,clean-templates,deploy-templates,start">
+	<target name="cycle-templates" depends="stop,clean-templates,deploy-templates,fix-pastarun-permissions,start">
 	</target>
 
 	<target name="clean-templates">
@@ -101,9 +101,16 @@
 	</target>
 
 	<target name="deploy-templates">
-		<copy todir="${deploy.path}/${name}/WEB-INF/template_content/" preservelastmodified="true">
-			<fileset dir="${web.dir}/WEB-INF/template_content/" />
-        </copy>
+		<echo message="Copying ${web.dir}/WEB-INF/template_content/ to ${deploy.path}/${name}/WEB-INF/template_content/" />
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${web.dir}/WEB-INF/template_content/"/>	
+			<arg value="${deploy.path}/${name}/WEB-INF/template_content/"/>	
+		</exec>
+	</target>
+	
+	<target name="fix-pastarun-permissions">
+		<chmod perm="4750" file="${deploy.path}/${name}/WEB-INF/template_content/bin/pastarun" />
 	</target>
 
 	<target name="cycle-jsp" depends="stop,clean-jsp,deploy-jsp,start">
@@ -116,21 +123,24 @@
 	</target>
 
 	<target name="deploy-jsp">
-		<copy todir="${deploy.path}/${name}/WEB-INF/jsp/" preservelastmodified="true">
-			<fileset dir="${web.dir}/WEB-INF/jsp/">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-		<copy todir="${deploy.path}/${name}/WEB-INF/tags/" preservelastmodified="true">
-			<fileset dir="${web.dir}/WEB-INF/tags/">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-		<copy todir="${deploy.path}/${name}/decorators/" preservelastmodified="true">
-			<fileset dir="${web.dir}/decorators/">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
+		<echo message="Copying ${web.dir}/WEB-INF/jsp/ to ${deploy.path}/${name}/WEB-INF/jsp/" />
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${web.dir}/WEB-INF/jsp/"/>	
+			<arg value="${deploy.path}/${name}/WEB-INF/jsp/"/>	
+		</exec>
+		<echo message="Copying ${web.dir}/WEB-INF/tags/ to ${deploy.path}/${name}/WEB-INF/tags/" />
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${web.dir}/WEB-INF/tags/"/>	
+			<arg value="${deploy.path}/${name}/WEB-INF/tags/"/>	
+		</exec>
+		<echo message="Copying ${web.dir}/decorators/ to ${deploy.path}/${name}/decorators/" />
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${web.dir}/decorators/"/>	
+			<arg value="${deploy.path}/${name}/decorators/"/>	
+		</exec>
 	</target>
 
 	<target name="cycle-classes" depends="stop,clean-classes,deploy-classes,start">
@@ -138,11 +148,12 @@
 	</target>
 
 	<target name="deploy-classes" depends="build" description="Deploy classes only">
-	    <copy todir="${deploy.path}/${name}/WEB-INF/classes/" preservelastmodified="true">
-	        <fileset dir="${build.dir}">
-	            <include name="**/*.*"/>
-	        </fileset>
-	    </copy>
+		<echo message="Copying ${build.dir} to ${deploy.path}/${name}/WEB-INF/classes/" />
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${build.dir}"/>	
+			<arg value="${deploy.path}/${name}/WEB-INF/classes/"/>	
+		</exec>
 	</target>
 
 	<target name="clean-classes">
@@ -173,18 +184,19 @@
     </target>
 
     <target name="deploy" depends="build" description="Deploy application">
-        <copy todir="${deploy.path}/${name}" preservelastmodified="true">
-            <fileset dir="${web.dir}">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
+        <echo message="Copying ${web.dir} to ${deploy.path}/${name}"/>
+		<exec executable="cp">
+			<arg value="-rp"/>	
+			<arg value="${web.dir}"/>	
+			<arg value="${deploy.path}/${name}"/>	
+		</exec>
     </target>
 
     <target name="deploywar" depends="build" description="Deploy application as a WAR file">
         <war destfile="${name}.war"
              webxml="${web.dir}/WEB-INF/web.xml">
             <fileset dir="${web.dir}">
-                <include name="**/*.*"/>
+                <include name="**/*"/>
             </fileset>
         </war>
         <copy todir="${deploy.path}" preservelastmodified="true">
