@@ -593,7 +593,9 @@ public class PASTAUtil {
 			}
 			logger.info("Copying template file " + from + " to " + to);
 			try {
-				FileUtils.copyFile(from, to);
+				Files.copy(from.toPath(), to.toPath(), 
+						StandardCopyOption.COPY_ATTRIBUTES, 
+						StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				logger.error("Error copying " + from, e);
 			}
