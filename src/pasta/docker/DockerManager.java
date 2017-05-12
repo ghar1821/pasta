@@ -51,22 +51,32 @@ public class DockerManager {
 	}
 	
 	private void initialiseImages() {
-		List<Image> images = dockerClient.listImagesCmd().exec();
-		Map<String, Long> installed = new HashMap<>();
-		for(Image im : images) {
-			String key = im.getRepoTags()[0].split(":")[0];
-			long modified = (long)im.getCreated()*1000L;
-			installed.put(key, modified);
-		}
-		for(DockerBuildFile buildFile : DockerProperties.getInstance().getBuildFiles()) {
-			if(!installed.containsKey(buildFile.getId()) || installed.get(buildFile.getId()) < buildFile.getFile().lastModified()) {
+		for(DockerBuildFile buildFile : LanguageManager.getInstance().getDockerBuildFiles()) {
+			Image image = getImage(buildFile.getTag());
+			if(image == null || image.getCreated()*1000L < buildFile.getFile().lastModified()) {
 				installImage(buildFile);
+			} else {
+				buildFile.registerSuccess(image.getId());
+				logger.debug(String.format("Image %s already exists with ID %s", buildFile.getTag(), buildFile.getId()));
 			}
 		}
 	}
 	
+	public boolean isImageInstalled(String tag) {
+		return getImage(tag) != null;
+	}
+	public Image getImage(String tag) {
+		List<Image> images = dockerClient.listImagesCmd()
+				.withImageNameFilter(tag)
+				.exec();
+		if(images.isEmpty()) {
+			return null;
+		}
+		return images.iterator().next();
+	}
+	
 	private void installImage(DockerBuildFile buildFile) {
-		logger.info("Building Docker image: " + buildFile.getId());
+		logger.info("Building Docker image: " + buildFile.getTag());
 		
 		File baseDir = buildFile.getFile().getParentFile();
 
@@ -86,14 +96,14 @@ public class DockerManager {
 			} catch (IOException e) {}
 			
 			String id = dockerClient.buildImageCmd(baseDir)
-				.withTag(buildFile.getId())
+				.withTag(buildFile.getTag())
 				.exec(callback)
 				.awaitImageId();
-			buildFile.registerSuccess();
+			buildFile.registerSuccess(id);
 			logger.info("Built: " + id);
 		} catch (DockerClientException e) {
 			buildFile.registerFailure();
-			logger.error("Error building image " + buildFile.getId(), e);
+			logger.error("Error building image " + buildFile.getTag(), e);
 		}
 	}
 }

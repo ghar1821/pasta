@@ -55,9 +55,9 @@
 		<constructor-arg ref="programProperties" />
 	</bean>
 	
-	<util:properties id="dockerProperties" location="classpath:docker.properties" />
-	<bean class="pasta.docker.DockerProperties">
-		<constructor-arg ref="dockerProperties" />
+	<util:properties id="languageManager" location="classpath:languages.properties" />
+	<bean class="pasta.docker.LanguageManager">
+		<constructor-arg ref="languageManager" />
 	</bean>
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
