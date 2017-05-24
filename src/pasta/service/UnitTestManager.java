@@ -51,6 +51,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.docker.DockerManager;
+import pasta.docker.ExecutionContainer;
+import pasta.docker.Language;
+import pasta.docker.LanguageManager;
 import pasta.domain.FileTreeNode;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.TestUnitTestForm;
@@ -68,15 +72,11 @@ import pasta.testing.BlackBoxTestRunner;
 import pasta.testing.CBlackBoxTestRunner;
 import pasta.testing.CPPBlackBoxTestRunner;
 import pasta.testing.JUnitTestRunner;
-import pasta.testing.JavaBlackBoxTestRunner;
-import pasta.testing.MatlabBlackBoxTestRunner;
-import pasta.testing.PythonBlackBoxTestRunner;
 import pasta.testing.Runner;
 import pasta.testing.task.CleanupSpecificFilesTask;
 import pasta.testing.task.DirectoryCopyTask;
 import pasta.testing.task.MakeDirectoryTask;
 import pasta.testing.task.UnzipTask;
-import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -206,20 +206,28 @@ public class UnitTestManager {
 		utResults.setTest(test);
 		test.setTestResult(utResults);
 		
-		File sandboxLoc = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
+		File sandboxTop = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
+		
 		// Set up location where test will be run
 		try {
-			if (sandboxLoc.exists()) {
-				logger.debug("Deleting existing sandbox location " + sandboxLoc);
-				FileUtils.deleteDirectory(sandboxLoc);
+			if (sandboxTop.exists()) {
+				logger.debug("Deleting existing sandbox location " + sandboxTop);
+				FileUtils.deleteDirectory(sandboxTop);
 			}
 		} catch (IOException e) {
 			utResults.addValidationError("Internal error: contact administrator.");
 			logger.error("Could not delete existing test.", e);
 			return;
 		}
+		
+		File sandboxLoc = new File(sandboxTop, "src/");
+		File sandboxOut = new File(sandboxTop, "out/");
 		logger.debug("Making directories to " + sandboxLoc);
 		sandboxLoc.mkdirs();
+		sandboxOut.mkdirs();
+		
+		String executionLabel = "testing_" + test.getFileAppropriateName();
+		ExecutionContainer container = new ExecutionContainer(executionLabel, sandboxLoc, sandboxOut);
 		
 		//Save submission to disk
 		CommonsMultipartFile submission = testForm.getFile();
@@ -246,7 +254,7 @@ public class UnitTestManager {
 			// submission, as that will be the most important file
 			String shortName = testForm.getSolutionName();
 			shortName = shortName.substring(shortName.lastIndexOf('.') + 1);
-			context.add(shortName + "." + Language.JAVA.getExtensions().first());
+			context.add(shortName + "." + LanguageManager.getInstance().getLanguage("java").getExtensions().get(0));
 		}
 		context.addAll(Arrays.asList(PASTAUtil.listDirectoryContents(importantCode, true)));
 		
@@ -255,7 +263,7 @@ public class UnitTestManager {
 		if(test.hasBlackBoxTests()) {
 			String solutionName = testForm.getSolutionName();
 			if(solutionName != null && !solutionName.isEmpty()) {
-				runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode, context);
+				runBlackBoxTests(test, solutionName, utResults, importantCode, context, container);
 			}
 		}
 		
@@ -270,13 +278,13 @@ public class UnitTestManager {
 		
 		String mainClass = test.getMainClassName();
 		if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
-			runJUnitTests(test, utResults, mainClass, sandboxLoc, context);
+			runJUnitTests(test, utResults, mainClass, context, container);
 		}
 		
 		ProjectProperties.getInstance().getResultDAO().save(utResults);
 		ProjectProperties.getInstance().getUnitTestDAO().update(test);
 		
-		logger.debug("Deleting final sandbox location " + sandboxLoc);
+		logger.debug("Deleting final sandbox location " + sandboxTop);
 		try {
 			FileUtils.deleteDirectory(sandboxLoc);
 		} catch (IOException e) {
@@ -286,35 +294,14 @@ public class UnitTestManager {
 	
 	public void runBlackBoxTests(UnitTest test, String solutionName,
 			UnitTestResult utResults,
-			File sandboxLoc, File submissionCode, List<String> context) {
+			File submissionCode, List<String> context,
+			ExecutionContainer container) {
 		String mainClass = BB_TEST_TEMPLATE.substring(0, BB_TEST_TEMPLATE.lastIndexOf('.'));
 		
 		String base = test.getSubmissionCodeRoot();
 		
-		Language subLanguage = null;
-		if(solutionName.contains(".")) {
-			Map<File, String> qualifiedNames = PASTAUtil.mapJavaFilesToQualifiedNames(submissionCode);
-			if(!qualifiedNames.isEmpty()) {
-				if(qualifiedNames.containsValue(solutionName)) {
-					subLanguage = Language.JAVA;
-				}
-			}
-		}
-		
-		if(subLanguage == null) {
-			String[] submissionContents = PASTAUtil.listDirectoryContents(submissionCode);
-			String shortest = null;
-			for(String filename : submissionContents) {
-				if(filename.matches(base + ".*" + solutionName + "\\.[^/\\\\]+")) {
-					if(Language.getLanguage(filename) != null) {
-						if(shortest == null || filename.length() < shortest.length()) {
-							shortest = filename;
-						}
-					}
-				}
-			}
-			subLanguage = Language.getLanguage(shortest);
-		}
+		Language subLanguage = LanguageManager.getInstance().guessLanguage(solutionName, base, container.getSrcLoc());
+		container.setLanguage(subLanguage);
 		
 		logger.debug("Submission language is " + subLanguage);
 		if(subLanguage == null) {
@@ -323,27 +310,10 @@ public class UnitTestManager {
 			return;
 		}
 		
-		BlackBoxTestRunner runner = null;
-		try {
-			switch(subLanguage) {
-			case JAVA:
-				runner = new JavaBlackBoxTestRunner(); break;
-			case C:
-				runner = new CBlackBoxTestRunner(); break;
-			case CPP:
-				runner = new CPPBlackBoxTestRunner(); break;
-			case PYTHON:
-				runner = new PythonBlackBoxTestRunner(); break;
-			case MATLAB:
-				runner = new MatlabBlackBoxTestRunner(); break;
-			default:
-				utResults.addValidationError("Language not yet implemented.");
-				logger.error("Language not implemented.");
-				return;
-			}
-		} catch(FileNotFoundException e) {
-			utResults.addValidationError("Internal error - test template not found.");
-			logger.error("Test template not found.", e);
+		BlackBoxTestRunner runner = subLanguage.getRunner();
+		if(runner == null) {
+			utResults.addValidationError("Language not yet implemented.");
+			logger.error("Language not implemented.");
 			return;
 		}
 		
@@ -357,7 +327,7 @@ public class UnitTestManager {
 		runner.setMaxRunTime(totalTime);
 		runner.setSolutionName(solutionName);
 		
-		if(subLanguage == Language.C) {
+		if(subLanguage.getId().equals("c")) {
 			((CBlackBoxTestRunner) runner).setGCCArguments(test.getBlackBoxOptions().getGccCommandLineArgs());
 		}
 		
@@ -368,12 +338,13 @@ public class UnitTestManager {
 			targets = new String[] {"build", "run", "clean"};
 		}
 		File testLoc = test.getGeneratedCodeLocation();
-		doTest(runner, targets, test, testLoc, sandboxLoc, utResults, context);
+		doTest(runner, targets, test, testLoc, utResults, context, container);
 	}
 	
 	public void runJUnitTests(UnitTest test, 
 			UnitTestResult utResults,
-			String mainClass, File sandboxLoc, List<String> context) {
+			String mainClass, List<String> context,
+			ExecutionContainer container) {
 		JUnitTestRunner runner = null;
 		try {
 			runner = new JUnitTestRunner();
@@ -386,7 +357,7 @@ public class UnitTestManager {
 		runner.setFilterStackTraces(false);
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
-		doTest(runner, targets, test, testLoc, sandboxLoc, utResults, context);
+		doTest(runner, targets, test, testLoc, utResults, context, container);
 	}
 	
 	private void populateWritableAccessoryFiles(File accessory, String accessoryPath, Runner runner) {
@@ -400,26 +371,21 @@ public class UnitTestManager {
 		}
 	}
 	
-	private void doTest(Runner runner, String[] targets, UnitTest test, File testCode, File sandboxLoc, 
-			UnitTestResult utResults, List<String> context) {
-		AntJob antJob = new AntJob(sandboxLoc, runner, targets);
+	private void doTest(Runner runner, String[] targets, UnitTest test, File testCode, 
+			UnitTestResult utResults, List<String> context, ExecutionContainer container) {
+		AntJob antJob = new AntJob(runner, container, targets);
 		antJob.addDependency("test", "build");
 		antJob.addDependency("run", "build");
 		
-		antJob.addSetupTask(new DirectoryCopyTask(testCode, sandboxLoc));
+		antJob.addSetupTask(new DirectoryCopyTask(testCode, container.getSrcLoc()));
 		
 		File accessoryFiles = test.hasAccessoryFiles() ? test.getAccessoryLocation() : null;
 		if(accessoryFiles != null) {
-			antJob.addSetupTask(new DirectoryCopyTask(accessoryFiles, sandboxLoc, true));
+			antJob.addSetupTask(new DirectoryCopyTask(accessoryFiles, container.getSrcLoc(), true));
 			if(test.isAllowAccessoryFileWrite()) {
 				populateWritableAccessoryFiles(accessoryFiles, accessoryFiles.getAbsolutePath(), runner);
 			}
 		}
-		
-		File binLoc = new File(sandboxLoc, "bin/");
-		antJob.addSetupTask(new MakeDirectoryTask(binLoc));
-		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, UnitTest.BB_OUTPUT_FILENAME + File.separatorChar)));
-		antJob.addSetupTask(new MakeDirectoryTask(new File(binLoc, UnitTest.BB_META_FILENAME + File.separatorChar)));
 		
 		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, sandboxLoc, false));
 		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, binLoc, false));
@@ -429,48 +395,56 @@ public class UnitTestManager {
 		logger.debug("Ant job completed");
 		
 		AntResults results = antJob.getResults();
+		UnitTestResult thisResult = null;
 		
-		logger.debug("Reading results from disk");
-		// Get results from ant output
-		UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
-				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context);
-		if(thisResult == null) {
+		if(!results.isSuccess("docker")) {
+			logger.debug("Test ran with docker error");
 			thisResult = new UnitTestResult();
-			thisResult.setRuntimeErrors("Could not read unit test results from disk.");
-		}
-		
-		logger.debug("Extracting compiled files");
-		thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
-		
-		if(!results.isSuccess("build")) {
-			thisResult.setBuildError(true);
-			thisResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
-			if(thisResult.getCompileErrors() != null && !thisResult.getCompileErrors().isEmpty()) {
-				logger.debug("Test ran with compile error");
-			} else {
-				logger.debug("Test ran with build error");
+			thisResult.setRuntimeErrors(results.getOutput("docker"));
+		} else {
+			logger.debug("Reading results from disk");
+			// Get results from ant output
+			thisResult = ProjectProperties.getInstance().getResultDAO()
+					.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context);
+			if(thisResult == null) {
+				thisResult = new UnitTestResult();
+				thisResult.setRuntimeErrors("Could not read unit test results from disk.");
 			}
-		}
-		
-		File errorFile = new File(sandboxLoc, "run.errors");
-		if(errorFile.exists()) {
-			String errorContents = PASTAUtil.scrapeFile(errorFile);
-			FileUtils.deleteQuietly(errorFile);
-			if(runner instanceof CBlackBoxTestRunner || runner instanceof CPPBlackBoxTestRunner) {
-				// C/CPP build file notifies of segfault already, and replaces it with a fail
-				errorContents = errorContents.replaceAll(".*: the monitored command dumped core", "").trim();
+			
+			logger.debug("Extracting compiled files");
+			thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
+			
+			if(!results.isSuccess("build")) {
+				File compileErrorFile = new File(container.getOutLoc(), "compile.errors");
+				thisResult.setBuildError(true);
+				thisResult.setCompileErrors(runner.extractCompileErrors(compileErrorFile, results).replaceAll(Matcher.quoteReplacement(DockerManager.WORK_DIR), ""));
+				if(thisResult.getCompileErrors() != null && !thisResult.getCompileErrors().isEmpty()) {
+					logger.debug("Test ran with compile error");
+				} else {
+					logger.debug("Test ran with build error");
+				}
 			}
-			thisResult.setRuntimeErrors(errorContents.replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
-			if(thisResult.getRuntimeErrors() != null && !thisResult.getRuntimeErrors().isEmpty()) {
-				logger.debug("Test ran with runtime errors");
+			
+			File errorFile = new File(container.getOutLoc(), "run.errors");
+			if(errorFile.exists()) {
+				String errorContents = PASTAUtil.scrapeFile(errorFile);
+				FileUtils.deleteQuietly(errorFile);
+				if(runner instanceof CBlackBoxTestRunner || runner instanceof CPPBlackBoxTestRunner) {
+					// C/CPP build file notifies of segfault already, and replaces it with a fail
+					errorContents = errorContents.replaceAll(".*: the monitored command dumped core", "").trim();
+				}
+				thisResult.setRuntimeErrors(errorContents.replaceAll(Matcher.quoteReplacement(DockerManager.WORK_DIR), ""));
+				if(thisResult.getRuntimeErrors() != null && !thisResult.getRuntimeErrors().isEmpty()) {
+					logger.debug("Test ran with runtime errors");
+				}
 			}
+			
+			boolean cleanError = !results.isSuccess("clean");
+			if(cleanError) {
+				logger.debug("Test ran with clean errors");
+			}
+			thisResult.setCleanError(cleanError);
 		}
-		
-		boolean cleanError = !results.isSuccess("clean");
-		if(cleanError) {
-			logger.debug("Test ran with clean errors");
-		}
-		thisResult.setCleanError(cleanError);
 		
 		thisResult.setFullOutput(results.getFullOutput());
 		utResults.combine(thisResult);

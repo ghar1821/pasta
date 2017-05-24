@@ -192,9 +192,9 @@ either expressed or implied, of the PASTA Project.
 						<div class='pf-item'>
 							<div class='pf-label'>Allowed languages</div>
 							<div class='pf-input'>
-								<form:errors path="languages" element="div"/>
-								<form:select path="languages" multiple="multiple" cssClass="langSelect">
-									<form:options items="${allLanguages}" itemLabel="description"/>
+								<form:errors path="strLanguages" element="div"/>
+								<form:select path="strLanguages" multiple="multiple" cssClass="langSelect">
+									<form:options items="${allLanguages}" itemLabel="name" itemValue="id"/>
 								</form:select>
 							</div>
 						</div>

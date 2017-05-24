@@ -83,7 +83,7 @@ public class PlayerValidationRunner extends Runner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
+	public String extractCompileErrors(File compileErrorsFile, AntResults results) {
 		// TODO Auto-generated method stub
 		return "";
 	}

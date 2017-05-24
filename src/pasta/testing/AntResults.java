@@ -60,4 +60,8 @@ public class AntResults {
 		}
 		return sb.toString();
 	}
+	
+	protected void registerExtraLabel(String label) {
+		outputs.put(label, new StringBuilder());
+	}
 }

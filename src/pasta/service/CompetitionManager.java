@@ -315,7 +315,7 @@ public class CompetitionManager {
 			runner.setMaxRunTime(30000);
 			runner.setPlayerDirectory(playerCodeLocation);
 			
-			AntJob antJob = new AntJob(testDir, runner, "build", "validate");
+			AntJob antJob = new AntJob(runner, null, "build", "validate"); //TODO: Needs an executioncontainer
 			antJob.addDependency("validate", "build");
 			
 			// copy over competition

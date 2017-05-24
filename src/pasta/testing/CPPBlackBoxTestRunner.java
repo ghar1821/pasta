@@ -1,5 +1,6 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import pasta.util.PASTAUtil;
@@ -18,9 +19,9 @@ public class CPPBlackBoxTestRunner extends BlackBoxTestRunner {
 	}
 	
 	@Override
-	public String extractCompileErrors(AntResults results) {
+	public String extractCompileErrors(File compileErrorsFile, AntResults results) {
 		// TODO Extract cpp-specific compile errors and append super errors to those
-		return super.extractCompileErrors(results);
+		return super.extractCompileErrors(compileErrorsFile, results);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
@@ -23,7 +24,7 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
+	public String extractCompileErrors(File compileErrorFile, AntResults results) {
 		Scanner scn = new Scanner(results.getOutput("build"));
 		StringBuilder compErrors = new StringBuilder();
 		String line = "";
