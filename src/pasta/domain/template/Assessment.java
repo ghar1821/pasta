@@ -61,9 +61,10 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.docker.Language;
+import pasta.docker.LanguageManager;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.user.PASTAUser;
-import pasta.util.Language;
 import pasta.util.ProjectProperties;
 
 /**
@@ -183,7 +184,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private Set<WeightedCompetition> competitions = new TreeSet<WeightedCompetition>();
 	
 	@ElementCollection
-	@Enumerated(EnumType.STRING)
 	@JoinTable(name = "assessment_languages", joinColumns = @JoinColumn(name = "assessment_id"))
 	@Column(name = "language")
 	@LazyCollection(LazyCollectionOption.FALSE)
@@ -277,7 +277,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return solutionName;
 	}
 	public String getShortSolutionName() {
-		if(this.solutionName != null && isAllowed(Language.JAVA)) {
+		if(this.solutionName != null && isAllowed(LanguageManager.getInstance().getLanguage("java"))) {
 			return solutionName.substring(solutionName.lastIndexOf('.') + 1);
 		}
 		return solutionName;

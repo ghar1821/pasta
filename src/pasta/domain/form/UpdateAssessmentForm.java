@@ -45,12 +45,13 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import pasta.docker.Language;
+import pasta.docker.LanguageManager;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.util.Language;
 
 /**
  * Form object for updating assessments.
@@ -279,6 +280,26 @@ public class UpdateAssessmentForm {
 			dueDate = NewAssessmentForm.sdf.parse(date);
 		} catch (ParseException e) {
 			dueDate = null;
+		}
+	}
+	
+	public Set<String> getStrLanguages() {
+		Set<String> results = new TreeSet<String>();
+		for(Language lang : languages) {
+			results.add(lang.getId());
+		}
+		return results;
+	}
+	public void setStrLanguages(Set<String> languages) {
+		this.languages = new TreeSet<Language>();
+		if(languages == null || languages.isEmpty()) {
+			return;
+		}
+		for(String lang : languages) {
+			Language real = LanguageManager.getInstance().getLanguage(lang);
+			if(real != null) {
+				this.languages.add(real);
+			}
 		}
 	}
 	

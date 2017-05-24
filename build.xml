@@ -111,6 +111,7 @@
 	
 	<target name="fix-pastarun-permissions">
 		<chmod perm="4750" file="${deploy.path}/${name}/WEB-INF/template_content/bin/pastarun" />
+		<chmod perm="4750" file="${deploy.path}/${name}/WEB-INF/template_content/bin/matlabpastarun" />
 	</target>
 
 	<target name="cycle-jsp" depends="stop,clean-jsp,deploy-jsp,start">

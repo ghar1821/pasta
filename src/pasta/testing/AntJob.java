@@ -1,42 +1,42 @@
 package pasta.testing;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 
+import pasta.docker.CommandResult;
+import pasta.docker.DockerManager;
+import pasta.docker.ExecutionContainer;
 import pasta.testing.task.Task;
 
 public class AntJob {
 	private static final Logger logger = Logger.getLogger(AntJob.class);
 	
 	private AntResults results;
-	private File homeDirectory;
 	private Runner runner;
+	private ExecutionContainer container;
 	private String[] targets;
 	private Map<String, List<String>> dependencies;
 	
 	private List<Task> setupTasks;
 	private List<Task> cleanupTasks;
 	
-	public AntJob(File homeDirectory, Runner runner, String... targets) {
-		this(homeDirectory, runner, new HashMap<String, List<String>>(), targets);
+	public AntJob(Runner runner, ExecutionContainer container, String... targets) {
+		this(runner, container, new HashMap<String, List<String>>(), targets);
 	}
 	
-	public AntJob(File homeDirectory, Runner runner, Map<String, List<String>> dependencies, String... targets) {
+	public AntJob(Runner runner, ExecutionContainer container, Map<String, List<String>> dependencies, String... targets) {
 		this.targets = targets;
-		this.results = new AntResults(targets);
-		this.homeDirectory = homeDirectory;
+		
+		this.results = new AntResults(this.targets);
+		this.results.registerExtraLabel("docker");
+		
 		this.runner = runner;
+		this.container = container;
 		this.dependencies = dependencies;
 		
 		this.setupTasks = new LinkedList<Task>();
@@ -63,41 +63,28 @@ public class AntJob {
 	public final void run() {
 		setup();
 		
-		File buildFile = runner.createBuildFile(new File(homeDirectory, "build.xml"));
+		File buildFile = runner.createBuildFile(new File(container.getSrcLoc(), "build.xml"));
 		logger.debug("Created build file " + buildFile);
 		
-		ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
-		Project project = new Project();
-		
-		project.setUserProperty("ant.file", buildFile.getAbsolutePath());
-		project.setBasedir(homeDirectory.getAbsolutePath());
-		DefaultLogger consoleLogger = new DefaultLogger();
-		
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		PrintStream runErrors = new PrintStream(output);
-		consoleLogger.setOutputPrintStream(runErrors);
-		consoleLogger.setErrorPrintStream(runErrors);
-		consoleLogger.setMessageOutputLevel(Project.MSG_VERBOSE);
-		project.addBuildListener(consoleLogger);
-		project.init();
-		
-		project.addReference("ant.projectHelper", projectHelper);
-		projectHelper.parse(project, buildFile);			
-		
-		logger.debug("Executing targets...");
-		for(String target : this.targets) {
-			doTarget(project, target, output);
+		DockerManager.instance().runContainer(container);
+		if(container.getId() == null) {
+			results.setSuccess("docker", false);
+			results.append("docker", "Submission already running.");
+		} else{
+			results.setSuccess("docker", true);
+			logger.debug("Executing targets...");
+			for(String target : this.targets) {
+				doTarget(target);
+			}
+			logger.debug("Finished executing targets");
 		}
-		logger.debug("Finished executing targets");
-		
-		runErrors.close();
 		
 		logger.debug("Cleaning up...");
 		cleanup();
 		logger.debug("Cleanup finished");
 	}
 	
-	private void doTarget(Project project, String target, ByteArrayOutputStream output) {
+	private void doTarget(String target) {
 		logger.debug("Executing target \"" + target + "\"");
 		List<String> dependsOn = dependencies.get(target);
 		if(dependsOn != null) {
@@ -109,27 +96,17 @@ public class AntJob {
 			}
 		}
 		
-		boolean success = true;
-		try {
-			project.executeTarget(target);
-			logger.debug("Target finished successfully.");
-		} catch (BuildException e) {
+		CommandResult rs = DockerManager.instance().runAntTarget(container, target);
+		boolean success = rs.getError().isEmpty();
+		
+		if(!success) {
 			logger.debug("Target not successful.");
-			if(!e.getMessage().contains("Compile failed") && !e.getMessage().contains("apply returned: 1")) {
-				logger.error("Error on task " + target + " at " + homeDirectory, e);
-			}
-			success = false;
-		} catch (Exception e) {
-			logger.debug("Target not successful - unknown error");
-			logger.error("Error on task " + target + " at " + homeDirectory, e);
-			success = false;
+			logger.trace("Target error:\n" + rs.getError());
 		}
 		
-		String contents = output.toString();
-		logger.trace("Target content:\n" + contents);
-		results.append(target, contents);
+		logger.trace("Target output:\n" + rs.getOutput());
+		results.append(target, rs.getCombined());
 		results.setSuccess(target, success);
-		output.reset();
 	}
 	
 	private void setup() {
@@ -138,6 +115,7 @@ public class AntJob {
 
 	private void cleanup() {
 		performTasks(cleanupTasks);
+		DockerManager.instance().removeContainer(container.getId());
 	}
 	
 	private void performTasks(List<Task> tasks) {
@@ -150,9 +128,5 @@ public class AntJob {
 
 	public AntResults getResults() {
 		return results;
-	}
-
-	public File getHomeDirectory() {
-		return homeDirectory;
 	}
 }

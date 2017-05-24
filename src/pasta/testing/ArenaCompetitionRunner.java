@@ -1,5 +1,6 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import pasta.util.PASTAUtil;
@@ -66,7 +67,7 @@ public class ArenaCompetitionRunner extends Runner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
+	public String extractCompileErrors(File compileErrorsFile, AntResults results) {
 		// TODO Auto-generated method stub
 		return "";
 	}

@@ -62,8 +62,8 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
-		return super.extractCompileErrors(results);
+	public String extractCompileErrors(File compileErrorFile, AntResults results) {
+		return super.extractCompileErrors(compileErrorFile, results);
 	}
 
 	@Override

@@ -61,6 +61,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.docker.LanguageManager;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.form.validate.UpdateAssessmentFormValidator;
@@ -291,7 +292,7 @@ public class AssessmentController {
 		model.addAttribute("allCompetitions", allCompetitions);
 		
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
-		model.addAttribute("allLanguages", Language.values());
+		model.addAttribute("allLanguages", LanguageManager.getInstance().getLanguages());
 		
 		if(currAssessment.isCustomValidator()) {
 			File assessmentFile = currAssessment.getCustomValidator().getAbsoluteFile();

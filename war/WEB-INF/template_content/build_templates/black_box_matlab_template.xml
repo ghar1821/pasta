@@ -9,6 +9,8 @@
 		<mkdir dir="${binDir}"/>
 		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
 		<chmod file="${binDir}" perm="g+ws" type="dir" />
+		<mkdir dir="${binDir}/${bbuseroutfile}"/>
+		<mkdir dir="${binDir}/${bbmetafile}"/>
 	</target>
 	<target name="makeWritable">
 		{$?{hasWritable}
@@ -31,8 +33,6 @@
 				<exclude name="**/*.m"/>
 				<exclude name="**/*.java"/>
 				<exclude name="build.xml"/>
-				<exclude name="result.xml"/>
-				<exclude name="run.errors"/>
 				<exclude name="${binDir}/**/*"/>
 			</fileset>
 		</copy>
@@ -82,6 +82,7 @@
 		<exec
     		executable="${mccPath}"
 			dir="${binDir}"
+			error="${outDirectory}/compile.errors"
     		failonerror="true"
 			append="true"
     		resultproperty="compileDone">
@@ -99,6 +100,7 @@
 		</delete>
 
 		<echo message="Using javac to compile Java code"/>
+		<record name="${outDirectory}/compile.errors" loglevel="warn" action="start"/>
 		<javac
             fork="yes"
             includeantruntime="false"
@@ -112,9 +114,10 @@
 			<exclude name="${binDir}/**/*"/>
 			<classpath refid="assessment.classpath"/>
 		</javac>
+		<record name="${outDirectory}/compile.errors" action="stop"/>
 	</target>
 
-	<target name="run">
+	<target name="run" depends="init">
 		<echo message="Executing '${testName}'"/>
 		<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
 	</target>
@@ -137,11 +140,12 @@
 			dir="${binDir}"
 			input="${binDir}/${bbinputfile}/${bbTestName}"
             output="${binDir}/${bbuseroutfile}/${bbTestName}"
-			error="${runErrorsFile}"
+			error="${outDirectory}/${runErrorsFile}"
 			resultproperty="errorCode"
 			append="true">
 			<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
-			<arg value="/usr/local/bin/pastarun" />
+			<arg value="${binDirectory}/matlabpastarun" />
+			<arg value="${matlabInstall}" />
 			<arg line="${timeoutPath} ${bbTestTimeoutFraction}" />
 			<arg line='./run_${solutionName}.sh ${matlabInstall} ${bbTestCommandLine}' />
 			<env key="MCR_CACHE_ROOT" value="/home/${sandboxUser}"/>
@@ -175,7 +179,7 @@
 		
 	</target>
 
-	<target name="test">
+	<target name="test" depends="init">
 		<echo message="Running JUnit '${testName}'"/>
 		<junit
             filtertrace="${filterStackTraces}"
@@ -186,5 +190,9 @@
 			<test name="${testName}" outfile="${testOutputFile}" />
 			<classpath refid="assessment.classpath"/>
 		</junit>
+		<exec executable="mv" dir="${basedir}">
+			<arg value="${testOutputFile}.xml"/>
+			<arg value="${outDirectory}/"/>
+		</exec>
 	</target>
 </project>

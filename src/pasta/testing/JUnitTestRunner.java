@@ -52,26 +52,21 @@ public class JUnitTestRunner extends Runner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
-		Scanner scn = new Scanner(results.getOutput("build"));
+	public String extractCompileErrors(File compileErrorFile, AntResults results) {
+		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorFile));
 		StringBuilder compErrors = new StringBuilder();
-		String line = "";
 		if(scn.hasNext()) {
+			String line = "";
 			while(scn.hasNextLine()) {
 				line = scn.nextLine();
-				if(line.contains("error")) {
+				String chopped = line.replaceFirst("\\s*\\[javac\\] ", "");
+				if(line.length() == chopped.length()) {
 					break;
 				}
-			}
-		}
-		if(scn.hasNextLine()) {
-			compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
-			while(scn.hasNextLine()) {
-				line = scn.nextLine();
-				compErrors.append(line.replaceFirst("\\s*\\[javac\\]", "")).append('\n');
+				compErrors.append(chopped).append(System.lineSeparator());
 			}
 			// Chop off the trailing "\n"
-			compErrors.replace(compErrors.length()-1, compErrors.length(), "");
+			compErrors.deleteCharAt(compErrors.length()-1);
 		}
 		scn.close();
 		return compErrors.toString();
