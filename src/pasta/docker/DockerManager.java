@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.exception.ConflictException;
@@ -176,14 +177,20 @@ public class DockerManager {
 		}
 		
 		try {
-			CreateContainerResponse resp = dockerClient
+			CreateContainerCmd cmd = dockerClient
 					.createContainerCmd(container.getImageName())
 					.withName(container.getLabel())
 					.withLabels(labels)
 					.withTty(true)
-					.withBinds(binds)
-					.withMacAddress("00:0c:29:92:b6:e8") //TODO
-					.exec();
+					.withBinds(binds);
+			
+			String macKey = container.getLanguage().getId() + ".hardware-address";
+			String mac = LanguageManager.getInstance().getProperty(macKey);
+			if(mac != null && !mac.isEmpty()) {
+				cmd = cmd.withMacAddress(mac);
+			}
+			
+			CreateContainerResponse resp = cmd.exec();
 			container.setId(resp.getId());
 			
 			dockerClient

@@ -17,6 +17,7 @@ public class LanguageManager {
 	private static LanguageManager instance;
 	
 	private Map<String, Language> languages;
+	private Properties properties;
 	
 	private LanguageManager(Properties properties) {
 		this.languages = new HashMap<>();
@@ -30,6 +31,7 @@ public class LanguageManager {
 			String runnerClass = properties.getProperty(id + ".runner-class");
 			this.languages.put(id, new Language(id, name, extensions, templateFile, dockerFile, runnerClass));
 			logger.info("Registered language " + name);
+			this.properties = properties;
 		}
 		
 		instance = this;
@@ -54,6 +56,10 @@ public class LanguageManager {
 	
 	public Language getLanguage(String languageId) {
 		return languages.get(languageId);
+	}
+	
+	public String getProperty(String key) {
+		return properties.getProperty(key);
 	}
 
 	public Language guessLanguage(String solutionName, String codeBaseDir, File submissionDir) {
