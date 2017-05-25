@@ -143,7 +143,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
-	private Date lateDate = new Date();
+	private Date lateDate = null;
 	
 	@Column (length = 64000) // Controls database column size
 	@Size (max = 64000) // Validates max length when attempting to insert into database
