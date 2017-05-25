@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,18 +125,22 @@ public class FileController {
 	 * @param response the http response being used to serve the content
 	 */
 	@RequestMapping(value = "viewFile/loadFile", method = RequestMethod.GET)
-	public void getFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
+	public void getFile(@RequestParam("owner") String owner, 
+			@RequestParam("file_name") String fileName, HttpServletResponse response) {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-		if (!codeStyle.containsKey(fileName.substring(fileName.lastIndexOf(".") + 1))) {
+		fileName = fileName.replace("\"", "");
+		File file = getCorrectFile(owner, fileName);
+		logger.debug("Loading content of file: " + fileName + " owned by " + owner);
+		if (!codeStyle.containsKey(FilenameUtils.getExtension(fileName))) {
 			try {
 				// get your file as InputStream
-				InputStream is = new FileInputStream(fileName.replace("\"", ""));
+				InputStream is = new FileInputStream(file.getAbsolutePath());
 				// copy it to response's OutputStream
 				IOUtils.copy(is, response.getOutputStream());
 				response.flushBuffer();
 				is.close();
 			} catch (IOException ex) {
-				throw new RuntimeException("IOError writing file to output stream");
+				throw new RuntimeException("IOError writing file to output stream", ex);
 			}
 		}
 	}
@@ -150,10 +155,11 @@ public class FileController {
 	 * @param response the http response being used to serve the content
 	 */
 	@RequestMapping(value = "downloadFile", method = RequestMethod.GET)
-	public void downloadFile(@RequestParam("file_name") String fileName, HttpServletResponse response) {
+	public void downloadFile(@RequestParam("owner") String owner, 
+			@RequestParam("file_name") String fileName, HttpServletResponse response) {
 
-		File file = new File(
-				ProjectProperties.getInstance().getSubmissionsLocation() + fileName.replace("\"", ""));
+		fileName = fileName.replace("\"", "");
+		File file = getCorrectFile(owner, fileName);
 
 		try {
 			file = file.getCanonicalFile();
@@ -166,13 +172,13 @@ public class FileController {
 		if (!testFileReadingIsAllowed(user, file)) {
 			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
 		}
+		logger.debug("User " + user + " is downloading file: " + file);
 		try {
 			// get your file as InputStream
 			InputStream is = new FileInputStream(file);
 			// copy it to response's OutputStream
 			response.setContentType("application/octet-stream;");
-			response.setHeader("Content-Disposition", "attachment; filename=" + fileName.replace("\"", "")
-					.substring(fileName.replace("\"", "").replace("\\", "/").lastIndexOf("/") + 1));
+			response.setHeader("Content-Disposition", "attachment; filename=" + FilenameUtils.getName(fileName));
 			IOUtils.copy(is, response.getOutputStream());
 			response.flushBuffer();
 			is.close();
@@ -218,11 +224,37 @@ public class FileController {
 	@RequestMapping(value = "viewFile/", method = RequestMethod.POST)
 	public String viewFile(@ModelAttribute("user") PASTAUser user, @RequestParam("location") String location,
 			@RequestParam("owner") String owner, Model model, HttpServletResponse response) {
+		
+		File file = getCorrectFile(owner, location);
+		String fileEnding = FilenameUtils.getExtension(location).toLowerCase();
+		// if(fileEnding.equalsIgnoreCase("pdf")) {
+		// TODO: figure out a way to redirect to pdfs
+		// logger.warn("Redirecting to: redirect:" + location);
+		// return "redirect:" + location;
+		// }
+
+		model.addAttribute("filename", file.getName());
+		model.addAttribute("location", location);
+		model.addAttribute("fullLocation", file.getAbsolutePath());
+		model.addAttribute("owner", owner);
+		model.addAttribute("codeStyle", codeStyle);
+		model.addAttribute("fileEnding", fileEnding.toLowerCase());
+
+		if (testFileReadingIsAllowed(user, file)) {
+			if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
+					|| PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
+				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file.getPath()));
+			}
+		} else {
+			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
+		}
+		return "assessment/mark/viewFile";
+	}
+
+	private File getCorrectFile(String owner, String location) {
 		File file;
 		if (owner.equals("unitTest") || owner.equals("assessment") || owner.equals("competition")) {
 			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
-			logger.debug("Tutor <" + user.getUsername() + "> is viewing file <" + location + ".");
-
 			if (owner.equals("unitTest")) {
 				file = new File(ProjectProperties.getInstance().getUnitTestsLocation() + location);
 			} else if (owner.equals("assessment")) {
@@ -233,29 +265,7 @@ public class FileController {
 		} else {
 			file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);
 		}
-
-		String fileEnding = location.substring(location.lastIndexOf(".") + 1).toLowerCase();
-		// if(fileEnding.equalsIgnoreCase("pdf")) {
-		// TODO: figure out a way to redirect to pdfs
-		// logger.warn("Redirecting to: redirect:" + location);
-		// return "redirect:" + location;
-		// }
-
-		model.addAttribute("filename", file.getName());
-		model.addAttribute("location", location);
-		model.addAttribute("owner", owner);
-		model.addAttribute("codeStyle", codeStyle);
-		model.addAttribute("fileEnding", fileEnding.toLowerCase());
-
-		if (testFileReadingIsAllowed(user, file)) {
-			if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
-					|| PASTAUtil.canDisplayFile(location)) {
-				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file.getPath()));
-			}
-		} else {
-			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
-		}
-		return "assessment/mark/viewFile";
+		return file;
 	}
 
 	/**

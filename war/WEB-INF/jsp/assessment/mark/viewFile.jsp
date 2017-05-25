@@ -40,22 +40,22 @@ either expressed or implied, of the PASTA Project.
 	<h3><code>${filename}</code></h3>
 	<c:choose>
 		<c:when test="${fileEnding == 'jpg' || fileEnding == 'png' || fileEnding == 'bmp' || fileEnding == 'gif'}">
-			<img src='loadFile?file_name="${location}"'/>
+			<img src='loadFile?owner=${owner}&file_name="${location}"'/>
 		</c:when>
 		<c:when test="${fileEnding == 'pdf'}">
-			<object data='loadFile?file_name="${location}"' type="application/pdf" width="90%" height="500"></object>
+			<object data='loadFile?owner=${owner}&file_name="${location}"' type="application/pdf" class='pdf-reader'></object>
 		</c:when>
 		<c:when test="${not empty codeStyle[fileEnding]}">
 			<pre class="${codeStyle[fileEnding]}"><code><c:out value='${fileContents}'/></code></pre>
 		</c:when>
-		<c:when test="${pasta:isPlainText(location)}">
+		<c:when test="${pasta:isPlainText(fullLocation)}">
 			<pre><code><c:out value='${fileContents}'/></code></pre>
 		</c:when>
 		<c:otherwise>
-			<c:redirect url='../downloadFile?file_name="${location}"'/>
+			<c:redirect url='../downloadFile?owner=${owner}&file_name="${location}"'/>
 		</c:otherwise>
 	</c:choose>
 	<div class='button-panel'>
-		<button onclick='location.href="../downloadFile?file_name=\"${dlc}\"";'>Download file</button>
+		<button onclick='location.href="../downloadFile?owner=${owner}&file_name=\"${dlc}\"";'>Download file</button>
 	</div>
 </div>

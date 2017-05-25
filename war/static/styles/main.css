@@ -781,3 +781,8 @@ th.handMarkingTable,td.handMarkingTable {
 #ui-datepicker-div {
 	display: none;
 }
+
+.pdf-reader {
+	width: 100%;
+	height: 90vh;
+}
