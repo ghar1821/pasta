@@ -22,7 +22,9 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.InternetProtocol;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -190,6 +192,12 @@ public class DockerManager {
 				cmd = cmd.withMacAddress(mac);
 			}
 			
+			String portsKey = container.getLanguage().getId() + ".exposed-ports";
+			String ports = LanguageManager.getInstance().getProperty(portsKey);
+			if(ports != null && !ports.isEmpty()) {
+				cmd = cmd.withExposedPorts(parsePorts(ports));
+			}
+			
 			CreateContainerResponse resp = cmd.exec();
 			container.setId(resp.getId());
 			
@@ -238,5 +246,44 @@ public class DockerManager {
 	
 	public CommandResult runAntTarget(ExecutionContainer container, String target) {
 		return runCommand(container, "ant", "-v", "-f", "build.xml", target);
+	}
+	
+	/**
+	 * Parse a comma-separated list of ports for a container to expose, 
+	 * ignoring any invalid ones.
+	 * 
+	 * @param portsList a string of the format <code>[protocol:]port{,[protocol2:]port2}</code>.
+	 * e.g. "tcp:22,80,443". If the protocol is not included, it will default to 
+	 * {@link com.github.dockerjava.api.model.InternetProtocol.DEFAULT}.
+	 * @return a List of {@link com.github.dockerjava.api.model.ExposedPort} which 
+	 * will be empty if no valid ports can be parsed.
+	 */
+	private List<ExposedPort> parsePorts(String portsList) {
+		List<ExposedPort> eps = new LinkedList<>();
+		if(portsList == null || portsList.isEmpty()) {
+			return eps;
+		}
+		for(String port : portsList.split(",")) {
+			String[] parts = port.split(":");
+			InternetProtocol protocol = InternetProtocol.DEFAULT;
+			Integer portNumber = null;
+			try {
+				if(parts.length > 1) {
+					try {
+						protocol = InternetProtocol.parse(parts[0]);
+						portNumber = Integer.parseInt(parts[1]);
+					} catch(IllegalArgumentException e) {
+						portNumber = Integer.parseInt(parts[0]);
+					}
+				} else {
+					portNumber = Integer.parseInt(parts[0]);
+				}
+				eps.add(new ExposedPort(portNumber, protocol));
+			} catch(NumberFormatException e) {
+				logger.warn(String.format("Invalid exposed-port: \"%s\". Expected format: \"[protocol:]number\"", port));
+				continue;
+			}
+		}
+		return eps;
 	}
 }
