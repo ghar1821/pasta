@@ -49,7 +49,10 @@ public class GlobalExceptionHandler {
         if (AnnotationUtils.findAnnotation(e.getClass(), ResponseStatus.class) != null)
             throw e;
 
-        logger.error("Exception thrown at " + request.getRequestURL(), e);
+        PASTAUser user = WebUtils.getUser();
+        String username = user == null ? "unknown user" : user.getUsername();
+        
+        logger.error("Exception thrown for " + username + " at " + request.getRequestURL(), e);
         
         ModelAndView mav = new ModelAndView();
         mav.addObject("exception", e);
