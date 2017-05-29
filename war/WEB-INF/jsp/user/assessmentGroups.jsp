@@ -370,6 +370,7 @@ either expressed or implied, of the PASTA Project.
 			$("<form/>")
 				.attr("action", action)
 				.attr("method", "POST")
+				.appendTo($("body"))
 				.submit()
 		}
 		
