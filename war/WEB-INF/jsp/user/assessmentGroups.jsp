@@ -266,7 +266,23 @@ either expressed or implied, of the PASTA Project.
 		function checkGroupSizes() {
 			var limit = ${assessment.groupSize};
 			var allGood = true;
-			$("#groupSelection tr").each(function(i, row) {
+			
+			var sizes = {};
+			groupTable.rows().every(function() {
+				var row = $(this.node());
+				var group = +row.find(".group-input").val();
+				var valid = group > 0 && groupMap[group] !== undefined;
+				if(valid) {
+					var size = sizes[group];
+					if(!size) {
+						size = 0;
+					}
+					sizes[group] = size + 1;
+				}
+			});
+			
+			groupTable.rows().every(function() {
+				var row = this.node();
 				var group = +$(row).find(".group-input").val();
 				var valid = group > 0 && groupMap[group] !== undefined;
 
@@ -274,7 +290,7 @@ either expressed or implied, of the PASTA Project.
 				if(!$cell.length){
 					return true;
 				}
-				var size = $("#groupSelection .group-input:field-value(" + group + ")").length;
+				var size = valid ? sizes[group] : 0;
 				
 				$cell.toggleClass("overFull", valid && limit >= 0 && size > limit);
 				$cell.toggleClass("full", valid && limit >= 0 && size == limit);
@@ -311,10 +327,12 @@ either expressed or implied, of the PASTA Project.
 					return false;
 				}
 			}
+			
 			var $form = $('#updateGroupsForm');
 			var groupIndices = {};
-			$("#groupSelection tr").each(function() {
-				var groupNum = $(this).find(".group-input").val();
+			groupTable.rows().every(function() {
+				var row = $(this.node());
+				var groupNum = row.find(".group-input").val();
 				var groupId = groupMap[groupNum];
 				if(groupId !== undefined) {
 					var username = groupTable.cell(this, "username:name").data();
