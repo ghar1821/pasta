@@ -105,6 +105,12 @@ public class TutorMarkingController {
 	public AssessmentResult returnAssessmentResultModel() {
 		return new AssessmentResult();
 	}
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
+	}
 
 	/**
 	 * $PASTAUrl$/mark/{studentUsername}/{assessmentId}/{assessmentDate}/
