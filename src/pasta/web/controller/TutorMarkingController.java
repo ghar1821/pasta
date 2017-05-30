@@ -31,7 +31,9 @@ package pasta.web.controller;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -166,8 +168,8 @@ public class TutorMarkingController {
 			return "redirect:/home/";
 		}
 
-		String assessmentName = ProjectProperties.getInstance().getAssessmentDAO().getAssessment(assessmentId)
-				.getName();
+		Assessment assessment = ProjectProperties.getInstance().getAssessmentDAO().getAssessment(assessmentId);
+		String assessmentName = assessment.getName();
 		model.addAttribute("assessmentName", assessmentName);
 
 		AssessmentResult result = resultManager.loadAssessmentResult(viewedUser, assessmentId, assessmentDate);
@@ -189,6 +191,19 @@ public class TutorMarkingController {
 			return "redirect;/home/";
 		}
 		model.addAttribute("student", student);
+		
+		if(student.isGroup()) {
+			PASTAGroup group = groupManager.getGroup(student.getId());
+			Map<String, String> extensions = new HashMap<>();
+			for(PASTAUser member : group.getMembers()) {
+				Date extension = userManager.getExtension(member, assessment);
+				if(extension != null) {
+					extensions.put(member.getUsername(), PASTAUtil.formatDateReadable(extension));
+				}
+			}
+			model.addAttribute("studentsInGroup", group.getMembers());
+			model.addAttribute("studentsInGroupExtensions", extensions);
+		}
 
 		model.addAttribute("node", PASTAUtil.generateFileTree(student, assessmentId, assessmentDate));
 
@@ -398,6 +413,19 @@ public class TutorMarkingController {
 
 				model.addAttribute("myStudents", myStudents);
 				model.addAttribute("myStudentGroups", myStudentGroups);
+				
+				if(currStudent.isGroup()) {
+					PASTAGroup group = groupManager.getGroup(currStudent.getId());
+					Map<String, String> extensions = new HashMap<>();
+					for(PASTAUser member : group.getMembers()) {
+						Date extension = userManager.getExtension(member, assessment);
+						if(extension != null) {
+							extensions.put(member.getUsername(), PASTAUtil.formatDateReadable(extension));
+						}
+					}
+					model.addAttribute("studentsInGroup", group.getMembers());
+					model.addAttribute("studentsInGroupExtensions", extensions);
+				}
 
 				if (i_studentIndex == lastIndex) {
 					model.addAttribute("last", "last");
