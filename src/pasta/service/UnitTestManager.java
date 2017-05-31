@@ -687,18 +687,15 @@ public class UnitTestManager {
 				}
 				
 				// Automatically set the main class name according to any *Test.java files.
-				FileTreeNode node = PASTAUtil.generateFileTree("", codeLocation.getAbsolutePath());
+				FileTreeNode node = PASTAUtil.generateFileTree(codeLocation);
 				Stack<FileTreeNode> toExpand = new Stack<FileTreeNode>();
 				toExpand.push(node);
-				int dirStart = node.getLocation().length();
 				
 				while(!toExpand.isEmpty()) {
 					FileTreeNode expandNode = toExpand.pop();
-					String location = expandNode.getLocation().substring(dirStart);
-					if(location.endsWith(".java")) {
-						if(location.endsWith("Test.java")) {
-							test.setMainClassName(PASTAUtil.extractQualifiedName(expandNode.getLocation()));
-						}
+					File file = expandNode.getFile();
+					if(expandNode.getName().endsWith("Test.java")) {
+						test.setMainClassName(PASTAUtil.extractQualifiedName(file));
 					}
 					if(!expandNode.isLeaf()) {
 						for(FileTreeNode child : expandNode.getChildren()) {

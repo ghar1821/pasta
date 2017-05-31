@@ -80,7 +80,6 @@ either expressed or implied, of the PASTA Project.
 								<div class='pf-input'>
 									<c:set var="node" value="${codeNode}" scope="request"/>
 									<jsp:include page="../../recursive/fileWriterRoot.jsp">
-										<jsp:param name="owner" value="unitTest"/> 
 										<jsp:param name="fieldId" value="${unitTest.id}"/> 
 									</jsp:include>
 								</div>
@@ -123,7 +122,6 @@ either expressed or implied, of the PASTA Project.
 								<div class='pf-input'>
 									<c:set var="node" value="${accessoryNode}" scope="request"/>
 									<jsp:include page="../../recursive/fileWriterRoot.jsp">
-										<jsp:param name="owner" value="unitTest"/> 
 										<jsp:param name="fieldId" value="${unitTest.id}"/> 
 									</jsp:include>
 								</div>
