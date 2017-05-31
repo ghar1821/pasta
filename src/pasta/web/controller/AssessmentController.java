@@ -61,6 +61,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.form.validate.UpdateAssessmentFormValidator;
@@ -295,7 +296,9 @@ public class AssessmentController {
 		
 		if(currAssessment.isCustomValidator()) {
 			File assessmentFile = currAssessment.getCustomValidator().getAbsoluteFile();
-			model.addAttribute("node", PASTAUtil.generateFileTree(assessmentFile.getParent(), assessmentFile.getName()));
+			FileTreeNode node = PASTAUtil.generateFileTree(assessmentFile.getParentFile(), "assessment");
+			node.setName("validator");
+			model.addAttribute("node", node);
 		}
 		
 		model.addAttribute("tutorCategoryPrefix", Assessment.TUTOR_CATEGORY_PREFIX);

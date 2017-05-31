@@ -241,9 +241,8 @@ public class FileController {
 		model.addAttribute("fileEnding", fileEnding.toLowerCase());
 
 		if (testFileReadingIsAllowed(user, file)) {
-			if (codeStyle.containsKey(location.substring(location.lastIndexOf(".") + 1))
-					|| PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
-				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file.getPath()));
+			if (codeStyle.containsKey(fileEnding) || PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
+				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file.getAbsolutePath()));
 			}
 		} else {
 			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");

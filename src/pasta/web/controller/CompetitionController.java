@@ -29,6 +29,8 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -179,8 +181,8 @@ public class CompetitionController {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		//model.addAttribute("competition", competitionManager.getCompetition(competitionId));
-		model.addAttribute("node", PASTAUtil.generateFileTree(competitionManager
-				.getCompetition(competitionId).getFileLocation(), "/code"));
+		model.addAttribute("node", PASTAUtil.generateFileTree(new File(competitionManager
+				.getCompetition(competitionId).getFileLocation(), "code"), "competition"));
 		model.addAttribute("liveAssessmentCount", competitionManager.getLiveAssessmentCount(user, competitionManager.getCompetition(competitionId)));
 		
 		Competition comp = competitionManager.getCompetition(competitionId);

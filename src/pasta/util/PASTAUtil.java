@@ -71,6 +71,7 @@ import org.springframework.stereotype.Component;
 import pasta.domain.FileTreeNode;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.template.Competition;
+import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -230,46 +231,81 @@ public class PASTAUtil {
 	}
 	
 	/**
-	 * Helper method for {@link #generateFileTree(String)}
+	 * Generate a file tree for a specific submission
 	 * 
 	 * @param user the user
 	 * @param assessmentId the id of the assessment
-	 * @param assessmentDate the date of the assessment
+	 * @param assessmentDate the date of the submission
 	 * @return the file tree node that is root for the file tree.
 	 */
 	public static FileTreeNode generateFileTree(PASTAUser user,
 			long assessmentId, String assessmentDate) {
-		return generateFileTree(ProjectProperties.getInstance().getSubmissionsLocation(),
+		File file = new File(ProjectProperties.getInstance().getSubmissionsLocation(),
 				user.getUsername()
 				+ "/assessments/"
 				+ assessmentId
 				+ "/"
 				+ assessmentDate
 				+ "/submission");
+		String owner = user.getUsername();
+		if(user.isGroup()) {
+			owner = ((PASTAGroup) user).getName();
+		}
+		return generateFileTree(file, owner);
+	}
+		
+	/**
+	 * Generate a file tree rooted at the given directory/file.
+	 * 
+	 * This file tree is either part of a submission directory or is not going
+	 * to be used to display the file tree in a user page. If neither of these
+	 * is true, set an owner using {@link #generateFileTree(File, String)}.
+	 * 
+	 * @param root
+	 *            the root of the file tree; can be a directory or a file.
+	 * @return a file tree
+	 */
+	public static FileTreeNode generateFileTree(File root) {
+		return fileTree(root, null);
 	}
 	
 	/**
-	 * Recursively generate the FileTreeNode based on a root directory and a
-	 * relative location.
+	 * Generate a file tree rooted at the given directory/file.
 	 * 
-	 * @param rootDirectory the root directory of the relative file tree
-	 * @param location the relative root of the file tree
-	 * @return the root node for the file system
+	 * @param root
+	 *            the root of the file tree; can be a directory or a file.
+	 * @param owner
+	 *            a string out of:
+	 *            <ul>
+	 *            <li><code>"unitTest"</code>: this file tree is part of the
+	 *            unit test content directory
+	 *            <li><code>"assessment"</code>: this file tree is part of the
+	 *            assessment content directory
+	 *            <li><code>"competition"</code>: this file tree is part of the
+	 *            competitions content directory
+	 *            <li>anything else: this file tree is part of the submissions
+	 *            directory
+	 *            </ul>
+	 * @return a file tree
 	 */
-	public static FileTreeNode generateFileTree(String rootDirectory, String location){
-		File[] subDirectories = new File(rootDirectory + location).listFiles();
-		if(subDirectories == null || subDirectories.length == 0){
-			FileTreeNode current = new FileTreeNode(location, null);
-			if(new File(rootDirectory + location).isDirectory()){
+	public static FileTreeNode generateFileTree(File root, String owner) {
+		return fileTree(root, owner);
+	}
+	
+	private static FileTreeNode fileTree(File node, String owner) {
+		File[] subDirectories = node.listFiles();
+		if(subDirectories == null || subDirectories.length == 0) {
+			FileTreeNode current = new FileTreeNode(node, null, owner);
+			if(node.isDirectory()){
 				current.setLeaf(false);
 			}
 			return current;
 		}
 		List<FileTreeNode> children = new LinkedList<FileTreeNode>();
 		for(File subDirectory: subDirectories){
-			children.add(generateFileTree(rootDirectory, location + "/" + subDirectory.getName()));
+			children.add(fileTree(subDirectory, owner));
 		}
-		return new FileTreeNode(location, children);
+		return new FileTreeNode(node, children, owner);
 	}
 
 	/**
@@ -345,10 +381,11 @@ public class PASTAUtil {
 		
 		for(PlayerHistory player: players){
 			if(player.getActivePlayer() != null){
-				FileTreeNode node = generateFileTree(competition.getFileLocation(),
+				File file = new File(competition.getFileLocation() +
 						"/players/" + user.getUsername() + "/"
 						+ player.getPlayerName()
 						+ "/active/code/");
+				FileTreeNode node = generateFileTree(file, "competition");
 				if(node != null){
 					allPlayers.put(player.getPlayerName(), node);
 				}
