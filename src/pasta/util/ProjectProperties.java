@@ -59,6 +59,7 @@ import pasta.repository.CompetitionDAO;
 import pasta.repository.HandMarkingDAO;
 import pasta.repository.LoginDAO;
 import pasta.repository.PlayerDAO;
+import pasta.repository.ReportingDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.repository.UserDAO;
@@ -122,6 +123,8 @@ public class ProjectProperties {
 	private CompetitionDAO compDAO;
 	@Autowired
 	private UserDAO userDAO;
+	@Autowired
+	private ReportingDAO reportingDAO;
 	
 	@Autowired
 	private ServletContext servletContext;
@@ -367,6 +370,10 @@ public class ProjectProperties {
 	
 	public UserDAO getUserDAO() {
 		return userDAO;
+	}
+	
+	public ReportingDAO getReportingDAO() {
+		return reportingDAO;
 	}
 	
 	public ServletContext getServletContext() {

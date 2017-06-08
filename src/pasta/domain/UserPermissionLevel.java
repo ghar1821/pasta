@@ -63,5 +63,20 @@ package pasta.domain;
  * @since 2012-12-10
  */
 public enum UserPermissionLevel {
-	STUDENT, TUTOR, INSTRUCTOR, GROUP;
+	STUDENT("Student"), TUTOR("Tutor"), INSTRUCTOR("Instructor"), GROUP("Group");
+	
+	private UserPermissionLevel(String desc) {
+		this.description = desc;
+	}
+	private String description;
+	public String getDescription() {
+		return description;
+	}
+	@Override
+	public String toString() {
+		return getDescription();
+	}
+	public static UserPermissionLevel[] validReportValues() {
+		return new UserPermissionLevel[] {STUDENT, TUTOR, INSTRUCTOR};
+	}
 }
