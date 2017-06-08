@@ -1,4 +1,5 @@
 .loader {
+  margin: 0 auto;
   border-radius: 50%;
   perspective: 800px;
 }
