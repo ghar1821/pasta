@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,14 +49,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.reporting.Report;
+import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
 import pasta.service.ReportingManager;
 import pasta.service.UserManager;
+import pasta.service.reporting.AssessmentReportingManager;
 import pasta.web.WebUtils;
 
 /**
@@ -84,6 +88,9 @@ public class ReportingController {
 	
 	@Autowired
 	private AssessmentManager assessmentManager;
+	
+	@Autowired
+	private AssessmentReportingManager assessmentReportManager;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -120,7 +127,8 @@ public class ReportingController {
 	@RequestMapping(value = "{reportId}/", method = RequestMethod.GET)
 	@ResponseBody
 	public String loadReport(@PathVariable("reportId") String reportId, @ModelAttribute("user") PASTAUser user, ModelMap model) {
-		ObjectNode node = new ObjectMapper().createObjectNode();
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = mapper.createObjectNode();
 		node.put("reportId", reportId);
 		
 		Report report = reportingManager.getReport(reportId);
@@ -130,6 +138,15 @@ public class ReportingController {
 				node.put("callback", "displayTest");
 				break;
 			case "mark-histograms":
+				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				ArrayNode assessmentsNode = mapper.createArrayNode();
+				for(Assessment assessment : allAssessments) {
+					ObjectNode summaryNode = assessmentReportManager.getMarksSummaryJSON(assessment);
+					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
+					assessmentsNode.add(summaryNode);
+				}
+				node.set("assessments", assessmentsNode);
+				
 				node.put("callback", "displayHistograms");
 				break;
 			}

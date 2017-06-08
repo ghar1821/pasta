@@ -835,3 +835,8 @@ th.handMarkingTable,td.handMarkingTable {
 .messages .error {
 	color: #C00;
 }
+
+.report-content .loading {
+	width: 100%;
+	margin: 1em 0;
+}

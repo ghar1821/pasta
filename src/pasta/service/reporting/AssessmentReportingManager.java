@@ -48,7 +48,7 @@ public class AssessmentReportingManager {
 			categoryNode.put("category", category);
 			ArrayNode assessmentsNode = mapper.createArrayNode();
 			for(Assessment assessment : entry.getValue()) {
-				assessmentsNode.add(getAssessmentNode(assessment));
+				assessmentsNode.add(getAssessmentJSON(assessment));
 			}
 			categoryNode.set("assessments", assessmentsNode);
 			root.add(categoryNode);
@@ -57,10 +57,10 @@ public class AssessmentReportingManager {
 	}
 	
 	public String getAssessment(Assessment assessment) {
-		return getAssessmentNode(assessment).toString();
+		return getAssessmentJSON(assessment).toString();
 	}
 	
-	private ObjectNode getAssessmentNode(Assessment assessment) {
+	public ObjectNode getAssessmentJSON(Assessment assessment) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode assessmentNode = mapper.createObjectNode();
 		assessmentNode.put("id", assessment.getId());
@@ -71,6 +71,10 @@ public class AssessmentReportingManager {
 	}
 
 	public String getMarksSummary(Assessment assessment) {
+		return getMarksSummaryJSON(assessment).toString();
+	}
+	
+	public ObjectNode getMarksSummaryJSON(Assessment assessment) {
 		Collection<PASTAUser> students = userManager.getStudentList();
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode marksSummaryNode = mapper.createObjectNode();
@@ -85,7 +89,7 @@ public class AssessmentReportingManager {
 			marksNode.add(mark);
 		}
 		marksSummaryNode.set("marks", marksNode);
-		return marksSummaryNode.toString();
+		return marksSummaryNode;
 	}
 	
 	public String getAssessmentRatings(Assessment assessment) {
