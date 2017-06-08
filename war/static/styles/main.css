@@ -786,3 +786,49 @@ th.handMarkingTable,td.handMarkingTable {
 	width: 100%;
 	height: 90vh;
 }
+
+.report .permission {
+	padding: 0 0.8em;
+}
+.report .permission + .permission {
+	border-left: 1px solid lightgray;
+}
+
+.report-permissions .permission:first-child {
+	border-top-left-radius: 0.5em;
+	border-top-right-radius: 0.5em;
+}
+.report-permissions .permission:last-child {
+	border-bottom-left-radius: 0.5em;
+	border-bottom-right-radius: 0.5em;
+}
+	
+.report-permissions .permissions {
+	width: 300px;
+}
+.report-permissions .permission {
+	padding: 0.5em 0.5em;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #C00;
+	color: #C00;
+	background-color: #FCC;
+	cursor: pointer;
+}
+.report-permissions .permission + .permission {
+	border-top: none;
+}
+.report-permissions .permission.selected {
+	border-color: #090;
+	color: #090;
+	background-color: #DFC;
+}
+.report-permissions .permission-icon {
+	width: 2em;
+}
+.messages .success {
+	color: #090;
+}
+.messages .error {
+	color: #C00;
+}
