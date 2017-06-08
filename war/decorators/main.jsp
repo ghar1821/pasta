@@ -24,6 +24,7 @@
 		<link href="<c:url value="/static/styles/jquery.collapsible.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
@@ -146,6 +147,7 @@
 				</c:if>
 				<c:if test="${not empty user}">
 					<div class='tab'><a href="<c:url value="/competition/"/>">Competitions</a></div>
+					<div class='tab'><a href="<c:url value="/reporting/"/>">Reporting</a></div>
 					<div class='tab'><a href="<c:url value="/admin/"/>">Admin</a></div>
 				</c:if>
 			</div>
