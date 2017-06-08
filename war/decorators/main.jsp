@@ -14,6 +14,7 @@
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
 		<link href="<c:url value="/static/styles/main.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/theme.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/loading.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -34,6 +35,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.search.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
