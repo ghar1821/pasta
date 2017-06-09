@@ -30,7 +30,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.snippet.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.7.0.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.11.0.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
