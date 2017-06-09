@@ -36,6 +36,7 @@ public class ReportingManager implements InitializingBean {
 			if(saved == null) {
 				logger.info("Creating missing report: " + report.getId());
 				saveOrUpdate(report);
+				continue;
 			}
 			if(!report.getName().equals(saved.getName())) {
 				logger.info("Updating report name: " + report.getId());
