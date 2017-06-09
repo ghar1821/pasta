@@ -59,6 +59,10 @@ public class ResultManager {
 	public List<AssessmentResult> getAssessmentHistory(PASTAUser user, long assessmentId){
 		return resultDAO.getAllResults(user, assessmentId, true, true);
 	}
+	
+	public List<Date> getSubmissionDates(PASTAUser user, long assessmentId) {
+		return resultDAO.getAllSubmissionDates(user, assessmentId, false, true);
+	}
 
 	public AssessmentResult getAssessmentResult(long id) {
 		return resultDAO.getAssessmentResult(id);

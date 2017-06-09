@@ -1,11 +1,16 @@
 package pasta.service.reporting;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -18,6 +23,7 @@ import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.service.RatingManager;
+import pasta.service.ResultManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -37,6 +43,8 @@ public class AssessmentReportingManager {
 	private UserManager userManager;
 	@Autowired
 	private RatingManager ratingManager;
+	@Autowired
+	private ResultManager resultManager;
 	
 	public String getAllAssessments() {
 		Map<String, Set<Assessment>> allAssessments = assDao.getAllAssessmentsByCategory();
@@ -125,4 +133,108 @@ public class AssessmentReportingManager {
 		ratingsNode.put("ratingCount", ratingCount);
 		return ratingsNode;
 	}
-}
+	
+	public ObjectNode getAssessmentSubmissionsJSON(Assessment assessment) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root = mapper.createObjectNode();
+		
+		Collection<PASTAUser> students = userManager.getStudentList();
+		root.put("studentCount", students.size());
+		
+		Set<Date> allSubmissions = new TreeSet<>();
+		Set<PASTAUser> noSubmissions = new TreeSet<>();
+		
+		HashMap<Date, Integer> submissionCounts = new HashMap<>();
+		HashMap<Date, Integer> startedCount = new HashMap<>();
+		
+		for(PASTAUser user : students) {
+			List<Date> submissionHistory = resultManager.getSubmissionDates(user, assessment.getId());
+			
+			boolean first = true;
+			for(Date date : submissionHistory) {
+				Date roundDate = getDay(date);
+				if(!allSubmissions.contains(date)) {
+					Integer count = submissionCounts.get(roundDate);
+					if(count == null) {
+						count = 0;
+					}
+					submissionCounts.put(roundDate, count+1);
+				}
+				if(first) {
+					Integer count = startedCount.get(roundDate);
+					if(count == null) {
+						count = 0;
+					}
+					startedCount.put(roundDate, count+1);
+				}
+				first = false;
+			}
+			
+			if(submissionHistory.isEmpty()) {
+				noSubmissions.add(user);
+			} else {
+				allSubmissions.addAll(submissionHistory);
+			}
+		}
+		
+		ArrayNode noSubmissionNode = mapper.createArrayNode();
+		for(PASTAUser user : noSubmissions) {
+			noSubmissionNode.add(user.getUsername());
+		}
+		root.set("noSubmission", noSubmissionNode);
+		
+		TreeSet<Date> dates = new TreeSet<>(submissionCounts.keySet());
+		if(!dates.isEmpty()) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(getDay(dates.first()));
+			Date last = getDay(dates.last());
+			if(last.before(assessment.getDueDate())) {
+				last = getDay(assessment.getDueDate());
+			}
+			while(!cal.getTime().after(last)) {
+				dates.add(cal.getTime());
+				cal.add(Calendar.DAY_OF_YEAR, 1);
+			}
+		}
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		ArrayNode datesNode = mapper.createArrayNode();
+		for(Date date : dates) {
+			datesNode.add(sdf.format(date));
+		}
+		root.set("dates", datesNode);
+		
+		ArrayNode submissionCountsNode = mapper.createArrayNode();
+		for(Date date : dates) {
+			Integer count = submissionCounts.get(date);
+			if(count == null) {
+				count = 0;
+			}
+			submissionCountsNode.add(count);
+		}
+		root.set("submissionCounts", submissionCountsNode);
+		
+		ArrayNode startedCountsNode = mapper.createArrayNode();
+		int totalCount = 0;
+		for(Date date : dates) {
+			Integer count = startedCount.get(date);
+			if(count == null) {
+				count = 0;
+			}
+			totalCount += count;
+			startedCountsNode.add(totalCount);
+		}
+		root.set("startedCounts", startedCountsNode);
+		
+		return root;
+	}
+	private Date getDay(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
+	}
+ }

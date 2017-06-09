@@ -180,6 +180,18 @@ public class ReportingController {
 				node.put("callback", "displayRatings");
 				break;
 			}
+			case "submissions-timeline": {
+				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				ArrayNode assessmentsNode = mapper.createArrayNode();
+				for(Assessment assessment : allAssessments) {
+					ObjectNode summaryNode = assessmentReportManager.getAssessmentSubmissionsJSON(assessment);
+					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
+					assessmentsNode.add(summaryNode);
+				}
+				node.set("assessments", assessmentsNode);
+				node.put("callback", "displaySubmissions");
+				break;
+			}
 			}
 		} else {
 			node.put("error", "You are not allowed to view this report.");

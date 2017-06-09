@@ -29,7 +29,8 @@ public class ReportingManager implements InitializingBean {
 		List<Report> reports = Arrays.asList(
 				new Report("mark-histograms", "Assessment Marks", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
 				new Report("unit-test-attempts", "Unit Test Attempts", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
-				new Report("assessment-ratings", "Assessment Feedback", UserPermissionLevel.INSTRUCTOR)
+				new Report("assessment-ratings", "Assessment Feedback", UserPermissionLevel.INSTRUCTOR),
+				new Report("submissions-timeline", "Submissions Timeline", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR)
 		);
 		for(Report report : reports) {
 			Report saved = getReport(report.getId());
