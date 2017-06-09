@@ -93,6 +93,10 @@ public class AssessmentReportingManager {
 	}
 	
 	public String getAssessmentRatings(Assessment assessment) {
+		return getAssessmentRatingsJSON(assessment).toString();
+	}
+	
+	public ObjectNode getAssessmentRatingsJSON(Assessment assessment) {
 		List<AssessmentRating> ratings = ratingManager.getRatingsForAssessment(assessment);
 		List<String> comments = new ArrayList<String>();
 		List<Integer> ratingValues = new ArrayList<Integer>();
@@ -119,6 +123,6 @@ public class AssessmentReportingManager {
 		}
 		ratingsNode.set("ratings", valuesNode);
 		ratingsNode.put("ratingCount", ratingCount);
-		return ratingsNode.toString();
+		return ratingsNode;
 	}
 }
