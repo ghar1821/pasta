@@ -119,6 +119,10 @@ public class ReportingController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
 		List<Report> allReports = reportingManager.getAllReports(user);
+		Collections.sort(allReports, (a,  b) -> {
+			return a.getName().compareToIgnoreCase(b.getName());
+		});
+		
 		model.addAttribute("allReports", allReports);
 		model.addAttribute("allPermissions", UserPermissionLevel.validReportValues());
 		return "report/reporting";
