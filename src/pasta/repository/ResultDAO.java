@@ -236,6 +236,24 @@ public class ResultDAO{
 		return results;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public List<Date> getAllSubmissionDates(PASTAUser user, long assessmentId, boolean latestFirst, boolean includeGroup) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
+		if(user != null) {
+			restrictCriteriaUser(cr, user, includeGroup, assessmentId);
+		}
+		if(assessmentId > 0) {
+			cr.createCriteria("assessment").add(Restrictions.eq("id", assessmentId));
+		}
+		if(latestFirst) {
+			cr.addOrder(Order.desc("submissionDate"));
+		} else {
+			cr.addOrder(Order.asc("submissionDate"));
+		}
+		cr.setProjection(Projections.property("submissionDate"));
+		return cr.list();
+	}
+	
 	public List<AssessmentResult> getResultsForMultiUserAssessment(List<PASTAUser> users,
 			long assessmentId, int resultCount, boolean latestFirst) {
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
