@@ -858,3 +858,19 @@ thead.rotate > tr > th > div > span {
   border-top: 1px solid #ccc;
   padding: 5px 10px;
 }
+
+.report-content .comment {
+	padding: 0.5em;
+}
+.report-content .comment:nth-child(odd) {
+	background-color: white;
+}
+.report-content .comment:nth-child(even) {
+	background-color: #F5F5F5;
+}
+.ratings-container .ratings {
+	width: 200px;
+}
+.ratings-container .ratings td.center {
+	text-align: center;
+}
