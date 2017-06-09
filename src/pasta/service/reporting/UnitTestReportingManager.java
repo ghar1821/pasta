@@ -38,9 +38,12 @@ public class UnitTestReportingManager {
 	@Autowired
 	private UserManager userManager;
 	
-	public String getAllTestsSummary(Assessment assessment) {
+	public ObjectNode getAllTestsSummaryJSON(Assessment assessment) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root = mapper.createObjectNode();
+		
 		if(assessment.getAllUnitTests().isEmpty()) {
-			return "";
+			return root;
 		}
 		
 		Collection<PASTAUser> students = userManager.getStudentList();
@@ -55,8 +58,6 @@ public class UnitTestReportingManager {
 			testNames.addAll(test.getTest().getAllTestNames());
 		}
 		
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode root = mapper.createObjectNode();
 		
 		ArrayNode nameIndexNode = mapper.createArrayNode();
 		for(String testName : testNames) {
@@ -73,7 +74,7 @@ public class UnitTestReportingManager {
 		for(Map.Entry<String, List<AssessmentResult>> student : allResults.entrySet()) {
 			ObjectNode studentNode = mapper.createObjectNode();
 			String unikey = student.getKey();
-			studentNode.put("unikey", unikey);
+			studentNode.put("username", unikey);
 			int[] attempts = getAttemptsUntilCorrect(student.getValue(), testNames);
 			ArrayNode attemptsNode = mapper.createArrayNode();
 			for(int i = 0; i < attempts.length; i++) {
@@ -118,7 +119,11 @@ public class UnitTestReportingManager {
 		root.set("testMeansCompleted", meansCompletedNode);
 		root.set("testPercentComplete", percentCompleteNode);
 		
-		return root.toString();
+		return root;
+	}
+	
+	public String getAllTestsSummary(Assessment assessment) {
+		return getAllTestsSummaryJSON(assessment).toString();
 	}
 	
 	/**
