@@ -126,6 +126,8 @@ $(".edit-permissions").on("click", function() {
 	closeButton.on("click", function() {
 		bPopup.close();
 	});
+
+	bPopup.reposition();
 });
 
 function savePermissions(id, selectedPermissions, messages, oPermissions, selectedPermissionTexts) {
