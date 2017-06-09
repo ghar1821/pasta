@@ -143,9 +143,6 @@ public class ReportingController {
 		Report report = reportingManager.getReport(reportId);
 		if(reportingManager.userCanViewReport(user, report)) {
 			switch(reportId) {
-			case "test":
-				node.put("callback", "displayTest");
-				break;
 			case "mark-histograms": {
 				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
 				ArrayNode assessmentsNode = mapper.createArrayNode();
