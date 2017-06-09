@@ -837,3 +837,24 @@ th.handMarkingTable,td.handMarkingTable {
 	width: 100%;
 	margin: 1em 0;
 }
+
+thead.rotate > tr > th {
+	height: 100px;
+	white-space: nowrap;
+	vertical-align: bottom;	
+	background-color:transparent;
+}
+thead.rotate > tr > th[class^='sorting'] {
+	background-position: bottom right; /*Backwards compat.*/
+	background-position: bottom right 7px;
+}
+thead.rotate > tr > th > div {
+  transform: 
+    translate(-5px, 0px)
+    rotate(-45deg);
+  width: 30px;
+}
+thead.rotate > tr > th > div > span {
+  border-top: 1px solid #ccc;
+  padding: 5px 10px;
+}

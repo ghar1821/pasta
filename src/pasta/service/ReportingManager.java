@@ -28,7 +28,8 @@ public class ReportingManager implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		List<Report> reports = Arrays.asList(
 				new Report("test", "Test Report", UserPermissionLevel.INSTRUCTOR),
-				new Report("mark-histograms", "Assessment Marks", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR)
+				new Report("mark-histograms", "Assessment Marks", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
+				new Report("unit-test-attempts", "Unit Test Attempts", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR)
 		);
 		for(Report report : reports) {
 			Report saved = getReport(report.getId());

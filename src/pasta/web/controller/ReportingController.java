@@ -61,6 +61,7 @@ import pasta.service.AssessmentManager;
 import pasta.service.ReportingManager;
 import pasta.service.UserManager;
 import pasta.service.reporting.AssessmentReportingManager;
+import pasta.service.reporting.UnitTestReportingManager;
 import pasta.web.WebUtils;
 
 /**
@@ -92,6 +93,9 @@ public class ReportingController {
 	
 	@Autowired
 	private AssessmentReportingManager assessmentReportManager;
+	
+	@Autowired
+	private UnitTestReportingManager unitTestReportManager;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
@@ -142,7 +146,7 @@ public class ReportingController {
 			case "test":
 				node.put("callback", "displayTest");
 				break;
-			case "mark-histograms":
+			case "mark-histograms": {
 				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
@@ -154,6 +158,19 @@ public class ReportingController {
 				
 				node.put("callback", "displayHistograms");
 				break;
+			}
+			case "unit-test-attempts": {
+				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				ArrayNode assessmentsNode = mapper.createArrayNode();
+				for(Assessment assessment : allAssessments) {
+					ObjectNode summaryNode = unitTestReportManager.getAllTestsSummaryJSON(assessment);
+					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
+					assessmentsNode.add(summaryNode);
+				}
+				node.set("assessments", assessmentsNode);
+				node.put("callback", "displayUnitTestAttempts");
+				break;
+			}
 			}
 		} else {
 			node.put("error", "You are not allowed to view this report.");
