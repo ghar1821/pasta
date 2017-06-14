@@ -11,6 +11,8 @@ var displayCallbacks = {};
 			}
 		}
 	});
+	
+	Highcharts.getOptions().colors[0] = $(".tab-bar").css("background-color");
 })();
 
 $(document).on("click", ".load-report", function() {
