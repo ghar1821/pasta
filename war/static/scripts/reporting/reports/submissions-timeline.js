@@ -1,6 +1,12 @@
 (function() {
 
 	displayCallbacks["displaySubmissions"] = function(content, data) {
+		
+		if(!data.assessments || data.assessments.length == 0) {
+			$("<div/>").addClass("part").text("No assessments to view.").appendTo(content);
+			return;
+		}
+		
 		var form = $("<div/>").addClass("pasta-form no-width part").appendTo(content);
 		var selectDiv = $("<div/>").addClass("pf-item").appendTo(form);
 		

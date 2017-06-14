@@ -1,6 +1,12 @@
 (function() {
 
 	displayCallbacks["displayHistograms"] = function(content, allData) {
+		
+		if(!allData.assessments || allData.assessments.length == 0) {
+			$("<div/>").addClass("part").text("No assessments to view.").appendTo(content);
+			return;
+		}
+		
 		var form = $("<div/>").addClass("pasta-form no-width part").appendTo(content);
 		var row = $("<div/>").addClass("pf-horizontal two-col").appendTo(form);
 		var selectDiv = $("<div/>").addClass("pf-item").appendTo(row);
