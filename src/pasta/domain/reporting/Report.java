@@ -15,8 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -32,6 +30,9 @@ public class Report {
 	@Column(nullable = false)
 	private String name;
 	
+	@Column
+	private String description;
+	
 	@ElementCollection(targetClass = UserPermissionLevel.class, fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	@CollectionTable (name = "report_permissions", joinColumns=@JoinColumn(name = "report_id"))
@@ -43,9 +44,10 @@ public class Report {
 		
 	}
 	
-	public Report(String id, String name, UserPermissionLevel... permissions) {
+	public Report(String id, String name, String description, UserPermissionLevel... permissions) {
 		this.id = id;
 		this.name = name;
+		this.description = description;
 		this.permissionLevels = new HashSet<>();
 		for(UserPermissionLevel permission : permissions) {
 			addPermissionLevel(permission);
@@ -64,6 +66,13 @@ public class Report {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public Set<UserPermissionLevel> getPermissionLevels() {

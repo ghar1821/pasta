@@ -27,10 +27,18 @@ public class ReportingManager implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		List<Report> reports = Arrays.asList(
-				new Report("mark-histograms", "Assessment Marks", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
-				new Report("unit-test-attempts", "Unit Test Attempts", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
-				new Report("assessment-ratings", "Assessment Feedback", UserPermissionLevel.INSTRUCTOR),
-				new Report("submissions-timeline", "Submissions Timeline", UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR)
+				new Report("mark-histograms", "Assessment Marks", 
+						"View a breakdown of total marks for each assessment.",
+						UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
+				new Report("unit-test-attempts", "Unit Test Attempts",
+						"See how many attempts each student required before being able to complete each unit test case.",
+						UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR),
+				new Report("assessment-ratings", "Assessment Feedback",
+						"View anonymous student feedback on assessments.",
+						UserPermissionLevel.INSTRUCTOR),
+				new Report("submissions-timeline", "Submissions Timeline",
+						"View submission counts over time, as well as a list of students who have not yet started each assessment.",
+						UserPermissionLevel.INSTRUCTOR, UserPermissionLevel.TUTOR)
 		);
 		for(Report report : reports) {
 			Report saved = getReport(report.getId());
@@ -39,9 +47,10 @@ public class ReportingManager implements InitializingBean {
 				saveOrUpdate(report);
 				continue;
 			}
-			if(!report.getName().equals(saved.getName())) {
-				logger.info("Updating report name: " + report.getId());
+			if(!report.getName().equals(saved.getName()) || !report.getDescription().equals(saved.getDescription())) {
+				logger.info("Updating report details: " + report.getId());
 				saved.setName(report.getName());
+				saved.setDescription(report.getDescription());
 				saveOrUpdate(saved);
 			}
 		}
