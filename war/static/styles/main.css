@@ -877,3 +877,15 @@ thead.rotate > tr > th > div > span {
 .ratings-container .ratings td.center {
 	text-align: center;
 }
+
+.not-started-container {
+	display: flex;
+	flex-flow: column wrap;
+	align-content: flex-start;
+	max-height: 200px;
+	overflow: auto;
+}
+.not-started {
+	width: 8em;
+	margin: 0.25em;
+}

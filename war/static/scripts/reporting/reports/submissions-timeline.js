@@ -10,15 +10,18 @@
 		var select = createAssessmentSelect(content, data.assessments);
 		select.appendTo(selectInputDiv);
 		
-		var graphDiv = $("<div/>").addClass("graph-container part").appendTo(content);
+		var graphDiv = $("<div/>").addClass("graph-container part hidden").appendTo(content);
+		var notStartedDiv = $("<div/>").addClass("part hidden").appendTo(content);
 		
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
-			graphDiv.empty();
+			graphDiv.empty().removeClass("hidden");
+			notStartedDiv.empty().removeClass("hidden");
 			plotSubmissions(assessment, graphDiv);
+			showNotStarted(assessment, notStartedDiv);
 			loading.remove();
 		});
 	}
@@ -92,6 +95,23 @@
 		    		valueSuffix: "%"
 		    	}
 		    }]
+		});
+	}
+	
+	function showNotStarted(assessment, container) {
+		var notStarted = assessment.noSubmission;
+		container.append($("<p/>").css("font-weight", "bold").text("The following students have not yet made any submissions for this assessment:"));
+		if(!notStarted || notStarted.length == 0) {
+			container.append($("<p/>").text("Everyone has made at least one submission."));
+			return;
+		}
+		notStarted.sort();
+		var notStartedDiv = $("<div/>").addClass("not-started-container").appendTo(container);
+		$.each(notStarted, function(i, username) {
+			$("<div/>")
+				.addClass("not-started")
+				.append($("<a/>").attr("href", "../student/" + username + "/home/").text(username))
+				.appendTo(notStartedDiv);
 		});
 	}
 	
