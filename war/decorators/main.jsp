@@ -25,8 +25,8 @@
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
-		<script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
-		<script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/4.2.2/highcharts.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/4.2.2/modules/exporting.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/locale/en-au.js"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
