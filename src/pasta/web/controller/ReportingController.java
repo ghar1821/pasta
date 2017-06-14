@@ -144,7 +144,7 @@ public class ReportingController {
 		if(reportingManager.userCanViewReport(user, report)) {
 			switch(reportId) {
 			case "mark-histograms": {
-				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
 					ObjectNode summaryNode = assessmentReportManager.getMarksSummaryJSON(assessment);
@@ -157,7 +157,7 @@ public class ReportingController {
 				break;
 			}
 			case "unit-test-attempts": {
-				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
 					ObjectNode summaryNode = unitTestReportManager.getAllTestsSummaryJSON(assessment);
@@ -169,7 +169,7 @@ public class ReportingController {
 				break;
 			}
 			case "assessment-ratings": {
-				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
 					ObjectNode summaryNode = assessmentReportManager.getAssessmentRatingsJSON(assessment);
@@ -181,7 +181,7 @@ public class ReportingController {
 				break;
 			}
 			case "submissions-timeline": {
-				Collection<Assessment> allAssessments = assessmentManager.getAssessmentList();
+				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
 					ObjectNode summaryNode = assessmentReportManager.getAssessmentSubmissionsJSON(assessment);
