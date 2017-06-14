@@ -901,3 +901,8 @@ thead.rotate > tr > th > div > span {
 	width: 8em;
 	margin: 0.25em;
 }
+
+.warning {
+	font-weight: bold;
+	color: red;
+}

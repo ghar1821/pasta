@@ -122,12 +122,32 @@ public class ReportingController {
 	 * @return "redirect:/login" or "user/admin".
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
-		List<Report> allReports = reportingManager.getAllReports(user);
+	public String viewReports(@ModelAttribute("user") PASTAUser user, ModelMap model) {
+		return viewReportPage(user, model);
+	}
+	
+	@RequestMapping(value = "user/{otherUser}/", method = RequestMethod.GET)
+	public String viewReportsAsUser(@ModelAttribute("user") PASTAUser user, 
+			@PathVariable("otherUser") String otherUsername, 
+			ModelMap model) {
+		PASTAUser otherUser = userManager.getUser(otherUsername);
+		if(user.equals(otherUser)) {
+			return "redirect:../../";
+		}
+		if(otherUser.isInstructor()) {
+			WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		}
+		model.addAttribute("pretending", otherUser);
+		return viewReportPage(otherUser, model);
+	}
+	
+	private String viewReportPage(PASTAUser asUser, ModelMap model) {
+		List<Report> allReports = reportingManager.getAllReports(asUser);
 		Collections.sort(allReports, (a,  b) -> {
 			return a.getName().compareToIgnoreCase(b.getName());
 		});
-		
 		model.addAttribute("allReports", allReports);
 		model.addAttribute("allPermissions", UserPermissionLevel.validReportValues());
 		return "report/reporting";
@@ -198,6 +218,21 @@ public class ReportingController {
 		}
 		
 		return getJSONString(node);
+	}
+	
+	@RequestMapping(value = "user/{otherUser}/{reportId}/", method = RequestMethod.GET)
+	@ResponseBody
+	public String loadReportAsUser(@PathVariable("reportId") String reportId, 
+			@ModelAttribute("user") PASTAUser user, 
+			@PathVariable("otherUser") String otherUserName, 
+			ModelMap model) {
+		PASTAUser otherUser = userManager.getUser(otherUserName);
+		if(otherUser.isInstructor()) {
+			WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		}
+		return loadReport(reportId, otherUser, model);
 	}
 	
 	@RequestMapping(value = "savePermissions/{reportId}/", method = RequestMethod.POST)

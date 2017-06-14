@@ -35,7 +35,17 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="tag" tagdir="/WEB-INF/tags"%>
 <%@ taglib prefix="pasta" uri="pastaTag"%>
 
-<h1>Reporting</h1>
+<h1>Reporting<c:if test="${not empty pretending}"> - ${pretending.username}</c:if></h1>
+
+<c:if test="${not empty pretending}">
+	<div class='section'>
+		<div class='part'>
+			<span class='warning'><span class='fa fa-warning'></span> Warning:</span>
+			You are viewing reports as if you were <a href='<c:url value="/student/${pretending.username}/home/"/>'>${pretending.username}</a>.
+			Click <a href='<c:url value="/reporting/"/>'>here</a> to view your own reports.
+		</div>
+	</div>
+</c:if>
 
 <c:if test="${empty allReports}">
 	<div class='section'>
@@ -50,7 +60,7 @@ either expressed or implied, of the PASTA Project.
 			<h3 class='report-name'>${report.name}</h3>
 			<p>${report.description}</p>
 		</div>
-		<c:if test="${user.instructor}">
+		<c:if test="${user.instructor and (empty pretending or pretending.instructor) }">
 			<div class='report-controls part'>
 				<span class='fa fa-eye'></span>
 				<c:choose>
