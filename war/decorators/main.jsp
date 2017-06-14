@@ -20,6 +20,7 @@
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/jquery.collapsible.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
@@ -34,6 +35,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.search.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
@@ -88,12 +90,12 @@
 	            $(".help").each(function() {
 	            	$(this).attr("helpText", $(this).html());
 	            	$(this).empty();
-	            	$(this).addClass("loaded")
 	            	$(this).tipsy({
 	            		gravity: "w",
 	            		title: "helpText",
 	            		html: true
 	            	});
+	            	$(this).addClass("loaded");
 	            });
 	            
 	            var specificTitle = $('#body h1:first').text();
