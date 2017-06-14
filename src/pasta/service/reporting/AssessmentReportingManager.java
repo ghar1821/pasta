@@ -191,6 +191,10 @@ public class AssessmentReportingManager {
 			if(last.before(assessment.getDueDate())) {
 				last = getDay(assessment.getDueDate());
 			}
+			Date today = getDay(new Date());
+			if(last.after(today)) {
+				last = today;
+			}
 			while(!cal.getTime().after(last)) {
 				dates.add(cal.getTime());
 				cal.add(Calendar.DAY_OF_YEAR, 1);
