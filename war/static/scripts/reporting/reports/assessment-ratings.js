@@ -150,7 +150,6 @@
 			var commentDiv = $("<div>").addClass("comment").appendTo(div);
 			var text = comment.split(/\r?\n/);
 			$.each(text, function(j, part) {
-				console.log(part);
 				if(part) {
 					$("<span/>").text(part).appendTo(commentDiv);
 				}
