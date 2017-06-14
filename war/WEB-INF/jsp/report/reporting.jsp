@@ -37,7 +37,13 @@ either expressed or implied, of the PASTA Project.
 
 <h1>Reporting</h1>
 
-
+<c:if test="${empty allReports}">
+	<div class='section'>
+		<div class='part'>
+			<span>No reports to display at this time.</span>
+		</div>
+	</div>
+</c:if>
 <c:forEach var="report" items="${allReports}">
 	<div class='report'>
 		<div class='section-title'>
