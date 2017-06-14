@@ -47,6 +47,9 @@
 			title: {
 		        text: 'Submissions for ' + data.assessment.name
 		    },
+		    tooltip: {
+		    	shared: true
+		    },
 		    xAxis: {
 		    	type: 'datetime',
 		    },
@@ -71,7 +74,6 @@
 		            }
 		    	},
 		    	labels: {
-		            format: '{value}%',
 		            style: {
 		                color: Highcharts.getOptions().colors[1]
 		            }
@@ -79,20 +81,30 @@
 		    	opposite: true,
 		    	allowDecimals: false,
 		    	min: 0,
-		    	max: 100
+		    	max: data.studentCount
 		    }],
 		    series: [{
 		    	name: "Student Submissions",
 		    	type: 'spline',
 		    	data: zip(dates, data.submissionCounts),
 		    	yAxis: 0,
+		    	marker: {
+		    		enabled: false
+		    	}
 		    }, {
 		    	name: "Students Started",
 		    	type: 'spline',
-		    	data: zip(dates, formatPercentages(data.startedCounts, data.studentCount)),
+		    	data: zip(dates, data.startedCounts),
 		    	yAxis: 1,
 		    	tooltip: {
-		    		valueSuffix: "%"
+		    		pointFormatter: function() {
+		    			var perc = round(this.y / data.studentCount * 100, 0);
+		    			return '<span style="color:' + this.color + '">\u25CF</span> ' 
+		    				+ this.series.name + ': <b>' + this.y + '</b> (' + perc + '%)<br/>';
+		    		}
+		    	},
+		    	marker: {
+		    		enabled: false
 		    	}
 		    }]
 		});
