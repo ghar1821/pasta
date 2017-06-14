@@ -1,5 +1,18 @@
 var displayCallbacks = {};
 
+(function() {
+	$(".report").collapsible({
+		collapsed: true, 
+		"heading-selector": ".section-title",
+		onExpand: function() {
+			var report = $(this);
+			if(!report.is(".loaded")) {
+				loadReport(report);
+			}
+		}
+	});
+})();
+
 $(document).on("click", ".load-report", function() {
 	var container = $(this).closest(".report");
 	loadReport(container);
@@ -25,6 +38,7 @@ function loadReport(container) {
 			$("<a/>").text("Try again.").addClass("load-report").appendTo(content);
 		},
 		success : function(data) {
+			container.addClass("loaded");
 			content.empty();
 			var error = data['error'];
 			if(error) {
@@ -35,9 +49,6 @@ function loadReport(container) {
 			if(typeof callback === 'function') {
 				callback(content, data);
 			}
-		},
-		complete : function() {
-			container.find("button.load-report").remove();
 		}
 	});
 }

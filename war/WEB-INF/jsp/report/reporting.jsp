@@ -39,8 +39,11 @@ either expressed or implied, of the PASTA Project.
 
 
 <c:forEach var="report" items="${allReports}">
-	<div class='report section'>
-		<h3 class='section-title report-name'>${report.name}</h3>
+	<div class='report'>
+		<div class='section-title'>
+			<h3 class='report-name'>${report.name}</h3>
+			<p>${report.description}</p>
+		</div>
 		<c:if test="${user.instructor}">
 			<div class='report-controls part'>
 				<span class='fa fa-eye'></span>
@@ -54,8 +57,7 @@ either expressed or implied, of the PASTA Project.
 				</c:choose>
 			</div>
 		</c:if>
-		<div class='report-content part' data-report='${report.id}'>
-			<button class='load-report'>Load</button>
+		<div class='report-content' data-report='${report.id}'>
 		</div>
 	</div>
 </c:forEach>

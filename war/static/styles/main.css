@@ -790,6 +790,18 @@ th.handMarkingTable,td.handMarkingTable {
 	height: 90vh;
 }
 
+.report {
+	background-color: white;
+}
+.report + .report {
+	margin-top: 1em;
+}
+.report .clb-content-wrapper {
+	overflow: visible;
+	width: 100%;
+	background-color: white;
+}
+
 .report .permission {
 	padding: 0 0.8em;
 }
