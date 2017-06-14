@@ -10,7 +10,7 @@
 		var select = createAssessmentSelect(content, data.assessments);
 		select.appendTo(selectInputDiv);
 		
-		var ratingsDiv = $("<div/>").addClass("ratings-container").appendTo(content);
+		var ratingsDiv;
 		
 		select.chosen({
 			width: '100%'
@@ -18,6 +18,9 @@
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
+			if(!ratingsDiv) {
+				ratingsDiv = $("<div/>").addClass("ratings-container").appendTo(content);
+			}
 			ratingsDiv.empty();
 			
 			ratingsDiv.append(createRatingsDiv(assessment));

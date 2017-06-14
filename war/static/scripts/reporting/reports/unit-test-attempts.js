@@ -12,7 +12,7 @@
 		
 		content.append(explanation());
 		
-		var tableDiv = $("<div/>").addClass("table-container part").appendTo(content);
+		var tableDiv;
 		
 		select.chosen({
 			width: '100%'
@@ -20,6 +20,9 @@
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
+			if(!tableDiv) {
+				tableDiv = $("<div/>").addClass("table-container part").appendTo(content);
+			}
 			tableDiv.empty();
 			
 			var table = createTable(assessment);

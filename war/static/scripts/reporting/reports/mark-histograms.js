@@ -25,13 +25,17 @@
 			text: "Value",
 		}).appendTo(sliderLabelDiv);
 		
-		var graph = $("<div/>").addClass("graph-container part").appendTo(content);
+		var graph;
 		
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
 			var assessment = $(this).find("option:selected").data("assessment");
 			var numBuckets = idealBuckets(assessment.maxMark);
+			
+			if(!graph) {
+				graph = $("<div/>").addClass("graph-container part").appendTo(content);
+			}
 			
 			sliderDiv.toggleClass("hidden", assessment.maxMark <= 1);
 			slider.attr("max", Math.max(1, assessment.maxMark));

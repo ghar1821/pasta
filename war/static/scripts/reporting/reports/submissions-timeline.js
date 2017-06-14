@@ -10,16 +10,21 @@
 		var select = createAssessmentSelect(content, data.assessments);
 		select.appendTo(selectInputDiv);
 		
-		var graphDiv = $("<div/>").addClass("graph-container part hidden").appendTo(content);
-		var notStartedDiv = $("<div/>").addClass("part hidden").appendTo(content);
+		var graphDiv;
+		var notStartedDiv;
 		
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
-			graphDiv.empty().removeClass("hidden");
-			notStartedDiv.empty().removeClass("hidden");
+			
+			if(!graphDiv) {
+				graphDiv = $("<div/>").addClass("graph-container part").appendTo(content);
+				notStartedDiv = $("<div/>").addClass("part").appendTo(content);
+			}
+			graphDiv.empty();
+			notStartedDiv.empty();
 			plotSubmissions(assessment, graphDiv);
 			showNotStarted(assessment, notStartedDiv);
 			loading.remove();
