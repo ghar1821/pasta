@@ -74,8 +74,72 @@
 	}
 	
 	function plotAssessmentMarks(assessment, numBuckets, container) {
-		var plotData = getPlotData(assessment.marks.slice(), numBuckets, assessment.maxMark);
-		Highcharts.chart(container[0], {
+		var plotData = getPlotData(assessment.marks.slice(), numBuckets, assessment.maxMark, assessment.yourMark);
+		if(assessment.classMarks) {
+			plotData.classCounts = getPlotData(assessment.classMarks.slice(), numBuckets, assessment.maxMark).counts;
+		}
+		
+		var plotOptions = {};
+		var tooltip = {};
+		var legend = {
+			enabled: false	
+		};
+		var series;
+		var columnLabels = {
+			enabled: true,
+			formatter: function() {
+				var match = this.axis ? plotData.buckets[this.x] : this.x;
+				if(match === plotData.highlightBucket) {
+					return "Your mark";
+				}
+				return undefined;
+			}
+		};
+		
+		if(assessment.classMarks) {
+			plotOptions = {
+				column: {
+					stacking: true
+				}
+			};
+			tooltip = {
+		        headerFormat: 'Mark: <b>{point.x}</b><br/>',
+		        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
+		    };
+			legend = {
+				enabled: true	
+			};
+			series = [{
+				name: "Other class submissions",
+				data: plotData.counts,
+				pointPadding: 0,
+		        groupPadding: 0,
+			},{
+				name: "Your class submissions",
+				data: plotData.classCounts,
+				pointPadding: 0,
+		        groupPadding: 0,
+			}];
+		} else {
+			var highlightIndex = plotData.buckets.indexOf(plotData.highlightBucket);
+			series = [{
+				name: "Submissions",
+				data: plotData.counts.map(function(point, i) {
+					if(i == highlightIndex) {
+						return {
+							y: point,
+							color: Colours.brighter(Highcharts.getOptions().colors[0], 0.4),
+						};
+					}
+					return point;
+				}),
+				pointPadding: 0,
+		        groupPadding: 0,
+		        dataLabels: columnLabels
+			}];
+		}
+		
+		var chart = Highcharts.chart(container[0], {
 			chart: {
 				type: 'column'
 			},
@@ -91,24 +155,22 @@
 			yAxis: {
 				title: {
 					text: "Count"
-				}
+				},
+				allowDecimals: false,
+				stackLabels: columnLabels
 			},
-			legend: {
-				enabled: false
-			},
-			series: [{
-				name: "Submissions",
-				data: plotData.counts,
-				pointPadding: 0,
-		        groupPadding: 0,
-			}],
+			plotOptions: plotOptions,
+			legend: legend,
+			tooltip: tooltip,
+			series: series,
 		});
 	}
 	
-	function getPlotData(data, numBuckets, max) {
+	function getPlotData(data, numBuckets, max, yourMark) {
 		data.sort(function(a, b) {
 			return a - b
 		});
+		var highlightBucket;
 		var step = Math.round((max / numBuckets) * 100) / 100;
 		var buckets = ["N/A"];
 		var counts = [0];
@@ -119,15 +181,27 @@
 			counts[0]++;
 			data.shift();
 		}
+		if(yourMark !== undefined && yourMark < 0) {
+			highlightBucket = buckets[0];
+		}
 	
+		var newBucket;
 		for (var i = 0; i < numBuckets; i++) {
 			var start = next;
 			if (i < numBuckets - 1) {
 				next = Math.round((next + step) * 100) / 100;
-				buckets.push("[" + start + "-" + next + ")");
+				newBucket = "[" + start + "-" + next + ")";
+				buckets.push(newBucket);
+				if(yourMark !== undefined && highlightBucket === undefined && yourMark < next) {
+					highlightBucket = newBucket;
+				}
 			} else {
 				next = max;
-				buckets.push("[" + start + "-" + next + "]");
+				newBucket = "[" + start + "-" + next + "]";
+				buckets.push(newBucket);
+				if(yourMark !== undefined && highlightBucket === undefined && yourMark < next) {
+					highlightBucket = newBucket;
+				}
 				counts.push(data.length);
 				break;
 			}
@@ -145,7 +219,8 @@
 		
 		return {
 			"buckets" : buckets,
-			"counts" : counts
+			"counts" : counts,
+			"highlightBucket" : highlightBucket
 		};
 	}
 	

@@ -83,20 +83,41 @@ public class AssessmentReportingManager {
 	}
 	
 	public ObjectNode getMarksSummaryJSON(Assessment assessment) {
+		return getMarksSummaryJSON(assessment, null);
+	}
+	
+	public ObjectNode getMarksSummaryJSON(Assessment assessment, PASTAUser user) {
 		Collection<PASTAUser> students = userManager.getStudentList();
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode marksSummaryNode = mapper.createObjectNode();
 		marksSummaryNode.put("maxMark", assessment.getMarks());
+		
+		Set<PASTAUser> tutoredStudents = new TreeSet<>();
+		if(user != null && user.isTutor()) {
+			tutoredStudents.addAll(userManager.getTutoredStudents(user));
+		}
+		
+		Double yourMark = null;
 		ArrayNode marksNode = mapper.createArrayNode();
-		for(PASTAUser user : students) {
-			AssessmentResult result = resultDAO.getLatestIndividualResult(user, assessment.getId());
+		ArrayNode classMarksNode = mapper.createArrayNode();
+		for(PASTAUser student : students) {
+			AssessmentResult result = resultDAO.getLatestIndividualResult(student, assessment.getId());
 			double mark = -1;
 			if(result != null) {
 				mark = result.getMarks();
 			}
-			marksNode.add(mark);
+			if(student.equals(user)) {
+				yourMark = mark;
+			}
+			(tutoredStudents.contains(student) ? classMarksNode : marksNode).add(mark);
 		}
 		marksSummaryNode.set("marks", marksNode);
+		if(!tutoredStudents.isEmpty()) {
+			marksSummaryNode.set("classMarks", classMarksNode);
+		}
+		if(yourMark != null) {
+			marksSummaryNode.put("yourMark", yourMark);
+		}
 		return marksSummaryNode;
 	}
 	

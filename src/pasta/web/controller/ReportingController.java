@@ -147,7 +147,7 @@ public class ReportingController {
 				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
 				ArrayNode assessmentsNode = mapper.createArrayNode();
 				for(Assessment assessment : allAssessments) {
-					ObjectNode summaryNode = assessmentReportManager.getMarksSummaryJSON(assessment);
+					ObjectNode summaryNode = assessmentReportManager.getMarksSummaryJSON(assessment, user);
 					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
 					assessmentsNode.add(summaryNode);
 				}
