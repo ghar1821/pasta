@@ -123,11 +123,19 @@
 	
 	function showNotStarted(assessment, container) {
 		var notStarted = assessment.noSubmission;
-		container.append($("<p/>").css("font-weight", "bold").text("The following students have not yet made any submissions for this assessment:"));
 		if(!notStarted || notStarted.length == 0) {
 			container.append($("<p/>").text("Everyone has made at least one submission."));
 			return;
 		}
+		var count = notStarted.length;
+		container.append($("<p/>").css("font-weight", "bold").text(count + " student" + (count == 1 ? " has" : "s have") + " not yet made any submissions for this assessment."));
+		$(" <a/>").text("Click here to show students with no submission.").on("click", function() {
+			$(this).remove();
+			showNotStartedList(notStarted, container);
+		}).appendTo(container);
+	}
+	
+	function showNotStartedList(notStarted, container) {
 		notStarted.sort();
 		var notStartedDiv = $("<div/>").addClass("not-started-container").appendTo(container);
 		$.each(notStarted, function(i, username) {
