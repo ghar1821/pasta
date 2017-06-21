@@ -114,4 +114,53 @@ public class PASTAJUnitTest {
     	scn.close();
     	return content;
     }
+    
+    protected final File getTestOutputFile(String testName) {
+    	return new File("userout/", testName);
+    }
+    
+    protected final File getTestMetaFile(String testName) {
+    	return new File("usermeta/", testName);
+    }
+    
+    protected final boolean testTimedOut(String testName) {
+    	return new File("usermeta/", testName + ".timedout").exists();
+    }
+    
+    protected final boolean testSegfaulted(String testName) {
+    	return new File("usermeta/", testName + ".segfault").exists();
+    }
+    
+    private String getMetaFileLine(String testName, int line) {
+    	try {
+    		return readFileLines(getTestMetaFile(testName))[line-1];
+    	} catch(FileNotFoundException e) {
+    		return null;
+    	}
+    }
+    
+    protected final Double getTestRealTime(String testName) {
+    	String line = getMetaFileLine(testName, 1);
+    	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
+    }
+    
+    protected final Double getTestUserTime(String testName) {
+    	String line = getMetaFileLine(testName, 2);
+    	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
+    }
+    
+    protected final Double getTestSystemTime(String testName) {
+    	String line = getMetaFileLine(testName, 3);
+    	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
+    }
+    
+    protected final Integer getTestMemoryUsage(String testName) {
+    	String line = getMetaFileLine(testName, 4);
+    	return line == null ? null : Integer.parseInt(line.split(" ")[1]);
+    }
+    
+    protected final Integer getTestExitCode(String testName) {
+    	String line = getMetaFileLine(testName, 5);
+    	return line == null ? null : Integer.parseInt(line.split(" ")[1]);
+    }
 }
