@@ -27,7 +27,7 @@
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
-			if(data.assessments.length > 0 && data.assessments[0].summaries) {
+			if(assessment.summaries) {
 				if(!controls) {
 					controls = $("<div/>").addClass("part").appendTo(content);
 				}
@@ -40,8 +40,10 @@
 			var studentTable = createStudentTable(assessment);
 			tableDiv.data("studentTable", studentTable);
 			
-			var classTable = createClassTable(assessment);
-			tableDiv.data("classTable", classTable);
+			if(assessment.summaries) {
+				var classTable = createClassTable(assessment);
+				tableDiv.data("classTable", classTable);
+			}
 			
 			showTable(tableDiv, "studentTable", assessment.studentResults.length == 1);
 			loading.remove();
