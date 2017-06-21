@@ -37,11 +37,11 @@
 			toggleBar.css({
 				"color": settings.style.color,
 				"background-color": settings.style.background,
-				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
+				"border": (settings.border ? "1px solid " + settings.style.hover.background : "none"),
 				"border-radius": settings["border-radius"] + " 0 0 " + settings["border-radius"],
 			});
 			contentBar.css({
-				"border": (settings.border ? "1px solid " + settings.style.background : "none"),
+				"border": (settings.border ? "1px solid " + settings.style.hover.background : "none"),
 				"border-left-width": "0",
 				"border-radius": "0 " + settings["border-radius"] + " " + settings["border-radius"] + " 0",
 			});
@@ -53,7 +53,7 @@
 				});
 				if(settings.border) {
 					$(this).add(contentBar).css({
-						"border-color":e.type === "mouseenter"?settings.style.hover.background:settings.style.background
+						"border-color":e.type === "mouseenter"?settings.style.background:settings.style.hover.background
 					});
 				}
 			});
