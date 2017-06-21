@@ -9,6 +9,8 @@
 		<mkdir dir="${binDir}"/>
 		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
 		<chmod file="${binDir}" perm="g+ws" type="dir" />
+		<mkdir dir="${binDir}/${bbuseroutfile}"/>
+		<mkdir dir="${binDir}/${bbmetafile}"/>
 	</target>
 	<target name="makeWritable">
 		{$?{hasWritable}
@@ -32,8 +34,6 @@
 				<exclude name="**/*.h"/>
 				<exclude name="**/*.java"/>
                 <exclude name="build.xml"/>
-                <exclude name="result.xml"/>
-                <exclude name="run.errors"/>
             	<exclude name="${binDir}/**/*"/>
             </fileset>
         </copy>
@@ -68,7 +68,6 @@
     	<echo message="Deleting .o files from '${binDir}'"/>
 		<delete>
 			<fileset dir="${binDir}" includes="**/*.o"/>
-			<fileset dir="${binDir}" includes="${solutionName}"/>
 		</delete>
     	<echo message="Deleting .class files from '${binDir}'"/>
 		<delete>
@@ -77,7 +76,11 @@
     </target>
     <target name="build" depends="init, setup">
     	<echo message="Using gcc to compile C code"/>
-		<apply executable="gcc" parallel="true" failonerror="true">
+		<apply executable="${gccPath}" 
+			parallel="true" 
+			failonerror="true" 
+			error="${outDirectory}/compile.errors"
+			append="true">
 			<fileset dir="${basedir}">
         		<exclude name="origSubmission/**/*"/>
         		<exclude name="${binDir}/**/*"/>
@@ -88,6 +91,7 @@
 			<srcfile />
 			<arg value="-lm"/>
     	</apply>
+    	<record name="${outDirectory}/compile.errors" loglevel="warn" action="start" append="true"/>
 		<echo message="Using javac to compile Java code"/>
         <javac
             fork="yes"
@@ -102,9 +106,10 @@
         	<exclude name="${binDir}/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
+    	<record name="${outDirectory}/compile.errors" action="stop"/>
     </target>
 
-    <target name="run">
+    <target name="run" depends="init">
         <echo message="Executing '${testName}'"/>
     	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
     </target>
@@ -125,11 +130,11 @@
 			dir="${binDir}"
 			input="${binDir}/${bbinputfile}/${bbTestName}"
             output="${binDir}/${bbuseroutfile}/${bbTestName}"
-			error="${runErrorsFile}"
+			error="${outDirectory}/${runErrorsFile}"
     		resultproperty="errorCode"
 			append="true">
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
-    		<arg value="/usr/local/bin/pastarun" />
+    		<arg value="${binDirectory}/pastarun" />
     		<arg line="${timeoutPath} ${bbTestTimeoutFraction}" /> 
     		<arg value="./${solutionName}" /> 
 			<arg line="${bbTestCommandLine}" />
@@ -159,7 +164,7 @@
     	</if>
     </target>
 
-	<target name="test">
+	<target name="test" depends="init">
         <echo message="Running JUnit '${testName}'"/>
         <junit
             filtertrace="${filterStackTraces}"
@@ -170,5 +175,9 @@
             <test name="${testName}" outfile="${testOutputFile}" />
             <classpath refid="assessment.classpath"/>
         </junit>
+		<exec executable="mv" dir="${basedir}">
+			<arg value="${testOutputFile}.xml"/>
+			<arg value="${outDirectory}/"/>
+		</exec>
     </target>
 </project>
