@@ -38,7 +38,7 @@ public class UnitTestReportingManager {
 	@Autowired
 	private UserManager userManager;
 	
-	public ObjectNode getAllTestsSummaryJSON(Assessment assessment) {
+	public ObjectNode getAllTestsSummaryJSON(Assessment assessment, PASTAUser user) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode root = mapper.createObjectNode();
 		
@@ -47,10 +47,10 @@ public class UnitTestReportingManager {
 		}
 		
 		Collection<PASTAUser> students = userManager.getStudentList();
-		Map<String, List<AssessmentResult>> allResults = new LinkedHashMap<>();
-		for(PASTAUser user : students) {
-			List<AssessmentResult> studentResults = resultDAO.getAllResults(user, assessment.getId(), false, false);
-			allResults.put(user.getUsername(), studentResults);
+		Map<PASTAUser, List<AssessmentResult>> allResults = new LinkedHashMap<>();
+		for(PASTAUser student : students) {
+			List<AssessmentResult> studentResults = resultDAO.getAllResults(student, assessment.getId(), false, false);
+			allResults.put(student, studentResults);
 		}
 		
 		List<String> testNames = new ArrayList<>();
@@ -71,11 +71,11 @@ public class UnitTestReportingManager {
 		int[] countCompleted = new int[testNames.size()];
 		
 		ArrayNode studentResultsNode = mapper.createArrayNode();
-		for(Map.Entry<String, List<AssessmentResult>> student : allResults.entrySet()) {
+		for(Map.Entry<PASTAUser, List<AssessmentResult>> studentEntry : allResults.entrySet()) {
 			ObjectNode studentNode = mapper.createObjectNode();
-			String unikey = student.getKey();
-			studentNode.put("username", unikey);
-			int[] attempts = getAttemptsUntilCorrect(student.getValue(), testNames);
+			PASTAUser student = studentEntry.getKey();
+			studentNode.put("username", student.getUsername());
+			int[] attempts = getAttemptsUntilCorrect(studentEntry.getValue(), testNames);
 			ArrayNode attemptsNode = mapper.createArrayNode();
 			for(int i = 0; i < attempts.length; i++) {
 				String attempt = (attempts[i] < 0 ? "" : (attempts[i] == 0 ? "-" : String.valueOf(attempts[i])));
@@ -83,7 +83,7 @@ public class UnitTestReportingManager {
 				
 				if(attempts[i] >= 0) {
 					if(attempts[i] == 0) {
-						sum[i] += student.getValue().size() + 1;
+						sum[i] += studentEntry.getValue().size() + 1;
 					} else {
 						sum[i] += attempts[i];
 						sumCompleted[i] += attempts[i];
@@ -93,7 +93,9 @@ public class UnitTestReportingManager {
 				}
 			}
 			studentNode.set("attempts", attemptsNode);
-			studentResultsNode.add(studentNode);
+			if(user == null || user.isTutor() || user.equals(student)) {
+				studentResultsNode.add(studentNode);
+			}
 		}
 		root.set("studentResults", studentResultsNode);
 		
@@ -122,8 +124,12 @@ public class UnitTestReportingManager {
 		return root;
 	}
 	
+	public String getAllTestsSummary(Assessment assessment, PASTAUser user) {
+		return getAllTestsSummaryJSON(assessment, user).toString();
+	}
+	
 	public String getAllTestsSummary(Assessment assessment) {
-		return getAllTestsSummaryJSON(assessment).toString();
+		return getAllTestsSummaryJSON(assessment, null).toString();
 	}
 	
 	/**

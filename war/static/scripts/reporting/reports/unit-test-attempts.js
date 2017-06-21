@@ -31,17 +31,21 @@
 			}
 			tableDiv.empty();
 			
-			var table = createTable(assessment);
-			if(table) {
-				tableDiv.append(table);
-				table.DataTable({
+			var studentTable = createStudentTable(assessment);
+			if(studentTable) {
+				tableDiv.append(studentTable);
+				var options = {
 					scrollX : true,
 					iDisplayLength : 25,
 					"columnDefs": [ {
 						"type": "attempt",
 						"targets" : "_all"
 					}]
-				});
+				};
+				if(assessment.studentResults.length == 1) {
+					$.extend(options, noTableFeatures);
+				}
+				studentTable.DataTable(options);
 			} else {
 				tableDiv.append($("<span>").text("No unit tests."));
 			}
@@ -82,7 +86,15 @@
 		return explanation;
 	};
 	
-	function createTable(summary) {
+	var noTableFeatures = {
+		info: false,
+		lengthChange: false,
+		searching: false,
+		ordering: false,
+		paging: false,
+	};
+	
+	function createStudentTable(summary) {
 		if(!summary.studentResults) {
 			return null;
 		}
