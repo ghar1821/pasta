@@ -585,6 +585,8 @@ either expressed or implied, of the PASTA Project.
             	if($baseTest.is(".clb-content")) {
             		$baseTest.toggleClass("clb-content testCase");
             	}
+            	
+            	$baseTest.find("input[name$='.testName']").focus().select();
             }
             
             $(document).on("click", "input.toggleOutput", function() {
