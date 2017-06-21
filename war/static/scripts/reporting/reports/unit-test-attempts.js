@@ -18,6 +18,7 @@
 		
 		content.append(explanation());
 		
+		var controls;
 		var tableDiv;
 		
 		select.chosen({
@@ -26,30 +27,23 @@
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
+			if(data.assessments.length > 0 && data.assessments[0].summaries) {
+				if(!controls) {
+					controls = $("<div/>").addClass("part").appendTo(content);
+				}
+				updateControlsDiv(controls, false);
+			}
+			
 			if(!tableDiv) {
 				tableDiv = $("<div/>").addClass("table-container part").appendTo(content);
 			}
-			tableDiv.empty();
-			
 			var studentTable = createStudentTable(assessment);
-			if(studentTable) {
-				tableDiv.append(studentTable);
-				var options = {
-					scrollX : true,
-					iDisplayLength : 25,
-					"columnDefs": [ {
-						"type": "attempt",
-						"targets" : "_all"
-					}]
-				};
-				if(assessment.studentResults.length == 1) {
-					$.extend(options, noTableFeatures);
-				}
-				studentTable.DataTable(options);
-			} else {
-				tableDiv.append($("<span>").text("No unit tests."));
-			}
+			tableDiv.data("studentTable", studentTable);
 			
+			var classTable = createClassTable(assessment);
+			tableDiv.data("classTable", classTable);
+			
+			showTable(tableDiv, "studentTable", assessment.studentResults.length == 1);
 			loading.remove();
 		});
 	}
@@ -105,6 +99,9 @@
 		var headRow = $("<tr/>").appendTo(thead);
 		
 		$("<th/>").text("Username").appendTo(headRow);
+		$("<th/>").text("Stream").appendTo(headRow);
+		$("<th/>").text("Class").appendTo(headRow);
+		
 		$.each(summary.testNames, function(i, name) {
 			var span = $("<span/>")
 				.data("oText", name)
@@ -129,32 +126,166 @@
 		$.each(summary.studentResults, function(i, student) {
 			var bodyRow = $("<tr/>").appendTo(tbody);
 			$("<td/>").text(student.username).appendTo(bodyRow);
+			$("<td/>").text(student.stream).appendTo(bodyRow);
+			$("<td/>").text(student['class']).appendTo(bodyRow);
 			$.each(student.attempts, function(j, attempt) {
 				$("<td/>").text(attempt).appendTo(bodyRow);
 			});
 		});
-		
+	
 		var tfoot = $("<tfoot/>").appendTo(table);
 		
 		var meanRow = $("<tr/>").appendTo(tfoot);
-		$("<th/>").text("Mean").appendTo(meanRow);
-		$.each(summary.testMeans, function(i, mean) {
+		$("<th/>").attr("colspan", 3).text("Mean").appendTo(meanRow);
+		$.each(summary.mainSummary.testMeans, function(i, mean) {
 			$("<td/>").text(mean >= 0 ? round(mean, 2) : "").appendTo(meanRow);
 		});
 		
 		var percentRow = $("<tr/>").appendTo(tfoot);
-		$("<th/>").text("Completed (%)").appendTo(percentRow);
-		$.each(summary.testPercentComplete, function(i, percent) {
+		$("<th/>").attr("colspan", 3).text("Completed (%)").appendTo(percentRow);
+		$.each(summary.mainSummary.testPercentComplete, function(i, percent) {
 			$("<td/>").text(percent >= 0 ? round(percent*100, 0) : "").appendTo(percentRow);
 		});
 		
 		var meanCRow = $("<tr/>").appendTo(tfoot);
-		$("<th/>").text("Mean Completed").appendTo(meanCRow);
-		$.each(summary.testMeansCompleted, function(i, mean) {
+		$("<th/>").attr("colspan", 3).text("Mean Completed").appendTo(meanCRow);
+		$.each(summary.mainSummary.testMeansCompleted, function(i, mean) {
 			$("<td/>").text(mean >= 0 ? round(mean, 2) : "").appendTo(meanCRow);
 		});
 		
 		return table;
+	}
+	
+	function createClassTable(summary) {
+		var table = $("<table/>").addClass("display compact class-table");
+		
+		var thead = $("<thead/>").addClass("rotate").appendTo(table);
+		var headRow = $("<tr/>").appendTo(thead);
+		$("<th/>").text("Stream").appendTo(headRow);
+		$("<th/>").text("Class").appendTo(headRow);
+		
+		$.each(summary.testNames, function(i, name) {
+			var span = $("<span/>")
+				.data("oText", name)
+				.text(name);
+			shorten(span, 15);
+			span.tipsy({
+				gravity : 'e',
+				title : function(){return $(this).data("oText");},
+				offset: -(span.text().length * 4)
+			});
+			span.on('mouseover', function() {
+				lengthen(span);
+			});
+			span.on('mouseout', function() {
+				shorten(span, 15);
+			});
+			
+			$("<th/>").append($("<div/>").append(span)).appendTo(headRow);
+		});
+		
+		var tbody = $("<tbody/>").appendTo(table);
+		$.each([summary.mainSummary].concat(summary.summaries), function(i, summ) {
+			var bodyRow = $("<tr/>").appendTo(tbody);
+			$("<td/>").text(summ.stream).appendTo(bodyRow);
+			$("<td/>").text(summ['class']).appendTo(bodyRow);
+			
+			$.each(summary.testNames, function(j) {
+				var m = summ.testMeans[j];
+				var pc = summ.testPercentComplete[j];
+				var mc = summ.testMeansCompleted[j];
+				$("<td/>")
+					.text('-')
+					.addClass("summary-cell")
+					.data("mean", m >= 0 ? round(m, 2) : "")
+					.data("percent-complete", pc >= 0 ? round(pc*100, 0) : "")
+					.data("mean-complete", mc >= 0 ? round(mc, 2) : "")
+					.appendTo(bodyRow);
+			});
+		});
+		
+		return table;
+	}
+	
+	function showTable(container, tableId, isStudent) {
+		container.empty();
+		
+		var table = container.data(tableId);
+		
+		if(table) {
+			table = table.clone(true);
+			container.append(table);
+			var options = {
+				scrollX : true,
+				iDisplayLength : 25,
+				"columnDefs": [ {
+					"type": "attempt",
+					"targets" : "_all"
+				}]
+			};
+			
+			var isClassTable = tableId == "classTable";
+			if(isClassTable) {
+				options.ordering = true;
+				options["order"] = [[ 1, "asc" ],[ 0, "asc" ]]
+			}
+			if(isStudent || isClassTable) {
+				options = $.extend({}, noTableFeatures, options);
+			}
+			table.DataTable(options);
+			
+			updateSummaryCells("mean");
+		} else {
+			container.append($("<span>").text("No unit tests."));
+		}
+	}
+	
+	function updateControlsDiv(container, isClassTable) {
+		container.empty();
+		
+		var text = isClassTable ?
+				"You are viewing <strong>whole class</strong> statistics. To see individual student statistics, " :
+				"You are viewing <strong>individual student</strong> statistics. To see whole class statistics, "
+		
+		$("<p/>")
+				.append($("<span/>").html(text))
+				.append($("<a/>").text("click here.").on("click", function() {
+					updateControlsDiv(container, !isClassTable);
+					showTable($(".table-container"), isClassTable ? "studentTable" : "classTable")
+				}))
+				.appendTo(container);
+		
+		if(isClassTable) {
+			var options = $("<p/>").append($("<strong/>").text("Choose summary statistic:")).appendTo(container);
+			var options = $("<div/>").addClass("statistics-options").appendTo(container);
+			$.each([{label: "Mean", data: "mean", selected: true}, 
+			        {label: "Percent complete (%)", data: "percent-complete", selected: false}, 
+			        {label: "Mean (completed)", data: "mean-complete", selected: false}], function(i, option){
+				$("<span/>")
+					.addClass("option")
+					.append($("<input/>", {
+						type: "radio",
+						name: "stat-choose",
+						id: "sc-" + option.data,
+						checked: option.selected
+					}).on("click", function() {
+						updateSummaryCells(option.data);
+					}))
+					.append($("<label/>", {
+						"for": "sc-" + option.data,
+						text: " " + option.label
+					}))
+					.appendTo(options);
+			});
+		}
+	}
+	
+	function updateSummaryCells(dataName) {
+		var table = $(".class-table").DataTable();
+		$(".summary-cell").each(function() {
+			var cell = table.cell(this);
+			cell.data($(this).data(dataName));
+		});
 	}
 	
 	function round(x, dp) {

@@ -873,6 +873,13 @@ thead.rotate > tr > th > div > span {
   border-top: 1px solid #ccc;
   padding: 5px 10px;
 }
+.report-content .statistics-options {
+	display: flex;
+	justify-content: center;
+}
+.report-content .statistics-options .option {
+	margin: 0 1em;
+}
 
 .report-content .comment {
 	padding: 0.5em;

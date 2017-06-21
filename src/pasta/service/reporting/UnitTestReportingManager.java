@@ -2,9 +2,11 @@ package pasta.service.reporting;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -65,32 +67,55 @@ public class UnitTestReportingManager {
 		}
 		root.set("testNames", nameIndexNode);
 		
-		int[] sum = new int[testNames.size()];
-		int[] count = new int[testNames.size()];
-		int[] sumCompleted = new int[testNames.size()];
-		int[] countCompleted = new int[testNames.size()];
+//		int[] sum = new int[testNames.size()];
+//		int[] count = new int[testNames.size()];
+//		int[] sumCompleted = new int[testNames.size()];
+//		int[] countCompleted = new int[testNames.size()];
+		
+		int testCount = testNames.size();
+		AttemptCountSummary mainSummary = new AttemptCountSummary("", "", testCount);
+		Map<String, AttemptCountSummary> allSummaries = new HashMap<>();
 		
 		ArrayNode studentResultsNode = mapper.createArrayNode();
 		for(Map.Entry<PASTAUser, List<AssessmentResult>> studentEntry : allResults.entrySet()) {
 			ObjectNode studentNode = mapper.createObjectNode();
 			PASTAUser student = studentEntry.getKey();
+			
+			String stream = Optional.ofNullable(student.getStream()).orElse("");
+			String tutorial = Optional.ofNullable(student.getTutorial()).orElse("");
+			
+			AttemptCountSummary streamSummary = null;
+			if(!stream.isEmpty()) {
+				streamSummary = allSummaries.get(stream);
+				if(streamSummary == null) {
+					streamSummary = new AttemptCountSummary(stream, "", testCount);
+					allSummaries.put(stream, streamSummary);
+				}
+			}
+			
+			AttemptCountSummary tutorialSummary = null;
+			if(!tutorial.isEmpty()) {
+				tutorialSummary = allSummaries.get(stream + "." + tutorial);
+				if(tutorialSummary == null) {
+					tutorialSummary = new AttemptCountSummary(stream, tutorial, testCount);
+					allSummaries.put(stream + "." + tutorial, tutorialSummary);
+				}
+			}
+			
 			studentNode.put("username", student.getUsername());
+			studentNode.put("stream", stream);
+			studentNode.put("class", tutorial);
 			int[] attempts = getAttemptsUntilCorrect(studentEntry.getValue(), testNames);
+			
+			int subCount = studentEntry.getValue().size();
+			mainSummary.registerAttempts(attempts, subCount);
+			if(streamSummary != null) streamSummary.registerAttempts(attempts, subCount);
+			if(tutorialSummary != null) tutorialSummary.registerAttempts(attempts, subCount);
+			
 			ArrayNode attemptsNode = mapper.createArrayNode();
 			for(int i = 0; i < attempts.length; i++) {
 				String attempt = (attempts[i] < 0 ? "" : (attempts[i] == 0 ? "-" : String.valueOf(attempts[i])));
 				attemptsNode.add(attempt);
-				
-				if(attempts[i] >= 0) {
-					if(attempts[i] == 0) {
-						sum[i] += studentEntry.getValue().size() + 1;
-					} else {
-						sum[i] += attempts[i];
-						sumCompleted[i] += attempts[i];
-						countCompleted[i]++;
-					}
-					count[i]++;
-				}
 			}
 			studentNode.set("attempts", attemptsNode);
 			if(user == null || user.isTutor() || user.equals(student)) {
@@ -99,27 +124,15 @@ public class UnitTestReportingManager {
 		}
 		root.set("studentResults", studentResultsNode);
 		
-		double[] percentComplete = new double[testNames.size()];
-		ArrayNode meansNode = mapper.createArrayNode();
-		ArrayNode meansCompletedNode = mapper.createArrayNode();
-		ArrayNode percentCompleteNode = mapper.createArrayNode();
-		for(int i = 0; i < count.length; i++) {
-			double average = -1;
-			if(count[i] > 0) {
-				average = sum[i] / (double)count[i];
-				percentComplete[i] = countCompleted[i] / (double)count[i];
+		root.set("mainSummary", mainSummary.getAsNode());
+		
+		if(user == null || user.isTutor()) {
+			ArrayNode summaries = mapper.createArrayNode();
+			for(AttemptCountSummary summary : allSummaries.values()) {
+				summaries.add(summary.getAsNode());
 			}
-			meansNode.add(average);
-			percentCompleteNode.add(percentComplete[i]);
-			average = -1;
-			if(countCompleted[i] > 0) {
-				average = sumCompleted[i] / (double)countCompleted[i];
-			}
-			meansCompletedNode.add(average);
+			root.set("summaries", summaries);
 		}
-		root.set("testMeans", meansNode);
-		root.set("testMeansCompleted", meansCompletedNode);
-		root.set("testPercentComplete", percentCompleteNode);
 		
 		return root;
 	}
@@ -187,5 +200,92 @@ public class UnitTestReportingManager {
 			attemptArr[i++] = entry.getValue();
 		}
 		return attemptArr;
+	}
+	
+	private class AttemptCountSummary {
+		String stream;
+		String tutorial;
+		int[] sum;
+		int[] count;
+		int[] sumCompleted;
+		int[] countCompleted;
+		
+		public AttemptCountSummary(String stream, String tutorial, int testCount) {
+			this.stream = stream;
+			this.tutorial = tutorial;
+			sum = new int[testCount];
+			count = new int[testCount];
+			sumCompleted = new int[testCount];
+			countCompleted = new int[testCount];
+		}
+		
+		void registerAttempts(int[] attempts, int subCount) {
+			for(int i = 0; i < attempts.length; i++) {
+				if(attempts[i] >= 0) {
+					if(attempts[i] == 0) {
+						sum[i] += (subCount + 1);
+					} else {
+						sum[i] += attempts[i];
+						sumCompleted[i] += attempts[i];
+						countCompleted[i]++;
+					}
+					count[i]++;
+				}
+			}
+		}
+		
+		String getStream() {
+			return stream.isEmpty() ? "ANY" : stream;
+		}
+		String getTutorial() {
+			return tutorial.isEmpty() ? "ANY" : tutorial;
+		}
+		
+		double[] means() {
+			double[] means = new double[sum.length];
+			for(int i = 0; i < means.length; i++) {
+				means[i] = count[i] > 0 ? sum[i] / (double)count[i] : -1;
+			}
+			return means;
+		}
+		
+		double[] percentComplete() {
+			double[] pc = new double[sum.length];
+			for(int i = 0; i < pc.length; i++) {
+				pc[i] = count[i] > 0 ? countCompleted[i] / (double)count[i] : -1;
+			}
+			return pc;
+		}
+		
+		double[] meansComplete() {
+			double[] mc = new double[sum.length];
+			for(int i = 0; i < mc.length; i++) {
+				mc[i] = countCompleted[i] > 0 ? sumCompleted[i] / (double)countCompleted[i] : -1;
+			}
+			return mc;
+		}
+		
+		ObjectNode getAsNode() {
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode node = mapper.createObjectNode();
+			ArrayNode meansNode = mapper.createArrayNode();
+			for(double m : means()) {
+				meansNode.add(m);
+			}
+			ArrayNode meansCompletedNode = mapper.createArrayNode();
+			for(double m : meansComplete()) {
+				meansCompletedNode.add(m);
+			}
+			ArrayNode percentCompleteNode = mapper.createArrayNode();
+			for(double m : percentComplete()) {
+				percentCompleteNode.add(m);
+			}
+			node.set("testMeans", meansNode);
+			node.set("testMeansCompleted", meansCompletedNode);
+			node.set("testPercentComplete", percentCompleteNode);
+			node.put("class", getTutorial());
+			node.put("stream", getStream());
+			return node;
+		}
 	}
 }
