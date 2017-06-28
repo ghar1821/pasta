@@ -585,11 +585,8 @@ either expressed or implied, of the PASTA Project.
             	if($baseTest.is(".clb-content")) {
             		$baseTest.toggleClass("clb-content testCase");
             	}
-<<<<<<< Upstream, based on origin/master
             	
             	$baseTest.find("input[name$='.testName']").focus().select();
-=======
->>>>>>> 8646720 Fixed bug where you can't delete copied test cases.
             }
             
             $(document).on("click", "input.toggleOutput", function() {

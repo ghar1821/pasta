@@ -2,6 +2,7 @@ div.clb-toggle-bar {
 	display: block;
 	text-decoration: none;
 	width: 15px;
+<<<<<<< HEAD
 	border-radius: 2px 0 0 2px;
 	transition-property: background-color,border-color,color;
 	transition-duration: 200ms;
@@ -11,6 +12,17 @@ div.clb-toggle-bar {
 
 div.clb-content-wrapper {
 	border-radius: 0 2px 2px 0;
+=======
+	border-radius: 4px 0 0 4px;
+	transition-property: background-color,border-color,color;
+	transition-duration: 200ms;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+div.clb-content-wrapper {
+	border-radius: 0 4px 4px 0;
+>>>>>>> branch 'execution-containers' of https://jjstretton@bitbucket.org/gramoli/arrabbiata.git
 	transition: border-color 200ms;
 	overflow: hidden;
 	flex-grow: 1;
