@@ -42,15 +42,6 @@ either expressed or implied, of the PASTA Project.
 		<div class='part'>
 			<div class='pasta-form'>
 				<div class='pf-section'>
-					<div class='pf-item'>
-						<div class='pf-label'><strong>Compatible languages</strong></div>
-						<div class='pf-input'>
-							Java, Python, C, C++
-							<span class='help'>If an assessment is to run student submissions as code using this test, these are the languages that can be run using this test type.</span>
-						</div>
-					</div>
-				</div>
-				<div class='pf-section'>
 					<div class='pf-item one-col'>
 						<div class='pf-label'>Name</div>
 						<div class='pf-input'>
@@ -58,45 +49,6 @@ either expressed or implied, of the PASTA Project.
 							<form:errors path="name" />
 						</div>
 					</div>
-					<div class='pf-item'>
-						<div class='pf-label'>Has been tested</div>
-						<div class='pf-input'>
-							<span class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</span>
-						</div>
-					</div>
-				</div>
-				<div class='pf-section'>
-					<h3 class='pf-section-title'>Custom JUnit Test Code</h3>
-					<div class='pf-horizontal two-col'>
-						<div class='pf-item'>
-							<div class='pf-label'>Upload Code</div>
-							<div class='pf-input'>
-								<form:input type="file" path="file"/>
-							</div>
-						</div>
-						<c:if test="${unitTest.hasCode}">
-							<div class='pf-item'>
-								<div class='pf-label'>Current Code <a id='del-code'>(Delete)</a></div>
-								<div class='pf-input'>
-									<c:set var="node" value="${codeNode}" scope="request"/>
-									<jsp:include page="../../recursive/fileWriterRoot.jsp">
-										<jsp:param name="fieldId" value="${unitTest.id}"/> 
-									</jsp:include>
-								</div>
-							</div>
-						</c:if>
-					</div>
-					<c:if test="${unitTest.hasCode}">
-						<div class='pf-item'>
-							<div class='pf-label'>Main class</div>
-							<div class='pf-input'>
-								<form:select path="mainClassName">
-									<form:option value="" label="--- Select ---"/>
-									<form:options items="${candidateMainFiles}" />
-								</form:select>
-							</div>
-						</div>
-					</c:if>
 					<div class='pf-item one-col'>
 						<div class='pf-label'>Submission base directory <span class='help'>The expected base directory of students' code (where the root is their code submission); e.g. "<code>src</code>". If their code is not to be submitted in a directory, leave this blank.</span></div>
 						<div class='pf-input'>
@@ -104,87 +56,32 @@ either expressed or implied, of the PASTA Project.
 						</div>
 					</div>
 				</div>
-				<div class='pf-section'>
-					<div class='pf-section-title'>
-						<h3>Accessory Files</h3>
-						<span class='help'>These files will be available to any custom or black box tests when they are run, and will be readable by student submissions. Files are available from the same directory as running code.</span>
-					</div>
-					<div class='pf-horizontal two-col'>
-						<div class='pf-item'>
-							<div class='pf-label'>Upload New Files</div>
-							<div class='pf-input'>
-								<form:input type="file" path="accessoryFile"/>
-							</div>
-						</div>
-						<c:if test="${unitTest.hasAccessoryFiles}">
-							<div class='pf-item'>
-								<div class='pf-label'>Current Accessory Files <a id='del-accessory'>(Delete)</a></div>
-								<div class='pf-input'>
-									<c:set var="node" value="${accessoryNode}" scope="request"/>
-									<jsp:include page="../../recursive/fileWriterRoot.jsp">
-										<jsp:param name="fieldId" value="${unitTest.id}"/> 
-									</jsp:include>
-								</div>
-							</div>
-						</c:if>
-					</div>
-					<c:if test="${unitTest.hasAccessoryFiles}">
-						<div class='pf-item'>
-							<form:checkbox path="allowAccessoryWrite" label="Allow students to write to accessory files"/>
-						</div>
-					</c:if>
-				</div>
 			</div>
-			<c:if test="${user.instructor}">
-				<div class='button-panel'>
-					<button type='submit'>Save Changes</button>
-				</div>
-			</c:if>
 		</div>
 	</div>
+	
 	<div class='section'>
-		<h2 class='section-title'>Black Box Tests</h2>
+		<h2 class='section-title'>Input-Output Testing</h2>
 		<div class='part no-line'>
-			These tests will be run automatically before any custom code you submit (above).
-		</div>
-		<div class='part'>
-			<h3 class='part-title'>Options</h3>
-			<div class='pasta-form'>
-				<div class='pf-section'>
-					<div class='pf-item'>
-						<form:checkbox path="blackBoxOptions.detailedErrors" label="Detailed error messages"/>
-						<span class='help'>With this option, users will see messages displaying the difference between their output and the expected output. Otherwise they will just see whether they were correct or not.</span>
-					</div>
-				</div>
-				<div class='pf-section'>
-					<h4 class='pf-section-title'>Only relevant to unit tests that will be running on C code</h4>
-					<div class='pf-item one-col'>
-						<div class='pf-label'>GCC Command Line Arguments</div>
-						<div class='pf-input'>
-							<form:input path="blackBoxOptions.gccCommandLineArgs" cssClass="code"/>
-						</div>
-					</div>
-				</div>
-			</div>
+			Define inputs and (if desired) expected outputs from the submission under test.
 		</div>
 		<div id="allTestCases" class='part no-line'>
 			<h3 class='part-title'>Tests</h3>
 			<form:errors path="testCases" element="div" cssClass="vertical-block" />
 			<c:if test="${empty updateUnitTest.testCases}">
-				No black box tests.
+				<span id='noBlackBox'>Click "Add New Test" to create a test case.</span>
 			</c:if>
 			<c:forEach var="testCase" items="${updateUnitTest.testCases}" varStatus="testStatus">
-				<div class='testCase part no-line'>
+				<div class='testCase'>
 					<form:hidden path="testCases[${testStatus.index}].id"/>
-					<div class='float-right'>
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
+					<div class='controls float-right'>
+						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
 						<form:hidden path="testCases[${testStatus.index}].deleteMe"/>
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
-						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
 					</div>
 					
 					<div class='pasta-form wide'>
-						<div class='pf-item one-col showHide'>
+						<div class='pf-item one-col'>
 							<div class='pf-label'>Test Name</div>
 							<div class='pf-input'>
 								<form:input path="testCases[${testStatus.index}].testName"/>
@@ -238,20 +135,16 @@ either expressed or implied, of the PASTA Project.
 					</div>
 				</div>
 			</c:forEach>
-			<script>
-				$("#allTestCases > .testCase:not(:last)").removeClass("no-line");
-			</script>
 			<div id='emptyTest' class='hidden'>
-				<div class='testCase part no-line'>
-					<div class='float-right'>
-						<a class='copyCase'><span class='icon_delete_confirm' title='Copy'></span></a>
+				<div class='testCase'>
+					<div class='controls float-right'>
+						<a class='copyCase'><span class='fa fa-lg fa-files-o' title='Copy'></span></a>
 						<input id="testCases0.deleteMe" name="testCases[0].deleteMe" type="hidden" value="false"/>
-						<a class='deleteCase'><span class='icon_delete' title='Delete'></span></a>
-						<a class='showHide'><span class='icon_toggle_minus' title='Hide Details'></span></a>
+						<a class='deleteCase'><span class='fa fa-lg fa-trash-o' title='Delete'></span></a>
 					</div>
 					
 					<div class='pasta-form wide'>
-						<div class='pf-item one-col showHide'>
+						<div class='pf-item one-col'>
 							<div class='pf-label'>Test Name</div>
 							<div class='pf-input'>
 								<input id="testCases0.testName" name="testCases[0].testName" type="text" value=""/>
@@ -306,10 +199,123 @@ either expressed or implied, of the PASTA Project.
 				</div>
 			</div>
 		</div>
+		<div id='ioOptions' class='part no-line'>
+			<h3 class='part-title'>Options</h3>
+			<div class='pasta-form'>
+				<div class='pf-section'>
+					<div class='pf-item'>
+						<form:checkbox path="blackBoxOptions.detailedErrors" label="Detailed error messages"/>
+						<span class='help'>With this option, users will see messages displaying the difference between their output and the expected output. Otherwise they will just see whether they were correct or not.</span>
+					</div>
+				</div>
+				<div class='pf-section'>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>GCC Command Line Arguments (C submissions only)</div>
+						<div class='pf-input'>
+							<form:input path="blackBoxOptions.gccCommandLineArgs" cssClass="code"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<div class='button-panel'>
 			<button type='submit'>Save Changes</button>
 			<button id='addTest' class='secondary'>Add New Test</button>
 		</div>
+	</div>
+	
+	<div class='section'>
+		<h2 class='section-title'>Accessory Files</h2>
+		<div class='part no-line'>
+			These files will be available to any input-output or custom tests when they are run, and will be readable by student submissions. Files are available from the same directory as running code.
+		</div>
+		<div class='part no-line'>
+			<div class='pasta-form'>
+				<div class='pf-section'>
+					<div class='pf-horizontal two-col'>
+						<div class='pf-item'>
+							<div class='pf-label'>Upload New Files</div>
+							<div class='pf-input'>
+								<form:input type="file" path="accessoryFile"/>
+							</div>
+						</div>
+						<c:if test="${unitTest.hasAccessoryFiles}">
+							<div class='pf-item'>
+								<div class='pf-label'>Current Accessory Files <a id='del-accessory'>(Delete)</a></div>
+								<div class='pf-input'>
+									<c:set var="node" value="${accessoryNode}" scope="request"/>
+									<jsp:include page="../../recursive/fileWriterRoot.jsp">
+										<jsp:param name="owner" value="unitTest"/> 
+										<jsp:param name="fieldId" value="${unitTest.id}"/> 
+									</jsp:include>
+								</div>
+							</div>
+						</c:if>
+					</div>
+					<c:if test="${unitTest.hasAccessoryFiles}">
+						<div class='pf-item'>
+							<form:checkbox path="allowAccessoryWrite" label="Allow students to write to accessory files"/>
+						</div>
+					</c:if>
+				</div>
+			</div>
+		</div>
+		<div class='button-panel'>
+			<button type='submit'>Save Changes</button>
+		</div>
+	</div>
+	
+	<div class='section'>
+		<h2 class='section-title'>Advanced Testing</h2>
+		<div class='part no-line'>
+			Use these tests to describe unit tests that are more complicated than just simple output matching. These tests will be run directly after any input-output tests are run, and will have access to submission outputs.
+		</div>
+		<div class='part no-line'>
+			<h3 class='part-title'>Custom JUnit Test Code</h3>
+			<div class='pasta-form'>
+				<div class='pf-section'>
+					<div class='pf-horizontal two-col'>
+						<div class='pf-item'>
+							<div class='pf-label'>Upload Code</div>
+							<div class='pf-input'>
+								<form:input type="file" path="file"/>
+							</div>
+						</div>
+						<c:if test="${unitTest.hasCode}">
+							<div class='pf-item'>
+								<div class='pf-label'>Current Code <a id='del-code'>(Delete)</a></div>
+								<div class='pf-input'>
+									<c:set var="node" value="${codeNode}" scope="request"/>
+									<jsp:include page="../../recursive/fileWriterRoot.jsp">
+										<jsp:param name="owner" value="unitTest"/> 
+										<jsp:param name="fieldId" value="${unitTest.id}"/> 
+									</jsp:include>
+								</div>
+							</div>
+						</c:if>
+					</div>
+					<c:if test="${unitTest.hasCode}">
+						<div class='pf-item'>
+							<div class='pf-label'>Main class</div>
+							<div class='pf-input'>
+								<form:select path="mainClassName">
+									<form:option value="" label="--- Select ---"/>
+									<form:options items="${candidateMainFiles}" />
+								</form:select>
+							</div>
+						</div>
+					</c:if>
+				</div>
+			</div>
+		</div>
+		<c:if test="${user.instructor}">
+			<div class='button-panel'>
+				<button type='submit'>Save Changes</button>
+				<c:if test="${unitTest.hasCode}">
+					<a href="./download/"><button class='flat' id="downloadTest">Download Test Code</button></a>
+				</c:if>
+			</div>
+		</c:if>
 	</div>
 </form:form>
 
@@ -319,10 +325,36 @@ either expressed or implied, of the PASTA Project.
 <c:if test="${(not unitTest.hasCode and unitTest.hasBlackBoxTests) or (unitTest.hasCode and not empty unitTest.mainClassName)}">
 	<c:set var="showTest" value="true" />
 </c:if>
-<c:if test="${unitTest.hasCode}">
-	<c:set var="showDownload" value="true" />
+<c:if test="${showMarkAsWorking or showTest}">
+	<div id='checkWorking' class='section section-above'>
+		<h2 class='section-title'>Check that everything works</h2>
+		<div class='part no-line'>
+			Before using this unit test module in an assessment, it is advisable that you run a sample submission first. Upload a submission and confirm that it works here.
+		</div>
+		<div class='part no-line'>
+			<div class='past-form'>
+				<div class='pf-item'>
+					<div class='pf-label'>Unit test confirmed as working:</div>
+					<div class='pf-input'>
+						<span class="pastaTF pastaTF${unitTest.tested}">${unitTest.tested}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='part'>
+			<div class='button-panel'>
+				<c:if test="${showMarkAsWorking}">
+					<button id="acceptUnitTest">Mark as working and tested</button>
+				</c:if>
+				<c:if test="${showTest}">
+					<button ${(unitTest.tested or showMarkAsWorking) ? "class='flat'" : ""} id="testPopup"> Test Unit Test </button>
+				</c:if>
+			</div>
+		</div>
+	</div>
 </c:if>
-<c:if test="${not empty latestResult or showMarkAsWorking or showTest or showDownload}">
+
+<c:if test="${not empty latestResult}">
 	<div class='section'>
 		<c:if test="${not empty latestResult}">
 			<h2 class='section-title'>Latest Test results
@@ -430,19 +462,6 @@ either expressed or implied, of the PASTA Project.
 				</div>
 			</c:if>
 		</c:if>
-		<c:if test="${showMarkAsWorking or showTest or showDownload}">
-			<div class='button-panel'>
-				<c:if test="${showMarkAsWorking}">
-					<button id="acceptUnitTest">Mark as working and tested</button>
-				</c:if>
-				<c:if test="${showTest}">
-					<button ${(unitTest.tested or showMarkAsWorking) ? "class='flat'" : ""} id="testPopup"> Test Unit Test </button>
-				</c:if>
-				<c:if test="${showDownload}">
-					<a href="./download/"><button class='flat' id="downloadTest">Download Test Code</button></a>
-				</c:if>
-			</div>
-		</c:if>
 	</div>
 </c:if>
 
@@ -499,6 +518,10 @@ either expressed or implied, of the PASTA Project.
                 $('#confirmPopup').bPopup();
             });
             
+            $('#downloadTest').on('click', function(e) {
+                e.preventDefault();
+            });
+            
             <%-- Disable test code button when main class not selected --%>
             $('#mainClassName').on('change', function() {
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
@@ -510,7 +533,9 @@ either expressed or implied, of the PASTA Project.
             		$("<form />", {
             			action : "clearCode/",
             			method : "post"
-            		}).submit();
+            		})
+            		.appendTo('body')
+            		.submit();
             	}
             });
             $("#del-accessory").on("click", function() {
@@ -519,7 +544,9 @@ either expressed or implied, of the PASTA Project.
             		$("<form />", {
             			action : "clearAccessory/",
             			method : "post"
-            		}).submit();
+            		})
+            		.appendTo('body')
+            		.submit();
             	}
             });
             
@@ -528,9 +555,10 @@ either expressed or implied, of the PASTA Project.
             	addTest();
             });
             $(document).on("click", ".copyCase", function(e){
-            	addTest($(this).closest(".testCase"));
+            	addTest($(this).closest(".clb-content"));
             });
             function addTest($baseTest) {
+            	$("#noBlackBox").remove();
             	var newIndex = $("#allTestCases").children(".testCase").length;
             	if(!$baseTest) {
             		$baseTest = $("#emptyTest").children().first();
@@ -548,10 +576,17 @@ either expressed or implied, of the PASTA Project.
 	            	});
             	}
             	$baseTest.insertBefore($("#emptyTest"));
-            	$baseTest.find("a.showHide").trigger("click");
             	$baseTest.find("textarea.console").allowTabChar();
-            	$("#allTestCases > .testCase:not(:last)").removeClass("no-line");
-            	$baseTest.addClass("no-line");
+            	$baseTest.find("input[name$='.id']").remove();
+            	
+            	$baseTest.collapsible({
+            		"heading-selector": ".pf-item:first,.controls"
+            	});
+            	if($baseTest.is(".clb-content")) {
+            		$baseTest.toggleClass("clb-content testCase");
+            	}
+            	
+            	$baseTest.find("input[name$='.testName']").focus().select();
             }
             
             $(document).on("click", "input.toggleOutput", function() {
@@ -571,56 +606,23 @@ either expressed or implied, of the PASTA Project.
          	// controls for the "delete case" button
         	$(document.body).on('click', 'a.deleteCase', function() {
         		var $container = $(this).closest(".testCase");
+        		var collapsibleWrapper = $container.children(".clb-content-wrapper");
+        		var deleting = !collapsibleWrapper.is(".toDelete");
+        		collapsibleWrapper.toggleClass("toDelete");
         		
-        		var deleting = !$container.is(".toDelete");
-        		$container.toggleClass("toDelete");
-        		
-        		$(this).children().first().toggleClass("icon_delete icon_undo");
-        		$(".icon_delete").attr("title", "Delete");
-        		$(".icon_undo").attr("title", "Undo Delete");
+        		$(this).children().first().toggleClass("fa-trash-o fa-undo");
+        		$(".fa-trash-o").attr("title", "Delete");
+        		$(".fa-undo").attr("title", "Undo Delete");
         		$(this).prev().val(deleting);
         		
         		$container.find("input[type!='hidden'],textarea").prop("disabled", deleting);
         		
         		if(!$container.is(".collapsed")) {
-        			$(this).next().trigger("click");
+        			$container.collapse();
         		}
         		$(this).next().toggle(!deleting);
         	});
-         	// controls for the "collapse" button
-        	$(document.body).on('click', 'a.showHide', function() {
-        		var $container = $(this).closest(".testCase");
-        		
-        		$container.toggleClass("collapsed");
-        		var collapsed = $container.is(".collapsed");
-        		
-        		$(this).children().first().toggleClass("icon_toggle_plus icon_toggle_minus");
-        		$(".icon_toggle_plus").attr("title", "Show Details");
-        		$(".icon_toggle_minus").attr("title", "Hide Details");
-        		
-        		toggleDetails($container, collapsed);
-        	});
-         	// Also collapse on div click
-        	$(document.body).on('click', '.testCase', function(e) {
-        		if($(e.target).is(".testCase") && !$(e.target).is(".toDelete")) {
-        			$(this).closest(".testCase").find("a.showHide").trigger("click");
-        		}
-        	});
          	
-        	<spring:hasBindErrors name='updateUnitTest'>
-				<c:set var='errorsPresent' value='true' />
-				var offset = $("[id$='.errors']").first().offset();
-				offset.left -= 20;
-				offset.top -= 20;
-				$('html, body').animate({
-				    scrollTop: offset.top,
-				    scrollLeft: offset.left
-				});
-         	</spring:hasBindErrors>
-         	<c:if test='${empty errorsPresent}'>
-	         	$("a.showHide").trigger("click");
-         	</c:if>
- 
          	$(document.body).on("keyup", "textarea.console", function() {
          		updateConsolePreviews($(this));
          	});
@@ -640,6 +642,31 @@ either expressed or implied, of the PASTA Project.
     				emptyTable: "No unit test cases to display."
     			}
     		});
+         	
+         	$("#ioOptions").collapsible({
+         		collapsed: true,
+         		"heading-selector": "h3"
+         	});
+         	$(":not(#emptyTest) > .testCase").collapsible({
+         		collapsed: true,
+         		"heading-selector": ".pf-item:first,.controls"
+         	});
+         	
+  			<c:if test="${not empty sessionScope.ts}">
+  				<c:remove var="ts" scope="session" />
+  				$("#checkWorking")[0].scrollIntoView(true);
+  			</c:if>
+  			
+         	<spring:hasBindErrors name='updateUnitTest'>
+         		$("[id$='.errors']").closest(".testCase").expand();
+         		var offset = $("[id$='.errors']").first().closest(".pf-item").offset();
+				offset.left -= 20;
+				offset.top -= 20;
+				$('html, body').animate({
+				    scrollTop: offset.top,
+				    scrollLeft: offset.left
+				});
+	     	</spring:hasBindErrors>
         });
         
         function toggleOutput($checkbox) {
@@ -647,23 +674,6 @@ either expressed or implied, of the PASTA Project.
         	$outputTR.find("textarea").prop("disabled", !$checkbox.is(":checked"));
         	$outputTR.toggle($checkbox.is(":checked"));
         }
-         
-        function toggleDetails($container, hiding) {
-     		if(hiding) {
-     			if(!$container.attr("oht")) {
-     				$container.attr("oht", $container.height())
-        			$container.css("overflow", "hidden");
-        			$container.animate({height:$container.find(".pf-item").first().css("height")}, 150);
-     			}
-    		} else {
-    			if($container.attr("oht")) {
-    				$container.animate({height:$container.attr("oht")}, 150, function() {
-        				$container.removeAttr("oht");
-        				$container.removeAttr("style");
-        			});
-    			}
-    		}
-     	}
          
         function updateConsolePreviews($console) {
         	var $preview = $console.closest(".pf-horizontal").find(".consolePreview");

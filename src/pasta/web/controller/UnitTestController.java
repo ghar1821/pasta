@@ -41,6 +41,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
@@ -336,7 +337,7 @@ public class UnitTestController {
 	public String testUnitTest(@PathVariable("testId") long testId,
 			@Valid @ModelAttribute(value = "testUnitTest") TestUnitTestForm testForm, BindingResult result,
 			@ModelAttribute(value = "unitTest") UnitTest test,
-			RedirectAttributes attr, Model model) {
+			RedirectAttributes attr, Model model, HttpSession session) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		testValidator.validate(testForm, result);
@@ -350,6 +351,7 @@ public class UnitTestController {
 			unitTestManager.testUnitTest(test, testForm);
 		}
 		
+		session.setAttribute("ts", "1");
 		return "redirect:/mirror/";
 	}
 
