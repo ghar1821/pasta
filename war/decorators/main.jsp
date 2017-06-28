@@ -14,6 +14,7 @@
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
 		<link href="<c:url value="/static/styles/main.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/theme.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/loading.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -24,11 +25,16 @@
 		<link href="<c:url value="/static/styles/font-awesome.min.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/4.2.2/highcharts.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/4.2.2/modules/exporting.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/locale/en-au.js"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.snippet.min.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.7.0.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.11.0.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.tipsy.js"/>"></script>
@@ -38,6 +44,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/tinymce/jquery.tinymce.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
@@ -145,6 +152,12 @@
 				</c:if>
 				<c:if test="${not empty user}">
 					<div class='tab'><a href="<c:url value="/competition/"/>">Competitions</a></div>
+					<c:if test="${empty viewedUser}">
+						<div class='tab'><a href="<c:url value="/reporting/"/>">Reporting</a></div>
+					</c:if>
+					<c:if test="${not empty viewedUser}">
+						<div class='tab'><a href="<c:url value="/reporting/user/${viewedUser.username}/"/>">Reporting</a></div>
+					</c:if>
 					<div class='tab'><a href="<c:url value="/admin/"/>">Admin</a></div>
 				</c:if>
 			</div>

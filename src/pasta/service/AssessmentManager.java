@@ -33,9 +33,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +56,7 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.scheduler.ExecutionScheduler;
@@ -110,6 +113,13 @@ public class AssessmentManager {
 	 */
 	public Collection<Assessment> getAssessmentList() {
 		return assDao.getAssessmentList();
+	}
+	
+	public Collection<Assessment> getReleasedAssessments(PASTAUser user) {
+		List<Assessment> allAssessments = new LinkedList<>(assDao.getAssessmentList());
+		return allAssessments.stream()
+				.filter(assessment -> assessment.isReleasedTo(user))
+				.collect(Collectors.toList());
 	}
 	
 	public List<Long> getAssessmentIDList() {

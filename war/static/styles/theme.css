@@ -192,3 +192,7 @@ div.toDelete {
 table.moduleTable tr.selected {
 	background-color:#DDF;
 }
+
+.pasta-loader {
+	border-color: #DC740E;
+}
