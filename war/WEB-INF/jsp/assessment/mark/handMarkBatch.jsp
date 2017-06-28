@@ -44,7 +44,6 @@ either expressed or implied, of the PASTA Project.
 			<h3 class='part-title'>Individual Submissions</h3>
 		</c:if>
 		<c:forEach var='submittingUser' items="${allUsers}" varStatus="loop">
-			<c:set var="name" value="${loop.index < fn:length(myStudents) ? submittingUser.username : submittingUser.name}" />
 			<c:set var="submission" value="${hasSubmission[loop.index]}" />
 			<c:set var="completed" value="${completedMarking[loop.index]}" />
 			<c:set var="current" value="${loop.index == savingStudentIndex}" />
@@ -60,7 +59,22 @@ either expressed or implied, of the PASTA Project.
 				</c:if>
 				<a href="../${loop.index}/" >
 			</c:if>
-			<div title="${name}" class="${divClass}">&nbsp;</div>
+			<div data-hover="hover${loop.index}" class="hover ${divClass}">&nbsp;</div>
+			<div class="hover${loop.index} hidden">
+				<c:choose>
+					<c:when test="${loop.index < fn:length(myStudents)}">
+						${submittingUser.username}
+					</c:when>
+					<c:otherwise>
+						${submittingUser.name}:
+						<ul>
+							<c:forEach items="${submittingUser.members}" var="member">
+								<li>${member.username} - ${member.tutorial}
+							</c:forEach>
+						</ul>
+					</c:otherwise>
+				</c:choose>
+			</div>
 			<c:if test="${submission}">
 				</a>
 			</c:if>
@@ -75,6 +89,20 @@ either expressed or implied, of the PASTA Project.
 <h1><c:if test="${not student.group}">${assessmentName} - </c:if>${username}</h1>
 
 <div class='section'>
+	<c:if test="${student.group}">
+		<div class='part no-line'>
+			<h3 class='part-title'>Group Members:</h3>
+			<ul>
+			<c:forEach var="member" items="${studentsInGroup}">
+				<li><a href='../../../student/${member.username}/home/'>${member.username}</a>
+				- ${member.tutorial}
+				<c:if test="${not empty studentsInGroupExtensions[member.username]}">
+					- extension to ${studentsInGroupExtensions[member.username]}
+				</c:if>
+			</c:forEach>
+			</ul>
+		</div>
+	</c:if>
 	<div class='part no-line'>
 		<h3 class='part-title'>Submitted:</h3>
 		<pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/>
@@ -143,5 +171,13 @@ th, td{
 <script>
 	$(function() {registerEvents
 		$(".save_hand_marking").text('${empty last ? "Save and continue" : "Save and exit"}');
+	
+		$(".hover").tipsy({
+			gravity: 'n',			
+			html: true,
+			title: function() {
+				return $("." + $(this).data("hover")).html();
+			}
+		});
 	});
 </script>

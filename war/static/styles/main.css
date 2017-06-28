@@ -789,3 +789,9 @@ th.handMarkingTable,td.handMarkingTable {
 	width: 100%;
 	height: 90vh;
 }
+
+.tipsy ul {
+    text-align: left;
+    padding-left: 0px;
+    list-style-position: inside;
+}

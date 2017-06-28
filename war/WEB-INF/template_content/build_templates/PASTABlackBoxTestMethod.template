@@ -1,11 +1,9 @@
     @Test (timeout=${timeout})
     public void ${testName}() {
-        File timeoutFile = new File("${timeoutDir}/${testName}.timedout");
-        if(timeoutFile.exists()) {
+        if(testTimedOut("${testName}")) {
         	fail("Test timed out after ${timeout} ms");
         }
-        File segFaultFile = new File("${timeoutDir}/${testName}.segfault");
-        if(segFaultFile.exists()) {
+        if(testSegfaulted("${testName}")) {
         	fail("Test resulted in a segmentation fault (the monitored command dumped core)");
         }
         File expectedFile = new File("${expectedDir}/${testName}");

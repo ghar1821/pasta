@@ -43,6 +43,20 @@ either expressed or implied, of the PASTA Project.
 <h1>${owner}</h1>
 
 <div class='section'>
+	<c:if test="${student.group}">
+		<div class='part no-line'>
+			<h3 class='part-title'>Group Members:</h3>
+			<ul>
+			<c:forEach var="member" items="${studentsInGroup}">
+				<li><a href='../../../../student/${member.username}/home/'>${member.username}</a>
+				- ${member.tutorial}
+				<c:if test="${not empty studentsInGroupExtensions[member.username]}">
+					- extension to ${studentsInGroupExtensions[member.username]}
+				</c:if>
+			</c:forEach>
+			</ul>
+		</div>
+	</c:if>
 	<div class='part no-line'>
 		<h3 class='part-title'>Submitted:</h3>
 		<pasta:readableDate date="${assessmentResult.submissionDate}" /><c:out value="${lateString}"/>
