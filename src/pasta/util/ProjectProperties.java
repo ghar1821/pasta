@@ -31,6 +31,7 @@ package pasta.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -38,6 +39,7 @@ import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -105,6 +107,8 @@ public class ProjectProperties {
 	
 	private String initialInstructor;
 	
+	private Long instanceID;
+	
 	@Autowired
 	private LoginDAO loginDAO;
 	@Autowired
@@ -156,6 +160,33 @@ public class ProjectProperties {
 		
 		this.hostLocation = settings.getProperty("hostLocation");
 		logger.info("Host content location set to \"" + hostLocation + "\". Note that this cannot be verified, so an incorrect value may cause unexpected errors.");
+		
+		try {
+			instanceID = Long.parseLong(settings.get("instanceID"));
+		} catch(NumberFormatException | NullPointerException e) {}
+		
+		if(instanceID == null) {
+			File instanceFile = new File(projectLocation, "instance.id");
+			
+			if(instanceFile.exists()) {
+				try {
+					String content = PASTAUtil.scrapeFile(instanceFile).trim();
+					instanceID = Long.parseLong(content);
+				} catch(NumberFormatException e) {logger.info("Not parsable.");}
+			}
+			
+			if(instanceID == null) {
+				// Generate new positive long
+				instanceID = new Long(new Random().nextLong() & ((-1L) >>> 1));
+				try {
+					FileOutputStream os = new FileOutputStream(instanceFile);
+					os.write(String.valueOf(instanceID).getBytes());
+					os.close();
+				} catch (IOException e) {
+					logger.error("Could not write instance ID to file", e);
+				}
+			}
+		}
 		
 		ProjectProperties.properties = this;
 	}
@@ -359,5 +390,9 @@ public class ProjectProperties {
 
 	public String getHostLocation() {
 		return hostLocation;
+	}
+	
+	public long getInstanceId() {
+		return instanceID;
 	}
 }
