@@ -45,7 +45,7 @@
 				tableDiv.data("classTable", classTable);
 			}
 			
-			showTable(tableDiv, "studentTable", assessment.studentResults.length == 1);
+			showTable(tableDiv, "studentTable", assessment.studentResults && assessment.studentResults.length == 1);
 			loading.remove();
 		});
 	}
