@@ -71,6 +71,7 @@
     <target name="build" depends="init, setup">
         <echo message="Using javac to compile Java code in '${binDir}'"/>
         <javac
+        	executable="${javacPath}"
             fork="yes"
             includeantruntime="false"
             debug="true"
@@ -111,7 +112,7 @@
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
     		<arg value="/usr/local/bin/pastarun" /> 
     		<arg line="${timeoutPath} ${bbTestTimeoutFraction}" /> 
-    		<arg line="java ${solutionName}" /> 
+    		<arg line="${javaPath} ${solutionName}" /> 
 			<arg line="${bbTestCommandLine}" />
 		</exec>
     	<script language="javascript"><![CDATA[

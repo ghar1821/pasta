@@ -103,6 +103,7 @@
         </cc>
 		<echo message="Using javac to compile Java code"/>
         <javac
+        	executable="${javacPath}"
             fork="yes"
             includeantruntime="false"
             debug="true"
