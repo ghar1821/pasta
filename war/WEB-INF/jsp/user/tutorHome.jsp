@@ -66,6 +66,17 @@ either expressed or implied, of the PASTA Project.
 				<div class='part assessment-box float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
 					<div class='part-title larger-text'>
 						<a href="../info/${assessment.id}/">${assessment.name}</a>
+						
+						<div class='button-panel'>
+							<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
+								<button class='flat hbn-button' data-hbn-icon="fa-check" onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
+							</c:if>
+							<c:if test="${assessment.groupWork}">
+								<button class='flat hbn-button' data-hbn-icon="fa-users" onclick="location.href='../groups/${assessment.id}/'">Group management</button>
+							</c:if>
+							<button class='flat hbn-button' data-hbn-icon="fa-info" onclick="location.href='../info/${assessment.id}/'">Details</button>
+							<button class='hbn-button' data-hbn-icon="fa-upload" onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
+						</div>
 					</div>
 					
 					<div class='clearfix vertical'>
@@ -120,17 +131,6 @@ either expressed or implied, of the PASTA Project.
 						<tag:unitTestResult results="${results[assessment.id]}" 
 							closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
 							detailsLink="../info/${assessment.id}/"/>
-					</div>
-					
-					<div class='button-panel'>
-						<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
-						<button class='flat' onclick="location.href='../info/${assessment.id}/'">Details</button>
-						<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
-							<button class='flat' onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
-						</c:if>
-						<c:if test="${assessment.groupWork}">
-							<button class='flat' onclick="location.href='../groups/${assessment.id}/'">Group Details</button>
-						</c:if>
 					</div>
 				</div>
 			</c:forEach>
@@ -239,5 +239,9 @@ either expressed or implied, of the PASTA Project.
 		$(".category-box").find(".section-title").searchable();
 		$(".assessment-box").find(".part-title").searchable();
 		var searchBox = $("#search").searchBox();
+		
+		$(".hbn-button").hoverButton({
+			dataKey: "hbn-icon"
+		});
 	});
 </script>
