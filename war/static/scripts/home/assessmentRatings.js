@@ -51,18 +51,11 @@ function sendRating($form) {
 			$confirm.show();
 			$confirm.html("<span style='color:green;'>&#10004; Thanks!</span>");
 			$confirm.fadeOut(2000, function() {
-				$allForms.find(".ratingVisToggle").toggleClass("hidden");
+				$allForms.closest(".rate-assessment").hide();
 			});
 		}
 	});
 }
-
-$(".ratingVisToggle").on("click", "a", function() {
-	var $form = $(this).closest("form");
-	var assessmentId = $form.attr("assessment");
-	var $allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
-	$allForms.find(".ratingVisToggle").toggleClass("hidden");
-});
 
 $(document).ready(function() {
 	$("[class^='ratingForm']").each(function() {
@@ -101,9 +94,26 @@ $(document).ready(function() {
 		return false;
 	});
 	
-	$(".showComments").on('click', function() {
+	$(".showComments").on('click', function(e) {
+		e.preventDefault();
 		$('#extraComments' + $(this).attr('assessment')).bPopup();
 	});
+	
+	$(".closeRating").on('click', function(e) {
+		e.preventDefault();
+		var assessmentId = $(this).attr("assessment");
+		var allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
+		allForms.closest(".assessment-box").find(".rate-assessment").hide();
+	});
+	
+	$(".openRating").on('click', function(e) {
+		e.preventDefault();
+		var assessmentId = $(this).attr("assessment");
+		var allForms = $("[class^='ratingForm'][assessment='" + assessmentId + "']")
+		allForms.closest(".assessment-box").find(".rate-assessment").show();
+	});
+	$(".rate-assessment").hide();
+	$(".openRating[data-autoclick='true']").trigger("click");
 	
 	$(".ratingSubmit").on('click', function() {
 		var assessment = $(this).attr('assessment');
