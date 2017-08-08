@@ -24,6 +24,7 @@
 		<link href="<c:url value="/static/styles/font-awesome.min.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/highlight.github.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/highlightjs-line-numbers.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/jquery.hover-button.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
@@ -47,6 +48,7 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/highlight.pack.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/highlightjs-line-numbers.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.hover-button.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
