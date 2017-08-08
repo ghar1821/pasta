@@ -1,0 +1,14 @@
+button.hbn .hbn-text, 
+input[type=button].hbn .hbn-text,
+input[type=submit].hbn .hbn-text {
+	margin-left: 0.8em;
+}
+button.hbn .hbn-content, 
+input[type=button].hbn .hbn-content,
+input[type=submit].hbn .hbn-content {
+	display: inline-block;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: width 0.2s ease-out;
+	line-height: 1.5em;
+}
