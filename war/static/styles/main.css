@@ -54,7 +54,8 @@ button.floating.plus {
 	vertical-align: top;
 }
 
-.part .button-panel:not(:first-child) {
+.part *:not(.part-title) > .button-panel:not(:first-child),
+.part > .button-panel:not(:first-child) {
 	margin-top: 1em;
 }
 .section > .button-panel {
@@ -67,6 +68,13 @@ button.floating.plus {
 .button-panel > button:not(:first-child),
 .button-panel > input[type=submit]:not(:first-child) {
 	margin-left: 0.4em;
+}
+
+.part-title > .button-panel {
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+	float: right;
 }
 
 .clearfix:after {
