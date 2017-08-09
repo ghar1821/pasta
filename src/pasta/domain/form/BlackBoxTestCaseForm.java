@@ -13,6 +13,7 @@ public class BlackBoxTestCaseForm {
 	private String commandLine;
 	private String input;
 	private String output;
+	private String description;
 	private int timeout;
 	private boolean toBeCompared;
 	private boolean deleteMe;
@@ -25,6 +26,7 @@ public class BlackBoxTestCaseForm {
 		this.commandLine = testCase.getCommandLine();
 		this.input = testCase.getInput();
 		this.output = testCase.getOutput();
+		this.description = testCase.getDescription();
 		this.timeout = testCase.getTimeout();
 		this.toBeCompared = testCase.isToBeCompared();
 		this.deleteMe = false;
@@ -57,13 +59,21 @@ public class BlackBoxTestCaseForm {
 	public void setInput(String input) {
 		this.input = input;
 	}
+	
 	public String getOutput() {
 		return output;
 	}
-	
 	public void setOutput(String output) {
 		this.output = output;
 	}
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public int getTimeout() {
 		return timeout;
 	}
@@ -92,6 +102,7 @@ public class BlackBoxTestCaseForm {
 		plain.setCommandLine(commandLine);
 		plain.setInput(input);
 		plain.setOutput(output);
+		plain.setDescription(description);
 		plain.setTimeout(timeout);
 		plain.setToBeCompared(toBeCompared);
 		return plain;

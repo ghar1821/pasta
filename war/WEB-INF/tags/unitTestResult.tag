@@ -122,7 +122,7 @@
 			<c:when test="${not empty results.assessment.allUnitTests}">
 				<table class='unitTestDetailsTable'>
 					<thead>
-						<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+						<tr><th>Status</th><th>Test Name</th><th>Description</th><th>Execution Time</th><th>Message</th></tr>
 					</thead>
 					<tbody>
 						<c:forEach var="unitTest" items="${results.unitTests}">
@@ -140,6 +140,10 @@
 									<td>
 										<c:if test="${hidden}">???</c:if>
 										<c:if test="${!hidden}"><c:out value="${secret ? 'Secret - ' : ''}" />${testCase.testName}</c:if>
+									</td>
+									<td>
+										<c:if test="${hidden}">???</c:if>
+										<c:if test="${!hidden}"><c:out value="${testCase.testDescription}" default="-"/></c:if>
 									</td>
 									<td>
 										<c:out value="${hidden ? '???' : testCase.time}" />

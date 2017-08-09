@@ -132,6 +132,12 @@ either expressed or implied, of the PASTA Project.
 								</div>
 							</div>
 						</div>
+						<div class='pf-item pf-horizontal'>
+							<div class='pf-label'>Test Case Description</div>
+							<div class='pf-input'>
+								<form:textarea path="testCases[${testStatus.index}].description"/>
+							</div>
+						</div>
 					</div>
 				</div>
 			</c:forEach>
@@ -193,6 +199,12 @@ either expressed or implied, of the PASTA Project.
 								<div class='pf-input'>
 									<div class='consolePreview'></div>
 								</div>
+							</div>
+						</div>
+						<div class='pf-item pf-horizontal'>
+							<div class='pf-label'>Test Case Description</div>
+							<div class='pf-input'>
+								<textarea id="testCases0.description" name="testCases0.description"></textarea>
 							</div>
 						</div>
 					</div>
@@ -443,13 +455,14 @@ either expressed or implied, of the PASTA Project.
 					<div class='part no-line' style='overflow:hidden;'>
 						<table id='testResults'>
 							<thead>
-								<tr><th>Status</th><th>Test Name</th><th>Execution Time</th><th>Message</th></tr>
+								<tr><th>Status</th><th>Test Name</th><th>Description</th><th>Execution Time</th><th>Message</th></tr>
 							</thead>
 							<tbody>
 								<c:forEach var="testCase" items="${latestResult.testCases}">
 									<tr>
 										<td><span class="pastaUnitTestResult pastaUnitTestResult${testCase.testResult}">${testCase.testResult}</span></td>
 										<td style="text-align:left;">${testCase.testName}</td>
+										<td><c:out value="${testCase.testDescription}" default="-" /></td>
 										<td>${testCase.time}</td>
 										<td>
 											<pre><c:if test="${not testCase.failure}">${testCase.type} - </c:if><c:out value="${testCase.testMessage}" /></pre>
@@ -670,7 +683,7 @@ either expressed or implied, of the PASTA Project.
         });
         
         function toggleOutput($checkbox) {
-        	var $outputTR = $checkbox.closest(".pf-item").next();
+        	var $outputTR = $checkbox.closest(".pf-item").next().next().addBack();
         	$outputTR.find("textarea").prop("disabled", !$checkbox.is(":checked"));
         	$outputTR.toggle($checkbox.is(":checked"));
         }

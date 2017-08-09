@@ -430,10 +430,13 @@ public class UnitTestManager {
 		
 		AntResults results = antJob.getResults();
 		
+		logger.debug("Extracting test descriptions");
+		Map<String, String> testDescriptions = test.getTestDescriptions();
+		
 		logger.debug("Reading results from disk");
 		// Get results from ant output
 		UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
-				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context);
+				.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context, testDescriptions);
 		if(thisResult == null) {
 			thisResult = new UnitTestResult();
 			thisResult.setRuntimeErrors("Could not read unit test results from disk.");

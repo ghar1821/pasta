@@ -34,6 +34,9 @@ public class BlackBoxTestCase implements Serializable {
 	@Column(columnDefinition="TEXT")
 	private String output;
 	
+	@Column(columnDefinition="TEXT")
+	private String description;
+	
 	@Column(name="compare")
 	private boolean toBeCompared = true;
 	
@@ -76,7 +79,14 @@ public class BlackBoxTestCase implements Serializable {
 	public void setOutput(String output) {
 		this.output = output;
 	}
-
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 	public int getTimeout() {
 		return timeout;
 	}
@@ -142,16 +152,21 @@ public class BlackBoxTestCase implements Serializable {
 				return false;
 		} else if (!testName.equals(other.testName))
 			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
 		if (timeout != other.timeout)
 			return false;
 		if (toBeCompared != other.toBeCompared)
 			return false;
 		return true;
 	}
-	
 	@Override
 	public String toString() {
-		return "BlackBoxTestCase [id=" + id + ", testName=" + testName + ", commandLine=" + commandLine
-				+ ", input=" + input + ", output=" + output + ", timeout=" + timeout + "]";
+		return "BlackBoxTestCase [id=" + id + ", testName=" + testName + ", commandLine=" + commandLine + ", input="
+				+ input + ", output=" + output + ", description=" + description + ", timeout=" + timeout + "]";
 	}
+	
 }

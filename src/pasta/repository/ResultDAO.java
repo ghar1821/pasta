@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
@@ -430,7 +431,7 @@ public class ResultDAO{
 	 * @return the result of the unit test
 	 */
 	public UnitTestResult getUnitTestResultFromDisk(String location){
-		return getUnitTestResultFromDisk(location, null);
+		return getUnitTestResultFromDisk(location, null, null);
 	}
 	
 	/**
@@ -440,9 +441,10 @@ public class ResultDAO{
 	 * 
 	 * @param location the location of the test
 	 * @param errorContext a list of file names to check for error context
+	 * @param testDescriptions 
 	 * @return the result of the unit test
 	 */
-	public UnitTestResult getUnitTestResultFromDisk(String location, Collection<String> errorContext){
+	public UnitTestResult getUnitTestResultFromDisk(String location, Collection<String> errorContext, Map<String, String> testDescriptions){
 		UnitTestResult result = new UnitTestResult();
 		
 		//TODO: replace with generic file
@@ -472,6 +474,10 @@ public class ResultDAO{
 							caseResult.setTime(Double.parseDouble(unitTestElement.getAttribute("time")));
 							// test case - assume it is a pass.
 							caseResult.setTestResult(UnitTestCaseResult.PASS);
+							
+							if(testDescriptions != null) {
+								caseResult.setTestDescription(testDescriptions.get(caseResult.getTestName()));
+							}
 							
 							// if failed
 							if(unitTestElement.hasChildNodes()){
