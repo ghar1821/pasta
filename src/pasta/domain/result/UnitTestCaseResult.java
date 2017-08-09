@@ -85,6 +85,8 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	@Size (max = MAX_EXT_MESSAGE_LENGTH)
 	private String extendedMessage = "";
 	
+	private String testDescription;
+	
 	private String type;
 	
 	private double time;
@@ -139,6 +141,12 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	}
 	public void setType(String type) {
 		this.type = type.trim();
+	}
+	public String getTestDescription() {
+		return testDescription;
+	}
+	public void setTestDescription(String testDescription) {
+		this.testDescription = testDescription;
 	}
 	
 	public boolean isPass() {

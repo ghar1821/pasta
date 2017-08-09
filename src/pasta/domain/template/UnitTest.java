@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -50,6 +51,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 /**
@@ -328,5 +330,16 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 	public boolean isHasBlackBoxTests() {
 		return hasBlackBoxTests();
+	}
+
+	public Map<String, String> getTestDescriptions() {
+		Map<String, String> testDescriptions = PASTAUtil.extractTestDescriptions(getCodeLocation());
+		for(BlackBoxTestCase testCase : getTestCases()) {
+			String desc = testCase.getDescription();
+			if(desc != null) {
+				testDescriptions.put(testCase.getTestName(), desc);
+			}
+		}
+		return testDescriptions;
 	}
 }

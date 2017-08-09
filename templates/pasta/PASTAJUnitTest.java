@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -35,14 +39,26 @@ public class PASTAJUnitTest {
 		clearInput();
 	}
 
+	/**
+	 * Throw away anything that has come into std out up until this point.
+	 */
     protected final void clearOutput() {
         out.reset();
     }
 
+	/**
+	 * Get anything that has been sent to std out since you last cleared the
+	 * output.
+	 */
     protected final String getOutput() {
         return out.toString();
     }
 
+	/**
+	 * Get anything that has been sent to std out since you last cleared the
+	 * output as an array of lines. Split on any line endings (Unix-style [\n]
+	 * or Windows-style [\r\n]).
+	 */
     protected final String[] getOutputLines() {
         Scanner lineScanner = new Scanner(out.toString());
         int lineCount = 0;
@@ -58,6 +74,9 @@ public class PASTAJUnitTest {
         return lines;
     }
 
+	/**
+	 * Throw away any unread input.
+	 */
     protected final void clearInput() {
     	try {
     		if(inputToUser != null)
@@ -72,6 +91,14 @@ public class PASTAJUnitTest {
     	System.setIn(inputToUser);
     }
     
+	/**
+	 * Send input to standard in. Successive calls to this method will queue the
+	 * input.
+	 * 
+	 * @throws IllegalStateException
+	 *             if you have already sent terminated input, which closes the
+	 *             input stream.
+	 */
     protected final void sendInput(String input) {
     	if(input != null && inputFromInstructor != null) {
     		try {
@@ -81,7 +108,15 @@ public class PASTAJUnitTest {
     		}
     	}
     }
-    
+
+	/**
+	 * Send input to standard in, and close the stream. This indicates that no
+	 * more input should be read.
+	 * 
+	 * @throws IllegalStateException
+	 *             if you have already sent terminated input, which closes the
+	 *             input stream.
+	 */
     protected final void sendTerminatedInput(String input) {
     	if(input != null && inputFromInstructor != null) {
     		try {
@@ -95,6 +130,12 @@ public class PASTAJUnitTest {
     	} catch(IOException e) { }
     }
     
+	/**
+	 * Read the contents of the given file into an array of lines.
+	 * 
+	 * @throws FileNotFoundException
+	 *             if the given file is not found.
+	 */
     protected final String[] readFileLines(File file) throws FileNotFoundException {
     	Scanner scn = new Scanner(new FileInputStream(file));
     	LinkedList<String> lines = new LinkedList<>();
@@ -105,6 +146,12 @@ public class PASTAJUnitTest {
     	return lines.toArray(new String[lines.size()]);
     }
     
+	/**
+	 * Read the contents of the given file into a single String
+	 * 
+	 * @throws FileNotFoundException
+	 *             if the given file is not found.
+	 */
     protected final String readFile(File file) throws FileNotFoundException {
     	Scanner scn = new Scanner(new FileInputStream(file)).useDelimiter("\\Z");
     	String content = "";
@@ -115,18 +162,55 @@ public class PASTAJUnitTest {
     	return content;
     }
     
+	/**
+	 * Get the output file associated with a specified input-output test. This
+	 * file will contain any output that was sent to std out during the
+	 * execution of the test case.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the File containing any user output. This file will always exist
+	 *         if the test case got executed (even if no ouput was produced).
+	 */
     protected final File getTestOutputFile(String testName) {
     	return new File("userout/", testName);
     }
     
+	/**
+	 * Get the meta information file associated with a specified input-output
+	 * test. This file will contain information about test execution such as
+	 * time taken and exit code.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the File containing meta information. This file will always exist
+	 *         if the test case got executed.
+	 */
     protected final File getTestMetaFile(String testName) {
     	return new File("usermeta/", testName);
     }
     
+	/**
+	 * Check if the given input-output test case timeout out in execution.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return true if the execution of the test case exceeded the allowed
+	 *         timeout value.
+	 */
     protected final boolean testTimedOut(String testName) {
     	return new File("usermeta/", testName + ".timedout").exists();
     }
     
+	/**
+	 * Check if the given input-output test case resulted in a segmentation
+	 * fault.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return true if the execution of the test case resulted in a segmentation
+	 *         fault
+	 */
     protected final boolean testSegfaulted(String testName) {
     	return new File("usermeta/", testName + ".segfault").exists();
     }
@@ -139,28 +223,69 @@ public class PASTAJUnitTest {
     	}
     }
     
+	/**
+	 * Get the test execution time for a given input-output test.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the time, in seconds, spent running the test case
+	 */
     protected final Double getTestRealTime(String testName) {
     	String line = getMetaFileLine(testName, 1);
     	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
     }
     
+	/**
+	 * Get the time spent processing in user mode for a given input-output test.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the time, in seconds, spent processing in user mode
+	 */
     protected final Double getTestUserTime(String testName) {
     	String line = getMetaFileLine(testName, 2);
     	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
     }
     
+	/**
+	 * Get the time spent processing in kernel mode for a given input-output test.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the time, in seconds, spent processing in kernel mode
+	 */
     protected final Double getTestSystemTime(String testName) {
     	String line = getMetaFileLine(testName, 3);
     	return line == null ? null : Double.parseDouble(line.split(" ")[1]);
     }
     
+	/**
+	 * Get the maximum amount of memory used by a given input-output test.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the maximum resident set size of the process in kB.
+	 */
     protected final Integer getTestMemoryUsage(String testName) {
     	String line = getMetaFileLine(testName, 4);
     	return line == null ? null : Integer.parseInt(line.split(" ")[1]);
     }
     
+    /**
+	 * Get the exit code for a given input-output test case.
+	 * 
+	 * @param testName
+	 *            the name of the input-output test case
+	 * @return the exit code for the test case (0 is normal)
+	 */
     protected final Integer getTestExitCode(String testName) {
     	String line = getMetaFileLine(testName, 5);
     	return line == null ? null : Integer.parseInt(line.split(" ")[1]);
+    }
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    protected @interface TestDescription {
+    	String value();
     }
 }

@@ -55,6 +55,8 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -672,5 +674,86 @@ public class PASTAUtil {
 			diff -= TimeUnit.MINUTES.toMillis(minsDiff);
 		}
 		return time;
+	}
+	
+	/**
+	 * Scan a Java source code file for @TestDescription annotations.
+	 * 
+	 * If the input file is a directory, recursively scan the directory for 
+	 * java source files with @TestDescription annotations.
+	 * 
+	 * @param sourceCode the file that contains the annotations
+	 * @return a map where keys are test method names and values are the value of 
+	 * the @TestDescription annotations for those methods
+	 */
+	public static Map<String, String> extractTestDescriptions(File sourceCode) {
+		Map<String, String> results = new HashMap<>();
+		
+		if(sourceCode == null || !sourceCode.exists()) {
+			return results;
+		}
+		
+		// Scan recursively
+		if(sourceCode.isDirectory()) {
+			for(File child : sourceCode.listFiles()) {
+				results.putAll(extractTestDescriptions(child));
+			}
+			return results;
+		} else if(!sourceCode.getName().endsWith(".java")) {
+			return results;
+		}
+		
+		String contents = scrapeFile(sourceCode);
+		
+		Pattern annotationRegex = Pattern.compile("@\\s*TestDescription");
+		Pattern methodRegex = Pattern.compile("[^a-zA-Z0-9_]?([a-zA-Z0-9_]+)\\s*\\(");
+		
+		Matcher annotationMatcher = annotationRegex.matcher(contents);
+		StringBuilder tagValue;
+		while(annotationMatcher.find()) {
+			tagValue = new StringBuilder();
+			int index = annotationMatcher.end();
+			index = contents.indexOf('"', index) + 1;
+			char c;
+			while(index < contents.length() && (c = contents.charAt(index++)) != '"') {
+				if(c == '\\') {
+					c = contents.charAt(index++);
+					switch(c) {
+					case 'n': tagValue.append('\n'); break;
+					case 't': tagValue.append('\t'); break;
+					case '"': tagValue.append('"'); break;
+					case '\\': tagValue.append('\\'); break;
+					case '0': tagValue.append('\0'); break;
+					default: tagValue.append('\\').append(c);
+					}
+				} else {
+					tagValue.append(c);
+				}
+			}
+			if(index >= contents.length()) {
+				break;
+			}
+			String value = tagValue.toString();
+			
+			int atIndex = contents.indexOf('@', index);
+			int bracketIndex = contents.indexOf('(', index);
+			while(atIndex >= 0 && bracketIndex > atIndex) {
+				index = atIndex + 1;
+				atIndex = contents.indexOf('@', index);
+				bracketIndex = contents.indexOf('(', index);
+			}
+			if(bracketIndex < 0) {
+				break;
+			}
+			
+			Matcher methodMatcher = methodRegex.matcher(contents.substring(index, bracketIndex+1));
+			if(methodMatcher.find()) {
+				String method = methodMatcher.group(1);
+				results.put(method, value);
+			} else {
+				break;
+			}
+		}
+		return results;
 	}
 }
