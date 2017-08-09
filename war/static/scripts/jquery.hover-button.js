@@ -36,29 +36,45 @@
 				.addClass(settings.modifiers)
 				.attr("aria-hidden", "true")
 				.prependTo(content);
-			content.data("minsize", content.width());
 			
-			oContentContainer.appendTo(content);
-			content.data("maxsize", content.width());
-			
-			if(settings.round) {
-				container.css("border-radius", container.outerHeight() / 2);
+			var continueFunc = function() {
+				content.data("minsize", content.width());
+				
+				oContentContainer.appendTo(content);
+				content.data("maxsize", content.width());
+				
+				if(settings.round) {
+					container.css("border-radius", container.outerHeight() / 2);
+				}
+				
+				function wide() {
+					content.css("width", content.data("maxsize"));
+				}
+				function narrow() {
+					content.css("width", content.data("minsize"));
+				}
+				
+				if(settings.expandEvents) {
+					narrow();
+					container.on("mouseenter focus", wide);
+					container.on("mouseleave blur", narrow);
+				} else {
+					wide();
+				}
 			}
 			
-			function wide() {
-				content.css("width", content.data("maxsize"));
-			}
-			function narrow() {
-				content.css("width", content.data("minsize"));
-			}
-			
-			if(settings.expandEvents) {
-				narrow();
-				container.on("mouseenter focus", wide);
-				container.on("mouseleave blur", narrow);
-			} else {
-				wide();
-			}
+			// Wait until font awesome has added the "fa-events-icons-ready" class 
+			// to the html element before checking sizes
+			var contTimer = null;
+			(function tryToContinue() {
+				if(!$("html").is(".fa-events-icons-ready")) {
+					contTimer = window.setTimeout(tryToContinue, 50);
+				} else {
+					window.clearTimeout(contTimer);
+					contTimer = null;
+					continueFunc();
+				}
+			})();
 		});
 		return this;
 	}
