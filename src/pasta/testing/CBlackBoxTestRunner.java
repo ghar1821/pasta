@@ -1,9 +1,11 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import pasta.util.PASTAUtil;
+import pasta.util.WhichProgram;
 
 /**
  * @author Joshua Stretton
@@ -16,6 +18,7 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 	
 	public CBlackBoxTestRunner() throws FileNotFoundException {
 		super(PASTAUtil.getTemplateResource("build_templates/" + TEMPLATE_FILENAME));
+		addOption("gccPath", WhichProgram.getInstance().path("gcc"));
 	}
 	
 	public void setGCCArguments(String argsLine) {
@@ -23,28 +26,24 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
-		Scanner scn = new Scanner(results.getOutput("build"));
+	public String extractCompileErrors(File compileErrorFile, AntResults results) {
+		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorFile));
 		StringBuilder compErrors = new StringBuilder();
-		String line = "";
+		boolean startedJavacErrors = false;
 		if(scn.hasNext()) {
+			String line = "";
 			while(scn.hasNextLine()) {
 				line = scn.nextLine();
-				if(line.contains("not part of the command.")) {
-					break;
+				String chopped = line.replaceFirst("\\s*\\[javac\\] ", "");
+				if(line.length() == chopped.length()) {
+					if(startedJavacErrors) break;
+				} else {
+					startedJavacErrors = true;
 				}
+				compErrors.append(chopped).append(System.lineSeparator());
 			}
-		}
-		while(scn.hasNextLine()) {
-			line = scn.nextLine();
-			if(!line.contains("[apply]")) {
-				break;
-			}
-			compErrors.append(line.replaceFirst("\\s*\\[apply\\]\\s*", "")).append('\n');
-		}
-		if(compErrors.length() > 0) {
 			// Chop off the trailing "\n"
-			compErrors.replace(compErrors.length()-1, compErrors.length(), "");
+			compErrors.deleteCharAt(compErrors.length()-1);
 		}
 		scn.close();
 		return compErrors.toString();

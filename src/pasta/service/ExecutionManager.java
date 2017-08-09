@@ -49,6 +49,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.docker.ExecutionContainer;
+import pasta.docker.LanguageManager;
 import pasta.domain.PASTAPlayer;
 import pasta.domain.players.PlayerHistory;
 import pasta.domain.players.PlayerResult;
@@ -189,7 +191,7 @@ public class ExecutionManager {
 			runOptions.timeout = 180000;
 			runner.setRunScript(runOptions);
 			
-			AntJob antJob = new AntJob(thisRunDir, runner, "build", "execute", "clean");
+			AntJob antJob = new AntJob(runner, null, "build", "execute", "clean"); //TODO: Needs an executioncontainer
 			antJob.addDependency("execute", "build");
 			
 			antJob.addSetupTask(new DirectoryCopyTask(new File(comp.getFileLocation(), "code"), new File(thisRunDir, "src")));
@@ -346,7 +348,7 @@ public class ExecutionManager {
 			runner.setMainClassname("tournament.Tournament");
 			runner.setRepeats(arena.isRepeatable());
 			
-			AntJob antJob = new AntJob(thisRunDir, runner, "build", "compete", "mark", "clean");
+			AntJob antJob = new AntJob(runner, null, "build", "compete", "mark", "clean"); //TODO needs an executioncontainer
 			antJob.addDependency("compete", "build");
 			antJob.addDependency("mark", "compete");
 			
@@ -452,9 +454,10 @@ public class ExecutionManager {
 		
 		logger.info("Running " + assessment.getName() + " unit tests for " + user.getUsername());
 		
-		File sandboxRoot = new File(ProjectProperties.getInstance().getSandboxLocation() + 
-				user.getUsername() + "_" + job.getAssessmentId() + 
-				"_" + PASTAUtil.formatDate(job.getRunDate()));	
+		String submissionLabel = user.getUsername() + "_" + job.getAssessmentId() + 
+				"_" + PASTAUtil.formatDate(job.getRunDate());
+		
+		File sandboxRoot = new File(ProjectProperties.getInstance().getSandboxLocation() + submissionLabel);	
 		
 		// Set up location where test will be run
 		try {
@@ -487,8 +490,14 @@ public class ExecutionManager {
 			}
 			
 			UnitTest test = weightedTest.getTest();
-			File sandboxLoc = new File(sandboxRoot, test.getFileAppropriateName());
-			sandboxLoc.mkdirs();
+			File sandboxTop = new File(sandboxRoot, test.getFileAppropriateName());
+			File sandboxSrc = new File(sandboxTop, "src/");
+			File sandboxOut = new File(sandboxTop, "out/");
+			sandboxSrc.mkdirs();
+			sandboxOut.mkdirs();
+			
+			String executionLabel = submissionLabel + "_" + test.getFileAppropriateName();
+			ExecutionContainer container = new ExecutionContainer(executionLabel, sandboxSrc, sandboxOut);
 			
 			// Check if test has been run before, and remove previous results if so
 			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
@@ -515,18 +524,18 @@ public class ExecutionManager {
 			
 			// Code we are interested in testing
 			File importantCode = test.getSubmissionCodeLocation(submissionLoc);
-			logger.debug("Copying " + importantCode + " to " + sandboxLoc);
-			new DirectoryCopyTask(importantCode, sandboxLoc).go();
+			logger.debug("Copying " + importantCode + " to " + sandboxSrc);
+			new DirectoryCopyTask(importantCode, sandboxSrc).go();
 			
 			List<String> context = null;
-			if(assessment.isAllowed(Language.JAVA)) {
+			if(assessment.isAllowed(LanguageManager.getInstance().getLanguage("java"))) {
 				// Get a list of files submitted for tracking later
 				context = new LinkedList<String>();
 				if(assessment.getShortSolutionName() != null && !assessment.getShortSolutionName().isEmpty()) {
 					// Add solutionName.java just in case this is a Java 
 					// submission, as that will be the most important file
 					String shortName = assessment.getShortSolutionName();
-					context.add(shortName + "." + Language.JAVA.getExtensions().first());
+					context.add(shortName + "." + LanguageManager.getInstance().getLanguage("java").getExtensions().get(0));
 				}
 				context.addAll(Arrays.asList(PASTAUtil.listDirectoryContents(importantCode, true)));
 			}
@@ -539,12 +548,12 @@ public class ExecutionManager {
 					logger.error("No solution name set for " + assessment.getName());
 					continue;
 				}
-				unitTestManager.runBlackBoxTests(test, solutionName, utResults, sandboxLoc, importantCode, context);
+				unitTestManager.runBlackBoxTests(test, solutionName, utResults, importantCode, context, container);
 			}
 			
 			String mainClass = test.getMainClassName();
 			if(test.hasCode() && mainClass != null && !mainClass.isEmpty()) {
-				unitTestManager.runJUnitTests(test, utResults, mainClass, sandboxLoc, context);
+				unitTestManager.runJUnitTests(test, utResults, mainClass, context, container);
 			}
 		}
 		

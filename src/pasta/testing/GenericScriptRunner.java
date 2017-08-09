@@ -1,5 +1,6 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import pasta.testing.options.ScriptOptions;
@@ -48,7 +49,7 @@ public class GenericScriptRunner extends Runner {
 	}
 
 	@Override
-	public String extractCompileErrors(AntResults results) {
+	public String extractCompileErrors(File compileErrorFile, AntResults results) {
 		// TODO Auto-generated method stub
 		return "";
 	}

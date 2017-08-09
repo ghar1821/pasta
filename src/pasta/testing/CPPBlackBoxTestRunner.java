@@ -1,6 +1,8 @@
 package pasta.testing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Scanner;
 
 import pasta.util.PASTAUtil;
 
@@ -18,9 +20,24 @@ public class CPPBlackBoxTestRunner extends BlackBoxTestRunner {
 	}
 	
 	@Override
-	public String extractCompileErrors(AntResults results) {
-		// TODO Extract cpp-specific compile errors and append super errors to those
-		return super.extractCompileErrors(results);
+	public String extractCompileErrors(File compileErrorsFile, AntResults results) {
+		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorsFile));
+		StringBuilder compErrors = new StringBuilder();
+		if(scn.hasNext()) {
+			String line = "";
+			while(scn.hasNextLine()) {
+				line = scn.nextLine();
+				String chopped = line.replaceFirst("\\s*\\[javac\\] ", "").replaceFirst("\\s*\\[cc\\] ", "");
+				if(line.length() == chopped.length()) {
+					break;
+				}
+				compErrors.append(chopped).append(System.lineSeparator());
+			}
+			// Chop off the trailing "\n"
+			compErrors.deleteCharAt(compErrors.length()-1);
+		}
+		scn.close();
+		return compErrors.toString();
 	}
 
 	@Override

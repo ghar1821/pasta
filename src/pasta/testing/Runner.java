@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import pasta.util.ProjectProperties;
+import pasta.docker.DockerManager;
 
 public abstract class Runner {
 
@@ -32,7 +32,10 @@ public abstract class Runner {
 		}
 		options = new HashMap<String, String>();
 		writableFiles = new LinkedList<String>();
-		setLibDirectory(ProjectProperties.getInstance().getProjectLocation() + "lib/");
+		setLibDirectory(DockerManager.PASTA_LIB);
+		setOutDirectory(DockerManager.PASTA_OUT);
+		setBinDirectory(DockerManager.PASTA_BIN);
+		setSrcDirectory(DockerManager.PASTA_SRC);
 	}
 	
 	public void addOption(String key, String value) {
@@ -156,15 +159,24 @@ public abstract class Runner {
 		return file;
 	}
 	
-	public void setLibDirectory(String directory) {
+	private String fixPath(String directory) {
 		directory = directory.replaceAll("[\\/]", Matcher.quoteReplacement(File.separator));
-		if(!directory.endsWith(File.separator)) {
-			directory += File.separator;
-		}
-		addOption("libDirectory", directory);
+		return directory;
+	}
+	public void setSrcDirectory(String directory) {
+		addOption("srcDirectory", fixPath(directory));
+	}
+	public void setOutDirectory(String directory) {
+		addOption("outDirectory", fixPath(directory));
+	}
+	public void setBinDirectory(String directory) {
+		addOption("binDirectory", fixPath(directory));
+	}
+	public void setLibDirectory(String directory) {
+		addOption("libDirectory", fixPath(directory));
 	}
 	
-	public abstract String extractCompileErrors(AntResults results);
+	public abstract String extractCompileErrors(File compileErrorFile, AntResults results);
 	public abstract String extractFilesCompiled(AntResults results);
 	
 }

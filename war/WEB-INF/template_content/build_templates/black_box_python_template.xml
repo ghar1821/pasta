@@ -9,6 +9,8 @@
 		<mkdir dir="${binDir}"/>
 		<chgrp file="${binDir}" group="${sandboxUser}" type="dir" />
 		<chmod file="${binDir}" perm="g+ws" type="dir" />
+		<mkdir dir="${binDir}/${bbuseroutfile}"/>
+		<mkdir dir="${binDir}/${bbmetafile}"/>
 	</target>
 	<target name="makeWritable">
 		{$?{hasWritable}
@@ -31,18 +33,23 @@
 				<exclude name="**/*.py"/>
 				<exclude name="**/*.java"/>
                 <exclude name="build.xml"/>
-            	<exclude name="result.xml"/>
-            	<exclude name="run.errors"/>
             	<exclude name="${binDir}/**/*"/>
             </fileset>
         </copy>
 	</target>
 	<target name="moveToBin">
-        <echo message="Moving code from '${basedir}' to '${binDir}'"/>
-		<move includeemptydirs="false" todir="${binDir}">
-            <fileset dir="${basedir}">
+		<resources id="pythonfiles">
+			<fileset dir="${basedir}">
 				<include name="**/*.py"/>
             </fileset>
+		</resources>
+        <echo message="Making Python files readable by ${sandboxUser}"/>
+		<chgrp group="${sandboxUser}" type="file">
+			<resources refid="pythonfiles"/>
+		</chgrp>
+        <echo message="Moving code from '${basedir}' to '${binDir}'"/>
+		<move includeemptydirs="false" todir="${binDir}">
+			<resources refid="pythonfiles"/>
         </move>
 	</target>
 
@@ -79,6 +86,7 @@
     </target>
     <target name="build" depends="init, setup">
 		<echo message="Using javac to compile Java code"/>
+    	<record name="${outDirectory}/compile.errors" loglevel="warn" action="start"/>
         <javac
         	executable="${javacPath}"
             fork="yes"
@@ -93,9 +101,10 @@
         	<exclude name="${binDir}/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
+    	<record name="${outDirectory}/compile.errors" action="stop"/>
     </target>
 
-    <target name="run">
+    <target name="run" depends="init">
         <echo message="Executing '${testName}'"/>
     	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
     </target>
@@ -116,11 +125,11 @@
 			dir="${binDir}"
 			input="${binDir}/${bbinputfile}/${bbTestName}"
             output="${binDir}/${bbuseroutfile}/${bbTestName}"
-			error="${runErrorsFile}"
+			error="${outDirectory}/${runErrorsFile}"
     		resultproperty="errorCode"
 			append="true">
     		<arg line='-o ${bbmetafile}/${bbTestName} -f "real %e\nuser %U\nsys %S\nmemory %M\nexit %x"' />
-    		<arg value="/usr/local/bin/pastarun" /> 
+    		<arg value="${binDirectory}/pastarun" /> 
     		<arg line="${timeoutPath} ${bbTestTimeoutFraction}" /> 
     		<arg line="${pythonPath} -B ${solutionName}.py" /> 
 			<arg line="${bbTestCommandLine}" />
@@ -140,7 +149,7 @@
     	</if>
     </target>
 
-	<target name="test">
+	<target name="test" depends="init">
         <echo message="Running JUnit '${testName}'"/>
         <junit
             filtertrace="${filterStackTraces}"
@@ -151,5 +160,9 @@
             <test name="${testName}" outfile="${testOutputFile}" />
             <classpath refid="assessment.classpath"/>
         </junit>
+		<exec executable="mv" dir="${basedir}">
+			<arg value="${testOutputFile}.xml"/>
+			<arg value="${outDirectory}/"/>
+		</exec>
     </target>
 </project>

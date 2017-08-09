@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
+import pasta.docker.DockerManager;
 import pasta.domain.security.AuthenticationSettings;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
