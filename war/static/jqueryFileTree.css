@@ -45,6 +45,7 @@ ul.jqueryFileTree .ext_cpp { background: url(images/code.png) left top no-repeat
 ul.jqueryFileTree .ext_css { background: url(images/css.png) left top no-repeat; }
 ul.jqueryFileTree .ext_csv { background: url(images/xls.png) left top no-repeat; }
 ul.jqueryFileTree .ext_doc { background: url(images/doc.png) left top no-repeat; }
+ul.jqueryFileTree .ext_docx { background: url(images/doc.png) left top no-repeat; }
 ul.jqueryFileTree .ext_exe { background: url(images/application.png) left top no-repeat; }
 ul.jqueryFileTree .ext_gif { background: url(images/picture.png) left top no-repeat; }
 ul.jqueryFileTree .ext_fla { background: url(images/flash.png) left top no-repeat; }
@@ -58,7 +59,9 @@ ul.jqueryFileTree .ext_jpeg { background: url(images/picture.png) left top no-re
 ul.jqueryFileTree .ext_js { background: url(images/script.png) left top no-repeat; }
 ul.jqueryFileTree .ext_lasso { background: url(images/code.png) left top no-repeat; }
 ul.jqueryFileTree .ext_log { background: url(images/txt.png) left top no-repeat; }
+ul.jqueryFileTree .ext_m { background: url(images/code.png) left top no-repeat; }
 ul.jqueryFileTree .ext_m4p { background: url(images/music.png) left top no-repeat; }
+ul.jqueryFileTree .ext_md { background: url(images/txt.png) left top no-repeat; }
 ul.jqueryFileTree .ext_mov { background: url(images/film.png) left top no-repeat; }
 ul.jqueryFileTree .ext_mp3 { background: url(images/music.png) left top no-repeat; }
 ul.jqueryFileTree .ext_mp4 { background: url(images/film.png) left top no-repeat; }
@@ -72,7 +75,7 @@ ul.jqueryFileTree .ext_png { background: url(images/picture.png) left top no-rep
 ul.jqueryFileTree .ext_ppt { background: url(images/ppt.png) left top no-repeat; }
 ul.jqueryFileTree .ext_psd { background: url(images/psd.png) left top no-repeat; }
 ul.jqueryFileTree .ext_pl { background: url(images/script.png) left top no-repeat; }
-ul.jqueryFileTree .ext_py { background: url(images/script.png) left top no-repeat; }
+ul.jqueryFileTree .ext_py { background: url(images/code.png) left top no-repeat; }
 ul.jqueryFileTree .ext_rb { background: url(images/ruby.png) left top no-repeat; }
 ul.jqueryFileTree .ext_rbx { background: url(images/ruby.png) left top no-repeat; }
 ul.jqueryFileTree .ext_rhtml { background: url(images/ruby.png) left top no-repeat; }
@@ -87,5 +90,6 @@ ul.jqueryFileTree .ext_vb { background: url(images/code.png) left top no-repeat;
 ul.jqueryFileTree .ext_wav { background: url(images/music.png) left top no-repeat; }
 ul.jqueryFileTree .ext_wmv { background: url(images/film.png) left top no-repeat; }
 ul.jqueryFileTree .ext_xls { background: url(images/xls.png) left top no-repeat; }
+ul.jqueryFileTree .ext_xlsx { background: url(images/xls.png) left top no-repeat; }
 ul.jqueryFileTree .ext_xml { background: url(images/code.png) left top no-repeat; }
 ul.jqueryFileTree .ext_zip { background: url(images/zip.png) left top no-repeat; }
