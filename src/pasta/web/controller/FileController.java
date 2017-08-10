@@ -33,9 +33,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,28 +77,7 @@ import pasta.web.WebUtils;
 @RequestMapping("/")
 public class FileController {
 
-	/**
-	 * Initialises the codeStyle tag mapping of file endings to javascript tag
-	 * requirements for syntax highlighting.
-	 */
 	public FileController() {
-		codeStyle = new TreeMap<String, String>();
-		codeStyle.put("c", "ccode");
-		codeStyle.put("cpp", "cppcode");
-		codeStyle.put("h", "cppcode");
-		codeStyle.put("cs", "csharpcode");
-		codeStyle.put("css", "csscode");
-		codeStyle.put("html", "htmlcode");
-		codeStyle.put("java", "javacode");
-		codeStyle.put("js", "javascriptcode");
-		codeStyle.put("pl", "perlcode");
-		codeStyle.put("pm", "perlcode");
-		codeStyle.put("php", "phpcode");
-		codeStyle.put("py", "pythoncode");
-		codeStyle.put("rb", "rubycode");
-		codeStyle.put("sql", "sqlcode");
-		codeStyle.put("xml", "xmlcode");
-
 	}
 
 	@ModelAttribute("user")
@@ -109,8 +87,6 @@ public class FileController {
 	}
 
 	protected final Log logger = LogFactory.getLog(getClass());
-
-	private Map<String, String> codeStyle;
 
 	@Autowired
 	private GroupManager groupManager;
@@ -131,7 +107,7 @@ public class FileController {
 		fileName = fileName.replace("\"", "");
 		File file = getCorrectFile(owner, fileName);
 		logger.debug("Loading content of file: " + fileName + " owned by " + owner);
-		if (!codeStyle.containsKey(FilenameUtils.getExtension(fileName))) {
+		if(!PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
 			try {
 				// get your file as InputStream
 				InputStream is = new FileInputStream(file.getAbsolutePath());
@@ -199,10 +175,6 @@ public class FileController {
 	 * <td>The location of the disk of the file</td>
 	 * </tr>
 	 * <tr>
-	 * <td>codeStyle</td>
-	 * <td>The map of coding styles. Map<string, string></td>
-	 * </tr>
-	 * <tr>
 	 * <td>fileEnding</td>
 	 * <td>The file ending of the file you're viewing</td>
 	 * </tr>
@@ -237,12 +209,18 @@ public class FileController {
 		model.addAttribute("location", location);
 		model.addAttribute("fullLocation", file.getAbsolutePath());
 		model.addAttribute("owner", owner);
-		model.addAttribute("codeStyle", codeStyle);
 		model.addAttribute("fileEnding", fileEnding.toLowerCase());
 
 		if (testFileReadingIsAllowed(user, file)) {
-			if (codeStyle.containsKey(fileEnding) || PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
+			if (PASTAUtil.canDisplayFile(file.getAbsolutePath())) {
 				model.addAttribute("fileContents", PASTAUtil.scrapeFile(file.getAbsolutePath()));
+				String ext = FilenameUtils.getExtension(file.getName());
+				if(Arrays.asList("txt", "csv", "tsv").contains(ext)) {
+					ext = "hljs no-highlight"; // "Hack" to stop syntax highlighting on these types while still appearing as a code block
+				} else if(ext.equals("m")) {
+					ext = "matlab";
+				}
+				model.addAttribute("fileType", ext);
 			}
 		} else {
 			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");

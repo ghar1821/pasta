@@ -80,10 +80,6 @@ import pasta.web.WebUtils;
 @RequestMapping("mark/")
 public class TutorMarkingController {
 
-	/**
-	 * Initialises the codeStyle tag mapping of file endings to javascript tag
-	 * requirements for syntax highlighting.
-	 */
 	public TutorMarkingController() {
 	}
 

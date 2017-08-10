@@ -39,16 +39,16 @@ either expressed or implied, of the PASTA Project.
 <div class='section part'>
 	<h2 class='part-title'>Writing the Validator</h2>
 	<p>You must write a single Java class that implements <code>pasta.service.validation.PASTASubmissionValidator</code>.
-	<pre class="javacode"><code><c:out value="${PASTASubmissionValidator}" /></code></pre>
+	<pre><code><c:out value="${PASTASubmissionValidator}" /></code></pre>
 </div>
 
 <div class='section part'>
 	<h2 class='part-title'><code>ValidationFeedback</code> Objects</h2>
 	<p>Your Validator is going to return collections of <code>pasta.service.validation.ValidationFeedback</code> objects.
-	<pre class="javacode"><code><c:out value="${ValidationFeedback}" /></code></pre>
+	<pre><code><c:out value="${ValidationFeedback}" /></code></pre>
 </div>
 
 <div class='section part'>
 	<h2 class='part-title'>Example</h2>
-	<pre class="javacode"><code><c:out value="${SampleCustomValidator}" /></code></pre>
+	<pre><code><c:out value="${SampleCustomValidator}" /></code></pre>
 </div>

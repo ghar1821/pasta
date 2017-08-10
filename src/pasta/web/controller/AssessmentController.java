@@ -41,7 +41,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -105,28 +104,7 @@ import pasta.web.WebUtils;
 @RequestMapping("assessments/")
 public class AssessmentController {
 
-	/**
-	 * Initializes the codeStyle tag mapping of file endings to 
-	 * javascript tag requirements for syntax highlighting.
-	 */
 	public AssessmentController() {
-		codeStyle = new TreeMap<String, String>();
-		codeStyle.put("c", "ccode");
-		codeStyle.put("cpp", "cppcode");
-		codeStyle.put("h", "cppcode");
-		codeStyle.put("cs", "csharpcode");
-		codeStyle.put("css", "csscode");
-		codeStyle.put("html", "htmlcode");
-		codeStyle.put("java", "javacode");
-		codeStyle.put("js", "javascriptcode");
-		codeStyle.put("pl", "perlcode");
-		codeStyle.put("pm", "perlcode");
-		codeStyle.put("php", "phpcode");
-		codeStyle.put("py", "pythoncode");
-		codeStyle.put("rb", "rubycode");
-		codeStyle.put("sql", "sqlcode");
-		codeStyle.put("xml", "xmlcode");
-
 	}
 
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -152,8 +130,6 @@ public class AssessmentController {
 	
 	@Autowired
 	private UpdateAssessmentFormValidator updateValidator;
-
-	private Map<String, String> codeStyle;
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
