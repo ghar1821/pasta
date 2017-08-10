@@ -75,7 +75,6 @@ import pasta.testing.JUnitTestRunner;
 import pasta.testing.Runner;
 import pasta.testing.task.CleanupSpecificFilesTask;
 import pasta.testing.task.DirectoryCopyTask;
-import pasta.testing.task.MakeDirectoryTask;
 import pasta.testing.task.UnzipTask;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -387,8 +386,7 @@ public class UnitTestManager {
 			}
 		}
 		
-		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, sandboxLoc, false));
-		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, binLoc, false));
+		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, container.getSrcLoc(), false));
 		
 		logger.debug("Starting run of ant job");
 		antJob.run();
@@ -407,26 +405,27 @@ public class UnitTestManager {
 			
 			logger.debug("Reading results from disk");
 			// Get results from ant output
-			UnitTestResult thisResult = ProjectProperties.getInstance().getResultDAO()
-					.getUnitTestResultFromDisk(sandboxLoc.getAbsolutePath(), context, testDescriptions);
+			thisResult = ProjectProperties.getInstance().getResultDAO()
+					.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context, testDescriptions);
 			if(thisResult == null) {
 				thisResult = new UnitTestResult();
 				thisResult.setRuntimeErrors("Could not read unit test results from disk.");
 			}
-		
+			
 			logger.debug("Extracting compiled files");
 			thisResult.setFilesCompiled(runner.extractFilesCompiled(results));
 			
 			if(!results.isSuccess("build")) {
+				File compileErrorFile = new File(container.getOutLoc(), "compile.errors");
 				thisResult.setBuildError(true);
-				thisResult.setCompileErrors(runner.extractCompileErrors(results).replaceAll(Matcher.quoteReplacement(sandboxLoc.getAbsolutePath()), ""));
+				thisResult.setCompileErrors(runner.extractCompileErrors(compileErrorFile, results).replaceAll(Matcher.quoteReplacement(DockerManager.WORK_DIR), ""));
 				if(thisResult.getCompileErrors() != null && !thisResult.getCompileErrors().isEmpty()) {
 					logger.debug("Test ran with compile error");
 				} else {
 					logger.debug("Test ran with build error");
 				}
 			}
-		
+			
 			File errorFile = new File(container.getOutLoc(), "run.errors");
 			if(errorFile.exists()) {
 				String errorContents = PASTAUtil.scrapeFile(errorFile);
@@ -440,7 +439,7 @@ public class UnitTestManager {
 					logger.debug("Test ran with runtime errors");
 				}
 			}
-		
+			
 			boolean cleanError = !results.isSuccess("clean");
 			if(cleanError) {
 				logger.debug("Test ran with clean errors");
