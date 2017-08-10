@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.web.controller;
 
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -69,34 +68,12 @@ import pasta.web.WebUtils;
 @RequestMapping("handMarking/")
 public class AllHandMarkingsController {
 
-	/**
-	 * Initializes the codeStyle tag mapping of file endings to 
-	 * javascript tag requirements for syntax highlighting.
-	 */
 	public AllHandMarkingsController() {
-		codeStyle = new TreeMap<String, String>();
-		codeStyle.put("c", "ccode");
-		codeStyle.put("cpp", "cppcode");
-		codeStyle.put("h", "cppcode");
-		codeStyle.put("cs", "csharpcode");
-		codeStyle.put("css", "csscode");
-		codeStyle.put("html", "htmlcode");
-		codeStyle.put("java", "javacode");
-		codeStyle.put("js", "javascriptcode");
-		codeStyle.put("pl", "perlcode");
-		codeStyle.put("pm", "perlcode");
-		codeStyle.put("php", "phpcode");
-		codeStyle.put("py", "pythoncode");
-		codeStyle.put("rb", "rubycode");
-		codeStyle.put("sql", "sqlcode");
-		codeStyle.put("xml", "xmlcode");
-
 	}
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	@Autowired private HandMarkingManager handMarkingManager;
-	private Map<String, String> codeStyle;
 
 
 	// ///////////////////////////////////////////////////////////////////////////

@@ -45,11 +45,8 @@ either expressed or implied, of the PASTA Project.
 		<c:when test="${fileEnding == 'pdf'}">
 			<object data='loadFile?owner=${owner}&file_name="${location}"' type="application/pdf" class='pdf-reader'></object>
 		</c:when>
-		<c:when test="${not empty codeStyle[fileEnding]}">
-			<pre class="${codeStyle[fileEnding]}"><code><c:out value='${fileContents}'/></code></pre>
-		</c:when>
-		<c:when test="${pasta:isPlainText(fullLocation)}">
-			<pre><code><c:out value='${fileContents}'/></code></pre>
+		<c:when test="${not empty fileContents}">
+			<pre><code class='${fileType}'><c:out value='${fileContents}'/></code></pre>
 		</c:when>
 		<c:otherwise>
 			<c:redirect url='../downloadFile?owner=${owner}&file_name="${location}"'/>

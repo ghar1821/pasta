@@ -83,10 +83,6 @@ import pasta.web.WebUtils;
 @RequestMapping("/")
 public class StudentController {
 
-	/**
-	 * Initialises the codeStyle tag mapping of file endings to javascript tag
-	 * requirements for syntax highlighting.
-	 */
 	public StudentController() {
 	}
 

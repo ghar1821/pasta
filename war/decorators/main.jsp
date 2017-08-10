@@ -17,12 +17,13 @@
 		<link href="<c:url value="/static/styles/loading.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/jquery.snippet.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/jquery.collapsible.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/font-awesome.min.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/highlight.github.css"/>" rel="stylesheet" type="text/css" media="screen" />
+		<link href="<c:url value="/static/styles/highlightjs-line-numbers.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://use.fontawesome.com/d4d3b7da4d.js"></script>
@@ -33,7 +34,6 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.snippet.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.11.0.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
@@ -45,6 +45,8 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/highlight.pack.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/highlightjs-line-numbers.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config({
@@ -78,23 +80,10 @@
 		
 		<decorator:head />
 		
-		<script type="text/javascript">
+		<script>
 			$(document).ready(function(){
-				$("pre.ccode").snippet("c",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.cppcode").snippet("cpp",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.csharpcode").snippet("csharp",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.csscode").snippet("css",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.flexcode").snippet("flex",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.htmlcode").snippet("html",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.javacode").snippet("java",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.javascriptcode").snippet("javascript",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.javascriptdomcode").snippet("javascript_dom",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.perlcode").snippet("perl",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.phpcode").snippet("php",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.pythoncode").snippet("python",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.rubycode").snippet("ruby",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.sqlcode").snippet("sql",{style:"ide-eclipse",transparent:false,numbered:true});
-				$("pre.xmlcode").snippet("xml",{style:"ide-eclipse",transparent:false,numbered:true});	
+				hljs.initHighlightingOnLoad();
+				hljs.initLineNumbersOnLoad();
 				
 	            $(".help").each(function() {
 	            	$(this).attr("helpText", $(this).html());

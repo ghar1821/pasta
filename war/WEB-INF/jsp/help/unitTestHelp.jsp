@@ -72,15 +72,15 @@ either expressed or implied, of the PASTA Project.
 		
 		<h3>Writing the test</h3>
 		<p>To write a test suite, create a JUnit class that extends <code>PASTAJUnitTest</code>.
-		<pre class="javacode"><code><c:out value="${PASTAJUnitTest}" /></code></pre>
+		<pre><code><c:out value="${PASTAJUnitTest}" /></code></pre>
 		<p>For example, the class below will test a simple Java Hello World program.
 		<h3>Important!</h3> 
 		<p><strong>It is very important that you include test timeouts to the tests</strong>; e.g. <code>@Test(timeout=1000)</code>, as otherwise students who submit code with infinite loops will cause large delays to other students.
 		<p><strong>Note:</strong> you must import <code>pasta.PASTAJUnitTest</code> to extend it. You do not need to submit PASTAJUnitTest as this will be provided for you.
-		<pre class="javacode"><code><c:out value="${HelloWorldTest}" /></code></pre>
+		<pre><code><c:out value="${HelloWorldTest}" /></code></pre>
 		<p>As another example, the following class will test to see if the user has created a file (<code>outputFile.txt</code>), and also check to see if the results of a given test case were at least a given length.
 		<p><strong>Note:</strong> user output will be found in the relative directory "<code>${userout}</code>". Output to std out from a test case named <code>testCase1</code> will be found in a file of the same name.
-		<pre class="javacode"><code><c:out value="${SampleCustomTest}" /></code></pre>
+		<pre><code><c:out value="${SampleCustomTest}" /></code></pre>
 		
 		<p>If your test requires multiple classes, simple zip the code into a .zip file and submit that.
 		
@@ -109,10 +109,10 @@ exit 0</pre>
 		<h3>Designing tests</h3>
 		<p>It is generally a good idea to make sure that none of your JUnit assert statements that interact with student code reveal any test logic.
 		<p>For example, consider the following test code:
-		<pre class="javacode"><code>assertEquals(4, StudentClass.doCalculation(8));</code></pre>
+		<pre><code>assertEquals(4, StudentClass.doCalculation(8));</code></pre>
 		<p>If the student has submitted code that doesn't include the <code>StudentClass.doCalculation</code> method, then they will be shown a compiler error including that line of code, revealing that you are testing the input value 8.
 		<p>A better approach would be to do this:
-		<pre class="javacode"><code>int expected = 4;
+		<pre><code>int expected = 4;
 int input = 8;
 int actual = StudentClass.doCalculation(input);
 assertEquals(expected, actual);</code></pre>
