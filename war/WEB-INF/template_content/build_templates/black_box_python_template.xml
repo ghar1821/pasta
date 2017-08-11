@@ -32,6 +32,7 @@
             <fileset dir="${basedir}">
 				<exclude name="**/*.py"/>
 				<exclude name="**/*.java"/>
+            	<exclude name="**/*.class"/>
                 <exclude name="build.xml"/>
             	<exclude name="${binDir}/**/*"/>
             </fileset>
