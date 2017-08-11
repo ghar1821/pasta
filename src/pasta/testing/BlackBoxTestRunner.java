@@ -28,8 +28,6 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 		addOption("bbmetafile", UnitTest.BB_META_FILENAME);
 		addOption("timeoutPath", WhichProgram.getInstance().path("timeout"));
 		addOption("timePath", WhichProgram.getInstance().path("time"));
-		addOption("javaPath", WhichProgram.getInstance().path("java"));
-		addOption("javacPath", WhichProgram.getInstance().path("javac"));
 	}
 
 	public void setTestData(List<BlackBoxTestCase> testCases) {

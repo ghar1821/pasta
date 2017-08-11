@@ -60,7 +60,16 @@
     </target>
     <target depends="init" name="build">
         <echo message="Using javac to compile Java code in '${basedir}'"/>
-        <javac fork="yes" srcdir="${basedir}" includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="${binDir}" source="${source}" target="${target}">
+        <javac 
+        	executable="${javacPath}"
+        	fork="yes" 
+        	includeantruntime="false" 
+        	debug="true" 
+        	debuglevel="${debuglevel}" 
+        	srcdir="${basedir}" 
+        	destdir="${binDir}" 
+        	source="${source}" 
+        	target="${target}">
 			<exclude name="origSubmission/**/*"/>
 			<exclude name="${binDir}/**/*"/>
             <classpath refid="assessment.classpath"/>
@@ -68,7 +77,12 @@
     </target>
 	<target name="test">
         <echo message="Running JUnit '${testName}'"/>
-        <junit filtertrace="${filterStackTraces}" fork="yes" timeout="${maxtimeallowed}" dir="${binDir}">
+        <junit 
+        	jvm="${javaPath}"
+        	filtertrace="${filterStackTraces}" 
+        	fork="yes" 
+        	timeout="${maxtimeallowed}" 
+        	dir="${binDir}">
 			<formatter type="xml" />
             <test name="${testName}" outfile="${testOutputFile}" />
             <classpath refid="assessment.classpath"/>

@@ -183,6 +183,7 @@
 	<target name="test" depends="init">
 		<echo message="Running JUnit '${testName}'"/>
 		<junit
+			jvm="${javaPath}"
             filtertrace="${filterStackTraces}"
             fork="yes"
             timeout="${maxtimeallowed}"

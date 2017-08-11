@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import pasta.util.PASTAUtil;
+import pasta.util.WhichProgram;
 
 public class JUnitTestRunner extends Runner {
 
@@ -25,6 +26,8 @@ public class JUnitTestRunner extends Runner {
 		addOption("testOutputFile", "result");
 		addOption("testName", "TestName");
 		addOption("filterStackTraces", "yes");
+		addOption("javaPath", WhichProgram.getInstance().path("java"));
+		addOption("javacPath", WhichProgram.getInstance().path("javac"));
 	}
 	
 	public void setMaxRunTime(long milliseconds) {
