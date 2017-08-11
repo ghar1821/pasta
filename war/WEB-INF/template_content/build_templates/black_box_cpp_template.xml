@@ -34,6 +34,7 @@
 				<exclude name="**/*.cc"/>
 				<exclude name="**/*.h"/>
 				<exclude name="**/*.java"/>
+            	<exclude name="**/*.class"/>
                 <exclude name="build.xml"/>
             	<exclude name="${binDir}/**/*"/>
             </fileset>
