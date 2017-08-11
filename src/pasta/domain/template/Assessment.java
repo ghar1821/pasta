@@ -328,14 +328,14 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if(!isAutoMarked()) {
 			return null;
 		}
-		List<String> dirs = new LinkedList<String>();
+		Set<String> dirs = new TreeSet<String>();
 		for(WeightedUnitTest weightedTest : getAllUnitTests()) {
 			String dir = weightedTest.getTest().getSubmissionCodeRoot();
 			if(dir != null && !dir.isEmpty()) {
 				dirs.add(dir);
 			}
 		}
-		return dirs;
+		return new LinkedList<>(dirs);
 	}
 	
 	public int getGroupCount() {
