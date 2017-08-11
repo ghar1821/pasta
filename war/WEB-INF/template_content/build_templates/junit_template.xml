@@ -3,20 +3,6 @@
 <project basedir="." default="build" name="assessment">
 	<property name='binDir' value='bin'/>
 	<property name='sandboxUser' value='pastasandbox'/>
-    <property environment="env"/>
-    <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.8"/>
-    <property name="source" value="1.8"/>
-	<path id="lib.jars">
-		<fileset dir="${libdirectory}">
-			<include name="**/*.jar"/>
-            <include name="**/*.class"/>
-		</fileset>
-	</path>
-    <path id="assessment.classpath">
-        <pathelement location="${binDir}"/>
-        <path refid="lib.jars"/>
-    </path>
 	
 	<target name="makeBin">
 		<mkdir dir="${binDir}"/>
@@ -37,29 +23,47 @@
 		</chmod>
 		}
 	</target>
-	
 	<target name="copyNonJava">
         <echo message="Copying non-code from '${basedir}' to '${binDir}'"/>
 		<copy includeemptydirs="false" todir="${binDir}">
             <fileset dir="${basedir}">
                 <exclude name="**/*.java"/>
+                <exclude name="**/*.class"/>
                 <exclude name="build.xml"/>
-            	<exclude name="result.xml"/>
-            	<exclude name="run.errors"/>
             	<exclude name="${binDir}/**/*"/>
             </fileset>
         </copy>
 	</target>
-    <target name="init" depends="makeBin, copyNonJava, makeWritable">
+	
+	<target name="init">
+		<property environment="env"/>
+	    <property name="debuglevel" value="source,lines,vars"/>
+	    <property name="target" value="1.8"/>
+	    <property name="source" value="1.8"/>
+		<path id="lib.jars">
+			<fileset dir="${libdirectory}">
+				<include name="**/*.jar"/>
+	            <include name="**/*.class"/>
+			</fileset>
+		</path>
+	    <path id="assessment.classpath">
+	        <pathelement location="${binDir}"/>
+	        <path refid="lib.jars"/>
+	    </path>
+	</target>
+	
+    <target name="setup" depends="makeBin, copyNonJava, makeWritable">
     </target>
+	
     <target name="clean">
     	<echo message="Deleting .class files from '${binDir}'"/>
 		<delete>
 			<fileset dir="${binDir}" includes="**/*.class"/>
 		</delete>
     </target>
-    <target depends="init" name="build">
+    <target depends="init, setup" name="build">
         <echo message="Using javac to compile Java code in '${basedir}'"/>
+    	<record name="${outDirectory}/compile.errors" loglevel="warn" action="start"/>
         <javac 
         	executable="${javacPath}"
         	fork="yes" 
@@ -74,8 +78,9 @@
 			<exclude name="${binDir}/**/*"/>
             <classpath refid="assessment.classpath"/>
         </javac>
+    	<record name="${outDirectory}/compile.errors" action="stop"/>
     </target>
-	<target name="test">
+	<target name="test" depends="init">
         <echo message="Running JUnit '${testName}'"/>
         <junit 
         	jvm="${javaPath}"
@@ -87,5 +92,9 @@
             <test name="${testName}" outfile="${testOutputFile}" />
             <classpath refid="assessment.classpath"/>
         </junit>
+		<exec executable="mv" dir="${basedir}">
+			<arg value="${testOutputFile}.xml"/>
+			<arg value="${outDirectory}/"/>
+		</exec>
     </target>
 </project>

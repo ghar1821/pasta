@@ -344,6 +344,7 @@ public class UnitTestManager {
 			UnitTestResult utResults,
 			String mainClass, List<String> context,
 			ExecutionContainer container) {
+		container.setLanguage(LanguageManager.getInstance().getLanguage("java"));
 		JUnitTestRunner runner = null;
 		try {
 			runner = new JUnitTestRunner();
