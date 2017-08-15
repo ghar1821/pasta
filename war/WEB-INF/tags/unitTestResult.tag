@@ -10,7 +10,7 @@
 <%@ attribute name="detailsLink" required="false" type="java.lang.String" rtexprvalue="true"%>
 
 <c:if test="${summary}">
-	<div class='vertical-block float-container'>
+	<div class='utr-top-level vertical-block float-container'>
 		<c:choose>
 			<c:when test="${empty results or empty results.submissionsMade or results.submissionsMade == 0}">
 				No attempts on record.
@@ -71,7 +71,7 @@
 </c:if>
 
 <c:if test="${!summary}">
-	<div class='unitTestDetails vertical-block'>
+	<div class='utr-top-level unitTestDetails vertical-block'>
 		<c:choose>
 			<c:when test="${empty results or empty results.submissionsMade or results.submissionsMade == 0}">
 					No attempts on record.

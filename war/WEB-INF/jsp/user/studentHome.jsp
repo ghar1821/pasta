@@ -285,6 +285,7 @@ either expressed or implied, of the PASTA Project.
 							$span.html(data);
 						} else {
 							$span.html("Refresh for results.");
+							refreshResults();
 							done = true;
 						}
 						if(!done) {
@@ -299,6 +300,16 @@ either expressed or implied, of the PASTA Project.
 					}
 				});
 			})();
+			function refreshResults() {
+				var container = $span.closest(".utr-top-level").parent();
+				var url = '../utResults/' + assessmentId + '/';
+				var data = {
+						summary: true,
+						separateGroup: true,
+						detailsLink: "../info/" + assessmentId + "/"
+				};
+				container.load(url, data);
+			}
 		});
 		
 		$(".editGroup").on('click', function() {

@@ -3,6 +3,8 @@
 	<excludes>
         <pattern>/api/*</pattern>
         <pattern>/assessments/release/*/load/</pattern>
+        <pattern>/utResults/*</pattern>
+        <pattern>/student/*/utResults/*</pattern>
     </excludes>
 	<decorator name="main" page="main.jsp">
 		<pattern>/*</pattern>

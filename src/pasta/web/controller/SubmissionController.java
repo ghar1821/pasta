@@ -403,6 +403,7 @@ public class SubmissionController {
 	@ResponseBody
 	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId, 
 			@PathVariable("studentUsername") String username) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser forUser = userManager.getUser(username);
 		if(forUser == null) {
 			return "error";
@@ -441,6 +442,42 @@ public class SubmissionController {
 			positions.replace(pos, pos+1, " and");
 			return "Your submissions are currently at positions " + positions.toString() + " in the testing queue.";
 		}
+	}
+	
+	@RequestMapping("utResults/{assessmentId}/") 
+	public String loadUtResults(Model model,
+			@ModelAttribute("user")PASTAUser user, 
+			@PathVariable("assessmentId") long assessmentId,
+			@RequestParam("detailsLink") String detailsLink,
+			@RequestParam("summary") boolean summary,
+			@RequestParam("separateGroup") boolean separateGroup) {
+		return doLoadUtResults(model, user, assessmentId, detailsLink, summary, separateGroup);
+	}
+	
+	@RequestMapping("student/{studentUsername}/utResults/{assessmentId}/") 
+	public String loadUtResults(Model model,
+			@PathVariable("assessmentId") long assessmentId, 
+			@PathVariable("studentUsername") String username,
+			@RequestParam("detailsLink") String detailsLink,
+			@RequestParam("summary") boolean summary,
+			@RequestParam("separateGroup") boolean separateGroup) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		PASTAUser forUser = userManager.getUser(username);
+		if(forUser == null) {
+			return "error";
+		}
+		return doLoadUtResults(model, forUser, assessmentId, detailsLink, summary, separateGroup);
+	}
+	
+	private String doLoadUtResults(Model model, PASTAUser forUser, long assessmentId, String detailsLink, boolean summary, boolean separateGroup) {
+		model.addAttribute("results", resultManager.getLatestResultIncludingGroup(forUser, assessmentId));
+		model.addAttribute("detailsLink", detailsLink);
+		model.addAttribute("summary", summary);
+		model.addAttribute("separateGroup", separateGroup);
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		Date extension = userManager.getExtension(forUser, assessment);
+		model.addAttribute("closedAssessment", assessment.isClosedFor(forUser, extension));
+		return "assessment/results/resultsPartial";
 	}
 
 	/**
