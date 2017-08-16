@@ -57,6 +57,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -692,7 +693,31 @@ public class PASTAUtil {
 	 * the @TestDescription annotations for those methods
 	 */
 	public static Map<String, String> extractTestDescriptions(File sourceCode) {
-		Map<String, String> results = new HashMap<>();
+		return extractMethodAnnotationValues("TestDescription", "value", Function.identity(), sourceCode);
+	}
+	
+	/**
+	 * Given a Java source code File, search for any methods with the given
+	 * annotation name, and extract the value of the given parameter for each
+	 * method.
+	 * 
+	 * @param annotation
+	 *            the annotation name; e.g. for @Test use "Test"
+	 * @param valueName
+	 *            the parameter name whose values you want to extract
+	 * @param converter
+	 *            a function to convert the parameter value from String to the
+	 *            target type
+	 * @param sourceCode
+	 *            the source file to extract from. If this is a directory, files
+	 *            will be scanned recursively to find annotations.
+	 * @return a map where the keys are method names (which were annotated with
+	 *         the given annotation) and the values are the corresponding
+	 *         parameter value for those annotations, or null if the annotation
+	 *         did not have a value for the parameter
+	 */
+	public static <R> Map<String, R> extractMethodAnnotationValues(String annotation, String valueName, Function<String, R> converter, File sourceCode) {
+		Map<String, R> results = new HashMap<>();
 		
 		if(sourceCode == null || !sourceCode.exists()) {
 			return results;
@@ -701,7 +726,7 @@ public class PASTAUtil {
 		// Scan recursively
 		if(sourceCode.isDirectory()) {
 			for(File child : sourceCode.listFiles()) {
-				results.putAll(extractTestDescriptions(child));
+				results.putAll(extractMethodAnnotationValues(annotation, valueName, converter, child));
 			}
 			return results;
 		} else if(!sourceCode.getName().endsWith(".java")) {
@@ -710,55 +735,117 @@ public class PASTAUtil {
 		
 		String contents = scrapeFile(sourceCode);
 		
-		Pattern annotationRegex = Pattern.compile("@\\s*TestDescription");
 		Pattern methodRegex = Pattern.compile("[^a-zA-Z0-9_]?([a-zA-Z0-9_]+)\\s*\\(");
 		
-		Matcher annotationMatcher = annotationRegex.matcher(contents);
-		StringBuilder tagValue;
-		while(annotationMatcher.find()) {
-			tagValue = new StringBuilder();
-			int index = annotationMatcher.end();
-			index = contents.indexOf('"', index) + 1;
-			char c;
-			while(index < contents.length() && (c = contents.charAt(index++)) != '"') {
-				if(c == '\\') {
-					c = contents.charAt(index++);
-					switch(c) {
-					case 'n': tagValue.append('\n'); break;
-					case 't': tagValue.append('\t'); break;
-					case '"': tagValue.append('"'); break;
-					case '\\': tagValue.append('\\'); break;
-					case '0': tagValue.append('\0'); break;
-					default: tagValue.append('\\').append(c);
-					}
-				} else {
-					tagValue.append(c);
-				}
-			}
-			if(index >= contents.length()) {
-				break;
-			}
-			String value = tagValue.toString();
-			
+		int index = 0;
+		while(index < contents.length()) {
 			int atIndex = contents.indexOf('@', index);
-			int bracketIndex = contents.indexOf('(', index);
-			while(atIndex >= 0 && bracketIndex > atIndex) {
-				index = atIndex + 1;
-				atIndex = contents.indexOf('@', index);
-				bracketIndex = contents.indexOf('(', index);
-			}
-			if(bracketIndex < 0) {
+			if(atIndex < 0) {
 				break;
 			}
 			
-			Matcher methodMatcher = methodRegex.matcher(contents.substring(index, bracketIndex+1));
-			if(methodMatcher.find()) {
+			int methodBracketIndex = contents.indexOf('(', index);
+			R annValue = null;
+			boolean hadAnnotation = false;
+			while(atIndex >= 0 && methodBracketIndex > atIndex) {
+				SourceAnnotation ann = extractAnnotation(contents, atIndex);
+				if(ann.name.equals(annotation)) {
+					hadAnnotation = true;
+					if(ann.bracketContent.get(valueName) != null) {
+						annValue = converter.apply(ann.bracketContent.get(valueName));
+					}
+				}
+				index = atIndex + ann.strLength;
+				atIndex = contents.indexOf('@', index);
+				methodBracketIndex = contents.indexOf('(', index);
+			}
+			if(methodBracketIndex < 0) {
+				break;
+			}
+			Matcher methodMatcher = methodRegex.matcher(contents.substring(0, methodBracketIndex+1));
+			if(methodMatcher.find(index)) {
 				String method = methodMatcher.group(1);
-				results.put(method, value);
+				if(hadAnnotation) {
+					results.put(method, annValue);
+				}
+				index = methodMatcher.end();
 			} else {
 				break;
 			}
 		}
 		return results;
+	}
+	
+	/**
+	 * Given a string and a positional index indicating the position of an '@'
+	 * character, get details about the following Java annotation
+	 */
+	private static SourceAnnotation extractAnnotation(String str, int atIndex) {
+		SourceAnnotation ann = new SourceAnnotation();
+		Pattern idPattern = Pattern.compile("[a-zA-Z0-9_]+");
+		int index = atIndex+1;
+		Matcher matcher = idPattern.matcher(str);
+		if(matcher.find(index)) {
+			index = matcher.end();
+		} else {
+			return ann;
+		}
+		ann.name = str.substring(atIndex+1, index);
+		ann.strLength = index - atIndex;
+		int bracketIndex = str.indexOf('(', index);
+		if(!str.substring(index, bracketIndex).trim().isEmpty()) {
+			return ann;
+		}
+		char c = 0;
+		StringBuilder bracketContent = new StringBuilder();
+		index = bracketIndex+1;
+		char prev = 0;
+		boolean inString = false;
+		while(index < str.length()) {
+			c = str.charAt(index++);
+			if(c == ')' && !inString) {
+				break;
+			} else if(c == '"' && !inString) {
+				inString = true;
+			} else if(c == '"' && inString && prev != '\\') {
+				inString = false;
+			}
+			if(c == ',' && !inString) {
+				ann.put(bracketContent.toString());
+				bracketContent = new StringBuilder();
+			} else {
+				bracketContent.append(c);
+			}
+			prev = c;
+		}
+		if(bracketContent.length() > 0) {
+			ann.put(bracketContent.toString());
+		}
+		ann.strLength = index - atIndex;
+		return ann;
+	}
+}
+
+class SourceAnnotation {
+	String name = "";
+	Map<String, String> bracketContent = new HashMap<String, String>();
+	int strLength = 0;
+	void put(String content) {
+		int eqIndex = content.indexOf('=');
+		int strIndex = content.indexOf('"');
+		String key = "value";
+		String value = content;
+		if(eqIndex >= 0 && (strIndex < 0 || eqIndex < strIndex)) {
+			key = content.substring(0, eqIndex).trim();
+			value = content.substring(eqIndex + 1);
+		}
+		value = value.trim();
+		if(value.startsWith("\"")) {
+			value = value.substring(1);
+		}
+		if(value.endsWith("\"")) {
+			value = value.substring(0, value.length()-1);
+		}
+		bracketContent.put(key, value);
 	}
 }
