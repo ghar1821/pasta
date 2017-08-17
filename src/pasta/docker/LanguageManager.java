@@ -29,7 +29,9 @@ public class LanguageManager {
 			String templateFile = properties.getProperty(id + ".build-template");
 			String dockerFile = properties.getProperty(id + ".docker-build");
 			String runnerClass = properties.getProperty(id + ".runner-class");
-			this.languages.put(id, new Language(id, name, extensions, templateFile, dockerFile, runnerClass));
+			String testCaseOverhead = properties.getProperty(id + ".test-case-overhead");
+			String testSuiteOverhead = properties.getProperty(id + ".test-suite-overhead");
+			this.languages.put(id, new Language(id, name, extensions, templateFile, dockerFile, runnerClass, testSuiteOverhead, testCaseOverhead));
 			logger.info("Registered language " + name);
 			this.properties = properties;
 		}

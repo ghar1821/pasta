@@ -77,7 +77,6 @@ import pasta.testing.ArenaCompetitionRunner;
 import pasta.testing.GenericScriptRunner;
 import pasta.testing.options.ScriptOptions;
 import pasta.testing.task.DirectoryCopyTask;
-import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
@@ -472,9 +471,7 @@ public class ExecutionManager {
 		logger.debug("Making directories to " + sandboxRoot);
 		sandboxRoot.mkdirs();
 		
-		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
-				+ job.getAssessmentId() + "/" + PASTAUtil.formatDate(job.getRunDate()) + "/submission";
-		File submissionLoc = new File(submissionHome);
+		File submissionLoc = job.getSubmissionRoot();
 		
 		Set<Long> validTestIds = new HashSet<>();
 		for(WeightedUnitTest weightedTest : assessment.getAllUnitTests()) {
@@ -633,7 +630,7 @@ public class ExecutionManager {
 		List<String> results = new LinkedList<String>();
 		int pos = 1;
 		for(AssessmentJob job : scheduler.getOutstandingAssessmentJobs()) {
-			String details = pos++ + ": " + job.toString() + (executor.isExecuting(job) ? " (Running)" : "");
+			String details = pos++ + ": " + job.toString();
 			results.add(details);
 		}
 		return results;

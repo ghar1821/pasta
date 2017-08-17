@@ -342,4 +342,19 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		}
 		return testDescriptions;
 	}
+	
+	public File getMainSourceFile() {
+		String mainClass = getMainClassName();
+		if(!hasCode() || mainClass == null || mainClass.isEmpty()) {
+			return null;
+		}
+		File base = getCodeLocation();
+		Map<File, String> fullNames = PASTAUtil.mapJavaFilesToQualifiedNames(base);
+		for(File file : fullNames.keySet()) {
+			if(fullNames.get(file).equals(mainClass)) {
+				return file;
+			}
+		}
+		return null;
+	}
 }

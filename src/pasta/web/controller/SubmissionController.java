@@ -54,6 +54,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewCompetitionForm;
@@ -68,6 +72,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.scheduler.AssessmentJob;
+import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
@@ -418,30 +423,30 @@ public class SubmissionController {
 		}
 		PASTAGroup userGroup = groupManager.getGroup(forUser, assessmentId);
 		
-		StringBuilder positions = new StringBuilder();
-		int subCount = 0;
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode result = mapper.createObjectNode();
+		
+		long totalTime = 0;
+		ArrayNode positions = mapper.createArrayNode();
 		for(int i = 0; i < jobs.size(); i++) {
 			AssessmentJob job = jobs.get(i);
+			if(i == 0) {
+				result.put("current", job.getId());
+			}
+			totalTime += ExecutionEstimator.estimateTime(job);
 			if(job.getAssessmentId() == assessmentId
 					&& (job.getUser().equals(forUser) ||
 							(userGroup != null && job.getUser().equals(userGroup)))) {
-				if(subCount > 0) {
-					positions.append(", ");
-				}
-				positions.append(i+1);
-				subCount++;
+				ObjectNode positionNode = mapper.createObjectNode();
+				positionNode.put("position", i+1);
+				positionNode.put("estimatedComplete", totalTime);
+				positionNode.put("running", job.isRunning());
+				positions.add(positionNode);
 			}
 		}
 		
-		if(subCount == 0) {
-			return "";
-		} else if(subCount == 1) {
-			return "Your submission is currently at position " + positions.toString() + " in the testing queue.";
-		} else {
-			int pos = positions.lastIndexOf(",");
-			positions.replace(pos, pos+1, " and");
-			return "Your submissions are currently at positions " + positions.toString() + " in the testing queue.";
-		}
+		result.set("positions", positions);
+		return result.toString();
 	}
 	
 	@RequestMapping("utResults/{assessmentId}/") 

@@ -918,3 +918,37 @@ thead.rotate > tr > th > div > span {
 	font-weight: bold;
 	color: red;
 }
+
+.submission-progress {
+	padding: 1em;
+}
+.closedAssessment .submission-progress {
+	background-color: white;
+	border: 1px solid gray;
+	border-radius: 4px;
+}
+.submission-progress .smooth-progress {
+	transition: width 1s linear;
+}
+.submission-progress .position {
+	margin-bottom: 0.5em;
+}
+.submission-progress .position:last-child {
+	margin-bottom: 1em;
+}
+.submission-progress .position-detail {
+	display: inline-block;
+}
+.submission-progress .position-detail + .position-detail {
+	margin-left: 1em;
+}
+.submission-progress .time-label {
+	right-left: 2em;
+}
+.submission-progress .label {
+	font-weight: bold;
+	margin-right: 0.5em;
+}
+.submission-progress .running {
+	color: green;
+}

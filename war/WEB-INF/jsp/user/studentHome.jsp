@@ -276,15 +276,17 @@ either expressed or implied, of the PASTA Project.
 			(function checkQueue(timeout) {
 				$.ajax({
 					url : '../checkJobQueue/' + assessmentId + '/',
+					dataType: 'json',
 					success : function(data) {
 						var done = false;
 						if (data == "error") {
 							$span.html("There was an error while running your submission.");
 							done = true;
 						} else if(data) {
-							$span.html(data);
+							updateProgress($span, data);
 						} else {
 							$span.html("Refresh for results.");
+							updateProgress($span, null);
 							refreshResults();
 							done = true;
 						}
@@ -292,7 +294,7 @@ either expressed or implied, of the PASTA Project.
 							if(!timeout) {
 								timeout = 0;
 							}
-							timeout += 3000;
+							timeout += 2000;
 							setTimeout(function() {
 								checkQueue(timeout);
 							}, timeout);
@@ -319,6 +321,99 @@ either expressed or implied, of the PASTA Project.
 				});
 			}
 		});
+		
+		function updateProgress(containers, data) {
+			containers.each(function(index, container) {
+				container = $(container).closest(".utr-top-level");
+				var progressContainer = container.children(".submission-progress");
+				if(data && data.positions) {
+					var info = data.positions[data.positions.length-1];
+					if(!progressContainer.length) {
+						container.children().hide();
+						progressContainer = $("<div/>").addClass("submission-progress");
+						progressContainer.appendTo(container);
+						
+						$("<div/>").addClass("progress-info").appendTo(progressContainer);
+						
+						var pb = $("<div/>")
+							.addClass("progressbar")
+							.appendTo(progressContainer)
+							.progressbar({
+								max: info.estimatedComplete,
+								value: info.estimatedComplete,
+							});
+						pb.find(".ui-progressbar-value").addClass("smooth-progress");
+						(function decrease() {
+							var progressBar = progressContainer.find(".progressbar");
+							if(progressBar.length) {
+								var value = progressBar.progressbar("option", "value");
+								if(value > 0) {
+									progressBar.progressbar("option", "value", Math.max(0, value - 1000));
+								}
+							}
+							container.data("timer", window.setTimeout(decrease, 1000));
+							progressContainer.find(".time-value").each(function(i, tv) {
+								var newVal = $(tv).data("time") - 1000;
+								$(tv).data("time", newVal);
+								$(tv).text(formatTime(newVal));
+							});
+						})();
+					}
+					var progressBar = progressContainer.find(".progressbar");
+					if(container.data("current") != data.current) {
+						var pInfo = progressContainer.find(".progress-info");
+						pInfo.empty();
+						$.each(data.positions, function(i, position) {
+							$("<div/>")
+								.addClass("position")
+								.append($("<div/>").addClass("position-detail")
+									.append($("<span/>")
+											.addClass("label position-label")
+											.text("Queue position:"))
+									.append($("<span/>")
+											.addClass("value position-value" + (position.running ? " running" : ""))
+											.text(position.position + (position.running ? " (running)" : ""))))
+								.append($("<div/>").addClass("position-detail")
+									.append($("<span/>")
+											.addClass("label time-label")
+											.text("Estimated time remaining:"))
+									.append($("<span/>")
+											.addClass("value time-value")
+											.data("time", position.estimatedComplete)
+											.text(formatTime(position.estimatedComplete))))
+								.appendTo(pInfo)
+						});
+						container.data("current", data.current);
+						progressBar.progressbar("option", "value", info.estimatedComplete);
+					}
+				} else {
+					var timer = container.data("timer");
+					if(timer) {
+						window.clearTimeout(timer);
+					}
+					progressContainer.remove();
+					container.children().show();
+				}
+			});
+		}
+		
+		function formatTime(ms) {
+			var d = Math.ceil(Number(ms) / 1000);
+		    var h = Math.floor(d / 3600);
+		    var m = Math.floor(d % 3600 / 60);
+		    var s = Math.floor(d % 3600 % 60);
+		    var r = "";
+		    if(h > 0) {
+		    	r += h + " hour" + (h > 1 ? "s" : "");
+		    }
+		    if(m > 0) {
+		    	r += (r ? ", " : "") + m + " minute" + (m > 1 ? "s" : "");
+		    }
+		    if(s > 0) {
+		    	r += (r ? ", " : "") + s + " second" + (s > 1 ? "s" : "");
+		    }
+		    return r;
+		}
 		
 		$(".editGroup").on('click', function() {
 			location.href = '../groups/' + $(this).attr('assessment') + '/';

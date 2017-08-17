@@ -59,6 +59,8 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 		super.beforeExecute(t, r);
 		AssessmentJobTask task = (AssessmentJobTask) r;
 		executingIds.add(task.job.getId());
+		task.job.setRunning(true);
+		scheduler.update(task.job);
 		logger.debug("Starting execution of " + r.toString());
 	}
 	
@@ -76,6 +78,8 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 		} catch(Exception e) {
 			logger.error("Unable to update results from assessment job #" + task.job.getId(), e);
 		}
+		task.job.setRunning(false);
+		scheduler.update(task.job);
 		processingIds.remove(task.job.getId());
 		executingIds.remove(task.job.getId());
 		scheduler.delete(task.job);

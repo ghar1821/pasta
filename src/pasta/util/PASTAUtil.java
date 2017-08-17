@@ -697,6 +697,20 @@ public class PASTAUtil {
 	}
 	
 	/**
+	 * Scan a Java source code file for @Test annotations and get timeouts.
+	 * 
+	 * If the input file is a directory, recursively scan the directory for 
+	 * java source files with @Test annotations.
+	 * 
+	 * @param sourceCode the file that contains the annotations
+	 * @return a map where keys are test method names and values are the timeout of 
+	 * the @Test annotations for those methods (or <code>null</code> if no timeout is found)
+	 */
+	public static Map<String, Long> extractTestTimeouts(File sourceCode) {
+		return extractMethodAnnotationValues("Test", "timeout", Long::parseLong, sourceCode);
+	}
+	
+	/**
 	 * Given a Java source code File, search for any methods with the given
 	 * annotation name, and extract the value of the given parameter for each
 	 * method.

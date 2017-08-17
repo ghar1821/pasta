@@ -29,13 +29,16 @@ public class Language implements UserType, Comparable<Language> {
 	private File dockerFile;
 	private Class<? extends BlackBoxTestRunner> runnerClass;
 	
+	private long testCaseExecutionOverhead;
+	private long testSuiteExecutionOverhead;
+	
 	private DockerBuildFile dockerBuildFile;
 	
 	//For Hibernate
 	public Language() {}
 	
 	@SuppressWarnings("unchecked")
-	public Language(String id, String name, String extensions, String templateFile, String dockerFile, String runnerClass) {
+	public Language(String id, String name, String extensions, String templateFile, String dockerFile, String runnerClass, String testSuiteOverhead, String testCaseOverhead) {
 		this.id = id;
 		this.name = name;
 		this.extensions = Arrays.asList(extensions.split(","));
@@ -54,6 +57,20 @@ public class Language implements UserType, Comparable<Language> {
 			this.runnerClass = (Class<? extends BlackBoxTestRunner>) Class.forName(runnerClass);
 		} catch (ClassNotFoundException e) {
 			logger.error("Class not found: " + runnerClass + " for " + name, e);
+		}
+		if(testSuiteOverhead != null && !testSuiteOverhead.isEmpty()) {
+			try {
+				this.testSuiteExecutionOverhead = Long.parseLong(testSuiteOverhead);
+			} catch(NumberFormatException e) {
+				logger.warn("\"" + testSuiteOverhead + "\" is not a valid value for test-suite-overhead. Must be a whole number (in milliseconds)");
+			}
+		}
+		if(testCaseOverhead != null && !testCaseOverhead.isEmpty()) {
+			try {
+				this.testCaseExecutionOverhead = Long.parseLong(testCaseOverhead);
+			} catch(NumberFormatException e) {
+				logger.warn("\"" + testCaseOverhead + "\" is not a valid value for test-case-overhead. Must be a whole number (in milliseconds)");
+			}
 		}
 	}
 
@@ -83,7 +100,13 @@ public class Language implements UserType, Comparable<Language> {
 		}
 		return null;
 	}
-	
+	public long getTestCaseExecutionOverhead() {
+		return testCaseExecutionOverhead;
+	}
+	public long getTestSuiteExecutionOverhead() {
+		return testSuiteExecutionOverhead;
+	}
+
 	public String getImageName() {
 		return dockerBuildFile.getTag();
 	}
