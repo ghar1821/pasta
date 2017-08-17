@@ -6,12 +6,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -19,6 +24,8 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
@@ -36,6 +43,8 @@ import pasta.util.PASTAUtil;
 import pasta.util.WhichProgram;
 import pasta.util.io.DualByteArrayOutputStream;
 
+@Service("dockerManager")
+@DependsOn("languageManager")
 public class DockerManager {
 	
 	protected static Logger logger = Logger.getLogger(DockerManager.class);
@@ -46,10 +55,13 @@ public class DockerManager {
 	public static final String PASTA_LIB = "/pasta/lib";
 	public static final String WORK_DIR = "/sandbox";
 	
+	private Object removeLock = new Object();
+	private Set<String> deleteLater;
+	
 	private static DockerManager instance;
 	public static DockerManager instance() {
 		if(instance == null) {
-			instance = new DockerManager();
+			return new DockerManager();
 		}
 		return instance;
 	}
@@ -66,6 +78,8 @@ public class DockerManager {
 				.build();
 		
 		initialiseImages();
+		deleteLater = new LinkedHashSet<>();
+		instance = this;
 	}
 	
 	private void initialiseImages() {
@@ -117,8 +131,34 @@ public class DockerManager {
 	}
 	
 	public void removeContainer(String id) {
-		dockerClient.stopContainerCmd(id).exec();
-		dockerClient.removeContainerCmd(id).exec();
+		try {
+			try { // Container should exist
+				dockerClient.inspectContainerCmd(id).exec();
+			} catch(NotFoundException e) { return; }
+			dockerClient.stopContainerCmd(id).exec();
+			dockerClient.removeContainerCmd(id).exec();
+			try { // Container should not exist
+				dockerClient.inspectContainerCmd(id).exec();
+				throw new DockerException("Should have removed container", 400);
+			} catch(NotFoundException e) {}
+		} catch(DockerException e) {
+			synchronized (removeLock) {
+				deleteLater.add(id);
+			}
+		}
+	}
+	
+	@Scheduled(fixedDelay = 30000)
+	public void clearBrokenContainers() {
+		Set<String> ids;
+		synchronized (removeLock) {
+			ids = new LinkedHashSet<>(deleteLater);
+			deleteLater = new LinkedHashSet<>();
+		}
+		for(String id : ids) {
+			logger.info("Attempting to re-remove container " + id);
+			removeContainer(id);
+		}
 	}
 	
 	private void installImage(DockerBuildFile buildFile) {
