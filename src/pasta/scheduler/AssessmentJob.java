@@ -29,6 +29,7 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.scheduler;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -37,10 +38,16 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import pasta.docker.Language;
+import pasta.docker.LanguageManager;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
+import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 
 /**
  * Class that holds the details of jobs.
@@ -88,6 +95,11 @@ public class AssessmentJob extends Job implements Serializable{
 	@JoinColumn (name = "assessment_result_id")
 	private AssessmentResult results;
 	
+	private boolean running;
+	
+	@Transient
+	private Language language;
+	
 	public AssessmentJob(){}
 	
 	public AssessmentJob(PASTAUser user, long assessmentId, Date runDate, AssessmentResult result){
@@ -95,6 +107,7 @@ public class AssessmentJob extends Job implements Serializable{
 		this.user = user;
 		this.assessmentId = assessmentId;
 		this.results = result;
+		this.running = false;
 	}
 
 	public PASTAUser getUser() {
@@ -118,11 +131,34 @@ public class AssessmentJob extends Job implements Serializable{
 		this.results = results;
 	}
 	
+	public boolean isRunning() {
+		return running;
+	}
+	public void setRunning(boolean running) {
+		this.running = running;
+	}
+	
+	public Language getLanguage() {
+		if(language != null) {
+			return language;
+		}
+		Assessment assessment = results.getAssessment();
+		language = LanguageManager.getInstance().guessLanguage(assessment.getSolutionName(), "", getSubmissionRoot());
+		return language;
+	}
+	
+	public File getSubmissionRoot() {
+		String submissionHome = ProjectProperties.getInstance().getSubmissionsLocation() + user.getUsername() + "/assessments/"
+				+ getAssessmentId() + "/" + PASTAUtil.formatDate(getRunDate()) + "/submission";
+		return new File(submissionHome);
+	}
+
 	@Override
 	public String toString() {
 		return "Assessment " + assessmentId + 
 				" job for " + user.getUsername() + 
 				" submitted at " + results.getSubmissionDate() + 
-				" by " + results.getSubmittedBy().getUsername(); 
+				" by " + results.getSubmittedBy().getUsername() +
+				(running ? " (running)" : ""); 
 	}
 }

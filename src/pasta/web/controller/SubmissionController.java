@@ -54,6 +54,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewCompetitionForm;
@@ -68,6 +72,7 @@ import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.scheduler.AssessmentJob;
+import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
@@ -403,6 +408,7 @@ public class SubmissionController {
 	@ResponseBody
 	public String checkJobQueue(@PathVariable("assessmentId") long assessmentId, 
 			@PathVariable("studentUsername") String username) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		PASTAUser forUser = userManager.getUser(username);
 		if(forUser == null) {
 			return "error";
@@ -417,30 +423,100 @@ public class SubmissionController {
 		}
 		PASTAGroup userGroup = groupManager.getGroup(forUser, assessmentId);
 		
-		StringBuilder positions = new StringBuilder();
-		int subCount = 0;
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode result = mapper.createObjectNode();
+		
+		long totalTime = 0;
+		ArrayNode positions = mapper.createArrayNode();
 		for(int i = 0; i < jobs.size(); i++) {
 			AssessmentJob job = jobs.get(i);
+			if(i == 0) {
+				result.put("current", job.getId());
+			}
+			totalTime += ExecutionEstimator.estimateTime(job);
 			if(job.getAssessmentId() == assessmentId
 					&& (job.getUser().equals(forUser) ||
 							(userGroup != null && job.getUser().equals(userGroup)))) {
-				if(subCount > 0) {
-					positions.append(", ");
-				}
-				positions.append(i+1);
-				subCount++;
+				ObjectNode positionNode = mapper.createObjectNode();
+				positionNode.put("position", i+1);
+				positionNode.put("estimatedComplete", totalTime);
+				positionNode.put("running", job.isRunning());
+				positions.add(positionNode);
 			}
 		}
 		
-		if(subCount == 0) {
-			return "";
-		} else if(subCount == 1) {
-			return "Your submission is currently at position " + positions.toString() + " in the testing queue.";
-		} else {
-			int pos = positions.lastIndexOf(",");
-			positions.replace(pos, pos+1, " and");
-			return "Your submissions are currently at positions " + positions.toString() + " in the testing queue.";
+		result.set("positions", positions);
+		return result.toString();
+	}
+	
+	@RequestMapping("utResults/{assessmentId}/") 
+	public String loadUtResults(Model model,
+			@ModelAttribute("user")PASTAUser user, 
+			@PathVariable("assessmentId") long assessmentId,
+			@RequestParam("detailsLink") String detailsLink,
+			@RequestParam("summary") boolean summary,
+			@RequestParam("separateGroup") boolean separateGroup) {
+		return doLoadUtResults(model, user, assessmentId, detailsLink, summary, separateGroup);
+	}
+	
+	@RequestMapping("student/{studentUsername}/utResults/{assessmentId}/") 
+	public String loadUtResults(Model model,
+			@PathVariable("assessmentId") long assessmentId, 
+			@PathVariable("studentUsername") String username,
+			@RequestParam("detailsLink") String detailsLink,
+			@RequestParam("summary") boolean summary,
+			@RequestParam("separateGroup") boolean separateGroup) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		PASTAUser forUser = userManager.getUser(username);
+		if(forUser == null) {
+			return "error";
 		}
+		return doLoadUtResults(model, forUser, assessmentId, detailsLink, summary, separateGroup);
+	}
+	
+	private String doLoadUtResults(Model model, PASTAUser forUser, long assessmentId, String detailsLink, boolean summary, boolean separateGroup) {
+		model.addAttribute("results", resultManager.getLatestResultIncludingGroup(forUser, assessmentId));
+		model.addAttribute("detailsLink", detailsLink);
+		model.addAttribute("summary", summary);
+		model.addAttribute("separateGroup", separateGroup);
+		Assessment assessment = assessmentManager.getAssessment(assessmentId);
+		Date extension = userManager.getExtension(forUser, assessment);
+		model.addAttribute("closedAssessment", assessment.isClosedFor(forUser, extension));
+		return "assessment/results/resultsPartial";
+	}
+	
+	@RequestMapping("latestMark/{assessmentId}/") 
+	@ResponseBody
+	public String checkLatestMark(@ModelAttribute("user")PASTAUser user, @PathVariable("assessmentId") long assessmentId) {
+		return getLatestMark(user, assessmentId, !user.isTutor());
+	}
+	
+	@RequestMapping("student/{studentUsername}/latestMark/{assessmentId}/") 
+	@ResponseBody
+	public String checkLatestMark(@PathVariable("assessmentId") long assessmentId, 
+			@PathVariable("studentUsername") String username) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		PASTAUser forUser = userManager.getUser(username);
+		if(forUser == null) {
+			return "error";
+		}
+		return getLatestMark(forUser, assessmentId, true);
+	}
+	
+	private String getLatestMark(PASTAUser user, long assessmentId, boolean hide) {
+		AssessmentResult results = resultManager.getLatestResultIncludingGroup(user, assessmentId);
+		if(results == null) {
+			return "0";
+		}
+		if(hide && (!results.isFinishedHandMarking() || 
+				(results.getAssessment().isClosed() && !results.getAssessment().getSecretUnitTests().isEmpty()))) {
+			return "???";
+		}
+		double marks = results.getMarks();
+		if(marks % 1 == 0) {
+			return String.valueOf((int)marks);
+		}
+		return String.valueOf(Math.round(results.getMarks() * 1000.0) / 1000.0);
 	}
 
 	/**
