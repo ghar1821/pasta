@@ -309,6 +309,14 @@ either expressed or implied, of the PASTA Project.
 						detailsLink: "../info/" + assessmentId + "/"
 				};
 				container.load(url, data);
+				$.ajax({
+					url: '../latestMark/' + assessmentId + '/',
+					success: function(response) {
+						if(response && response != "error") {
+							$span.closest(".assessment-box").find(".mark-numerator").text(response);
+						}
+					}
+				});
 			}
 		});
 		

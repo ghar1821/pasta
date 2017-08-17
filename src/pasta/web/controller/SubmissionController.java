@@ -479,6 +479,40 @@ public class SubmissionController {
 		model.addAttribute("closedAssessment", assessment.isClosedFor(forUser, extension));
 		return "assessment/results/resultsPartial";
 	}
+	
+	@RequestMapping("latestMark/{assessmentId}/") 
+	@ResponseBody
+	public String checkLatestMark(@ModelAttribute("user")PASTAUser user, @PathVariable("assessmentId") long assessmentId) {
+		return getLatestMark(user, assessmentId, !user.isTutor());
+	}
+	
+	@RequestMapping("student/{studentUsername}/latestMark/{assessmentId}/") 
+	@ResponseBody
+	public String checkLatestMark(@PathVariable("assessmentId") long assessmentId, 
+			@PathVariable("studentUsername") String username) {
+		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		PASTAUser forUser = userManager.getUser(username);
+		if(forUser == null) {
+			return "error";
+		}
+		return getLatestMark(forUser, assessmentId, true);
+	}
+	
+	private String getLatestMark(PASTAUser user, long assessmentId, boolean hide) {
+		AssessmentResult results = resultManager.getLatestResultIncludingGroup(user, assessmentId);
+		if(results == null) {
+			return "0";
+		}
+		if(hide && (!results.isFinishedHandMarking() || 
+				(results.getAssessment().isClosed() && !results.getAssessment().getSecretUnitTests().isEmpty()))) {
+			return "???";
+		}
+		double marks = results.getMarks();
+		if(marks % 1 == 0) {
+			return String.valueOf((int)marks);
+		}
+		return String.valueOf(Math.round(results.getMarks() * 1000.0) / 1000.0);
+	}
 
 	/**
 	 * $PASTAUrl$/info/{assessmentId}/
