@@ -172,6 +172,7 @@
     <context:component-scan base-package="pasta.scheduler" />
     <context:component-scan base-package="pasta.domain" />
     <context:component-scan base-package="pasta.util" />
+    <context:component-scan base-package="pasta.docker" />
     
 	<task:annotation-driven />
 </beans>

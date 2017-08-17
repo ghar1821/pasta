@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import pasta.util.PASTAUtil;
 
+@Service("languageManager")
 public class LanguageManager {
 	protected static Logger logger = Logger.getLogger(LanguageManager.class);
 	private static LanguageManager instance;
