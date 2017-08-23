@@ -71,7 +71,7 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 	private static final long serialVersionUID = -2181570522930825901L;
 
 	@Id @GeneratedValue
-	private long id;
+	private Long id;
 	
 	@ElementCollection (fetch=FetchType.EAGER)
     @MapKeyColumn(name="row_id")
@@ -86,11 +86,11 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
     @JoinColumn (name = "weighted_hand_marking_id")
 	private WeightedHandMarking weightedHandMarking;
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

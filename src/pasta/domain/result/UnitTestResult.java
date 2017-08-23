@@ -79,7 +79,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 
 	@Id @GeneratedValue
 	@Column (name = "id")
-	private long id;
+	private Long id;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn (name = "unit_test_id")
@@ -128,10 +128,10 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Size (max = RUNTIME_OUTPUT_MAX_LENGTH)
 	private String fullOutput;
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

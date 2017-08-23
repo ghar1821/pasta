@@ -23,7 +23,7 @@ public class HandMarkingDAO {
 	private SessionFactory sessionFactory;
 	
 	public void saveOrUpdate(HandMarking template) {
-		long id = template.getId();
+		Long id = template.getId();
 		sessionFactory.getCurrentSession().saveOrUpdate(template);
 		logger.info((id == template.getId() ? "Updated" : "Created") +
 				" hand marking template " + template.getName());

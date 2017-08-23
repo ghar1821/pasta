@@ -1,12 +1,14 @@
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 
 /**
  * @author Joshua Stretton
@@ -15,12 +17,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table (name = "black_box_test_cases")
-public class BlackBoxTestCase implements Serializable {
+public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
 	private static final long serialVersionUID = -4974380327385340788L;
 	public static final String validNameRegex = "[a-zA-Z][a-zA-Z0-9_]*";
 
 	@Id @GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column(name = "test_name")
 	private String testName;
@@ -42,10 +44,10 @@ public class BlackBoxTestCase implements Serializable {
 	
 	private int timeout;
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -105,7 +107,7 @@ public class BlackBoxTestCase implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 	@Override
@@ -117,7 +119,10 @@ public class BlackBoxTestCase implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		BlackBoxTestCase other = (BlackBoxTestCase) obj;
-		if (id == 0 || id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
 	}
@@ -135,7 +140,10 @@ public class BlackBoxTestCase implements Serializable {
 				return false;
 		} else if (!commandLine.equals(other.commandLine))
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (input == null) {
 			if (other.input != null)
@@ -169,4 +177,15 @@ public class BlackBoxTestCase implements Serializable {
 				+ input + ", output=" + output + ", description=" + description + ", timeout=" + timeout + "]";
 	}
 	
+	@Override
+	public BlackBoxTestCase rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		BlackBoxTestCase clone = new BlackBoxTestCase();
+		clone.setCommandLine(this.getCommandLine());
+		clone.setInput(this.getInput());
+		clone.setOutput(this.getOutput());
+		clone.setTestName(this.getTestName());
+		clone.setTimeout(this.getTimeout());
+		clone.setToBeCompared(this.isToBeCompared());
+		return clone;
+	}
 }

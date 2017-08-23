@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import java.io.File;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,6 +60,9 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
 import pasta.domain.release.ReleaseRule;
@@ -123,18 +125,18 @@ import pasta.util.ProjectProperties;
  */
 @Entity
 @Table (name = "assessments")
-public class Assessment implements Serializable, Comparable<Assessment>{
+public class Assessment implements Comparable<Assessment>, Archivable<Assessment> {
 
 	private static final long serialVersionUID = -387829953944113890L;
 
 	public static final String TUTOR_CATEGORY_PREFIX = "*";
 
 	@Transient
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected transient final Log logger = LogFactory.getLog(getClass());
 	
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	private String name;
 	private double marks;
@@ -194,10 +196,10 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@Column (name="custom_validator_name")
 	private String customValidatorName;
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	
@@ -684,7 +686,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 	@Override
@@ -696,9 +698,48 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		if (getClass() != obj.getClass())
 			return false;
 		Assessment other = (Assessment) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public Assessment rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		Assessment clone = new Assessment();
+		options.setParentAssessment(clone);
+		
+		clone.setCategory(this.getCategory());
+		clone.setCountUncompilable(this.isCountUncompilable());
+		clone.setCustomValidatorName(this.getCustomValidatorName());
+		clone.setDescription(this.getDescription());
+		clone.setDueDate(this.getDueDate() == null ? null : (Date) this.getDueDate().clone());
+		clone.setGroupCount(this.getGroupCount());
+		clone.setGroupLockDate(this.getGroupLockDate() == null ? null : (Date) this.getGroupLockDate().clone());
+		clone.setGroupSize(this.getGroupSize());
+		LinkedList<WeightedHandMarking> newHandMarking = new LinkedList<>();
+		for(WeightedHandMarking hm : this.getHandMarking()) {
+			newHandMarking.add(hm.rebuild(options));
+		}
+		clone.setHandMarking(newHandMarking);
+		clone.setLateDate(this.getLateDate() == null ? null : (Date) this.getLateDate().clone());
+		clone.setMarks(this.getMarks());
+		clone.setName(this.getName());
+		clone.setNumSubmissionsAllowed(this.getNumSubmissionsAllowed());
+		clone.setReleaseRule(this.getReleaseRule() == null ? null : this.getReleaseRule().rebuild(options));
+		clone.setSolutionName(this.getSolutionName());
+		clone.setStudentsManageGroups(this.isStudentsManageGroups());
+		clone.setSubmissionLanguages(new TreeSet<Language>(this.getSubmissionLanguages()));
+		LinkedList<WeightedUnitTest> newUnitTests = new LinkedList<>();
+		for(WeightedUnitTest ut : this.getAllUnitTests()) {
+			newUnitTests.add(ut.rebuild(options));
+		}
+		clone.setUnitTests(newUnitTests);
+		
+		options.setParentAssessment(null);
+		return clone;
 	}
 	
 	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)

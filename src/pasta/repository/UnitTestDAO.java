@@ -32,6 +32,13 @@ public class UnitTestDAO {
 		logger.info("Updated unit test " + test.getName());
 	}
 	
+	public void saveOrUpdate(UnitTest test) {
+		Long id = test.getId();
+		sessionFactory.getCurrentSession().saveOrUpdate(test);
+		logger.info((id == test.getId() ? "Updated" : "Created") +
+				" unit test " + test.getName());
+	}
+	
 	public void delete(UnitTest test) {
 		sessionFactory.getCurrentSession().delete(test);
 		logger.info("Deleted unit test " + test.getName());

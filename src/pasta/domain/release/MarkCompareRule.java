@@ -8,6 +8,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.user.PASTAUser;
 
@@ -139,5 +141,16 @@ public class MarkCompareRule extends ReleaseResultsRule implements Serializable 
 			.append(getCompareAssessment() == null ? "null" : getCompareAssessment().getName())
 			.append(" is ").append(compareMode).append(' ').append(compareMark).append(asPercentage ? "%" : "");
 		return sb.toString();
+	}
+
+	@Override
+	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		if(options.getParentAssessment() == null) {
+			throw new InvalidRebuildOptionsException("Cannot rebuild a 'mark compare' rule without an assessment");
+		}
+		MarkCompareRule clone = new MarkCompareRule(this.getCompareMark(), 
+				this.getCompareMode(), this.getMarkType(), this.isAsPercentage());
+		clone.setCompareAssessment(options.getParentAssessment());
+		return clone;
 	}
 }

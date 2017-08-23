@@ -29,8 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +37,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 
 /**
  * Container class for a weighted unit test.
@@ -57,13 +59,13 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name = "weighted_unit_tests")
-public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTest> {
+public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivable<WeightedUnitTest> {
 	
 	private static final long serialVersionUID = 2594905907808283182L;
 
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	private double weight;
 	
@@ -72,7 +74,7 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	@Column(name= "group_work")
 	private boolean groupWork;
 	
-	@ManyToOne
+	@ManyToOne (cascade = CascadeType.ALL)
 	@JoinColumn(name = "unit_test_id")
 	private UnitTest test;
 	
@@ -85,10 +87,10 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		setGroupWork(false);
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	
@@ -155,6 +157,12 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		if(diff != 0) {
 			return diff;
 		}
+		if(this.id == null) {
+			return other.id == null ? 0 : -1;
+		}
+		if(other.id == null) {
+			return 1;
+		}
 		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
 	
@@ -162,13 +170,13 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	public String toString() {
 		return  "{ID:" + this.getId() + " for " + (this.test == null ? "null" : this.test.getId()) + (secret ? " (secret)" : "") + "}";
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (secret ? 1231 : 1237);
 		result = prime * result + ((test == null) ? 0 : test.hashCode());
 		long temp;
@@ -187,7 +195,10 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		WeightedUnitTest other = (WeightedUnitTest) obj;
 		if (groupWork != other.groupWork)
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (secret != other.secret)
 			return false;
@@ -199,5 +210,19 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
 			return false;
 		return true;
+	}
+
+	@Override
+	public WeightedUnitTest rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		if(options.getParentAssessment() == null) {
+			throw new InvalidRebuildOptionsException("Cannot rebuild a weighted unit test without an assessment");
+		}
+		WeightedUnitTest clone = new WeightedUnitTest();
+		clone.setAssessment(options.getParentAssessment());
+		clone.setGroupWork(this.isGroupWork());
+		clone.setSecret(this.isSecret());
+		clone.setTest(this.getTest() == null ? null : this.getTest().rebuild(options));
+		clone.setWeight(this.getWeight());
+		return clone;
 	}
 }

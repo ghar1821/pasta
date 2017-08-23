@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -77,5 +79,10 @@ public class ClassRule extends ReleaseRule implements Serializable {
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release to classes ").append(classes.toString());
 		return sb.toString();
+	}
+	
+	@Override
+	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		return new ClassRule((String[]) this.getClasses().toArray());
 	}
 }

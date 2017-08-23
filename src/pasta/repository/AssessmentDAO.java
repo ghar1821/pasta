@@ -40,6 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
+import org.hibernate.internal.util.SerializationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
@@ -219,10 +220,76 @@ public class AssessmentDAO {
 	}
 	
 	public void saveOrUpdate(Assessment assessment) {
-		long id = assessment.getId();
+		Long id = assessment.getId();
 		sessionFactory.getCurrentSession().saveOrUpdate(assessment);
 		logger.info((id == assessment.getId() ? "Updated" : "Created") +
 				" assessment " + assessment.getName());
+	}
+	
+	public void deepSaveOrUpdate(Assessment assessment) {
+		ProjectProperties properties = ProjectProperties.getInstance();
+		
+		HandMarkingDAO handMarkingDAO = properties.getHandMarkingDAO();
+		for(WeightedHandMarking hm : assessment.getHandMarking()) {
+			if(hm.getHandMarking() != null) {
+				handMarkingDAO.saveOrUpdate(hm.getHandMarking());
+			}
+		}
+		
+		UnitTestDAO unitTestDAO = properties.getUnitTestDAO();
+		for(WeightedUnitTest ut : assessment.getAllUnitTests()) {
+			if(ut.getTest() != null) {
+				unitTestDAO.saveOrUpdate(ut.getTest());
+			}
+		}
+		
+		saveOrUpdate(assessment);
+	}
+	
+	private String ts(Object o) {
+		return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+	}
+	
+	public void saveArchivedItem(Assessment assessment) {
+		
+//		UnitTest ut = assessment.getAllUnitTests().iterator().next().getTest();
+//		UnitTest clone = (UnitTest) SerializationHelper.clone(ut);
+//		clone.setId(null);
+//		clone.getBlackBoxOptions().setId(null);
+//		for(BlackBoxTestCase tc : clone.getTestCases()) {
+//			tc.setId(null);
+//		}
+//		clone.setName(clone.getName() + " (copy)");
+//		sessionFactory.getCurrentSession().persist(clone);
+		
+		
+		Assessment clone = (Assessment) SerializationHelper.clone(assessment);
+		clone.setName(clone.getName() + " (copy)");
+		clone.setId(null);
+		
+//		clone.setUnitTests(new LinkedList<WeightedUnitTest>());
+//		clone.setHandMarking(new LinkedList<WeightedHandMarking>());
+//		sessionFactory.getCurrentSession().evict(clone);
+//		logger.info("cache mode:" + sessionFactory.getCurrentSession().getIdentifier(clone));
+		
+		logger.info("Saving new archive assessment with ID " + clone.getId());
+		logger.info("Assessment to be saved: " + ts(clone));
+		logger.info("Assessment unit tests to be saved: " + clone.getAllUnitTests().size());
+		Set<WeightedUnitTest> allUnitTests = clone.getAllUnitTests();
+		for(WeightedUnitTest comp : allUnitTests) {
+			comp.setId(null);
+			logger.info("Unit test " + comp.getId() + " assessment to be saved: " + ts(comp.getAssessment()));
+		}
+		clone.setUnitTests(allUnitTests);
+		Set<WeightedHandMarking> handMarking = clone.getHandMarking();
+		for(WeightedHandMarking comp : handMarking) {
+			comp.setId(null);
+			logger.info("Hand marking " + comp.getId() + " assessment to be saved: " + ts(comp.getAssessment()));
+		}
+		clone.setHandMarking(handMarking);
+		clone.getReleaseRule().setId(null);
+		sessionFactory.getCurrentSession().save(clone);
+//		sessionFactory.getCurrentSession().update(assessment);
 	}
 	
 	@SuppressWarnings("unchecked")

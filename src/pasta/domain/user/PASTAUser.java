@@ -58,7 +58,7 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column(name = "username", nullable = false)
 	private String username = "";
@@ -76,10 +76,10 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	@Column(name="active")
 	private boolean active = true;
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

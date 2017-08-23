@@ -45,7 +45,7 @@ public abstract class Job implements Serializable {
 	
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column(name = "run_date", nullable = false)
 	private Date runDate;
@@ -56,10 +56,10 @@ public abstract class Job implements Serializable {
 		this.runDate = runDate;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

@@ -69,7 +69,7 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	private final static int MAX_EXT_MESSAGE_LENGTH = 64000;
 
 	@Id @GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column(name = "name")
 	private String testName;
@@ -91,10 +91,10 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	
 	private double time;
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	

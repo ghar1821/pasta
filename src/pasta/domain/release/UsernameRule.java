@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -74,5 +76,10 @@ public class UsernameRule extends ReleaseRule implements Serializable {
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release to users ").append(usernames.toString());
 		return sb.toString();
+	}
+	
+	@Override
+	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		return new UsernameRule((String[]) this.getUsernames().toArray());
 	}
 }

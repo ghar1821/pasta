@@ -5,6 +5,8 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.user.PASTAUser;
 
@@ -42,5 +44,15 @@ public class HasSubmittedRule extends ReleaseResultsRule implements Serializable
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release if completed assessment ").append(getCompareAssessment() == null ? "null" : getCompareAssessment().getName());
 		return sb.toString();
+	}
+
+	@Override
+	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		if(options.getParentAssessment() == null) {
+			throw new InvalidRebuildOptionsException("Cannot rebuild a 'has submission' rule without an assessment");
+		}
+		HasSubmittedRule clone = new HasSubmittedRule();
+		clone.setCompareAssessment(options.getParentAssessment());
+		return clone;
 	}
 }

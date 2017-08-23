@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +48,9 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.util.PASTAUtil;
@@ -74,7 +76,7 @@ import pasta.util.ProjectProperties;
 
 @Entity
 @Table (name = "unit_tests")
-public class UnitTest implements Serializable, Comparable<UnitTest> {
+public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
 	
@@ -84,7 +86,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public static String BB_META_FILENAME = "usermeta";
 
 	@Id @GeneratedValue
-	private long id;
+	private Long id;
 	
 	private String name;
 	
@@ -107,7 +109,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	@OneToOne (cascade=CascadeType.ALL)
 	@JoinColumn (name="test_result_id")
-	private UnitTestResult testResult;
+	private transient UnitTestResult testResult;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn (name="unit_test_id")
@@ -196,10 +198,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.tested = tested;
 	}
 		
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -327,7 +329,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 
@@ -340,7 +342,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		if (getClass() != obj.getClass())
 			return false;
 		UnitTest other = (UnitTest) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
 	}
@@ -384,5 +389,20 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public UnitTest rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		UnitTest clone = new UnitTest(this.getName(), false);
+		clone.setAllowAccessoryFileWrite(this.isAllowAccessoryFileWrite());
+		clone.setBlackBoxOptions(this.getBlackBoxOptions() == null ? null : this.getBlackBoxOptions().rebuild(options));
+		clone.setMainClassName(this.getMainClassName());
+		clone.setSubmissionCodeRoot(this.getSubmissionCodeRoot());
+		LinkedList<BlackBoxTestCase> newTestCases = new LinkedList<>();
+		for(BlackBoxTestCase testCase : this.getTestCases()) {
+			newTestCases.add(testCase.rebuild(options));
+		}
+		clone.setTestCases(newTestCases);
+		return clone;
 	}
 }

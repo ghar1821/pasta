@@ -29,6 +29,13 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +65,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import pasta.archive.ArchiveItem;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewUnitTestForm;
@@ -180,6 +190,102 @@ public class SubmissionController {
 		return WebUtils.getUser();
 	}
 
+	@RequestMapping(value = "serial/")
+	@ResponseBody
+	public String doSerial(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
+		
+		File f = new File(ProjectProperties.getInstance().getProjectLocation(), "test.ser");
+		ObjectOutputStream out = null;
+		ObjectInputStream in = null;
+		try {
+			FileOutputStream fileOut = new FileOutputStream(f);
+			out = new ObjectOutputStream(fileOut);
+			Assessment ass = assessmentManager.getAssessment(1);
+			
+			ArchiveItem<Assessment> item = new ArchiveItem<>(ass);
+			
+			item.archiveTo(out);
+			out.close();
+			
+			FileInputStream fileIn = new FileInputStream(f);
+			in = new ObjectInputStream(fileIn);
+			ArchiveItem<Assessment> item2 = (ArchiveItem<Assessment>) ArchiveItem.readFrom(in);
+			in.close();
+			
+			Assessment ass2 = (Assessment) item2.getData();
+//			item2.clearDataId();
+			logger.info("Part of this instance?: " + item2.isFromThisInstance());
+			
+			RebuildOptions options = new RebuildOptions();
+			Assessment clone;
+			try {
+				clone = ass2.rebuild(options);
+				clone.setName(clone.getName() + " (copy)");
+				logger.info("Rebuilt " + clone);
+				logger.info("Rebuilt id " + clone.getId());
+				ProjectProperties.getInstance().getAssessmentDAO().deepSaveOrUpdate(clone);
+			} catch (InvalidRebuildOptionsException e) {
+				logger.error("Error rebuilding assessment", e);
+			}
+			
+			
+			
+//			FileOutputStream fileOut = new FileOutputStream(f);
+//			out = new ObjectOutputStream(fileOut);
+//			Assessment ass = assessmentManager.getAssessment(1);
+//			ArchiveItem item = new ArchiveItem(ass);
+//			
+//			logger.info("First item, part of this instance? " + item.isFromThisInstance());
+//			
+//			item.archiveTo(out);
+//			out.close();
+//			
+//			FileInputStream fileIn = new FileInputStream(f);
+//			in = new ObjectInputStream(fileIn);
+//			ArchiveItem item2 = ArchiveItem.readFrom(in);
+//			in.close();
+//			
+//			Assessment ass2 = (Assessment) item2.getData();
+//			
+//			logger.info("Second item, description: " + ass2.getDescription());
+//			logger.info("Part of this instance?: " + item2.isFromThisInstance());
+//			logger.info("Second item ID before resetting: " + ass2.getId());
+//			logger.info("First item ID before resetting: " + ass.getId());
+//			item2.clearDataId();
+//			logger.info("Second item ID after resetting: " + ass2.getId());
+//			logger.info("First item ID after resetting: " + ass.getId());
+//			
+//			
+//			
+////			WeightedUnitTest t1 = ass.getAllUnitTests().iterator().next();
+////			logger.info("unit test 1: " + t1.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(t1)));
+////			WeightedUnitTest t2 = ass2.getAllUnitTests().iterator().next();
+////			logger.info("unit test 2: " + t2.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(t2)));
+//			
+//			logger.info("Unit tests 1 length: " + ass.getAllUnitTests().size());
+//			logger.info("Unit tests 2 length: " + ass2.getAllUnitTests().size());
+//			
+//			ass2.setName(ass.getName() + " (Copy)");
+//			
+//			ProjectProperties.getInstance().getAssessmentDAO().saveArchivedItem(ass2);
+			
+			return "<p>" + ass.getDescription() + "</p>";
+		} catch (FileNotFoundException e) {
+			logger.error(e);
+		} catch (IOException e) {
+			logger.error(e);
+		} finally {
+			try {
+				out.close();
+			} catch (Exception e) {}
+			try {
+				in.close();
+			} catch (Exception e) {}
+		}
+		
+		return "<h1>NOT OKAY</h1>";
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// HOME //
 	// ///////////////////////////////////////////////////////////////////////////

@@ -29,13 +29,15 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 
 /**
  * Container class for a pairing of String and double, commonly used in
@@ -48,13 +50,13 @@ import javax.persistence.Table;
  */
 @Entity
 @Table (name = "weighted_fields")
-public class WeightedField implements Serializable, Comparable<WeightedField> {
+public class WeightedField implements Archivable<WeightedField>, Comparable<WeightedField> {
 	
 	private static final long serialVersionUID = -5647759434783526021L;
 
 	@Id 
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column (length = 512)
 	private String name;
@@ -70,10 +72,10 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 		this.weight = weight;
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -101,6 +103,12 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 		if(diff != 0) {
 			return diff;
 		}
+		if(this.id == null) {
+			return other.id == null ? 0 : -1;
+		}
+		if(other.id == null) {
+			return 1;
+		}
 		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
 	
@@ -108,7 +116,7 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 
@@ -121,7 +129,10 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 		if (getClass() != obj.getClass())
 			return false;
 		WeightedField other = (WeightedField) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
 	}
@@ -129,5 +140,10 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 	@Override
 	public String toString() {
 		return "(" + id + ": " + name + ", " + weight + ")";
+	}
+
+	@Override
+	public WeightedField rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		return new WeightedField(this.getName(), this.getWeight());
 	}
 }

@@ -29,8 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +37,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 
 /**
  * Container class for a weighted hand marking.
@@ -57,13 +59,13 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name = "weighted_hand_markings")
-public class WeightedHandMarking implements Serializable, Comparable<WeightedHandMarking> {
+public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Archivable<WeightedHandMarking> {
 
 	private static final long serialVersionUID = -3429348535279846933L;
 	
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	private double weight;
 	
@@ -82,10 +84,10 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		setGroupWork(false);
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	
@@ -147,16 +149,22 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		if(diff != 0) {
 			return diff;
 		}
+		if(this.id == null) {
+			return other.id == null ? 0 : -1;
+		}
+		if(other.id == null) {
+			return 1;
+		}
 		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (groupWork ? 1231 : 1237);
 		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(weight);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -178,10 +186,26 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 				return false;
 		} else if (!handMarking.equals(other.handMarking))
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
 			return false;
 		return true;
+	}
+
+	@Override
+	public WeightedHandMarking rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		if(options.getParentAssessment() == null) {
+			throw new InvalidRebuildOptionsException("Cannot rebuild a weighted hand marking template without an assessment");
+		}
+		WeightedHandMarking clone = new WeightedHandMarking();
+		clone.setAssessment(options.getParentAssessment());
+		clone.setGroupWork(this.isGroupWork());
+		clone.setHandMarking(this.getHandMarking() == null ? null : this.getHandMarking().rebuild(options));
+		clone.setWeight(this.getWeight());
+		return clone;
 	}
 }

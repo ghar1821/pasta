@@ -22,7 +22,7 @@ public class AuthenticationSettings implements Serializable {
 
 	@GeneratedValue
 	@Id
-	private long id;
+	private Long id;
 	
 	// auth type (dummy, imap, database), etc
 	@Column(name="auth_type")
@@ -37,10 +37,10 @@ public class AuthenticationSettings implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<String> serverAddresses;
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	

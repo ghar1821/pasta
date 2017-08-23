@@ -29,7 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -48,6 +47,10 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import pasta.archive.Archivable;
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 
 /**
  * Container class for the hand marking assessment module.
@@ -75,13 +78,13 @@ import org.hibernate.annotations.LazyCollectionOption;
  */
 @Entity
 @Table (name = "hand_markings")
-public class HandMarking implements Serializable, Comparable<HandMarking> {
+public class HandMarking implements Archivable<HandMarking>, Comparable<HandMarking> {
 
 	private static final long serialVersionUID = 5276980986516750657L;
 
 	@Id
 	@GeneratedValue 
-	private long id;
+	private Long id;
 	
 	private String name;
 	
@@ -186,11 +189,11 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 		return col == null ? 0 : col.getWeight();
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -291,7 +294,7 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 
@@ -304,8 +307,33 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 		if (getClass() != obj.getClass())
 			return false;
 		HandMarking other = (HandMarking) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+
+	@Override
+	public HandMarking rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		HandMarking clone = new HandMarking();
+		LinkedList<WeightedField> newColumnHeaders = new LinkedList<>();
+		for(WeightedField header : this.getColumnHeader()) {
+			newColumnHeaders.add(header.rebuild(options));
+		}
+		clone.setColumnHeader(newColumnHeaders);
+		LinkedList<HandMarkData> newData = new LinkedList<>();
+		for(HandMarkData data : this.getData()) {
+			newData.add(data.rebuild(options));
+		}
+		clone.setData(newData);
+		clone.setName(this.getName());
+		LinkedList<WeightedField> newRowHeader = new LinkedList<>();
+		for(WeightedField header : this.getRowHeader()) {
+			newRowHeader.add(header.rebuild(options));
+		}
+		clone.setRowHeader(newRowHeader);
+		return clone;
 	}
 }

@@ -1,20 +1,21 @@
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import pasta.archive.Archivable;
+import pasta.archive.RebuildOptions;
+
 @Entity
 @Table(name = "black_box_options")
-public class BlackBoxOptions implements Serializable {
+public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
 	private static final long serialVersionUID = 1094750990939205404L;
 	
 	@Id @GeneratedValue
-	private long id;
+	private Long id;
 	
 	@Column(name = "detailed_errors")
 	private boolean detailedErrors;
@@ -39,11 +40,11 @@ public class BlackBoxOptions implements Serializable {
 		this.gccCommandLineArgs = copy.gccCommandLineArgs;
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -61,5 +62,10 @@ public class BlackBoxOptions implements Serializable {
 
 	public void setGccCommandLineArgs(String gccCommandLineArgs) {
 		this.gccCommandLineArgs = gccCommandLineArgs;
+	}
+
+	@Override
+	public BlackBoxOptions rebuild(RebuildOptions options) {
+		return new BlackBoxOptions(this);
 	}
 }

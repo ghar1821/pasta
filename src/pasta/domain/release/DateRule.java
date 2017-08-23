@@ -9,6 +9,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import pasta.archive.InvalidRebuildOptionsException;
+import pasta.archive.RebuildOptions;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -81,5 +83,10 @@ public class DateRule extends ReleaseRule implements Serializable {
 		sb.append(getClass().getSimpleName()).append(": ");
 		sb.append("Release on ").append(getStrDate());
 		return sb.toString();
+	}
+	
+	@Override
+	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
+		return new DateRule((Date) this.getReleaseDate().clone());
 	}
 }
