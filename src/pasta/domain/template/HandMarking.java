@@ -88,29 +88,37 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	
 	private String name;
 	
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable(name="hand_marking_columns",
-			joinColumns=@JoinColumn(name = "hand_marking_id"),
-			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
+	@OneToMany(
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true
+	)
     @OrderBy("weight")
+	@JoinTable(name="hand_marking_columns", 
+		joinColumns=@JoinColumn(name="hand_marking_id"), 
+		inverseJoinColumns=@JoinColumn(name="weighted_field_id")
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<WeightedField> columnHeader = new ArrayList<WeightedField>();
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable(name="hand_marking_rows",
-			joinColumns=@JoinColumn(name = "hand_marking_id"),
-			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
-    @OrderColumn(name = "row_index")
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedField> rowHeader = new ArrayList<WeightedField>();
-	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable (name="hand_marking_data_joins", 
-		joinColumns=@JoinColumn(name = "hand_marking_id"),
-		inverseJoinColumns=@JoinColumn(name = "hand_marking_data_id"))
+	@OneToMany(
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true,
+			mappedBy = "handMarking"
+			)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<HandMarkData> data = new ArrayList<HandMarkData>();
 	
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			orphanRemoval = true
+	)
+	@JoinTable(name="hand_marking_rows", 
+		joinColumns=@JoinColumn(name="hand_marking_id"), 
+		inverseJoinColumns=@JoinColumn(name="weighted_field_id")
+	)
+    @OrderColumn(name = "row_index")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<WeightedField> rowHeader = new ArrayList<WeightedField>();
 	
 	public String getName() {
 		return name;
@@ -129,8 +137,8 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	}
 	
 	public void setColumnHeader(List<WeightedField> columnHeader) {
-		this.columnHeader.clear();
-		this.columnHeader.addAll(columnHeader);
+		removeAllColumns();
+		addColumns(columnHeader);
 	}
 
 	public List<WeightedField> getRowHeader() {
@@ -138,8 +146,8 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	}
 
 	public void setRowHeader(List<WeightedField> rowHeader) {
-		this.rowHeader.clear();
-		this.rowHeader.addAll(rowHeader);
+		removeAllRows();
+		addRows(rowHeader);
 	}
 
 	public List<HandMarkData> getData() {
@@ -199,14 +207,21 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 
 	public void addData(HandMarkData handMarkData) {
 		getData().add(handMarkData);
+		handMarkData.setHandMarking(this);
 	}
 	
 	public void addData(Collection<HandMarkData> handMarkData) {
-		getData().addAll(handMarkData);
+		for(HandMarkData datum : handMarkData) {
+			addData(datum);
+		}
 	}
 	
 	public boolean removeData(HandMarkData handMarkData) {
-		return getData().remove(handMarkData);
+		boolean removed = getData().remove(handMarkData);
+		if(removed) {
+			handMarkData.setHandMarking(null);
+		}
+		return removed;
 	}
 	
 	public boolean removeData(Collection<HandMarkData> handMarkData) {
@@ -218,7 +233,18 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	}
 	
 	public void removeAllData() {
+		for(HandMarkData datum : getData()) {
+			datum.setHandMarking(null);
+		}
 		getData().clear();
+	}
+	
+	public void removeAllRows() {
+		getRowHeader().clear();
+	}
+	
+	public void removeAllColumns() {
+		getColumnHeader().clear();
 	}
 
 	public void addColumn(WeightedField column) {
@@ -234,7 +260,7 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	public boolean removeColumn(WeightedField column) {
 		List<HandMarkData> toRemove = new LinkedList<>();
 		for(HandMarkData data : getData()) {
-			if(data.getColumn() == column) {
+			if(data.getColumn().equals(column)) {
 				toRemove.add(data);
 			}
 		}
@@ -266,7 +292,7 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	public boolean removeRow(WeightedField row) {
 		List<HandMarkData> toRemove = new LinkedList<>();
 		for(HandMarkData data : getData()) {
-			if(data.getRow() == row) {
+			if(data.getRow().equals(row)) {
 				toRemove.add(data);
 			}
 		}

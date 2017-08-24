@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -32,6 +33,10 @@ public class HandMarkData implements Archivable<HandMarkData>, Comparable<HandMa
 	
 	@Column (length = 4096)
 	private String data;
+	
+	@ManyToOne
+	@JoinColumn(name="hand_marking_id", nullable = true)
+	private HandMarking handMarking;
 
 	public HandMarkData() {
 	}
@@ -69,6 +74,13 @@ public class HandMarkData implements Archivable<HandMarkData>, Comparable<HandMa
 	}
 	public void setData(String data) {
 		this.data = data;
+	}
+	
+	public HandMarking getHandMarking() {
+		return handMarking;
+	}
+	public void setHandMarking(HandMarking handMarking) {
+		this.handMarking = handMarking;
 	}
 
 	@Override
