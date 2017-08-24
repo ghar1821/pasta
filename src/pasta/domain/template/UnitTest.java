@@ -107,8 +107,7 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	@Column (name = "allow_accessory_write")
 	private boolean allowAccessoryFileWrite;
 	
-	@OneToOne (cascade=CascadeType.ALL)
-	@JoinColumn (name="test_result_id")
+	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "test", optional = true)
 	private transient UnitTestResult testResult;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
@@ -116,8 +115,7 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<BlackBoxTestCase> testCases;
 	
-	@OneToOne (cascade=CascadeType.ALL, orphanRemoval = true, optional = true)
-	@JoinColumn (name="black_box_options_id")
+	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "test")
 	private BlackBoxOptions blackBoxOptions;
 
 	/**
@@ -140,7 +138,7 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		this.tested = tested;
 		this.submissionCodeRoot = "";
 		this.testCases = new ArrayList<BlackBoxTestCase>();
-		this.blackBoxOptions = new BlackBoxOptions();
+		setBlackBoxOptions(new BlackBoxOptions());
 		this.allowAccessoryFileWrite = false;
 	}
 
@@ -257,6 +255,10 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	}
 
 	public void setTestResult(UnitTestResult testResult) {
+		if(this.testResult != null) {
+			this.testResult.setTest(null);
+		}
+		testResult.setTest(this);
 		this.testResult = testResult;
 	}
 	
@@ -288,12 +290,16 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 
 	public BlackBoxOptions getBlackBoxOptions() {
 		if(blackBoxOptions == null) {
-			blackBoxOptions = new BlackBoxOptions();
+			setBlackBoxOptions(new BlackBoxOptions());
 		}
 		return blackBoxOptions;
 	}
 
 	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
+		if(this.blackBoxOptions != null) {
+			this.blackBoxOptions.setTest(null);
+		}
+		blackBoxOptions.setTest(this);
 		this.blackBoxOptions = blackBoxOptions;
 	}
 

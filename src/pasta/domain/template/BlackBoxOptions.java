@@ -4,7 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import pasta.archive.Archivable;
 import pasta.archive.RebuildOptions;
@@ -22,6 +27,11 @@ public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
 	
 	@Column(name = "gcc_command_line_args")
 	private String gccCommandLineArgs;
+	
+	@OneToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn (name="unit_test_id")
+	private UnitTest test;
 	
 	public BlackBoxOptions() {
 		detailedErrors = true;
@@ -46,6 +56,14 @@ public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	public UnitTest getTest() {
+		return test;
+	}
+
+	public void setTest(UnitTest test) {
+		this.test = test;
 	}
 
 	public boolean isDetailedErrors() {

@@ -35,6 +35,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
@@ -66,7 +68,7 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	public static final String ERROR = "error";
 	
 	private final static int MAX_MESSAGE_LENGTH = 8000;
-	private final static int MAX_EXT_MESSAGE_LENGTH = 64000;
+	private final static int MAX_EXT_MESSAGE_LENGTH = 66000;
 
 	@Id @GeneratedValue
 	private Long id;
@@ -90,6 +92,10 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	private String type;
 	
 	private double time;
+	
+	@ManyToOne
+	@JoinColumn(name="unit_test_result_id")
+	private UnitTestResult unitTestResult;
 	
 	public Long getId() {
 		return id;

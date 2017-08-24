@@ -43,18 +43,20 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import pasta.domain.template.UnitTest;
 import pasta.util.PASTAUtil;
@@ -72,26 +74,30 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	
 	private static final long serialVersionUID = -4862404513190004578L;
 	
-	private static final int COMPILE_ERROR_MAX_LENGTH = 64000;
-	private static final int RUNTIME_ERROR_MAX_LENGTH = 64000;
-	private static final int FILES_COMPILED_MAX_LENGTH = 64000;
+	private static final int COMPILE_ERROR_MAX_LENGTH = 66000;
+	private static final int RUNTIME_ERROR_MAX_LENGTH = 66000;
+	private static final int FILES_COMPILED_MAX_LENGTH = 66000;
 	private static final int RUNTIME_OUTPUT_MAX_LENGTH = 128000;
 
 	@Id @GeneratedValue
 	@Column (name = "id")
 	private Long id;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn (name = "unit_test_id")
+	@OneToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn (name="unit_test_id", nullable = true)
 	private UnitTest test;
+	
+	@ManyToOne
+	@JoinColumn (name = "assessment_result_id", nullable = true)
+	private AssessmentResult assessmentResult;
 	
 	private boolean secret;
 	
 	@Column(name="group_work")
 	private boolean groupWork;
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn (name = "test_case_id") // TODO should be named "unit_test_result_id"
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "unitTestResult")
 	@OrderBy ("testName")
 	@LazyCollection (LazyCollectionOption.FALSE)
 	private List<UnitTestCaseResult> testCases;
