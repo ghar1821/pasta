@@ -108,7 +108,7 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	private boolean allowAccessoryFileWrite;
 	
 	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "test", optional = true)
-	private transient UnitTestResult testResult;
+	private UnitTestResult testResult;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn (name="unit_test_id")

@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.result;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -100,7 +101,7 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "unitTestResult")
 	@OrderBy ("testName")
 	@LazyCollection (LazyCollectionOption.FALSE)
-	private List<UnitTestCaseResult> testCases;
+	private List<UnitTestCaseResult> testCases = new ArrayList<>();
 	
 	@Column (name = "internal_error")
 	private boolean internalError;
@@ -166,7 +167,14 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		return testCases;
 	}
 	public void setTestCases(List<UnitTestCaseResult> testCases) {
-		this.testCases = testCases;
+		for(UnitTestCaseResult result : this.testCases) {
+			result.setUnitTestResult(null);
+			this.testCases.clear();
+		}
+		for(UnitTestCaseResult result : testCases) {
+			result.setUnitTestResult(this);
+			this.testCases.add(result);
+		}
 	}
 
 	public boolean isInternalError() {
