@@ -123,7 +123,11 @@ public abstract class Runner {
 		for(Map.Entry<String, String> option : options.entrySet()) {
 			// option syntax: replace with option <name>
 			//		{$<name>}
-			templateText = templateText.replaceAll("(?i)\\$\\{" + option.getKey() + "\\}", Matcher.quoteReplacement(option.getValue()));
+			if(option.getValue() == null) {
+				Logger.getLogger(getClass()).warn("Skipping replacement of \"${" + option.getKey() + "}\"; value is null");
+			} else {
+				templateText = templateText.replaceAll("(?i)\\$\\{" + option.getKey() + "\\}", Matcher.quoteReplacement(option.getValue()));
+			}
 		}
 		
 		return templateText;
