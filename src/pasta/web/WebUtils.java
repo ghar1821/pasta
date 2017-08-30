@@ -37,7 +37,7 @@ public class WebUtils {
 	
 	public static void ensureAccess(UserPermissionLevel level) {
 		PASTAUser user = getUser();
-		if((level == UserPermissionLevel.TUTOR && !user.isTutor()) ||
+		if(user == null || (level == UserPermissionLevel.TUTOR && !user.isTutor()) ||
 				(level == UserPermissionLevel.INSTRUCTOR && !user.isInstructor())) {
 			throw new InsufficientAuthenticationException("You do not have sufficient access to do that");
 		}
