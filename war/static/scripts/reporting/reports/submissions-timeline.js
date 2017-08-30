@@ -100,7 +100,7 @@
 		    },
 		    yAxis: [{
 		    	title: {
-		    		text: "Submission Count",
+		    		text: "Daily submission count",
 		    		style: {
 		                color: Highcharts.getOptions().colors[0]
 		            }
@@ -113,7 +113,7 @@
 		    	allowDecimals: false
 		    },{
 		    	title: {
-		    		text: "Students Started",
+		    		text: "Number of students with submission(s)",
 		    		style: {
 		                color: Highcharts.getOptions().colors[1]
 		            }
@@ -129,7 +129,7 @@
 		    	max: data.studentCount
 		    }],
 		    series: [{
-		    	name: "Student Submissions",
+		    	name: "Daily submission count",
 		    	type: 'spline',
 		    	data: zip(dates, data.submissionCounts),
 		    	yAxis: 0,
@@ -137,7 +137,7 @@
 		    		enabled: false
 		    	}
 		    }, {
-		    	name: "Students Started",
+		    	name: "Number of students with submission(s)",
 		    	type: 'spline',
 		    	data: zip(dates, data.startedCounts),
 		    	yAxis: 1,
