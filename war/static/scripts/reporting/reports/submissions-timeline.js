@@ -19,12 +19,7 @@
 		var graphDiv;
 		var notStartedDiv;
 		
-		select.chosen({
-			width: '100%'
-		}).on("change", function(){
-			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
-			var assessment = $(this).find("option:selected").data("assessment");
-			
+		function loadAssessment(assessment) {
 			if(!graphDiv) {
 				graphDiv = $("<div/>").addClass("graph-container part").appendTo(content);
 				notStartedDiv = $("<div/>").addClass("part").appendTo(content);
@@ -33,6 +28,40 @@
 			notStartedDiv.empty();
 			plotSubmissions(assessment, graphDiv);
 			showNotStarted(assessment, notStartedDiv);
+		}
+		
+		select.chosen({
+			width: '100%'
+		}).on("change", function(){
+			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
+			var assessment = $(this).find("option:selected").data("assessment");
+			
+			if(assessment.loaded) {
+				loadAssessment(assessment);
+			} else {
+				$.ajax({
+					headers : {
+						'Accept' : 'application/json',
+					},
+					url : "./" + data.reportId + "/" + assessment.assessment.id + "/",
+					data : {},
+					type : "GET",
+					success: function(response) {
+						$.extend(true, assessment, response);
+						assessment.loaded = true;
+						loadAssessment(assessment);
+					},
+					error: function(error) {
+						console.log("error", error);
+						content.empty();
+						$("<span/>").text("Error loading report. ").appendTo(content);
+						$("<a/>").text("Try again.").on("click", function() {
+							select.trigger("change");
+						}).appendTo(content);
+					}
+				})
+			}
+			
 			loading.remove();
 		});
 	}
@@ -51,10 +80,15 @@
 		return select;
 	}
 	
+	var chart;
 	function plotSubmissions(data, container) {
+		if(chart) {
+			chart.destroy();
+		}
+		
 		var dates = parseDates(data.dates, "DD/MM/YYYY");
 		
-		var graph = Highcharts.chart(container[0], {
+		chart = Highcharts.chart(container[0], {
 			title: {
 		        text: 'Submissions for ' + data.assessment.name
 		    },

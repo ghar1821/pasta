@@ -21,12 +21,7 @@
 		var controls;
 		var tableDiv;
 		
-		select.chosen({
-			width: '100%'
-		}).on("change", function(){
-			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
-			var assessment = $(this).find("option:selected").data("assessment");
-			
+		function loadAssessment(assessment) {
 			if(assessment.summaries) {
 				if(!controls) {
 					controls = $("<div/>").addClass("part").appendTo(content);
@@ -46,6 +41,40 @@
 			}
 			
 			showTable(tableDiv, "studentTable", assessment.studentResults && assessment.studentResults.length == 1);
+		}
+		
+		select.chosen({
+			width: '100%'
+		}).on("change", function(){
+			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
+			var assessment = $(this).find("option:selected").data("assessment");
+			
+			if(assessment.loaded) {
+				loadAssessment(assessment);
+			} else {
+				$.ajax({
+					headers : {
+						'Accept' : 'application/json',
+					},
+					url : "./" + data.reportId + "/" + assessment.assessment.id + "/",
+					data : {},
+					type : "GET",
+					success: function(response) {
+						$.extend(true, assessment, response);
+						assessment.loaded = true;
+						loadAssessment(assessment);
+					},
+					error: function(error) {
+						console.log("error", error);
+						content.empty();
+						$("<span/>").text("Error loading report. ").appendTo(content);
+						$("<a/>").text("Try again.").on("click", function() {
+							select.trigger("change");
+						}).appendTo(content);
+					}
+				})
+			}
+			
 			loading.remove();
 		});
 	}

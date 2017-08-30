@@ -162,53 +162,30 @@ public class ReportingController {
 		
 		Report report = reportingManager.getReport(reportId);
 		if(reportingManager.userCanViewReport(user, report)) {
+			Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
+			ArrayNode assessmentsNode = mapper.createArrayNode();
+			for(Assessment assessment : allAssessments) {
+				ObjectNode summaryNode = mapper.createObjectNode();
+				ObjectNode assessmentNode = assessmentReportManager.getAssessmentJSON(assessment);
+				summaryNode.set("assessment", assessmentNode);
+				assessmentsNode.add(summaryNode);
+			}
+			node.set("assessments", assessmentsNode);
+			
 			switch(reportId) {
 			case "mark-histograms": {
-				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
-				ArrayNode assessmentsNode = mapper.createArrayNode();
-				for(Assessment assessment : allAssessments) {
-					ObjectNode summaryNode = assessmentReportManager.getMarksSummaryJSON(assessment, user);
-					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
-					assessmentsNode.add(summaryNode);
-				}
-				node.set("assessments", assessmentsNode);
-				
 				node.put("callback", "displayHistograms");
 				break;
 			}
 			case "unit-test-attempts": {
-				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
-				ArrayNode assessmentsNode = mapper.createArrayNode();
-				for(Assessment assessment : allAssessments) {
-					ObjectNode summaryNode = unitTestReportManager.getAllTestsSummaryJSON(assessment, user);
-					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
-					assessmentsNode.add(summaryNode);
-				}
-				node.set("assessments", assessmentsNode);
 				node.put("callback", "displayUnitTestAttempts");
 				break;
 			}
 			case "assessment-ratings": {
-				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
-				ArrayNode assessmentsNode = mapper.createArrayNode();
-				for(Assessment assessment : allAssessments) {
-					ObjectNode summaryNode = assessmentReportManager.getAssessmentRatingsJSON(assessment);
-					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
-					assessmentsNode.add(summaryNode);
-				}
-				node.set("assessments", assessmentsNode);
 				node.put("callback", "displayRatings");
 				break;
 			}
 			case "submissions-timeline": {
-				Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
-				ArrayNode assessmentsNode = mapper.createArrayNode();
-				for(Assessment assessment : allAssessments) {
-					ObjectNode summaryNode = assessmentReportManager.getAssessmentSubmissionsJSON(assessment);
-					summaryNode.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
-					assessmentsNode.add(summaryNode);
-				}
-				node.set("assessments", assessmentsNode);
 				node.put("callback", "displaySubmissions");
 				break;
 			}
@@ -233,6 +210,61 @@ public class ReportingController {
 			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 		}
 		return loadReport(reportId, otherUser, model);
+	}
+	
+	@RequestMapping(value = "{reportId}/{assessmentId}/", method = RequestMethod.GET)
+	@ResponseBody
+	public String loadReportDetails(@PathVariable("reportId") String reportId, @PathVariable("assessmentId") long assessmentId, @ModelAttribute("user") PASTAUser user, ModelMap model) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = mapper.createObjectNode();
+		
+		Report report = reportingManager.getReport(reportId);
+		if(reportingManager.userCanViewReport(user, report)) {
+			Assessment assessment = assessmentManager.getAssessment(assessmentId);
+			if(assessment == null) {
+				node.put("error", "Assessment ID " + assessmentId + " does not exist");
+			} else {
+				switch(reportId) {
+				case "mark-histograms": {
+					node = assessmentReportManager.getMarksSummaryJSON(assessment, user);
+					break;
+				}
+				case "unit-test-attempts": {
+					node = unitTestReportManager.getAllTestsSummaryJSON(assessment, user);
+					break;
+				}
+				case "assessment-ratings": {
+					node = assessmentReportManager.getAssessmentRatingsJSON(assessment);
+					break;
+				}
+				case "submissions-timeline": {
+					node = assessmentReportManager.getAssessmentSubmissionsJSON(assessment);
+					break;
+				}
+				}
+				node.set("assessment", assessmentReportManager.getAssessmentJSON(assessment));
+			}
+		} else {
+			node.put("error", "You are not allowed to view this report.");
+		}
+		
+		return getJSONString(node);
+	}
+	
+	@RequestMapping(value = "user/{otherUser}/{reportId}/{assessmentId}/", method = RequestMethod.GET)
+	@ResponseBody
+	public String loadReportDetailsAsUser(@PathVariable("reportId") String reportId, 
+			@PathVariable("assessmentId") long assessmentId, 
+			@ModelAttribute("user") PASTAUser user, 
+			@PathVariable("otherUser") String otherUserName, 
+			ModelMap model) {
+		PASTAUser otherUser = userManager.getUser(otherUserName);
+		if(otherUser.isInstructor()) {
+			WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		} else {
+			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
+		}
+		return loadReportDetails(reportId, assessmentId, otherUser, model);
 	}
 	
 	@RequestMapping(value = "savePermissions/{reportId}/", method = RequestMethod.POST)

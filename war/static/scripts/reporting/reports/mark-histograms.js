@@ -33,10 +33,7 @@
 		
 		var graph;
 		
-		select.chosen({
-			width: '100%'
-		}).on("change", function(){
-			var assessment = $(this).find("option:selected").data("assessment");
+		function loadAssessment(assessment) {
 			var numBuckets = idealBuckets(assessment.maxMark);
 			
 			if(!graph) {
@@ -56,6 +53,41 @@
 			});
 			
 			slider.trigger("input");
+		}
+		
+		select.chosen({
+			width: '100%'
+		}).on("change", function(){
+			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
+			var assessment = $(this).find("option:selected").data("assessment");
+			
+			if(assessment.loaded) {
+				loadAssessment(assessment);
+			} else {
+				$.ajax({
+					headers : {
+						'Accept' : 'application/json',
+					},
+					url : "./" + allData.reportId + "/" + assessment.assessment.id + "/",
+					data : {},
+					type : "GET",
+					success: function(response) {
+						$.extend(true, assessment, response);
+						assessment.loaded = true;
+						loadAssessment(assessment);
+					},
+					error: function(error) {
+						console.log("error", error);
+						content.empty();
+						$("<span/>").text("Error loading report. ").appendTo(content);
+						$("<a/>").text("Try again.").on("click", function() {
+							select.trigger("change");
+						}).appendTo(content);
+					}
+				})
+			}
+			
+			loading.remove();
 		});
 	}
 	
@@ -73,7 +105,12 @@
 		return select;
 	}
 	
+	var chart;
 	function plotAssessmentMarks(assessment, numBuckets, container) {
+		if(chart) {
+			chart.destroy();
+		}
+		
 		var plotData = getPlotData(assessment.marks.slice(), numBuckets, assessment.maxMark, assessment.yourMark);
 		if(assessment.classMarks) {
 			plotData.classCounts = getPlotData(assessment.classMarks.slice(), numBuckets, assessment.maxMark).counts;
@@ -139,7 +176,7 @@
 			}];
 		}
 		
-		var chart = Highcharts.chart(container[0], {
+		chart = Highcharts.chart(container[0], {
 			chart: {
 				type: 'column'
 			},
