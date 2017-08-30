@@ -34,15 +34,15 @@
 		var graph;
 		
 		function loadAssessment(assessment) {
-			var numBuckets = idealBuckets(assessment.maxMark);
+			var numBuckets = Math.max(assessment.maxMark, assessment.numTests);
 			
 			if(!graph) {
 				graph = $("<div/>").addClass("graph-container part").appendTo(content);
 			}
 			
 			sliderDiv.toggleClass("hidden", assessment.maxMark <= 1);
-			slider.attr("max", Math.max(1, assessment.maxMark));
-			slider.val(numBuckets);
+			slider.attr("max", Math.max(1, numBuckets));
+			slider.val(idealBuckets(numBuckets));
 			
 			slider.off("input");
 			slider.on("input", function() {

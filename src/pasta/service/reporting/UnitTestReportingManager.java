@@ -55,11 +55,7 @@ public class UnitTestReportingManager {
 			allResults.put(student, studentResults);
 		}
 		
-		List<String> testNames = new ArrayList<>();
-		for(WeightedUnitTest test : assessment.getAllUnitTests()) {
-			testNames.addAll(test.getTest().getAllTestNames());
-		}
-		
+		List<String> testNames = assessment.getAllTestNames();
 		
 		ArrayNode nameIndexNode = mapper.createArrayNode();
 		for(String testName : testNames) {

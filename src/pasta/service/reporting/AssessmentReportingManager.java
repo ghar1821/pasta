@@ -91,6 +91,7 @@ public class AssessmentReportingManager {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode marksSummaryNode = mapper.createObjectNode();
 		marksSummaryNode.put("maxMark", assessment.getMarks());
+		marksSummaryNode.put("numTests", assessment.getAllTestNames().size());
 		
 		Set<PASTAUser> tutoredStudents = new TreeSet<>();
 		if(user != null && user.isTutor()) {

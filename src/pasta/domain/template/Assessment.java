@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -675,6 +676,14 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			weight += module.getWeight();
 		}
 		return weight;
+	}
+	
+	public List<String> getAllTestNames() {
+		List<String> testNames = new ArrayList<>();
+		for(WeightedUnitTest test : getAllUnitTests()) {
+			testNames.addAll(test.getTest().getAllTestNames());
+		}
+		return testNames;
 	}
 
 //	/**
