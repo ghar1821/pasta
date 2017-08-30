@@ -324,7 +324,7 @@ either expressed or implied, of the PASTA Project.
 			<div class='button-panel'>
 				<button type='submit'>Save Changes</button>
 				<c:if test="${unitTest.hasCode}">
-					<a href="./download/"><button class='flat' id="downloadTest">Download Test Code</button></a>
+					<button class='flat' id="downloadTest">Download Test Code</button>
 				</c:if>
 			</div>
 		</c:if>
@@ -532,7 +532,8 @@ either expressed or implied, of the PASTA Project.
             });
             
             $('#downloadTest').on('click', function(e) {
-                e.preventDefault();
+                window.location.href = "./download/";
+            	e.preventDefault();
             });
             
             <%-- Disable test code button when main class not selected --%>
