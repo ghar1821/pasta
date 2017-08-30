@@ -221,15 +221,20 @@
 				scrollX : true,
 				iDisplayLength : 25,
 				"columnDefs": [ {
+					"targets" : [0, 1, 2],
+					"type": "string"
+				}, {
 					"type": "attempt",
-					"targets" : "_all"
+					"targets" : "_all",
+					"searchable" : false,
 				}]
 			};
 			
 			var isClassTable = tableId == "classTable";
 			if(isClassTable) {
 				options.ordering = true;
-				options["order"] = [[ 1, "asc" ],[ 0, "asc" ]]
+				options["order"] = [[ 1, "asc" ],[ 0, "asc" ]];
+				options.columnDefs[0].targets = [0, 1];
 			}
 			if(isStudent || isClassTable) {
 				options = $.extend({}, noTableFeatures, options);
