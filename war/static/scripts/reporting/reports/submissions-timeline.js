@@ -24,6 +24,9 @@
 				graphDiv = $("<div/>").addClass("graph-container part").appendTo(content);
 				notStartedDiv = $("<div/>").addClass("part").appendTo(content);
 			}
+			if(chart) {
+				chart.destroy();
+			}
 			graphDiv.empty();
 			notStartedDiv.empty();
 			plotSubmissions(assessment, graphDiv);
@@ -82,10 +85,6 @@
 	
 	var chart;
 	function plotSubmissions(data, container) {
-		if(chart) {
-			chart.destroy();
-		}
-		
 		var dates = parseDates(data.dates, "DD/MM/YYYY");
 		
 		chart = Highcharts.chart(container[0], {
