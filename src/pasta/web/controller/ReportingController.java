@@ -189,6 +189,10 @@ public class ReportingController {
 				node.put("callback", "displaySubmissions");
 				break;
 			}
+			case "test-case-histograms": {
+				node.put("callback", "displayTestHistograms");
+				break;
+			}
 			}
 		} else {
 			node.put("error", "You are not allowed to view this report.");
@@ -239,6 +243,10 @@ public class ReportingController {
 				}
 				case "submissions-timeline": {
 					node = assessmentReportManager.getAssessmentSubmissionsJSON(assessment);
+					break;
+				}
+				case "test-case-histograms": {
+					node = assessmentReportManager.getTestCaseCountsSummaryJSON(assessment, user);
 					break;
 				}
 				}

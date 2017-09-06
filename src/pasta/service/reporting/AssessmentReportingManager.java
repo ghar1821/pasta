@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
@@ -262,5 +263,43 @@ public class AssessmentReportingManager {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
+	}
+	
+	public ObjectNode getTestCaseCountsSummaryJSON(Assessment assessment, PASTAUser user) {
+		Collection<PASTAUser> students = userManager.getStudentList();
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode passCountSummaryNode = mapper.createObjectNode();
+		passCountSummaryNode.put("numTests", assessment.getAllTestNames().size());
+		
+		Set<PASTAUser> tutoredStudents = new TreeSet<>();
+		if(user != null && user.isTutor()) {
+			tutoredStudents.addAll(userManager.getTutoredStudents(user));
+		}
+		
+		Long yourPassCount = null;
+		ArrayNode passCountsNode = mapper.createArrayNode();
+		ArrayNode classPassCountsNode = mapper.createArrayNode();
+		for(PASTAUser student : students) {
+			AssessmentResult result = resultDAO.getLatestIndividualResult(student, assessment.getId());
+			long passCount = -1;
+			if(result != null) {
+				passCount = result.getUnitTests().stream()
+						.flatMap(utr -> utr.getTestCases().stream())
+						.filter(UnitTestCaseResult::isPass)
+						.count();
+			}
+			if(student.equals(user)) {
+				yourPassCount = passCount;
+			}
+			(tutoredStudents.contains(student) ? classPassCountsNode : passCountsNode).add(passCount);
+		}
+		passCountSummaryNode.set("passCounts", passCountsNode);
+		if(!tutoredStudents.isEmpty()) {
+			passCountSummaryNode.set("classPassCounts", classPassCountsNode);
+		}
+		if(yourPassCount != null) {
+			passCountSummaryNode.put("yourPassCount", yourPassCount);
+		}
+		return passCountSummaryNode;
 	}
  }
