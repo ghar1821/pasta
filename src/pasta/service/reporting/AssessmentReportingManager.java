@@ -302,4 +302,82 @@ public class AssessmentReportingManager {
 		}
 		return passCountSummaryNode;
 	}
+
+	public ObjectNode getTestCaseDifficultyJSON(Assessment assessment, PASTAUser user) {
+		Collection<PASTAUser> students = userManager.getStudentList();
+		List<String> testNames = assessment.getAllTestNames();
+		
+		Map<String, int[]> otherCounts = new HashMap<>();
+		Map<String, int[]> classCounts = new HashMap<>();
+		for(String testName : testNames) {
+			otherCounts.put(testName, new int[3]);
+			classCounts.put(testName, new int[3]);
+		}
+		
+		Set<PASTAUser> tutoredStudents = new TreeSet<>();
+		if(user != null && user.isTutor()) {
+			tutoredStudents.addAll(userManager.getTutoredStudents(user));
+		}
+		
+		for(PASTAUser student : students) {
+			AssessmentResult result = resultDAO.getLatestIndividualResult(student, assessment.getId());
+			if(result == null) {
+				continue;
+			}
+			
+			Map<String, int[]> counts = tutoredStudents.contains(student) ? classCounts : otherCounts;
+			result.getUnitTests().stream()
+			.flatMap(utr -> utr.getTestCases().stream())
+			.forEach(utcr -> {
+				int[] c = counts.get(utcr.getTestName());
+				c[utcr.isPass() ? 0 : (utcr.isFailure() ? 1 : 2)]++;
+			});
+		}
+		
+		Collections.sort(testNames, (a, b) -> {
+			int[] c1a = otherCounts.get(a);
+			int[] c2a = classCounts.get(a);
+			int[] c1b = otherCounts.get(b);
+			int[] c2b = classCounts.get(b);
+			int p1 = (c1a[0] + c2a[0]) - (c1a[1] + c2a[1]) - (c1a[2] + c2a[2]);
+			int p2 = (c1b[0] + c2b[0]) - (c1b[1] + c2b[1]) - (c1b[2] + c2b[2]);
+			if(p1 != p2) {
+				return p1 - p2;
+			}
+			return a.compareToIgnoreCase(b);
+		});
+		
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode testsSummaryNode = mapper.createObjectNode();
+		
+		ArrayNode testsNode = mapper.createArrayNode();
+		for(String testName : testNames) {
+			testsNode.add(testName);
+		}
+		testsSummaryNode.set("tests", testsNode);
+		
+		ArrayNode testResultsNode = mapper.createArrayNode();
+		for(String testName : testNames) {
+			ObjectNode testNode = mapper.createObjectNode();
+			testNode.put("testName", testName);
+			ObjectNode countsNode = mapper.createObjectNode();
+			int[] counts = otherCounts.get(testName);
+			countsNode.put("pass", counts[0]);
+			countsNode.put("fail", counts[1]);
+			countsNode.put("error", counts[2]);
+			testNode.set("counts", countsNode);
+			if(!tutoredStudents.isEmpty()) {
+				countsNode = mapper.createObjectNode();
+				counts = classCounts.get(testName);
+				countsNode.put("pass", counts[0]);
+				countsNode.put("fail", counts[1]);
+				countsNode.put("error", counts[2]);
+				testNode.set("classCounts", countsNode);
+			}
+			testResultsNode.add(testNode);
+		}
+		
+		testsSummaryNode.set("testResults", testResultsNode);
+		return testsSummaryNode;
+	}
  }
