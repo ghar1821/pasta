@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -85,6 +86,12 @@ public class GradeCentreController {
 	private AssessmentManager assessmentManager;
 	@Autowired
 	private ResultManager resultManager;
+	
+	@ModelAttribute("user")
+	public PASTAUser loadUser(HttpServletRequest request) {
+		WebUtils.ensureLoggedIn(request);
+		return WebUtils.getUser();
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// VIEW //
@@ -390,7 +397,7 @@ public class GradeCentreController {
 		WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 
 		model.addAttribute("assessmentList", assessmentManager.getAssessmentList());
-		model.addAttribute("pathBack", "..");
+		model.addAttribute("pathBack", ".");
 
 		return "user/gradeCentre";
 	}
