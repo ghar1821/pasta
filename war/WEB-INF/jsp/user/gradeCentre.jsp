@@ -83,7 +83,7 @@ either expressed or implied, of the PASTA Project.
 	<div class='button-panel'>
 		<button class='flat' onclick="window.location = '${pathBack}/downloadMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Marks</button>
 		<button class='flat' onclick="window.location = '${pathBack}/downloadAutoMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Auto Marks ONLY</button>
-		<button class='flat' onclick="window.location = '${pathBack}/gradecache/recalculate/'">Re-calculate Grades</button>
+		<button class='flat' onclick="window.location = '<c:url value='/gradecache/recalculate/'/>'">Re-calculate Grades</button>
 	</div>
 </div>
 
