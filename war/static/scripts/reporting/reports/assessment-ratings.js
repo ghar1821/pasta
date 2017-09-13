@@ -35,6 +35,7 @@
 			
 			if(assessment.loaded) {
 				loadAssessment(assessment);
+				loading.remove();
 			} else {
 				$.ajax({
 					headers : {
@@ -55,11 +56,11 @@
 						$("<a/>").text("Try again.").on("click", function() {
 							select.trigger("change");
 						}).appendTo(content);
-					}
+					},
+					complete: function() { loading.remove(); }
 				})
 			}
 			
-			loading.remove();
 		});
 	}
 	
