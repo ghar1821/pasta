@@ -18,11 +18,17 @@
 		
 		var ratingsDiv;
 		
+		function clearReport() {
+			if(ratingsDiv) {
+				ratingsDiv.empty();
+			}
+		}
+		
 		function loadAssessment(assessment) {
 			if(!ratingsDiv) {
 				ratingsDiv = $("<div/>").addClass("ratings-container").appendTo(content);
 			}
-			ratingsDiv.empty();
+			clearReport();
 			ratingsDiv.append(createRatingsDiv(assessment));
 			ratingsDiv.append(createCommentsDiv(assessment.comments));
 		}
@@ -30,6 +36,7 @@
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
+			clearReport();
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			

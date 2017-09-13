@@ -33,6 +33,16 @@
 		
 		var graph;
 		
+		function clearReport() {
+			if(graph) {
+				graph.empty();
+			}
+			if(chart) {
+				chart.destroy();
+				chart = undefined;
+			}
+		}
+		
 		function loadAssessment(assessment) {
 			var numBuckets = Math.max(assessment.maxMark, assessment.numTests);
 			
@@ -52,12 +62,14 @@
 				loading.remove();
 			});
 			
+			clearReport();
 			slider.trigger("input");
 		}
 		
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
+			clearReport();
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
@@ -108,10 +120,6 @@
 	
 	var chart;
 	function plotAssessmentMarks(assessment, numBuckets, container) {
-		if(chart) {
-			chart.destroy();
-		}
-		
 		var plotData = getPlotData(assessment.marks.slice(), numBuckets, assessment.maxMark, assessment.yourMark);
 		if(assessment.classMarks) {
 			plotData.classCounts = getPlotData(assessment.classMarks.slice(), numBuckets, assessment.maxMark).counts;

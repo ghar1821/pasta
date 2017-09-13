@@ -18,17 +18,28 @@
 		
 		var graph;
 		
+		function clearReport() {
+			if(graph) {
+				graph.empty();
+			}
+			if(chart) {
+				chart.destroy();
+				chart = undefined;
+			}
+		}
+		
 		function loadAssessment(assessment) {
 			if(!graph) {
 				graph = $("<div/>").addClass("graph-container part").appendTo(content);
 			}
-			graph.empty();
+			clearReport();
 			plotAssessmentPassCounts(assessment, graph);
 		}
 		
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
+			clearReport();
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
@@ -78,13 +89,8 @@
 	
 	var chart;
 	function plotAssessmentPassCounts(assessment, container) {
-		if(chart) {
-			chart.destroy();
-			chart = undefined;
-		}
-		
 		if(assessment.numTests == 0) {
-			$("<div/>").addClass("part").text("No unit tests in this assessment.").appendTo(container);
+			$("<div/>").text("No unit tests in this assessment.").appendTo(container);
 			return;
 		}
 		

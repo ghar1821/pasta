@@ -19,16 +19,25 @@
 		var graphDiv;
 		var notStartedDiv;
 		
+		function clearReport() {
+			if(graphDiv) {
+				graphDiv.empty();
+			}
+			if(notStartedDiv) {
+				notStartedDiv.empty();
+			}
+			if(chart) {
+				chart.destroy();
+				chart = undefined;
+			}
+		}
+		
 		function loadAssessment(assessment) {
 			if(!graphDiv) {
 				graphDiv = $("<div/>").addClass("graph-container part").appendTo(content);
 				notStartedDiv = $("<div/>").addClass("part").appendTo(content);
 			}
-			if(chart) {
-				chart.destroy();
-			}
-			graphDiv.empty();
-			notStartedDiv.empty();
+			clearReport();
 			plotSubmissions(assessment, graphDiv);
 			showNotStarted(assessment, notStartedDiv);
 		}
@@ -36,6 +45,7 @@
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
+			clearReport();
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			

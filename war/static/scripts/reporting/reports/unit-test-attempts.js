@@ -21,10 +21,27 @@
 		var controls;
 		var tableDiv;
 		
+		function clearReport() {
+			if(controls) {
+				controls.remove();
+				controls = undefined;
+			}
+			if(tableDiv) {
+				tableDiv.empty();
+			}
+		}
+		
 		function loadAssessment(assessment) {
+			clearReport();
+			
 			if(assessment.summaries) {
 				if(!controls) {
-					controls = $("<div/>").addClass("part").appendTo(content);
+					controls = $("<div/>").addClass("part");
+					if(tableDiv) {
+						controls.insertBefore(tableDiv);
+					} else {
+						controls.appendTo(content);
+					}
 				}
 				updateControlsDiv(controls, false);
 			}
@@ -46,6 +63,7 @@
 		select.chosen({
 			width: '100%'
 		}).on("change", function(){
+			clearReport();
 			var loading = $("<div/>").addClass("loading").loading().appendTo(content);
 			var assessment = $(this).find("option:selected").data("assessment");
 			
@@ -240,8 +258,6 @@
 	}
 	
 	function showTable(container, tableId, isStudent) {
-		container.empty();
-		
 		var table = container.data(tableId);
 		
 		if(table) {
@@ -278,8 +294,6 @@
 	}
 	
 	function updateControlsDiv(container, isClassTable) {
-		container.empty();
-		
 		var text = isClassTable ?
 				"You are viewing <strong>whole class</strong> statistics. To see individual student statistics, " :
 				"You are viewing <strong>individual student</strong> statistics. To see whole class statistics, "
@@ -287,6 +301,7 @@
 		$("<p/>")
 				.append($("<span/>").html(text))
 				.append($("<a/>").text("click here.").on("click", function() {
+					clearReport();
 					updateControlsDiv(container, !isClassTable);
 					showTable($(".table-container"), isClassTable ? "studentTable" : "classTable")
 				}))
