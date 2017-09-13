@@ -53,7 +53,7 @@ either expressed or implied, of the PASTA Project.
 </script>
 
 <c:if test="${pathBack == null}">
-	<c:set var="pathBack" value=".." />
+	<c:set var="pathBack" value="." />
 </c:if>
 <c:if test="${not empty stream}">
 	<c:set var="streamQuery" value="stream=${stream}&" />
@@ -83,7 +83,7 @@ either expressed or implied, of the PASTA Project.
 	<div class='button-panel'>
 		<button class='flat' onclick="window.location = '${pathBack}/downloadMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Marks</button>
 		<button class='flat' onclick="window.location = '${pathBack}/downloadAutoMarks/?${myClassesQuery}${tutorialQuery}${streamQuery}'">Download Auto Marks ONLY</button>
-		<button class='flat' onclick="window.location = '${pathBack}/gradecache/recalculate/'">Re-calculate Grades</button>
+		<button class='flat' onclick="window.location = '<c:url value='/gradecache/recalculate/'/>'">Re-calculate Grades</button>
 	</div>
 </div>
 
@@ -107,7 +107,7 @@ either expressed or implied, of the PASTA Project.
 					{
 						"targets" : 0,
 						"render" : function(data) {
-							return '<a class="gc-link" href="${pathBack}/student/'+data+'/home/">'+data+'</a>';
+							return '<a class="gc-link" href="${pathBack}/../student/'+data+'/home/">'+data+'</a>';
 						},
 						"createdCell" : null
 					},{
@@ -127,7 +127,7 @@ either expressed or implied, of the PASTA Project.
 						"render": function(data, type, row, meta) {
 							if(type === 'display') {
 								if(data.mark) {
-									return '<a class="gc-link" href="${pathBack}/student/'+row.name+'/info/'+data.assessmentid+'/">'+data.mark+'</a>'
+									return '<a class="gc-link" href="${pathBack}/../student/'+row.name+'/info/'+data.assessmentid+'/">'+data.mark+'</a>'
 								}
 								return null;
 							}

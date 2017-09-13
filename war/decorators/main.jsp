@@ -133,7 +133,7 @@
 				<c:if test="${not empty user and user.tutor}">
 					<div class='tab'><a href="<c:url value="/gradeCentre/"/>">Grade Centre</a></div>
 					<c:if test="${ not empty user.tutorial }">
-						<div class='tab'><a href="<c:url value="/myTutorials/"/>">My Tutorials</a></div>
+						<div class='tab'><a href="<c:url value="/gradeCentre/myTutorials/"/>">My Tutorials</a></div>
 					</c:if>
 					<div class='tab'><a href="<c:url value="/assessments/"/>">Assessments</a></div>
 					<div class='tab'><a href="<c:url value="/unitTest/"/>">Unit Tests</a></div>
