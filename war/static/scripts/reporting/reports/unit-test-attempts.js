@@ -23,8 +23,7 @@
 		
 		function clearReport() {
 			if(controls) {
-				controls.remove();
-				controls = undefined;
+				controls.empty();
 			}
 			if(tableDiv) {
 				tableDiv.empty();
@@ -44,6 +43,9 @@
 					}
 				}
 				updateControlsDiv(controls, false);
+			} else {
+				controls.remove();
+				controls = undefined;
 			}
 			
 			if(!tableDiv) {
@@ -258,6 +260,7 @@
 	}
 	
 	function showTable(container, tableId, isStudent) {
+		container.empty();
 		var table = container.data(tableId);
 		
 		if(table) {
@@ -294,6 +297,8 @@
 	}
 	
 	function updateControlsDiv(container, isClassTable) {
+		container.empty();
+		
 		var text = isClassTable ?
 				"You are viewing <strong>whole class</strong> statistics. To see individual student statistics, " :
 				"You are viewing <strong>individual student</strong> statistics. To see whole class statistics, "
@@ -301,7 +306,6 @@
 		$("<p/>")
 				.append($("<span/>").html(text))
 				.append($("<a/>").text("click here.").on("click", function() {
-					clearReport();
 					updateControlsDiv(container, !isClassTable);
 					showTable($(".table-container"), isClassTable ? "studentTable" : "classTable")
 				}))
