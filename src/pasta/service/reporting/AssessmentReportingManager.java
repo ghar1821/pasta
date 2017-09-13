@@ -330,6 +330,7 @@ public class AssessmentReportingManager {
 			.flatMap(utr -> utr.getTestCases().stream())
 			.forEach(utcr -> {
 				int[] c = counts.get(utcr.getTestName());
+				if(c == null) return;
 				c[utcr.isPass() ? 0 : (utcr.isFailure() ? 1 : 2)]++;
 			});
 		}
