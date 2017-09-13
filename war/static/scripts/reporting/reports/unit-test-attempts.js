@@ -44,8 +44,10 @@
 				}
 				updateControlsDiv(controls, false);
 			} else {
-				controls.remove();
-				controls = undefined;
+				if(controls) {
+					controls.remove();
+					controls = undefined;
+				}
 			}
 			
 			if(!tableDiv) {
