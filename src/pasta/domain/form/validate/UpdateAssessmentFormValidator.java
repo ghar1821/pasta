@@ -7,7 +7,6 @@ import org.springframework.validation.Validator;
 
 import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAGroup;
@@ -117,15 +116,6 @@ public class UpdateAssessmentFormValidator implements Validator {
 			}
 //			if(module.getWeight() < 0) {
 //				errors.rejectValue("selectedHandMarking", "NotNegative");
-//			}
-		}
-		for(int i = 0; i < form.getSelectedCompetitions().size(); i++) {
-			WeightedCompetition module = form.getSelectedCompetitions().get(i);
-			if(!isGroupWork && module.isGroupWork()) {
-				errors.rejectValue("selectedCompetitions", "NotGroupWork");
-			}
-//			if(module.getWeight() < 0) {
-//				errors.rejectValue("selectedCompetitions", "NotNegative");
 //			}
 		}
 	}

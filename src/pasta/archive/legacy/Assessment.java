@@ -49,7 +49,6 @@ import org.apache.commons.logging.LogFactory;
  * 	<li>unit test assessment modules</li>
  * 	<li>secret unit test assessment modules</li>
  * 	<li>hand marking assessment modules</li>
- * 	<li>competition assessment modules</li>
  * </ul>
  * 
  * Also contains assessment specific information such as:
@@ -86,11 +85,6 @@ import org.apache.commons.logging.LogFactory;
 		...
 		<handMarks name="name" weight="double"/>
 	</handMarkingSuite>
-	<competitionSuite>
-		<competition name="name" weight="double"/>
-		...
-		<competition name="name" weight="double" [secret="true|false"]/>
-	</competitionSuite>
 </assessment>}</pre>
  * 
  * All weighting is relative. If two assessment modules are weighted as 
@@ -113,7 +107,6 @@ public class Assessment implements Comparable<Assessment>{
 	private List<WeightedUnitTest> unitTests = new ArrayList<WeightedUnitTest>();
 	private List<WeightedUnitTest> secretUnitTests = new ArrayList<WeightedUnitTest>();
 	private List<WeightedHandMarking> handMarking = new ArrayList<WeightedHandMarking>();
-	private List<WeightedCompetition> competitions = new ArrayList<WeightedCompetition>();
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -220,15 +213,6 @@ public class Assessment implements Comparable<Assessment>{
 		this.handMarking.addAll(handMarking);
 	}
 	
-	public List<WeightedCompetition> getCompetitions() {
-		return competitions;
-	}
-
-	public void setCompetitions(List<WeightedCompetition> competitions) {
-		this.competitions.clear();
-		this.competitions.addAll(competitions);
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -350,15 +334,6 @@ public class Assessment implements Comparable<Assessment>{
 			}
 			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
 		}
-		// all competitions
-		if (competitions.size() > 0) {
-			output += "\t<competitionSuite>" + System.getProperty("line.separator");
-			for (WeightedCompetition comp : competitions) {
-				output += "\t\t<competition name=\"" + comp.getCompetition().getShortName() + "\" weight=\""
-						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
-			}
-			output += "\t</competitionSuite>" + System.getProperty("line.separator");
-		}
 		output += "</assessment>" + System.getProperty("line.separator");
 		return output;
 	}
@@ -384,14 +359,6 @@ public class Assessment implements Comparable<Assessment>{
 			}
 		}
 		return 0;
-	}
-
-	public void addCompetition(WeightedCompetition weightedComp) {
-		competitions.add(weightedComp);
-	}
-	
-	public void removeCompetition(WeightedCompetition weightedComp) {
-		competitions.remove(weightedComp);
 	}
 
 	@Override

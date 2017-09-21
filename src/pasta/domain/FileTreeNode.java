@@ -69,8 +69,6 @@ public class FileTreeNode {
 			return ProjectProperties.getInstance().getUnitTestsLocation();
 		} else if ("assessment".equals(owner)) {
 			return ProjectProperties.getInstance().getAssessmentValidatorLocation();
-		} else if ("competition".equals(owner)) {
-			return ProjectProperties.getInstance().getCompetitionsLocation();
 		} else {
 			return ProjectProperties.getInstance().getSubmissionsLocation();
 		}

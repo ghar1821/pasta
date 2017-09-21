@@ -114,10 +114,6 @@ either expressed or implied, of the PASTA Project.
 											<c:if test="${hm > 0}">
 												${hm} Hand marking template${hm == 1 ? '' : 's'}<br />
 											</c:if>
-											<c:set scope="request" var="com" value="${fn:length(assessment.competitions)}" />
-											<c:if test="${com > 0}">
-												${com} Competition${com == 1 ? '' : 's'}<br />
-											</c:if>
 										</c:otherwise>
 									</c:choose>
 								</div>

@@ -50,7 +50,6 @@ import pasta.domain.result.DueDateComparator;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
@@ -126,11 +125,6 @@ public class AssessmentDAO {
 	
 	/**
 	 * Delete an assessment from the system.
-	 * <p>
-	 * 
-	 * Iterates over all competitions and removes itself from them.
-	 * Competitions are the only assessment modules that contain
-	 * a link to the assessments they are used in.
 	 * 
 	 * @param id the id of the assessment 
 	 */
@@ -141,22 +135,6 @@ public class AssessmentDAO {
 		}
 		
 		delete(assessmentToRemove);
-	}
-	
-	/**
-	 * Iterates over all assessments and removes itself from them.
-	 * 
-	 * @param id the id of the competition
-	 */
-	public void unlinkCompetition(long id) {
-		// go through all assessments and remove the competition from them
-		for (Assessment assessment : getAllAssessments()) {
-			for (WeightedCompetition comp : assessment.getCompetitions()) {
-				if (comp.getCompetition().getId() == id) {
-					assessment.removeCompetition(comp);
-				}
-			}
-		}
 	}
 	
 	/**

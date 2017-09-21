@@ -230,14 +230,12 @@ public class FileController {
 
 	private File getCorrectFile(String owner, String location) {
 		File file;
-		if (owner.equals("unitTest") || owner.equals("assessment") || owner.equals("competition")) {
+		if (owner.equals("unitTest") || owner.equals("assessment")) {
 			WebUtils.ensureAccess(UserPermissionLevel.TUTOR);
 			if (owner.equals("unitTest")) {
 				file = new File(ProjectProperties.getInstance().getUnitTestsLocation() + location);
-			} else if (owner.equals("assessment")) {
+			} else  { // if (owner.equals("assessment"))
 				file = new File(ProjectProperties.getInstance().getAssessmentValidatorLocation() + location);
-			} else { // "competition"
-				file = new File(ProjectProperties.getInstance().getCompetitionsLocation() + location);
 			}
 		} else {
 			file = new File(ProjectProperties.getInstance().getSubmissionsLocation() + location);

@@ -751,7 +751,7 @@ span.expanded-icon {
 	font-size: 1.5em;
 }
 
-.popup, #released, #newArena
+.popup, #released
 	{
 	background-color: white;
 	border-radius: 10px 10px 10px 10px;

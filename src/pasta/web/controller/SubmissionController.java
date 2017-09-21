@@ -60,7 +60,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
-import pasta.domain.form.NewCompetitionForm;
 import pasta.domain.form.NewUnitTestForm;
 import pasta.domain.form.Submission;
 import pasta.domain.form.validate.SubmissionValidator;
@@ -68,7 +67,6 @@ import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.scheduler.AssessmentJob;
@@ -137,19 +135,9 @@ public class SubmissionController {
 		return new NewUnitTestForm();
 	}
 
-	@ModelAttribute("newCompetitionModel")
-	public NewCompetitionForm returnNewCompetitionModel() {
-		return new NewCompetitionForm();
-	}
-
 	@ModelAttribute("submission")
 	public Submission returnSubmissionModel() {
 		return new Submission();
-	}
-
-	@ModelAttribute("competition")
-	public Competition returnCompetitionModel() {
-		return new Competition();
 	}
 
 	@ModelAttribute("assessmentResult")

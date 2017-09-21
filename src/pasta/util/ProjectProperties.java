@@ -48,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
-import pasta.docker.DockerManager;
 import pasta.domain.security.AuthenticationSettings;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
@@ -56,10 +55,8 @@ import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.CompetitionDAO;
 import pasta.repository.HandMarkingDAO;
 import pasta.repository.LoginDAO;
-import pasta.repository.PlayerDAO;
 import pasta.repository.ReportingDAO;
 import pasta.repository.ResultDAO;
 import pasta.repository.UnitTestDAO;
@@ -90,8 +87,6 @@ public class ProjectProperties {
 	private String unitTestsLocation = "template" + File.separator + "unitTest" + File.separator;
 	// location of the submissions
 	private String submissionsLocation = "submissions" + File.separator;
-	// location of the submissions
-	private String competitionsLocation = "competitions" + File.separator;
 	// location of the testing sandbox
 	private String sandboxLocation = "sandbox" + File.separator;
 	// location of validator uploads
@@ -118,10 +113,6 @@ public class ProjectProperties {
 	private UnitTestDAO unitTestDAO;
 	@Autowired
 	private HandMarkingDAO handMarkingDAO;
-	@Autowired
-	private PlayerDAO playerDAO;
-	@Autowired
-	private CompetitionDAO compDAO;
 	@Autowired
 	private UserDAO userDAO;
 	@Autowired
@@ -155,14 +146,12 @@ public class ProjectProperties {
 		
 		unitTestsLocation = checkPath(settings.get("pathUnitTests"), projectLocation + unitTestsLocation);
 		submissionsLocation = checkPath(settings.get("pathSubmissions"), projectLocation + submissionsLocation);
-		competitionsLocation = checkPath(settings.get("pathCompetitions"), projectLocation + competitionsLocation);
 		sandboxLocation = checkPath(settings.get("pathSandbox"), projectLocation + sandboxLocation);
 		validatorLocation = checkPath(settings.get("pathValidation"), projectLocation + validatorLocation);
 
 		logger.info("Project location set to: " + projectLocation);
 		logger.info("UnitTests location set to: " + unitTestsLocation);
 		logger.info("Submissions location set to: " + submissionsLocation);
-		logger.info("Competitions Location set to: " + competitionsLocation);
 		logger.info("Sandbox Location set to: " + sandboxLocation);
 		logger.info("Validators Location set to: " + validatorLocation);
 		
@@ -257,10 +246,6 @@ public class ProjectProperties {
 		return projectLocation;
 	}
 
-	public String getCompetitionsLocation() {
-		return competitionsLocation;
-	}
-
 	public String getSubmissionsLocation() {
 		return submissionsLocation;
 	}
@@ -353,20 +338,12 @@ public class ProjectProperties {
 		return resultManager;
 	}
 
-	public PlayerDAO getPlayerDAO() {
-		return playerDAO;
-	}
-
 	public UnitTestDAO getUnitTestDAO() {
 		return unitTestDAO;
 	}
 
 	public HandMarkingDAO getHandMarkingDAO() {
 		return handMarkingDAO;
-	}
-	
-	public CompetitionDAO getCompetitionDAO() {
-		return compDAO;
 	}
 	
 	public UserDAO getUserDAO() {

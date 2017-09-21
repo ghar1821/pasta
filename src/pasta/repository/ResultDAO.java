@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.repository;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -38,9 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,12 +66,7 @@ import org.w3c.dom.NodeList;
 
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.AssessmentResultSummary;
-import pasta.domain.result.CompetitionMarks;
-import pasta.domain.result.CompetitionResult;
-import pasta.domain.result.CompetitionResultData;
-import pasta.domain.result.CompetitionUserMark;
 import pasta.domain.result.HandMarkingResult;
-import pasta.domain.result.ResultCategory;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
@@ -354,77 +346,6 @@ public class ResultDAO{
 	}
 	
 	/**
-	 * Get the results of an arena.
-	 * 
-	 * @param competitionId the id of a competition
-	 * @param arenaId the id of a competition
-	 * @return the results of a competition
-	 */
-	public CompetitionMarks getLatestArenaMarks(long competitionId, long arenaId) {
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
-		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
-		cr.createCriteria("arena").add(Restrictions.eq("id", arenaId));
-		cr.addOrder(Order.desc("runDate"));
-		cr.setMaxResults(1);
-		@SuppressWarnings("unchecked")
-		List<CompetitionMarks> results = cr.list();
-		if(results == null || results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
-	
-	public CompetitionResult getLatestArenaResult(long competitionId, long arenaId) {
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
-		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
-		cr.createCriteria("arena").add(Restrictions.eq("id", competitionId));
-		cr.addOrder(Order.desc("runDate"));
-		cr.setMaxResults(1);
-		@SuppressWarnings("unchecked")
-		List<CompetitionResult> results = cr.list();
-		if(results == null || results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
-	
-	public CompetitionResult getLatestCalculatedCompetitionResult(long competitionId) {
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
-		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
-		cr.add(Restrictions.isNull("arena"));
-		cr.addOrder(Order.desc("runDate"));
-		cr.setMaxResults(1);
-		@SuppressWarnings("unchecked")
-		List<CompetitionResult> results = cr.list();
-		if(results == null || results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
-	
-	/**
-	 * Get the results of a calculated competition.
-	 * 
-	 * @param competitionId the id of a competition
-	 * @return the results of a competition
-	 */
-	public CompetitionMarks getLatestCompetitionMarks(long competitionId) {
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionResult.class);
-		cr.createCriteria("competition").add(Restrictions.eq("id", competitionId));
-		cr.add(Restrictions.isNull("arena"));
-		cr.addOrder(Order.desc("runDate"));
-		cr.setMaxResults(1);
-		@SuppressWarnings("unchecked")
-		List<CompetitionMarks> results = cr.list();
-		if(results == null || results.isEmpty()) {
-			return null;
-		}
-		return results.get(0);
-	}
-	
-	
-	
-	/**
 	 * Load a unit test result from a location
 	 * 
 	 * @param location the location of the test
@@ -532,76 +453,6 @@ public class ResultDAO{
 		return null;
 	}
 	
-	public void loadCompetitionMarks(CompetitionMarks marks, File file) {
-		List<CompetitionUserMark> userMarks = new LinkedList<CompetitionUserMark>();
-		
-		try {
-			Scanner in = new Scanner(file);
-			if(in.hasNext()) {
-				String[] parts = in.nextLine().split(",");
-				if(parts.length != 2) {
-					logger.error("Incorrect number of columns in marks file " + file);
-					in.close();
-					return;
-				}
-				
-				// ignore header if it exists
-				try {
-					double mark = Double.parseDouble(parts[1]);
-					userMarks.add(new CompetitionUserMark(parts[0], mark));
-				} catch (NumberFormatException nfe) {
-				}
-			}
-			
-			while(in.hasNextLine()){
-				String[] parts = in.nextLine().split(",");
-				try {
-					double mark = Double.parseDouble(parts[1]);
-					userMarks.add(new CompetitionUserMark(parts[0], mark));
-				} catch (NumberFormatException nfe) {
-				}
-			}
-			
-			in.close();
-
-			marks.updatePositions(userMarks);
-		} catch (FileNotFoundException e) {
-			logger.error("Could not load competition marks - " + file + " did not exist.");
-		}
-	}
-
-	public void loadCompetitionResults(CompetitionResult result, File file) {
-		Set<CompetitionResultData> data = new TreeSet<CompetitionResultData>();
-		List<ResultCategory> categories = new ArrayList<ResultCategory>();
-		
-		try {
-			Scanner in = new Scanner(file);
-			
-			// adding the categories (first line)
-			String[] cat = in.nextLine().split(",");
-			for(int i=1; i< cat.length; ++i){
-				categories.add(new ResultCategory(cat[i]));
-			}
-			
-			while(in.hasNextLine()){
-				try{
-					String[] line = in.nextLine().split(",");
-					for(int i=1; i< cat.length; ++i){
-						data.add(new CompetitionResultData(line[0], categories.get(i).getName(), line[i]));
-					}
-				}
-				catch(Exception e){}
-			}
-			
-			in.close();
-
-			result.setCategories(categories);
-			result.setData(data);
-		} catch (FileNotFoundException e) {
-			logger.error("Could not load competition results - " + file + " did not exist.");
-		}
-	}
-	
 	private void refreshHandMarking(AssessmentResult result) {
 		List<HandMarkingResult> oldResults = new ArrayList<HandMarkingResult>(result.getHandMarkingResults());
 		result.getHandMarkingResults().clear();
@@ -662,14 +513,6 @@ public class ResultDAO{
 		sessionFactory.getCurrentSession().save(result);
 	}
 	
-	public void saveOrUpdate(CompetitionMarks compMarks) {
-		sessionFactory.getCurrentSession().saveOrUpdate(compMarks);
-	}
-
-	public void saveOrUpdate(CompetitionResult compResult) {
-		sessionFactory.getCurrentSession().saveOrUpdate(compResult);
-	}
-
 	public void saveOrUpdate(HandMarkingResult result) {
 		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}

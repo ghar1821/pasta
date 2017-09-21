@@ -48,7 +48,7 @@ import pasta.domain.user.PASTAUser;
 /**
  * Class to generate an excel document of everyone's automatic marks that can be downloaded by a tutor.
  * <p>
- * The marks that come from only automatic marking (e.g. unit tests, competitions).
+ * The marks that come from only automatic marking (e.g. unit tests).
  * This does not use any of the hand marking templates.
  * 
  * This class is almost a carbon copy of {@link pasta.view.ExcelMarkView}.

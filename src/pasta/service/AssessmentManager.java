@@ -43,23 +43,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import pasta.domain.form.NewAssessmentForm;
 import pasta.domain.form.UpdateAssessmentForm;
-import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.UnitTestDAO;
-import pasta.scheduler.ExecutionScheduler;
 import pasta.util.ProjectProperties;
 
 /**
@@ -94,11 +89,7 @@ public class AssessmentManager {
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
-	@Autowired
-	private ExecutionScheduler scheduler;
 	
-	@Autowired
-	private ApplicationContext context;
 
 	// Validator for the submission
 
@@ -242,14 +233,6 @@ public class AssessmentManager {
 			assessment.addHandMarkings(toAdd);
 		}
 		
-		// unlink any unnecessary competitions
-		{
-			Collection<WeightedCompetition> toRemove = CollectionUtils.subtract(assessment.getCompetitions(), form.getSelectedCompetitions());	
-			Collection<WeightedCompetition> toAdd = CollectionUtils.subtract(form.getSelectedCompetitions(), assessment.getCompetitions());
-			assessment.removeCompetitions(toRemove);
-			assessment.addCompetitions(toAdd);
-		}
-		
 		// link weighted unit tests to unit test and assessment
 		for (WeightedUnitTest test : assessment.getAllUnitTests()) {
 			test.setTest(unitTestDAO.getUnitTest(test.getTest().getId()));
@@ -262,28 +245,6 @@ public class AssessmentManager {
 					.getHandMarking(handMarking.getHandMarking().getId());
 			handMarking.setHandMarking(realTemplate);
 			handMarking.setAssessment(assessment);
-		}
-		
-		// link weighted competitions to competition and assessment
-		for (WeightedCompetition competition : assessment.getCompetitions()) {
-			Competition realComp = ProjectProperties.getInstance().getCompetitionDAO()
-					.getCompetition(competition.getCompetition().getId());
-			
-			competition.setCompetition(realComp);
-			competition.setAssessment(assessment);
-			
-			// schedule new jobs if necessary
-			if(ProjectProperties.getInstance().getCompetitionDAO().isRunning(realComp)) {
-				if(realComp.isCalculated()) {
-					scheduler.scheduleJob(realComp, realComp.getNextRunDate());
-				} else {
-					Arena arena = realComp.getOfficialArena();
-					scheduler.scheduleJob(realComp, arena, arena.getNextRunDate());
-					for(Arena outstanding : realComp.getOutstandingArenas()) {
-						scheduler.scheduleJob(realComp, outstanding, outstanding.getNextRunDate());
-					}
-				}
-			}
 		}
 		
 		if(form.getValidatorFile() != null && !form.getValidatorFile().isEmpty()) {

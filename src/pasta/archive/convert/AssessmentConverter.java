@@ -21,19 +21,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pasta.archive.legacy.Tuple;
-import pasta.domain.PASTATime;
-import pasta.domain.template.Arena;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.Competition;
-import pasta.domain.template.CompetitionPermissionLevel;
 import pasta.domain.template.HandMarkData;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 
 public class AssessmentConverter {
@@ -41,12 +35,10 @@ public class AssessmentConverter {
 	
 	private Map<String, pasta.archive.legacy.UnitTest> allUnitTests;
 	private Map<String, pasta.archive.legacy.HandMarking> allHandMarking;
-	private Map<String, pasta.archive.legacy.Competition> allCompetitions;
 	private Map<String, pasta.archive.legacy.Assessment> allAssessments;
 	
 	private Map<String, UnitTest> convertedUnitTests;
 	private Map<String, HandMarking> convertedHandMarking;
-	private Map<String, Competition> convertedCompetitions;
 	private Map<String, Assessment> convertedAssessments;
 	
 	private List<String> output;
@@ -91,10 +83,6 @@ public class AssessmentConverter {
 		allHandMarking = new TreeMap<>();
 		loadHandMarking();
 
-		// load up competitions
-		allCompetitions = new TreeMap<>();
-		loadCompetitions();
-
 		// load up all assessments
 		allAssessments = new TreeMap<>();
 		loadAssessments();
@@ -116,15 +104,6 @@ public class AssessmentConverter {
 			if(converted != null) {
 				convertedHandMarking.put(oldHMEntry.getKey(), converted);
 				output.add("Converted legacy hand marking " + converted.getName());
-			}
-		}
-		
-		convertedCompetitions = new TreeMap<>();
-		for(Map.Entry<String, pasta.archive.legacy.Competition> oldCompEntry : allCompetitions.entrySet()) {
-			Competition converted = convertCompetition(oldCompEntry.getValue());
-			if(converted != null) {
-				convertedCompetitions.put(oldCompEntry.getKey(), converted);
-				output.add("Converted legacy competition " + converted.getName());
 			}
 		}
 		
@@ -155,16 +134,6 @@ public class AssessmentConverter {
 				output.add("Saved hand marking " + hmEntry.getKey());
 			} catch(Exception e) {
 				String error = "Error saving hand marking " + hmEntry.getKey();
-				output.add(error);
-				logger.error(error, e);
-			}
-		}
-		for(Map.Entry<String, Competition> compEntry : convertedCompetitions.entrySet()) {
-			try {
-				ProjectProperties.getInstance().getCompetitionDAO().saveOrUpdate(compEntry.getValue());
-				output.add("Saved competition " + compEntry.getKey());
-			} catch(Exception e) {
-				String error = "Error saving competition " + compEntry.getKey();
 				output.add(error);
 				logger.error(error, e);
 			}
@@ -208,37 +177,6 @@ public class AssessmentConverter {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Load all competitions.
-	 * <p>
-	 * Calls {@link #getCompetitionFromDisk(String)} multiple times.
-	 */
-	private void loadCompetitions() {
-		// get competition location
-		String allCompetitionLocation = ProjectProperties.getInstance().getProjectLocation() + "legacy/template/competition";
-		if(!new File(allCompetitionLocation).exists()) {
-			allCompetitionLocation = ProjectProperties.getInstance().getProjectLocation() + "legacy/competition";
-		}
-		if(!new File(allCompetitionLocation).exists()) {
-			output.add("No competitions found under " + ProjectProperties.getInstance().getProjectLocation() + "legacy/template/competition" +
-					" or " + ProjectProperties.getInstance().getProjectLocation() + "legacy/competition");
-			return;
-		}
-		String[] allCompetitionNames = (new File(allCompetitionLocation))
-				.list();
-		if (allCompetitionNames != null && allCompetitionNames.length > 0) {
-			// load properties
-			for (String name : allCompetitionNames) {
-				pasta.archive.legacy.Competition comp = getCompetitionFromDisk(allCompetitionLocation + "/" + name);
-				if (comp != null) {
-					allCompetitions.put(name, comp);
-					output.add("Loaded legacy competition " + name);
-				}
-			}
-		}
-
 	}
 
 	/**
@@ -317,195 +255,6 @@ public class AssessmentConverter {
 			return new pasta.archive.legacy.UnitTest(name, tested);
 		} catch (Exception e) {
 			String error = "Could not rebuild legacy unit test from " + location;
-			output.add(error);
-			logger.error(error, e);
-			return null;
-		}
-	}
-	
-	/**
-	 * Method to get a competition from a location
-	 * <p>
-	 * Loads the competitionProperties.xml from file into the cache.
-	 * 
-	 * @param location
-	 *            - the location of the competition
-	 * @return null - there is no competition at that location to be retrieved
-	 * @return comp - the competition at that location.
-	 */
-	private pasta.archive.legacy.Competition getCompetitionFromDisk(String location) {
-		try {
-
-			File fXmlFile = new File(location + "/competitionProperties.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder;
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(fXmlFile);
-			doc.getDocumentElement().normalize();
-
-			pasta.archive.legacy.Competition comp = new pasta.archive.legacy.Competition();
-
-			// name
-			comp.setName(doc.getElementsByTagName("name").item(0)
-					.getChildNodes().item(0).getNodeValue());
-
-			// tested
-			comp.setTested(Boolean.parseBoolean(doc
-					.getElementsByTagName("tested").item(0).getChildNodes()
-					.item(0).getNodeValue()));
-
-			// can students create an arena
-			comp.setStudentCreatableArena(Boolean.parseBoolean(doc
-					.getElementsByTagName("studentCreatableArena").item(0)
-					.getChildNodes().item(0).getNodeValue()));
-
-			// can students create repeatable arenas
-			comp.setStudentCreatableRepeatableArena(Boolean.parseBoolean(doc
-					.getElementsByTagName("studentCreatableRepeatableArena")
-					.item(0).getChildNodes().item(0).getNodeValue()));
-
-			// can tutors create repeatableArenas
-			comp.setTutorCreatableRepeatableArena(Boolean.parseBoolean(doc
-					.getElementsByTagName("tutorCreatableRepeatableArena")
-					.item(0).getChildNodes().item(0).getNodeValue()));
-			
-			
-			// is the competition hidden or not
-			if (doc.getElementsByTagName("hidden") != null
-					&& doc.getElementsByTagName("hidden").getLength() != 0) {
-				comp.setHidden(Boolean.parseBoolean(doc
-						.getElementsByTagName("hidden")
-						.item(0).getChildNodes().item(0).getNodeValue()));
-			}
-
-			// first start date - only for calculated comps
-			if (doc.getElementsByTagName("firstStartDate") != null
-					&& doc.getElementsByTagName("firstStartDate").getLength() != 0) {
-				comp.setFirstStartDate(PASTAUtil.parseDate(doc
-						.getElementsByTagName("firstStartDate").item(0)
-						.getChildNodes().item(0).getNodeValue()));
-			}
-
-			// frequency - only for calculated comps
-			if (doc.getElementsByTagName("frequency") != null
-					&& doc.getElementsByTagName("frequency").getLength() != 0) {
-				comp.setFrequency(new PASTATime(doc
-						.getElementsByTagName("frequency").item(0)
-						.getChildNodes().item(0).getNodeValue()));
-			}
-
-			// arenas
-			// official
-			
-			String[] arenaList = new File(location + "/arenas/").list();
-			
-			if(arenaList != null){
-				
-				LinkedList<pasta.archive.legacy.Arena> completedArenas = new LinkedList<>();
-				LinkedList<pasta.archive.legacy.Arena> outstandingArenas = new LinkedList<>();
-				
-				for(String arenaName: arenaList){
-					pasta.archive.legacy.Arena arena = getArenaFromDisk(location + "/arenas/" + arenaName);
-					if(arena != null){
-						if(arena.getName().replace(" ", "").toLowerCase().equals("officialarena")){
-							comp.setOfficialArena(arena);
-						}
-						else if(new File(location + "/arenas/" + arenaName + "/results.csv").exists()
-								&& !arena.isRepeatable()){
-							completedArenas.add(arena);
-						}
-						else{
-							outstandingArenas.add(arena);
-						}
-					}
-				}
-				
-				comp.setCompletedArenas(completedArenas);
-				comp.setOutstandingArenas(outstandingArenas);
-			}
-			else{
-				Map<String, pasta.archive.legacy.Arena> nothing = null;
-				comp.setOutstandingArenas(nothing);
-			}
-			
-			return comp;
-		} catch (Exception e) {
-			String error = "Could not rebuild legacy competition from " + location;
-			output.add(error);
-			logger.error(error, e);
-			return null;
-		}
-	}
-	
-	/**
-	 * Method to get an arena from a location
-	 * <p>
-	 * Loads the arenaProperties.xml from file into the cache.
-	 * 
-	 * @param location
-	 *            - the location of the arena
-	 * @return null - there is no arena at that location to be retrieved
-	 * @return arena - the arena at that location.
-	 */
-	private pasta.archive.legacy.Arena getArenaFromDisk(String location) {
-		try {
-			File fXmlFile = new File(location + "/arenaProperties.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder;
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(fXmlFile);
-			doc.getDocumentElement().normalize();
-			
-			pasta.archive.legacy.Arena arena = new pasta.archive.legacy.Arena();
-			
-			// name
-			arena.setName(doc.getElementsByTagName("name").item(0)
-					.getChildNodes().item(0).getNodeValue());
-			
-			// first start date
-			if (doc.getElementsByTagName("firstStartDate") != null
-					&& doc.getElementsByTagName("firstStartDate").getLength() != 0) {
-				arena.setFirstStartDate(PASTAUtil.parseDate(doc
-						.getElementsByTagName("firstStartDate").item(0)
-						.getChildNodes().item(0).getNodeValue()));
-			}
-
-			// frequency
-			if (doc.getElementsByTagName("repeats") != null
-					&& doc.getElementsByTagName("repeats").getLength() != 0) {
-				arena.setFrequency(new PASTATime(doc
-						.getElementsByTagName("repeats").item(0)
-						.getChildNodes().item(0).getNodeValue()));
-			}
-			
-			// password
-			if (doc.getElementsByTagName("password") != null
-					&& doc.getElementsByTagName("password").getLength() != 0) {
-				arena.setPassword(doc.getElementsByTagName("password").item(0)
-						.getChildNodes().item(0).getNodeValue());
-			}
-			
-			// players
-			String[] players = new File(location + "/players/").list();
-			
-			if(players != null){
-				for(String player : players){
-					Scanner in = new Scanner(new File(location + "/players/" + player));
-					
-					String username = player.split("\\.")[0];
-					while(in.hasNextLine()){
-						arena.addPlayer(username, in.nextLine());
-					}
-					
-					in.close();
-				}
-			}
-			
-			return arena;
-		} catch (Exception e) {
-			String error = "Could not rebuild legacy arena from " + location;
 			output.add(error);
 			logger.error(error, e);
 			return null;
@@ -751,30 +500,6 @@ public class AssessmentConverter {
 				}
 			}
 
-			// add competitions
-			NodeList competitionList = doc.getElementsByTagName("competition");
-			if (competitionList != null && competitionList.getLength() > 0) {
-				for (int i = 0; i < competitionList.getLength(); i++) {
-					Node competitionNode = competitionList.item(i);
-					if (competitionNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element competitionElement = (Element) competitionNode;
-
-						pasta.archive.legacy.WeightedCompetition weightedComp = new pasta.archive.legacy.WeightedCompetition();
-						if(!allCompetitions.containsKey(competitionElement.getAttribute("name"))) {
-							output.add("Skipping competition " + competitionElement.getAttribute("name") + " for assessment " + currentAssessment.getName() + " (not found)");
-							continue;
-						}
-						weightedComp.setTest(allCompetitions
-								.get(competitionElement.getAttribute("name")));
-						weightedComp.setWeight(Double
-								.parseDouble(competitionElement
-										.getAttribute("weight")));
-						weightedComp.getCompetition().addAssessment(currentAssessment);
-						currentAssessment.addCompetition(weightedComp);
-					}
-				}
-			}
-
 			return currentAssessment;
 		} catch (Exception e) {
 			String error = "Could not rebuild legacy assessment from " + location;
@@ -793,67 +518,6 @@ public class AssessmentConverter {
 			return newTest;
 		} catch(Exception e) {
 			String error = "Error converting legacy unit test " + old.getName();
-			output.add(error);
-			logger.error(error, e);
-			return null;
-		}
-	}
-	
-	private Competition convertCompetition(pasta.archive.legacy.Competition old) {
-		try {
-			Competition newComp = new Competition();
-			newComp.setCalculated(old.isCalculated());
-			newComp.setFirstStartDate(old.getFirstStartDate());
-			newComp.setFirstStartDateStr(old.getFirstStartDateStr());
-			newComp.setFrequency(old.getFrequency());
-			newComp.setHidden(old.isHidden());
-			newComp.setName(old.getName());
-			
-			if(old.isStudentCreatableArena()) {
-				newComp.setStudentPermissions(CompetitionPermissionLevel.CREATE);
-			}
-			if(old.isStudentCreatableRepeatableArena()) {
-				newComp.setStudentPermissions(CompetitionPermissionLevel.CREATE_REPEATABLE);
-			} 
-			if(old.isTutorCreatableRepeatableArena()) {
-				newComp.setTutorPermissions(CompetitionPermissionLevel.CREATE_REPEATABLE);
-			}
-			newComp.setTested(false);
-			
-			Arena newOfficial = convertArena(old.getOfficialArena());
-			newOfficial.setCompetition(newComp);
-			newComp.setOfficialArena(newOfficial);
-			
-			for(pasta.archive.legacy.Arena oldArena : old.getCompletedArenas()) {
-				Arena newArena = convertArena(oldArena);
-				newArena.setCompetition(newComp);
-				newComp.getCompletedArenas().add(newArena);
-			}
-			for(pasta.archive.legacy.Arena oldArena : old.getOutstandingArenas()) {
-				Arena newArena = convertArena(oldArena);
-				newArena.setCompetition(newComp);
-				newComp.getOutstandingArenas().add(newArena);
-			}
-			return newComp;
-		} catch(Exception e) {
-			String error = "Error converting legacy competition " + old.getName();
-			output.add(error);
-			logger.error(error, e);
-			return null;
-		}
-	}
-	
-	private Arena convertArena(pasta.archive.legacy.Arena old) {
-		try {
-			Arena newArena = new Arena();
-			newArena.setFirstStartDate(old.getFirstStartDate());
-			newArena.setFirstStartDateStr(old.getFirstStartDateStr());
-			newArena.setFrequency(old.getFrequency());
-			newArena.setName(old.getName());
-			newArena.setPassword(old.getPassword());
-			return newArena;
-		} catch(Exception e) {
-			String error = "Error converting legacy arena " + old.getName();
 			output.add(error);
 			logger.error(error, e);
 			return null;
@@ -926,13 +590,6 @@ public class AssessmentConverter {
 				newHM.setHandMarking(convertedHandMarking.get(oldHM.getHandMarking().getShortName()));
 				newHM.setWeight(oldHM.getWeight());
 				newAss.addHandMarking(newHM);
-			}
-			
-			for(pasta.archive.legacy.WeightedCompetition oldComp : old.getCompetitions()) {
-				WeightedCompetition newComp = new WeightedCompetition();
-				newComp.setCompetition(convertedCompetitions.get(oldComp.getCompetition().getShortName()));
-				newComp.setWeight(oldComp.getWeight());
-				newAss.addCompetition(newComp);
 			}
 			
 			return newAss;

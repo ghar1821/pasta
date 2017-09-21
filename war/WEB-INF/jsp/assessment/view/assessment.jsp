@@ -326,38 +326,6 @@ either expressed or implied, of the PASTA Project.
 				</table>
 			</div>
 			
-			<div class='part no-line'>
-				<h3 class='part-title'>Competitions</h3>
-				<form:errors path="selectedCompetitions" element="p" />
-				<table class='moduleTable'>
-					<thead>
-						<tr><th>Selected</th><th>Name</th><th>Weighting</th><th>Group Work</th></tr>
-					</thead>
-					<tbody>
-						<c:forEach var='module' items="${allCompetitions}" varStatus="index">
-							<tr>
-								<form:input type="hidden" path="selectedCompetitions[${index.index}].id" value="${module.id}"/>
-								<form:input type="hidden" path="selectedCompetitions[${index.index}].competition.id" value="${module.competition.id}"/>
-								<td>
-									<input class='custom-check select-check' id="selectedCompetitions${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
-									<label for="selectedCompetitions${index.index}.selected"></label>
-								</td>
-								<td>
-									<a href="../../competition/${module.competition.id}/">${module.competition.name}</a>
-								</td>
-								<td>
-									<form:input size="5" type="text" path="selectedCompetitions[${index.index}].weight" value="${module.weight}"/>
-								</td>
-								<td>
-									<form:checkbox cssClass="custom-check" path="selectedCompetitions[${index.index}].groupWork" checked="${module.groupWork ? 'checked' : ''}"  />
-									<label for="selectedCompetitions${index.index}.groupWork1"></label>
-								</td>
-							</tr>
-						</c:forEach>
-					</tbody>
-				</table>
-			</div>
-			
 			<div class='button-panel'>
 				<button type="submit">Save Assessment</button>
 			</div>

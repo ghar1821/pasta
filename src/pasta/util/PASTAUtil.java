@@ -45,7 +45,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,7 +64,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -74,8 +72,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
 import pasta.domain.FileTreeNode;
-import pasta.domain.players.PlayerHistory;
-import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 
@@ -286,8 +282,6 @@ public class PASTAUtil {
 	 *            unit test content directory
 	 *            <li><code>"assessment"</code>: this file tree is part of the
 	 *            assessment content directory
-	 *            <li><code>"competition"</code>: this file tree is part of the
-	 *            competitions content directory
 	 *            <li>anything else: this file tree is part of the submissions
 	 *            directory
 	 *            </ul>
@@ -372,34 +366,6 @@ public class PASTAUtil {
 		return allsubmissions;
 	}
 
-	/**
-	 * Generate the file tree for the players used by arena based competitions.
-	 * 
-	 * @param user the user
-	 * @param competition the competition
-	 * @param players a collection of players you are interested in.
-	 * @return the map of file tree nodes, with the name of the player as the key.
-	 */
-	public static Map<String, FileTreeNode> generateFileTree(PASTAUser user,
-			Competition competition, Collection<PlayerHistory> players) {
-		Map<String, FileTreeNode> allPlayers = new TreeMap<String, FileTreeNode>();
-		
-		for(PlayerHistory player: players){
-			if(player.getActivePlayer() != null){
-				File file = new File(competition.getFileLocation() +
-						"/players/" + user.getUsername() + "/"
-						+ player.getPlayerName()
-						+ "/active/code/");
-				FileTreeNode node = generateFileTree(file, "competition");
-				if(node != null){
-					allPlayers.put(player.getPlayerName(), node);
-				}
-			}
-		}
-		
-		return allPlayers;
-	}
-	
 	/**
 	 * Zip up a file or folder.
 	 * 

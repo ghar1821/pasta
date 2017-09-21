@@ -278,8 +278,9 @@
 			DROP TABLE IF EXISTS unit_test_case_results;
 			DROP TABLE IF EXISTS assessment_secret_unit_tests;
 			DROP TABLE IF EXISTS assessment_unit_tests;
-			DROP TABLE IF EXISTS weighted_unit_tests;
 			DROP TABLE IF EXISTS unit_test_results;
+			DROP TABLE IF EXISTS weighted_unit_tests;
+			DROP TABLE IF EXISTS black_box_options;
 			DROP TABLE IF EXISTS black_box_test_cases;
 			DROP TABLE IF EXISTS unit_tests;
 
@@ -288,35 +289,18 @@
 			DROP TABLE IF EXISTS player_results;
 			DROP TABLE IF EXISTS pasta_players;
 
-			DROP TABLE IF EXISTS weighted_competitions;
-			DROP TABLE IF EXISTS competition_assessments;
-			DROP TABLE IF EXISTS competition_completed_arenas;
-			DROP TABLE IF EXISTS competition_outstanding_arenas;
-			DROP TABLE IF EXISTS competition_jobs;
-			DROP TABLE IF EXISTS arena_jobs;
-
-			DROP TABLE IF EXISTS competition_user_results;
-			DROP TABLE IF EXISTS competition_positions;
-			DROP TABLE IF EXISTS competition_percentages;
-			DROP TABLE IF EXISTS result_categories;
-			DROP TABLE IF EXISTS competition_result_data;
-			DROP TABLE IF EXISTS competition_results;
-
-			DROP TABLE IF EXISTS arenas;
-			DROP TABLE IF EXISTS competitions;
-			DROP TABLE IF EXISTS pasta_time;
-
 			DROP TABLE IF EXISTS assessment_group_members;
 			DROP TABLE IF EXISTS assessment_groups;
 			DROP TABLE IF EXISTS assessment_languages;
 			DROP TABLE IF EXISTS assessment_ratings;
 			DROP TABLE IF EXISTS assessment_extensions;
 			DROP TABLE IF EXISTS assessment_jobs;
+			DROP TABLE IF EXISTS assessment_result_summaries;
 			DROP TABLE IF EXISTS assessment_results;
 			DROP TABLE IF EXISTS assessments;
 			
-			DROP TABLE IF EXISTS authentication_settings;
 			DROP TABLE IF EXISTS server_addresses;
+			DROP TABLE IF EXISTS authentication_settings;
 
 		</sql>
 	</target>
@@ -347,34 +331,6 @@
 				DROP TABLE IF EXISTS rules_release_or;
 			</sql>
 		</target>
-
-	<target name="clearComps">
-		<sql
-		    driver="${jdbc.driverClassName}"
-		    url="${jdbc.url}"
-		    userid="${jdbc.username}"
-		    password="${jdbc.password}"
-		    >
-			<classpath>
-            	<pathelement location="war/WEB-INF/lib/mysql-connector-java-5.1.36.jar"/>
-            </classpath>
-
-			DROP TABLE IF EXISTS player_history_retired_players;
-			DROP TABLE IF EXISTS player_histories;
-			DROP TABLE IF EXISTS player_results;
-			DROP TABLE IF EXISTS pasta_players;
-
-			DROP TABLE IF EXISTS weighted_competitions;
-			DROP TABLE IF EXISTS competition_assessments;
-			DROP TABLE IF EXISTS competition_completed_arenas;
-			DROP TABLE IF EXISTS competition_outstanding_arenas;
-			DROP TABLE IF EXISTS competition_jobs;
-			DROP TABLE IF EXISTS arena_jobs;
-			DROP TABLE IF EXISTS arenas;
-			DROP TABLE IF EXISTS competitions;
-			DROP TABLE IF EXISTS pasta_time;
-		</sql>
-	</target>
 
 	<target name="clearResults">
 		<sql

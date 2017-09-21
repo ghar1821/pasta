@@ -61,7 +61,6 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.SortNatural;
 
 import pasta.domain.template.Assessment;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
@@ -437,8 +436,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	public double getPercentage(){
 		double marks = 0;
 		double maxWeight = getAssessmentHandMarkingWeight() 
-				+ getAssessmentUnitTestsWeight()
-				+ getAssessmentCompetitionWeight();
+				+ getAssessmentUnitTestsWeight();
 		
 		// unit tests
 		// regular
@@ -469,8 +467,7 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	
 	private double getTotalMaxWeight() {
 		return getAssessmentHandMarkingWeight() 
-				+ getAssessmentUnitTestsWeight()
-				+ getAssessmentCompetitionWeight();
+				+ getAssessmentUnitTestsWeight();
 	}
 	public double getAutoMarkAsPercentageOfTotal(){
 		return getPercentage(getRawAutoMarks(), getTotalMaxWeight());
@@ -538,16 +535,6 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		return weight;
 	}
 	
-	private double getAssessmentCompetitionWeight(){
-		double weight = 0;
-		if(assessment.getCompetitions() != null){
-			for(WeightedCompetition marking: assessment.getCompetitions()){
-				weight += marking.getWeight();
-			}
-		}
-		return weight;
-	}
-
 	public String getComments() {
 		return comments;
 	}

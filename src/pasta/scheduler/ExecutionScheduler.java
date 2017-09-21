@@ -43,10 +43,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.CompetitionMarks;
-import pasta.domain.result.CompetitionResult;
-import pasta.domain.template.Arena;
-import pasta.domain.template.Competition;
 import pasta.domain.user.PASTAUser;
 import pasta.service.ResultManager;
 import pasta.util.PASTAUtil;
@@ -85,19 +81,6 @@ public class ExecutionScheduler {
 		save(new AssessmentJob(user, assessmentId, runDate, result));
 	}
 	
-	public void scheduleJob(Competition comp, Arena arena, Date runDate) {
-		CompetitionMarks marks = new CompetitionMarks();
-		marks.setCompetition(comp);
-		CompetitionResult result = new CompetitionResult();
-		result.setArena(arena);
-		result.setCompetition(comp);
-		save(new CompetitionJob(comp, arena, marks, result, runDate));
-	}
-	
-	public void scheduleJob(Competition comp, Date runDate) {
-		scheduleJob(comp, null, runDate);
-	}
-
 	public void save(Job job) {
 		try{
 			sessionFactory.getCurrentSession().save(job);
@@ -142,36 +125,6 @@ public class ExecutionScheduler {
 
 		@SuppressWarnings("unchecked")
 		List<AssessmentJob> list = cr.list();
-		return list;
-	}
-	
-	/**
-	 * Get the outstanding {@link pasta.scheduler.CompetitionJob} for competitions.
-	 *  
-	 * @return the list of competition jobs that are outstanding
-	 */
-	public List<CompetitionJob> getOutstandingCompetitionJobs(){
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionJob.class);
-		cr.add(Restrictions.le("runDate", new Date()));
-		cr.add(Restrictions.isNull("arena"));
-		cr.addOrder(Order.asc("runDate"));
-		@SuppressWarnings("unchecked")
-		List<CompetitionJob> list = cr.list();
-		return list;
-	}
-	
-	/**
-	 * Get the outstanding {@link pasta.scheduler.CompetitionJob} for competitions.
-	 *  
-	 * @return the list of competition jobs that are outstanding
-	 */
-	public List<CompetitionJob> getOutstandingArenaJobs(){
-		Criteria cr = sessionFactory.getCurrentSession().createCriteria(CompetitionJob.class);
-		cr.add(Restrictions.le("runDate", new Date()));
-		cr.add(Restrictions.isNotNull("arena"));
-		cr.addOrder(Order.asc("runDate"));
-		@SuppressWarnings("unchecked")
-		List<CompetitionJob> list = cr.list();
 		return list;
 	}
 	

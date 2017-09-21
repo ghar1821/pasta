@@ -65,11 +65,6 @@ import pasta.util.ProjectProperties;
  *  Data runDate (not null)
  * </pre>
  * 
- * For competitions, the username will be PASTACompetitionRunner.
- * For calculated competition, the assessmentName will be the name of the competition.
- * For arena based competition, the assessmentName will be competitionName#PASTAArena#arenaName(
- * e.g. BattleShipLeague#PASTAArena#OfficialArena).
- * 
  * @author Alex Radu
  * @version 2.0
  * @since 2012-12-04

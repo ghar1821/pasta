@@ -45,8 +45,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -76,7 +74,6 @@ import pasta.util.ProjectProperties;
  * 	<li>unit test assessment modules</li>
  * 	<li>secret unit test assessment modules</li>
  * 	<li>hand marking assessment modules</li>
- * 	<li>competition assessment modules</li>
  * </ul>
  * 
  * Also contains assessment specific information such as:
@@ -109,11 +106,6 @@ import pasta.util.ProjectProperties;
 		...
 		<handMarks name="name" weight="double"/>
 	</handMarkingSuite>
-	<competitionSuite>
-		<competition name="name" weight="double"/>
-		...
-		<competition name="name" weight="double" [secret="true|false"]/>
-	</competitionSuite>
 </assessment>}</pre>
  * 
  * All weighting is relative. If two assessment modules are weighted as 
@@ -178,11 +170,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@JoinColumn(name="assessment_id")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedHandMarking> handMarking = new TreeSet<WeightedHandMarking>();
-	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
-	@JoinColumn(name="assessment_id")
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private Set<WeightedCompetition> competitions = new TreeSet<WeightedCompetition>();
 	
 	@ElementCollection
 	@JoinTable(name = "assessment_languages", joinColumns = @JoinColumn(name = "assessment_id"))
@@ -392,7 +379,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return hasWork() && isConsistentGroupWork(true);
 	}
 	private boolean hasWork() {
-		return !(unitTests.isEmpty() && handMarking.isEmpty() && competitions.isEmpty());
+		return !(unitTests.isEmpty() && handMarking.isEmpty());
 	}
 	// Named for bean convention
 	public boolean isHasWork() {
@@ -405,11 +392,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			}
 		}
 		for(WeightedHandMarking module : handMarking){
-			if(module.isGroupWork() != isGroupWork) {
-				return false;
-			}
-		}
-		for(WeightedCompetition module : competitions) {
 			if(module.isGroupWork() != isGroupWork) {
 				return false;
 			}
@@ -484,19 +466,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		this.handMarking.clear();
 		for(WeightedHandMarking template : handMarking) {
 			addHandMarking(template);
-		}
-	}
-	
-	public Set<WeightedCompetition> getCompetitions() {
-		return competitions;
-	}
-	public void setCompetitions(Collection<WeightedCompetition> competitions) {
-		for(WeightedCompetition comp : this.competitions) {
-			comp.setAssessment(null);
-		}
-		this.competitions.clear();
-		for(WeightedCompetition comp : competitions) {
-			addCompetition(comp);
 		}
 	}
 	
@@ -595,30 +564,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return !this.getHandMarking().isEmpty();
 	}
 
-	public void addCompetition(WeightedCompetition weightedComp) {
-		if(getCompetitions().add(weightedComp)) {
-			weightedComp.setAssessment(this);
-		}
-	}
-	
-	public void addCompetitions(Collection<WeightedCompetition> competitions) {
-		for(WeightedCompetition comp : competitions) {
-			addCompetition(comp);
-		}
-	}
-	
-	public void removeCompetition(WeightedCompetition weightedComp) {
-		if(getCompetitions().remove(weightedComp)) {
-			weightedComp.setAssessment(null);
-		}
-	}
-	
-	public void removeCompetitions(Collection<WeightedCompetition> weightedComps) {
-		for(WeightedCompetition comp : weightedComps) {
-			removeCompetition(comp);
-		}
-	}
-
 	public String getSimpleDueDate() {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 		return sdf.format(dueDate);
@@ -670,9 +615,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			weight += module.getWeight();
 		}
 		for(WeightedHandMarking module: handMarking){
-			weight += module.getWeight();
-		}
-		for(WeightedCompetition module : competitions) {
 			weight += module.getWeight();
 		}
 		return weight;
@@ -727,15 +669,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 //						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
 //			}
 //			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
-//		}
-//		// all competitions
-//		if (competitions.size() > 0) {
-//			output += "\t<competitionSuite>" + System.getProperty("line.separator");
-//			for (WeightedCompetition comp : competitions) {
-//				output += "\t\t<competition name=\"" + comp.getCompetition().getFileAppropriateName() + "\" weight=\""
-//						+ comp.getWeight() + "\"/>" + System.getProperty("line.separator");
-//			}
-//			output += "\t</competitionSuite>" + System.getProperty("line.separator");
 //		}
 //		output += "</assessment>" + System.getProperty("line.separator");
 //		return output;

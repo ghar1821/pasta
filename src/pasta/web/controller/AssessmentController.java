@@ -67,23 +67,18 @@ import pasta.domain.form.UpdateAssessmentForm;
 import pasta.domain.form.validate.UpdateAssessmentFormValidator;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.Competition;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
-import pasta.service.CompetitionManager;
 import pasta.service.GroupManager;
 import pasta.service.HandMarkingManager;
-import pasta.service.ReleaseManager;
 import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
 import pasta.service.UnitTestManager;
 import pasta.service.UserManager;
-import pasta.util.Language;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
@@ -120,11 +115,7 @@ public class AssessmentController {
 	@Autowired
 	private HandMarkingManager handMarkingManager;
 	@Autowired
-	private CompetitionManager competitionManager;
-	@Autowired
 	private SubmissionManager submissionManager;
-	@Autowired
-	private ReleaseManager releaseManager;
 	@Autowired
 	private GroupManager groupManager;
 	
@@ -168,7 +159,7 @@ public class AssessmentController {
 	 * Otherwise:
 	 * 
 	 * Wrap the weighted containers around all assessment modules (Unit tets, hand
-	 * marking, competitions ...)
+	 * marking ...)
 	 * Add them to the model for use.
 	 * 
 	 * Attributes:
@@ -177,7 +168,6 @@ public class AssessmentController {
 	 * 	<tr><td>tutorialByStream</td><td>A map of the streams and which tutorials belong to them. Used for releases.</td></tr>
 	 * 	<tr><td>otherUnitTests</td><td>The weighted unit tests not already associated with this assessment</td></tr>
 	 * 	<tr><td>otherHandMarking</td><td>The weighted hand marking templates not already associated with this assessment</td></tr>
-	 * 	<tr><td>otherCompetitions</td><td>The weighted competitions not already associated with this assessment</td></tr>
 	 * </table>
 	 * 
 	 * JSP:
@@ -246,28 +236,6 @@ public class AssessmentController {
 		}
 		model.addAttribute("allHandMarking", allHandMarking);
 		
-		@SuppressWarnings("unchecked")
-		List<WeightedCompetition> selectedCompetitions = (List<WeightedCompetition>) model.asMap().get("updatedCompetitions");
-		if(selectedCompetitions == null) {
-			selectedCompetitions = new LinkedList<WeightedCompetition>(currAssessment.getCompetitions());
-		}
-		List<WeightedCompetition> allCompetitions = new LinkedList<WeightedCompetition>(selectedCompetitions);
-		for(Competition comp : competitionManager.getCompetitionList()) {
-			boolean contains = false;
-			for(WeightedCompetition weighted : selectedCompetitions) {
-				if(weighted.getCompetition().getId() == comp.getId()) {
-					contains = true;
-					break;
-				}
-			}
-			if(!contains) {
-				WeightedCompetition weightedComp = new WeightedCompetition();
-				weightedComp.setCompetition(comp);
-				allCompetitions.add(weightedComp);
-			}
-		}
-		model.addAttribute("allCompetitions", allCompetitions);
-		
 		model.addAttribute("tutorialByStream", userManager.getTutorialByStream());
 		model.addAttribute("allLanguages", LanguageManager.getInstance().getLanguages());
 		
@@ -330,19 +298,13 @@ public class AssessmentController {
 				it.remove();
 			}
 		}
-		it = form.getSelectedCompetitions().iterator();
-		while(it.hasNext()) {
-			if(((WeightedCompetition) it.next()).getCompetition() == null) {
-				it.remove();
-			}
-		}
 		
 		updateValidator.validate(form, result);
 		if(result.hasErrors()) {
 			attr.addFlashAttribute("updateAssessmentForm", form);
 			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateAssessmentForm", result);
 			
-			// Reload the unit tests, hand marking and competitions to that the
+			// Reload the unit tests and hand marking so that the
 			// page can properly re-display selected tests
 			for(WeightedUnitTest test : form.getSelectedUnitTests()) {
 				test.setTest(unitTestManager.getUnitTest(test.getTest().getId()));
@@ -354,10 +316,6 @@ public class AssessmentController {
 			}
 			attr.addFlashAttribute("updatedHandMarking", form.getSelectedHandMarking());
 			
-			for(WeightedCompetition comp : form.getSelectedCompetitions()) {
-				comp.setCompetition(competitionManager.getCompetition(comp.getCompetition().getId()));
-			}
-			attr.addFlashAttribute("updatedCompetitions", form.getSelectedCompetitions());
 			return "redirect:.";
 		}
 		

@@ -140,7 +140,6 @@
 					<div class='tab'><a href="<c:url value="/handMarking/"/>">Hand Marking</a></div>
 				</c:if>
 				<c:if test="${not empty user}">
-					<div class='tab'><a href="<c:url value="/competition/"/>">Competitions</a></div>
 					<c:if test="${empty viewedUser}">
 						<div class='tab'><a href="<c:url value="/reporting/"/>">Reporting</a></div>
 					</c:if>

@@ -49,7 +49,6 @@ import pasta.docker.Language;
 import pasta.docker.LanguageManager;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.WeightedCompetition;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 
@@ -102,7 +101,6 @@ public class UpdateAssessmentForm {
 	
 	private List<WeightedUnitTest> selectedUnitTests;
 	private List<WeightedHandMarking> selectedHandMarking;
-	private List<WeightedCompetition> selectedCompetitions;
 	
 	private ReleaseRule releaseRule;
 	
@@ -128,7 +126,6 @@ public class UpdateAssessmentForm {
 		
 		this.selectedUnitTests = new ArrayList<WeightedUnitTest>();
 		this.selectedHandMarking = new ArrayList<WeightedHandMarking>();
-		this.selectedCompetitions = new ArrayList<WeightedCompetition>();
 	}
 	
 	public long getId() {
@@ -326,9 +323,5 @@ public class UpdateAssessmentForm {
 	
 	public List<WeightedHandMarking> getSelectedHandMarking() {
 		return selectedHandMarking;
-	}
-	
-	public List<WeightedCompetition> getSelectedCompetitions() {
-		return selectedCompetitions;
 	}
 }
