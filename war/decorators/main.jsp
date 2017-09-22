@@ -22,11 +22,8 @@
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/jquery.collapsible.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/font-awesome.min.css"/>" rel="stylesheet" type="text/css" media="screen" />
-<<<<<<< HEAD
 		<link href="<c:url value="/static/styles/highlight.github.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/highlightjs-line-numbers.css"/>" rel="stylesheet" type="text/css" media="screen" />
-=======
->>>>>>> branch 'feature/icons-update' of https://jjstretton@bitbucket.org/gramoli/arrabbiata.git
 		<link href="<c:url value="/static/styles/jquery.hover-button.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -49,11 +46,8 @@
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.collapsible.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.colours.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.loading.js"/>"></script>
-<<<<<<< HEAD
 		<script type="text/javascript" src="<c:url value="/static/scripts/highlight.pack.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/highlightjs-line-numbers.js"/>"></script>
-=======
->>>>>>> branch 'feature/icons-update' of https://jjstretton@bitbucket.org/gramoli/arrabbiata.git
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.hover-button.js"/>"></script>
 		
 		<script type="text/x-mathjax-config">
