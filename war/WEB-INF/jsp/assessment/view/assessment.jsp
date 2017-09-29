@@ -268,7 +268,7 @@ either expressed or implied, of the PASTA Project.
 								<form:input type="hidden" path="selectedUnitTests[${index.index}].id" value="${module.id}"/>
 								<form:input type="hidden" path="selectedUnitTests[${index.index}].test.id" value="${module.test.id}"/>
 								<td>
-									<input class='custom-check select-check' id="selectedUnitTests${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
+									<input class='custom-check select-check' id="selectedUnitTests${index.index}.selected" type='checkbox' <c:if test="${module.id != null or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
 									<label for="selectedUnitTests${index.index}.selected"></label>
 								</td>
 								<td>
@@ -307,7 +307,7 @@ either expressed or implied, of the PASTA Project.
 								<form:input type="hidden" path="selectedHandMarking[${index.index}].id" value="${module.id}"/>
 								<form:input type="hidden" path="selectedHandMarking[${index.index}].handMarking.id" value="${module.handMarking.id}"/>
 								<td>
-									<input class='custom-check select-check' id="selectedHandMarking${index.index}.selected" type='checkbox' <c:if test="${module.id != 0 or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
+									<input class='custom-check select-check' id="selectedHandMarking${index.index}.selected" type='checkbox' <c:if test="${module.id != null or module.weight != 0 or module.groupWork}">checked="checked"</c:if> />
 									<label for="selectedHandMarking${index.index}.selected"></label>
 								</td>
 								<td>
