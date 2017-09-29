@@ -106,6 +106,10 @@ public class ResultDAO{
 	public void delete(AssessmentResult result) {
 		sessionFactory.getCurrentSession().delete(result);
 	}
+	
+	public void delete(AssessmentResultSummary result) {
+		sessionFactory.getCurrentSession().delete(result);
+	}
 
 	public void delete(HandMarkingResult result) {
 		sessionFactory.getCurrentSession().delete(result);
@@ -526,8 +530,11 @@ public class ResultDAO{
 	public void update(AssessmentResult result) {
 		Session session = sessionFactory.getCurrentSession();
 		session.saveOrUpdate(result);
-		session.flush();
-		session.clear();
+		
+/* 	Removed as these should be unnecessary now
+ *		session.flush();
+ *		session.clear();
+ */
 	}
 
 	/**
@@ -544,7 +551,7 @@ public class ResultDAO{
 		@SuppressWarnings("unchecked")
 		List<AssessmentResult> results = session.createCriteria(AssessmentResult.class)
 				.createCriteria("unitTests", "utResult")
-				.createCriteria("utResult.test", "test")
+				.createCriteria("utResult.weightedUnitTest.test", "test")
 				.add(Restrictions.eq("test.id", id))
 				.list();
 		for(AssessmentResult result : results) {
@@ -552,7 +559,7 @@ public class ResultDAO{
 			while(utIt.hasNext()) {
 				UnitTestResult utResult = utIt.next();
 				if(utResult.getTest().getId() == id) {
-					utResult.setTest(null);
+					utResult.setWeightedUnitTest(null);
 					session.update(utResult);
 					utIt.remove();
 				}
@@ -598,5 +605,48 @@ public class ResultDAO{
 				+ "ORDER BY ar.submission_date, ar.id, utcr.name";
 		SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 		return query.list();
+	}
+
+	public List<AssessmentResult> getAllResultsForAssessment(Assessment assessment) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
+		cr.createCriteria("assessment").add(Restrictions.eq("id", assessment.getId()));
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = cr.list();
+		if(results != null) {
+			for(AssessmentResult result : results) {
+				refreshHandMarking(result);
+			}
+		}
+		return results;
+	}
+
+	public List<AssessmentResult> getAllResultsForUser(PASTAUser user) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResult.class);
+		cr.createCriteria("user").add(Restrictions.eq("id", user.getId()));
+		@SuppressWarnings("unchecked")
+		List<AssessmentResult> results = cr.list();
+		if(results != null) {
+			for(AssessmentResult result : results) {
+				refreshHandMarking(result);
+			}
+		}
+		return results;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<AssessmentResultSummary> getAllResultSummariesForUser(PASTAUser user) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResultSummary.class);
+		cr.add(Restrictions.eq("id.user", user));
+		return cr.list();
+	}
+	@SuppressWarnings("unchecked")
+	public List<AssessmentResultSummary> getAllResultSummariesForAssessment(Assessment assessment) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResultSummary.class);
+		cr.add(Restrictions.eq("id.assessment", assessment));
+		return cr.list();
+	}
+
+	public void saveOrUpdate(AssessmentResult result) {
+		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}
 }

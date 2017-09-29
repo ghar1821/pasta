@@ -29,18 +29,23 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import pasta.archive.Archivable;
 import pasta.archive.InvalidRebuildOptionsException;
 import pasta.archive.RebuildOptions;
+import pasta.domain.result.UnitTestResult;
 
 /**
  * Container class for a weighted unit test.
@@ -74,11 +79,12 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 	@Column(name= "group_work")
 	private boolean groupWork;
 	
-	@ManyToOne (cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "unit_test_id")
 	private UnitTest test;
 	
-	@ManyToOne (cascade = CascadeType.ALL)
+	@ManyToOne
+	@JoinColumn(name = "assessment_id")
 	private Assessment assessment;
 	
 	public WeightedUnitTest() {
@@ -225,4 +231,14 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 		clone.setWeight(this.getWeight());
 		return clone;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "weightedUnitTest", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<UnitTestResult> unitTestResults;
 }

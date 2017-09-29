@@ -30,19 +30,28 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.user;
 
 import java.io.Serializable;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.ratings.AssessmentRating;
+import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentResultSummary;
+import pasta.domain.template.AssessmentExtension;
+import pasta.scheduler.AssessmentJob;
 
 /**
  * @author Alex Radu
@@ -189,4 +198,22 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	public String toString() {
 		return username;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentRating> ratings;
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentExtension> extensions;
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResult> results;
+	@OneToMany(mappedBy = "id.user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResultSummary> summaries;
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentJob> jobs;
 }

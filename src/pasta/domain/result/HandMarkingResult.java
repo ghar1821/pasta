@@ -85,6 +85,10 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
     @ManyToOne
     @JoinColumn (name = "weighted_hand_marking_id")
 	private WeightedHandMarking weightedHandMarking;
+    
+    @ManyToOne
+	@JoinColumn (name = "assessment_result_id")
+	private AssessmentResult assessmentResult;
 	
 	public Long getId() {
 		return id;
@@ -140,6 +144,13 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 			return true;
 		}
 		return false;  
+	}
+	
+	public AssessmentResult getAssessmentResult() {
+		return assessmentResult;
+	}
+	public void setAssessmentResult(AssessmentResult assessmentResult) {
+		this.assessmentResult = assessmentResult;
 	}
 
 	@Override

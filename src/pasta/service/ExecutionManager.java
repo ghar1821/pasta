@@ -143,26 +143,26 @@ public class ExecutionManager {
 			ExecutionContainer container = new ExecutionContainer(executionLabel, sandboxSrc, sandboxOut);
 			
 			// Check if test has been run before, and remove previous results if so
-			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
-			while(previousResultsIt.hasNext()) {
-				UnitTestResult existingResult = previousResultsIt.next();
+			List<UnitTestResult> staleResults = new LinkedList<>();
+			for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
 				if(existingResult == null) {
 					continue;
 				}
 				if(existingResult.getTest() == null || 
 						existingResult.getTest().getId() == test.getId() ||
 						!validTestIds.contains(existingResult.getTest().getId())) {
-					existingResult.clearValidationErrors();
-					existingResult.getTestCases().clear();
-					previousResultsIt.remove();
+					staleResults.add(existingResult);
 				}
+			}
+			for(UnitTestResult staleResult : staleResults) {
+				staleResult.clearValidationErrors();
+				staleResult.removeAllTestCases();
+				job.getResults().removeUnitTest(staleResult);
 			}
 			
 			// Create the new results object that will be used
 			UnitTestResult utResults = new UnitTestResult();
-			utResults.setTest(test);
-			utResults.setSecret(weightedTest.isSecret());
-			utResults.setGroupWork(weightedTest.isGroupWork());
+			utResults.setWeightedUnitTest(weightedTest);
 			job.getResults().addUnitTest(utResults);
 			
 			// Code we are interested in testing

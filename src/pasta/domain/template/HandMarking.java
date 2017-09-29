@@ -36,6 +36,7 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -362,4 +363,14 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 		clone.setRowHeader(newRowHeader);
 		return clone;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "handMarking", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<WeightedHandMarking> weightedHandMarkings;
 }

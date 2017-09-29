@@ -56,10 +56,9 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 import pasta.util.PASTAUtil;
 
 /**
@@ -85,18 +84,16 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	private Long id;
 	
 	@OneToOne
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@JoinColumn (name="unit_test_id", nullable = true)
-	private UnitTest test;
+	@JoinColumn (name="tester_unit_test_id", nullable = true)
+	private UnitTest testerTest; // When the test is for testing a unit test
+	
+	@ManyToOne
+	@JoinColumn (name="weighted_unit_test_id", nullable = true)
+	private WeightedUnitTest weightedUnitTest; // When the test is part of an assessment
 	
 	@ManyToOne
 	@JoinColumn (name = "assessment_result_id", nullable = true)
 	private AssessmentResult assessmentResult;
-	
-	private boolean secret;
-	
-	@Column(name="group_work")
-	private boolean groupWork;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "unitTestResult")
 	@OrderBy ("testName")
@@ -143,38 +140,53 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	}
 
 	public UnitTest getTest() {
-		return test;
+		return getTesterTest() == null ? (getWeightedUnitTest() == null ? null : getWeightedUnitTest().getTest()) : getTesterTest();
 	}
-	public void setTest(UnitTest test) {
-		this.test = test;
+	
+	public UnitTest getTesterTest() {
+		return testerTest;
 	}
-
+	public void setTesterTest(UnitTest test) {
+		this.testerTest = test;
+	}
+	
+	public WeightedUnitTest getWeightedUnitTest() {
+		return weightedUnitTest;
+	}
+	public void setWeightedUnitTest(WeightedUnitTest weightedUnitTest) {
+		this.weightedUnitTest = weightedUnitTest;
+	}
+	
 	public boolean isSecret() {
-		return secret;
+		WeightedUnitTest wut = getWeightedUnitTest();
+		return wut == null ? false : wut.isSecret();
 	}
-	public void setSecret(boolean secret) {
-		this.secret = secret;
-	}
-
 	public boolean isGroupWork() {
-		return groupWork;
-	}
-	public void setGroupWork(boolean groupWork) {
-		this.groupWork = groupWork;
+		WeightedUnitTest wut = getWeightedUnitTest();
+		return wut == null ? false : wut.isGroupWork();
 	}
 
 	public List<UnitTestCaseResult> getTestCases() {
 		return testCases;
 	}
+	public void addTestCaseResult(UnitTestCaseResult utcr) {
+		utcr.setUnitTestResult(this);
+		this.testCases.add(utcr);
+	}
+	public void addAllTestCaseResults(Collection<UnitTestCaseResult> results) {
+		for(UnitTestCaseResult result : results) {
+			addTestCaseResult(result);
+		}
+	}
 	public void setTestCases(List<UnitTestCaseResult> testCases) {
+		removeAllTestCases();
+		addAllTestCaseResults(testCases);
+	}
+	public void removeAllTestCases() {
 		for(UnitTestCaseResult result : this.testCases) {
 			result.setUnitTestResult(null);
-			this.testCases.clear();
 		}
-		for(UnitTestCaseResult result : testCases) {
-			result.setUnitTestResult(this);
-			this.testCases.add(result);
-		}
+		this.testCases.clear();
 	}
 
 	public boolean isInternalError() {
@@ -322,10 +334,17 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		}
 		return null;
 	}
-
+	
+	public AssessmentResult getAssessmentResult() {
+		return assessmentResult;
+	}
+	public void setAssessmentResult(AssessmentResult assessmentResult) {
+		this.assessmentResult = assessmentResult;
+	}
+	
 	@Override
 	public int compareTo(UnitTestResult target) {
-		return test.getName().compareTo(target.getTest().getName());
+		return getTest().getName().compareTo(target.getTest().getName());
 	}
 	
 	public void combine(UnitTestResult other) {
@@ -337,17 +356,15 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.setCleanError(cleanError || other.cleanError);
 		this.setCompileErrors(combineStrings(compileErrors, other.compileErrors));
 		this.setFilesCompiled(combineStrings(filesCompiled, other.filesCompiled));
-		this.setGroupWork(groupWork || other.groupWork);
 		this.setInternalError(internalError || other.internalError);
 		this.setRuntimeErrors(combineStrings(runtimeErrors, other.runtimeErrors));
 		this.setFullOutput(combineStrings(fullOutput, other.fullOutput));
-		this.setSecret(secret || other.secret);
 		
 		if(this.getTestCases() == null && other.getTestCases() != null) {
 			this.testCases = new LinkedList<UnitTestCaseResult>();
 		}
 		if(other.getTestCases() != null) {
-			this.getTestCases().addAll(other.getTestCases());
+			this.addAllTestCaseResults(other.getTestCases());
 		}
 		this.getValidationErrors().addAll(other.getValidationErrors());
 	}
@@ -365,5 +382,29 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 			return s1.trim();
 		}
 		return (s1 + (!s1.isEmpty() && !s2.isEmpty() ? System.lineSeparator() + "===============" : "") + System.lineSeparator() + s2).trim();
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UnitTestResult other = (UnitTestResult) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 }

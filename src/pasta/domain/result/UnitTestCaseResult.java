@@ -40,9 +40,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
 /**
  * Container class to hold the result of a single unit test.
  * <p>
@@ -97,7 +94,6 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	private double time;
 	
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name="unit_test_result_id")
 	private UnitTestResult unitTestResult;
 	

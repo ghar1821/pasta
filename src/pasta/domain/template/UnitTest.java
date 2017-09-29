@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -107,7 +108,7 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	@Column (name = "allow_accessory_write")
 	private boolean allowAccessoryFileWrite;
 	
-	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "test", optional = true)
+	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "testerTest", optional = true)
 	private UnitTestResult testResult;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
@@ -256,9 +257,9 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 
 	public void setTestResult(UnitTestResult testResult) {
 		if(this.testResult != null) {
-			this.testResult.setTest(null);
+			this.testResult.setTesterTest(null);
 		}
-		testResult.setTest(this);
+		testResult.setTesterTest(this);
 		this.testResult = testResult;
 	}
 	
@@ -411,4 +412,14 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		clone.setTestCases(newTestCases);
 		return clone;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<WeightedUnitTest> weightedUnitTests;
 }

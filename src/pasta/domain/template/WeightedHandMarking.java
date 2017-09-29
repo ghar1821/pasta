@@ -29,18 +29,23 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import pasta.archive.Archivable;
 import pasta.archive.InvalidRebuildOptionsException;
 import pasta.archive.RebuildOptions;
+import pasta.domain.result.HandMarkingResult;
 
 /**
  * Container class for a weighted hand marking.
@@ -76,7 +81,8 @@ public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Arc
 	@JoinColumn(name = "hand_marking_id")
 	private HandMarking handMarking;
 	
-	@ManyToOne (cascade = CascadeType.ALL)
+	@ManyToOne
+	@JoinColumn(name = "assessment_id")
 	private Assessment assessment;
 	
 	public WeightedHandMarking() {
@@ -208,4 +214,14 @@ public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Arc
 		clone.setWeight(this.getWeight());
 		return clone;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "weightedHandMarking", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<HandMarkingResult> handMarkingResults;
 }

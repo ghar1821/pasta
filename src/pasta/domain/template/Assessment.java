@@ -65,8 +65,14 @@ import pasta.archive.InvalidRebuildOptionsException;
 import pasta.archive.RebuildOptions;
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
+import pasta.domain.ratings.AssessmentRating;
+import pasta.domain.release.ReleaseAllResultsRule;
+import pasta.domain.release.ReleaseResultsRule;
 import pasta.domain.release.ReleaseRule;
 import pasta.domain.reporting.ReportPermission;
+import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentResultSummary;
+import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
@@ -162,16 +168,19 @@ public class Assessment implements Comparable<Assessment>, Archivable<Assessment
 	@Column (name = "count_uncompilable")
 	private boolean countUncompilable = true;
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
-	//TODO this doesn't need to be a join table any more: see weighted hand marking
-	@JoinTable(name="assessment_unit_tests",
-	joinColumns=@JoinColumn(name = "assessment_id"),
-	inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
+	@OneToMany (
+			cascade = CascadeType.ALL,
+			orphanRemoval = true,
+			mappedBy = "assessment"
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedUnitTest> unitTests = new TreeSet<WeightedUnitTest>();
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
-	@JoinColumn(name="assessment_id")
+	@OneToMany (
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true, 
+			mappedBy = "assessment"
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedHandMarking> handMarking = new TreeSet<WeightedHandMarking>();
 	
@@ -742,6 +751,27 @@ public class Assessment implements Comparable<Assessment>, Archivable<Assessment
 		return clone;
 	}
 	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentRating> ratings;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentExtension> extensions;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResult> results;
+	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResultSummary> summaries;
+	@OneToMany(mappedBy = "compareAssessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReleaseResultsRule> releaseResultsRules;
+	@OneToMany(mappedBy = "compareAssessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReleaseAllResultsRule> releaseAllResultsRules;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<PASTAGroup> groups;
 	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private List<ReportPermission> reportPermissions;
 }

@@ -3,7 +3,6 @@ package pasta.domain.template;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -30,11 +29,11 @@ public class AssessmentExtension  implements Serializable, Comparable<Assessment
 	@GeneratedValue
 	private Long id;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name="user", nullable=false)
 	private PASTAUser user;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name="assessment", nullable=false)
 	private Assessment assessment;
 	

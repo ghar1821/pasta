@@ -202,7 +202,6 @@ public class UnitTestManager {
 
 		// This results object will be updated with the results as we go
 		UnitTestResult utResults = new UnitTestResult();
-		utResults.setTest(test);
 		test.setTestResult(utResults);
 		
 		File sandboxTop = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
@@ -280,8 +279,7 @@ public class UnitTestManager {
 			runJUnitTests(test, utResults, mainClass, context, container);
 		}
 		
-		resultDAO.save(utResults);
-		unitTestDAO.update(test);
+		unitTestDAO.saveOrUpdate(test);
 		
 		logger.debug("Deleting final sandbox location " + sandboxTop);
 		try {

@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
@@ -27,7 +27,7 @@ import pasta.util.ProjectProperties;
 public abstract class ReleaseAllResultsRule extends ReleaseRule implements Serializable {	
 	private static final long serialVersionUID = 8770896473121146463L;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "compare_assessment_id")
 	private Assessment compareAssessment;
 	
