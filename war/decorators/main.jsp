@@ -125,7 +125,7 @@
 			
 			<div class='link-bar'>
 				<a href="<c:url value="/"/>">PASTA Home</a>
-				<a href="http://www.sydney.edu.au">University Home</a>
+				<a href="https://www.sydney.edu.au">University Home</a>
 			</div>
 			
 			<div class='tab-bar'>
