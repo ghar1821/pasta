@@ -1,5 +1,8 @@
 body {
-	font: normal 14px Arial, Helvetica, sans-serif;
+	-webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+	font-family: 'Open Sans','Helvetica Neue',Helvetica,Arial,sans-serif;
+	font-size: 14px;
 	padding: 0 10%;
 }
 
