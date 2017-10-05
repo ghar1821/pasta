@@ -343,7 +343,7 @@ either expressed or implied, of the PASTA Project.
     	$( ".moduleTable input:text" ).each(function() {
     		$textBox = $(this);
     		$textBox.tipsy({trigger: 'focus', gravity: 'n', title: function() {
-    			if(!$(this).parents("tr").is(".selected")) {
+    			if(!$(this).parents("tr").find("input[type='checkbox']").is(":checked")) {
     				return "Don't forget to select the row.";
     			}
     			return "";
@@ -461,8 +461,6 @@ either expressed or implied, of the PASTA Project.
 					$weightBox.val("1.0");
 				}
 			}
-			$row.toggleClass("selected", $(this).is(":checked"));
-			refreshTable($(this).parents("table.moduleTable"));
 		});
 
 		$("#updateAssessmentForm").on(
@@ -474,10 +472,11 @@ either expressed or implied, of the PASTA Project.
 					});
 
 					// Ignore non-selected modules
-					$("input.select-check").parents("tr").not(".selected")
-							.find("input").prop("disabled", true);
-					$("input.select-check").parents("tr").not(".selected")
-							.hide();
+					$("input.select-check:not(:checked)")
+						.parents("tr")
+						.hide()
+						.find("input")
+						.prop("disabled", true)
 
 					// Save the description
 					$("#description").val(tinymce.activeEditor.getContent());
@@ -489,12 +488,19 @@ either expressed or implied, of the PASTA Project.
 			return this.api().column(col, {
 				order : 'index'
 			}).nodes().map(function(td, i) {
-				return $('input', td).prop('checked') ? '0' : '1';
+				return $('input[type="checkbox"]', td).is(':checked') ? '0' : '1';
 			});
 		};
-		$("input.select-check:checked").parents("tr").addClass("selected");
+		$.fn.dataTable.ext.order['dom-text'] = function(settings, col) {
+			return this.api().column(col, {
+				order : 'index'
+			}).nodes().map(function(td, i) {
+				return $('input[type="text"]', td).val() * 1;
+			});
+		};
 		$("table.moduleTable").each(function() {
-			$(this).addClass("compact");
+			var cols = $(this).find("tr:first th").length;
+			$(this).addClass("display");
 			$(this).attr("width", "100%");
 			$(this).DataTable({
 				deferDrawing : true,
@@ -502,30 +508,19 @@ either expressed or implied, of the PASTA Project.
 				info : true,
 				searching : true,
 				ordering : true,
+				order: [[0, "asc"], [1, "asc"]],
 				columnDefs : [ {
-					targets : 0,
-					orderData : [ 0, 1 ],
+					targets : cols < 5 ? [0, 3] : [0, 3, 4],
 					orderDataType : "dom-checkbox"
 				}, {
-					orderable : false,
-					targets : "_all"
+					targets: [2],
+					orderDataType : "dom-text"
 				} ],
 				language : {
 					emptyTable : "None available."
 				}
 			});
-			refreshTable($(this));
 		});
-
-		function refreshTable($table) {
-			$table.DataTable().draw(false);
-			$rows = $('tbody>tr', $table);
-			$table.parent().find('a.paginate_button').filter(function() {
-				return $(this).text() === '1';
-			}).effect('highlight', {}, 1500);
-			$rows.removeClass("lastSelected").filter(".selected").last()
-					.addClass("lastSelected");
-		}
 
 		$("#hideUntilLoaded").show();
 		$("#loading").hide();
