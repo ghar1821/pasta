@@ -12,8 +12,8 @@
 		<title><spring:message code="UOS" /> </title>
 		
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
-		<link href="<c:url value="/static/styles/main.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/theme.css?v=2"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/main.css?v=3"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/theme.css?v=3"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/loading.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -68,15 +68,15 @@
 		<link rel="apple-touch-icon" sizes="144x144" href="<c:url value="/static/icons/apple-icon-144x144.png"/>">
 		<link rel="apple-touch-icon" sizes="152x152" href="<c:url value="/static/icons/apple-icon-152x152.png"/>">
 		<link rel="apple-touch-icon" sizes="180x180" href="<c:url value="/static/icons/apple-icon-180x180.png"/>">
-		<link rel="shortcut icon" sizes="16x16" href="<c:url value="/static/icons/favicon.ico?v=3"/>"/>
+		<link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64 96x96 128x128 192x192 256x256" href="<c:url value="/static/icons/favicon.ico?v=4"/>"/>
 		<link rel="icon" type="image/png" sizes="192x192"  href="<c:url value="/static/icons/android-icon-192x192.png"/>">
 		<link rel="icon" type="image/png" sizes="32x32" href="<c:url value="/static/icons/favicon-32x32.png"/>">
 		<link rel="icon" type="image/png" sizes="96x96" href="<c:url value="/static/icons/favicon-96x96.png"/>">
 		<link rel="icon" type="image/png" sizes="16x16" href="<c:url value="/static/icons/favicon-16x16.png"/>">
 		<link rel="manifest" href="<c:url value="/manifest.json"/>">
-		<meta name="msapplication-TileColor" content="#12416c">
+		<meta name="msapplication-TileColor" content="#ffffff">
 		<meta name="msapplication-TileImage" content="<c:url value="/static/icons/ms-icon-144x144.png"/>">
-		<meta name="theme-color" content="#12416c">
+		<meta name="theme-color" content="#0099fc">
 		
 		<decorator:head />
 		
@@ -107,25 +107,20 @@
 	<body id="home" class="tex2jax_ignore">
 		<div id='header'>
 			<div id='head'>
-				<img src="<c:url value="/static/images/usyd-100.svg"/>">
+				<a href='<c:url value="/home/"/>'><img class='logo' src="<c:url value="/static/icons/logo-full.png"/>"></a>
 				<div class='horizontal float-right'><span class="title"><spring:message code="UOS" /></span></div>
 			</div>
 			
-			<div id="login" class='link-bar float-right'>
+			<div id="login" class='link-bar right-align'>
 				<c:choose>
 					<c:when test="${not empty user}">
-						<a href="<c:url value="/home/"/>"><span>${user.username}</span></a>
+						<a href="<c:url value="/home/"/>"><span class='username'>${user.username}</span></a>
 						<a href="<c:url value="/login/exit"/>"><span>Logout</span></a>
 					</c:when>
 					<c:otherwise>
 						<a href="<c:url value="/login/"/>"><span>Login</span></a>
 					</c:otherwise>
 				</c:choose>
-			</div>
-			
-			<div class='link-bar'>
-				<a href="<c:url value="/"/>">PASTA Home</a>
-				<a href="https://www.sydney.edu.au">University Home</a>
 			</div>
 			
 			<div class='tab-bar'>
@@ -152,12 +147,12 @@
 		</div>
 		
 		<script>
-			$("#header .tab-bar .tab a").filter(function(){return window.location.href.indexOf(this.href) === 0;}).parent().addClass("current");
+			$("#header .tab-bar .tab a").filter(function(){return window.location.href.indexOf(this.href) === 0;}).last().parent().addClass("current");
 		
 			var c1 = $("#header .tab-bar").css("background-color");
 			$.fn.collapsible.defaults.style.hover.background = c1;
 			$.fn.collapsible.defaults.style.color = c1;
-			var c2 = Colours.brighter(c1);
+			var c2 = Colours.brighter(c1, 0.5);
 			$.fn.collapsible.defaults.style.hover.color = c2;
 			$.fn.collapsible.defaults.style.background = c2;
 		</script>
