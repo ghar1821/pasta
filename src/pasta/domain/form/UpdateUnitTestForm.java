@@ -59,8 +59,8 @@ public class UpdateUnitTestForm {
 	@Length(max=256)
 	private String name;
 	
-	private Integer advancedTimeout;
-	private Integer blackBoxTimeout;
+	private Long advancedTimeout;
+	private Long blackBoxTimeout;
 	
 	private CommonsMultipartFile file;
 	
@@ -108,16 +108,16 @@ public class UpdateUnitTestForm {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Integer getAdvancedTimeout() {
+	public Long getAdvancedTimeout() {
 		return advancedTimeout;
 	}
-	public void setAdvancedTimeout(Integer advancedTimeout) {
+	public void setAdvancedTimeout(Long advancedTimeout) {
 		this.advancedTimeout = advancedTimeout;
 	}
-	public Integer getBlackBoxTimeout() {
+	public Long getBlackBoxTimeout() {
 		return blackBoxTimeout;
 	}
-	public void setBlackBoxTimeout(Integer blackBoxTimeout) {
+	public void setBlackBoxTimeout(Long blackBoxTimeout) {
 		this.blackBoxTimeout = blackBoxTimeout;
 	}
 	public CommonsMultipartFile getFile() {

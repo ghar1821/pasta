@@ -318,9 +318,9 @@ public class UnitTestManager {
 		
 		runner.setMainTestClassname(mainClass);
 		runner.setFilterStackTraces(false);
-		runner.setTestData(test.getTestCases());
+		runner.setTestData(test.getTestCases(), subLanguage);
 		runner.setSolutionName(solutionName);
-		runner.setTimeout(test.getBlackBoxTimeout());
+		runner.setTimeout(test.getBlackBoxTimeout() + (test.getTestCases().size() * subLanguage.getTestCaseExecutionOverhead()));
 		
 		if(subLanguage.getId().equals("c")) {
 			((CBlackBoxTestRunner) runner).setGCCArguments(test.getBlackBoxOptions().getGccCommandLineArgs());

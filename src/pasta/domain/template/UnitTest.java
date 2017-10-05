@@ -91,10 +91,10 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	private boolean tested;
 	
 	@Column (name = "black_box_timeout")
-	private Integer blackBoxTimeout;
+	private Long blackBoxTimeout;
 	
 	@Column (name = "advanced_timeout")
-	private Integer advancedTimeout;
+	private Long advancedTimeout;
 	
 	@Column (name = "main_class_name")
 	private String mainClassName;
@@ -303,23 +303,23 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.allowAccessoryFileWrite = allowAccessoryFileWrite;
 	}
 	
-	public Integer getBlackBoxTimeout() {
+	public Long getBlackBoxTimeout() {
 		if(getTestCases().isEmpty()) {
 			return null;
 		}
 		return blackBoxTimeout;
 	}
-	public void setBlackBoxTimeout(Integer blackBoxTimeout) {
+	public void setBlackBoxTimeout(Long blackBoxTimeout) {
 		this.blackBoxTimeout = blackBoxTimeout;
 	}
 
-	public Integer getAdvancedTimeout() {
+	public Long getAdvancedTimeout() {
 		if(!hasCode() || getMainClassName() == null) {
 			return null;
 		}
 		return advancedTimeout;
 	}
-	public void setAdvancedTimeout(Integer advancedTimeout) {
+	public void setAdvancedTimeout(Long advancedTimeout) {
 		this.advancedTimeout = advancedTimeout;
 	}
 
