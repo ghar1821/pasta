@@ -89,8 +89,13 @@
     	<record name="${outDirectory}/compile.errors" action="stop"/>
     </target>
     <target name="run" depends="init">
-        <echo message="Executing '${testName}'"/>
-    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
+        <parallel threadCount="1" timeout="${blackBoxTimeout}">
+			<sequential>
+				<echo message="Executing '${testName}'"/>
+		    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
+				<echo message="Completed tests"/>
+			</sequential>
+		</parallel>
     </target>
     <target name="doTest">
         <script language="javascript"> <![CDATA[
@@ -131,6 +136,7 @@
     	        <touch file="${binDir}/${bbmetafile}/${bbTestName}.timedout"/>
     	    </then>
     	</if>
+    	<touch file="${binDir}/${bbmetafile}/${bbTestName}.executed"/>
     </target>
 	<target name="test" depends="init">
         <echo message="Running JUnit '${testName}'"/>
@@ -138,7 +144,7 @@
         	jvm="${javaPath}"
             filtertrace="${filterStackTraces}"
             fork="yes"
-            timeout="${maxtimeallowed}"
+        	timeout="${advancedTimeout}" 
             dir="${binDir}">
 			<formatter type="xml" />
             <test name="${testName}" outfile="${testOutputFile}" />

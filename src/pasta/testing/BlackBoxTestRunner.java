@@ -60,6 +60,13 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 	public void setRunErrorsFile(String filename) {
 		addOption("runErrorsFile", filename);
 	}
+	
+	public void setTimeout(Integer timeout) {
+		if(timeout == null) {
+			throw new NullPointerException("Timeout cannot be null");
+		}
+		addOption("blackBoxTimeout", timeout.toString());
+	}
 
 	@Override
 	public String extractCompileErrors(File compileErrorFile, AntResults results) {

@@ -319,12 +319,8 @@ public class UnitTestManager {
 		runner.setMainTestClassname(mainClass);
 		runner.setFilterStackTraces(false);
 		runner.setTestData(test.getTestCases());
-		int totalTime = 1000;
-		for(BlackBoxTestCase testCase : test.getTestCases()) {
-			totalTime += testCase.getTimeout();
-		}
-		runner.setMaxRunTime(totalTime);
 		runner.setSolutionName(solutionName);
+		runner.setTimeout(test.getBlackBoxTimeout());
 		
 		if(subLanguage.getId().equals("c")) {
 			((CBlackBoxTestRunner) runner).setGCCArguments(test.getBlackBoxOptions().getGccCommandLineArgs());
@@ -355,6 +351,7 @@ public class UnitTestManager {
 		}
 		runner.setMainTestClassname(mainClass);
 		runner.setFilterStackTraces(false);
+		runner.setMaxRunTime(test.getAdvancedTimeout());
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
 		doTest(runner, targets, test, testLoc, utResults, context, container);
@@ -457,6 +454,8 @@ public class UnitTestManager {
 		test.setMainClassName(updateForm.getMainClassName());
 		test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
 		test.setAllowAccessoryFileWrite(updateForm.isAllowAccessoryWrite());
+		test.setAdvancedTimeout(updateForm.getAdvancedTimeout());
+		test.setBlackBoxTimeout(updateForm.getBlackBoxTimeout());
 		
 		List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
 		ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();

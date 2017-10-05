@@ -86,7 +86,7 @@
         	jvm="${javaPath}"
         	filtertrace="${filterStackTraces}" 
         	fork="yes" 
-        	timeout="${maxtimeallowed}" 
+        	timeout="${advancedTimeout}" 
         	dir="${binDir}">
 			<formatter type="xml" />
             <test name="${testName}" outfile="${testOutputFile}" />

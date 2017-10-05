@@ -215,6 +215,15 @@ either expressed or implied, of the PASTA Project.
 			<h3 class='part-title'>Options</h3>
 			<div class='pasta-form'>
 				<div class='pf-section'>
+					<div class='pf-item one-col keep-showing'>
+						<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any input-output tests to run on a submission. This time is separate to any timeout specified in the 'advanced' section.</span></div>
+						<div class='pf-input'>
+							<form:input path="blackBoxTimeout" />
+							<form:errors path="blackBoxTimeout" />
+						</div>
+					</div>
+				</div>
+				<div class='pf-section'>
 					<div class='pf-item'>
 						<form:checkbox path="blackBoxOptions.detailedErrors" label="Detailed error messages"/>
 						<span class='help'>With this option, users will see messages displaying the difference between their output and the expected output. Otherwise they will just see whether they were correct or not.</span>
@@ -314,6 +323,13 @@ either expressed or implied, of the PASTA Project.
 									<form:option value="" label="--- Select ---"/>
 									<form:options items="${candidateMainFiles}" />
 								</form:select>
+							</div>
+						</div>
+						<div class='pf-item one-col'>
+							<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any advanced tests to run on a submission. This time is separate to any timeout specified in the 'input-output' section.</span></div>
+							<div class='pf-input'>
+								<form:input path="advancedTimeout" />
+								<form:errors path="advancedTimeout" />
 							</div>
 						</div>
 					</c:if>
@@ -659,7 +675,7 @@ either expressed or implied, of the PASTA Project.
          	
          	$("#ioOptions").collapsible({
          		collapsed: true,
-         		"heading-selector": "h3"
+         		"heading-selector": "h3, .keep-showing"
          	});
          	$(":not(#emptyTest) > .testCase").collapsible({
          		collapsed: true,

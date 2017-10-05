@@ -90,6 +90,12 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	private boolean tested;
 	
+	@Column (name = "black_box_timeout")
+	private Integer blackBoxTimeout;
+	
+	@Column (name = "advanced_timeout")
+	private Integer advancedTimeout;
+	
 	@Column (name = "main_class_name")
 	private String mainClassName;
 	
@@ -127,6 +133,8 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	public void init(String name, boolean tested) {
 		this.name = name;
+		this.blackBoxTimeout = null;
+		this.advancedTimeout = null;
 		this.tested = tested;
 		this.submissionCodeRoot = "";
 		this.testCases = new ArrayList<BlackBoxTestCase>();
@@ -293,6 +301,20 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public void setAllowAccessoryFileWrite(boolean allowAccessoryFileWrite) {
 		this.allowAccessoryFileWrite = allowAccessoryFileWrite;
+	}
+	
+	public Integer getBlackBoxTimeout() {
+		return blackBoxTimeout;
+	}
+	public void setBlackBoxTimeout(Integer blackBoxTimeout) {
+		this.blackBoxTimeout = blackBoxTimeout;
+	}
+
+	public Integer getAdvancedTimeout() {
+		return advancedTimeout;
+	}
+	public void setAdvancedTimeout(Integer advancedTimeout) {
+		this.advancedTimeout = advancedTimeout;
 	}
 
 	@Override

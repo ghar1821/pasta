@@ -6,7 +6,7 @@ if test -e $LIBLOC/$PASTAJAR ; then
     rm $LIBLOC/$PASTAJAR
 fi
 
-javac pasta/*.java -classpath .:$LIBLOC/junit.jar
+javac pasta/*.java -classpath .:$LIBLOC/junit-4.12.jar
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi

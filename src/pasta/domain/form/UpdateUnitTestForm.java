@@ -59,6 +59,9 @@ public class UpdateUnitTestForm {
 	@Length(max=256)
 	private String name;
 	
+	private Integer advancedTimeout;
+	private Integer blackBoxTimeout;
+	
 	private CommonsMultipartFile file;
 	
 	private boolean allowAccessoryWrite;
@@ -79,6 +82,8 @@ public class UpdateUnitTestForm {
 		this.testCases = createTestCaseForms(base.getTestCases());
 		this.blackBoxOptions = new BlackBoxOptions(base.getBlackBoxOptions());
 		this.allowAccessoryWrite = base.isAllowAccessoryFileWrite();
+		this.advancedTimeout = base.getAdvancedTimeout();
+		this.blackBoxTimeout = base.getBlackBoxTimeout();
 		
 		this.file = null;
 		this.accessoryFile = null;
@@ -102,6 +107,18 @@ public class UpdateUnitTestForm {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public Integer getAdvancedTimeout() {
+		return advancedTimeout;
+	}
+	public void setAdvancedTimeout(Integer advancedTimeout) {
+		this.advancedTimeout = advancedTimeout;
+	}
+	public Integer getBlackBoxTimeout() {
+		return blackBoxTimeout;
+	}
+	public void setBlackBoxTimeout(Integer blackBoxTimeout) {
+		this.blackBoxTimeout = blackBoxTimeout;
 	}
 	public CommonsMultipartFile getFile() {
 		return file;

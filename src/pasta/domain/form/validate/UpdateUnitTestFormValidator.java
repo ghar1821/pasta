@@ -10,6 +10,7 @@ import org.springframework.validation.Validator;
 
 import pasta.domain.form.BlackBoxTestCaseForm;
 import pasta.domain.form.UpdateUnitTestForm;
+import pasta.domain.template.UnitTest;
 import pasta.service.UnitTestManager;
 
 /**
@@ -33,9 +34,26 @@ public class UpdateUnitTestFormValidator implements Validator {
 	public void validate(Object formObj, Errors errors) {
 		UpdateUnitTestForm form = (UpdateUnitTestForm) formObj;
 		
-		if(unitTestManager.getUnitTest(form.getId()) == null) {
+		UnitTest existing = unitTestManager.getUnitTest(form.getId());
+		if(existing == null) {
 			errors.reject("NotFound");
 		}
+		
+		if(form.getTestCases().size() > 0) {
+			if(form.getBlackBoxTimeout() == null) {
+				errors.rejectValue("blackBoxTimeout", "NotNull");
+			} else if(form.getBlackBoxTimeout() < 0) {
+				errors.rejectValue("blackBoxTimeout", "Min");
+			}
+		}
+		if(!form.getFile().isEmpty() || existing.hasCode()) {
+			if(form.getAdvancedTimeout() == null) {
+				errors.rejectValue("advancedTimeout", "NotNull");
+			} else if(form.getAdvancedTimeout() < 0) {
+				errors.rejectValue("advancedTimeout", "Min");
+			}
+		}
+		
 		
 		BlackBoxTestCaseFormValidator bbValidator = new BlackBoxTestCaseFormValidator();
 		HashSet<String> names = new HashSet<String>();
