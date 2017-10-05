@@ -304,6 +304,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 	
 	public Integer getBlackBoxTimeout() {
+		if(getTestCases().isEmpty()) {
+			return null;
+		}
 		return blackBoxTimeout;
 	}
 	public void setBlackBoxTimeout(Integer blackBoxTimeout) {
@@ -311,6 +314,9 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 
 	public Integer getAdvancedTimeout() {
+		if(!hasCode() || getMainClassName() == null) {
+			return null;
+		}
 		return advancedTimeout;
 	}
 	public void setAdvancedTimeout(Integer advancedTimeout) {
