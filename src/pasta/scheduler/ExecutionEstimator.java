@@ -30,24 +30,38 @@ public class ExecutionEstimator {
 		return estimateTime(unitTest, null);
 	}
 	public static long estimateTime(UnitTest unitTest, Language language) {
-		long time = unitTest.getTestCases().stream()
-				.reduce(0L, 
-						(t, tc) -> t + estimateTime(tc, language), 
-						Long::sum);
-		if(language != null) {
-			time += language.getTestSuiteExecutionOverhead();
+		long time = 0;
+		if(!unitTest.getTestCases().isEmpty()) {
+			if(unitTest.getBlackBoxTimeout() == null) {
+				time += unitTest.getTestCases().stream()
+						.reduce(0L, 
+								(t, tc) -> t + estimateTime(tc, language), 
+								Long::sum);
+			} else {
+				time += unitTest.getBlackBoxTimeout();
+			}
+			if(language != null) {
+				time += language.getTestSuiteExecutionOverhead();
+			}
 		}
-		File main = unitTest.getMainSourceFile();
-		if(main != null) {
-			Map<String, Long> timeouts = PASTAUtil.extractTestTimeouts(main);
-			time += timeouts.entrySet().stream()
-				.reduce(0L, 
-						(total, e) -> total + e.getValue(), 
-						Long::sum);
-			Language java = LanguageManager.getInstance().getLanguage("java");
+		
+		Language java = LanguageManager.getInstance().getLanguage("java");
+		if(unitTest.getAdvancedTimeout() == null) {
+			File main = unitTest.getMainSourceFile();
+			if(main != null) {
+				Map<String, Long> timeouts = PASTAUtil.extractTestTimeouts(main);
+				time += timeouts.entrySet().stream()
+						.reduce(0L, 
+								(total, e) -> total + e.getValue(), 
+								Long::sum);
+				time += java.getTestSuiteExecutionOverhead();
+				time += timeouts.size() * java.getTestCaseExecutionOverhead();
+			}
+		} else {
+			time += unitTest.getAdvancedTimeout();
 			time += java.getTestSuiteExecutionOverhead();
-			time += timeouts.size() * java.getTestCaseExecutionOverhead();
 		}
+		
 		return time;
 	}
 	
