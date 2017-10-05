@@ -711,33 +711,64 @@ span.icon_help, div.icon_help {
 	width: 32px;
 }
 
-
-input[type=checkbox].custom-check {
-	display:none;
+input[type='checkbox'].custom-check {
+	display: none;
 }
-input[type=checkbox].custom-check + label,
-input[type=checkbox].custom-check + input[type=hidden] + label { 
-	background-image: url("../images/check_box_unchecked.png");
-	height: 32px;
-	width: 32px;
-	display:inline-block;
-	padding: 0 0 0 0px;
+input[type='checkbox'].custom-check + label,
+input[type='checkbox'].custom-check + input[type=hidden] + label {
+	background-color: #ff2222;
+	border: 1px solid darkred;
+	border-radius: 10px;
+	box-shadow: 1px 1px 4px 1px rgba(0,0,0,0.2) inset;
+	display: inline-block;
+	height: 20px;
+	line-height: 20px;
+	position: relative;
+	transition: background 0.1s linear, border 0.1s linear;
+	vertical-align: middle;
+	width: 50px;
 }
-input[type=checkbox].custom-check + label:active,
-input[type=checkbox].custom-check + input[type=hidden] + label:active { 
-	background-image: url("../images/check_box_unchecked_pressed.png");
+input[type='checkbox'].custom-check:checked + label,
+input[type='checkbox'].custom-check:checked + input[type=hidden] + label {
+	background-color: #66aa44;
+	border-color: green;
 }
-input[type=checkbox]:checked.custom-check + label,
-input[type=checkbox]:checked.custom-check + input[type=hidden] + label {
-	background-image: url("../images/check_box_checked.png");
+input[type='checkbox'].custom-check + label::after,
+input[type='checkbox'].custom-check + input[type=hidden] + label::after {
+	background-color: #eaeefa;
+	border: 1px solid gray;
+	border-radius: 10px;
+	box-shadow: 1px 1px 4px 1px rgba(0,0,0,0.2);
+	box-sizing: border-box;
+	content: '';
+	display: inline-block;
+	height: 20px;
+	position: relative;
+	transform: translateX(-3px);
+	transition: transform 0.1s linear;
+	width: 20px;
 }
-input[type=checkbox]:checked.custom-check + label:active,
-input[type=checkbox]:checked.custom-check + input[type=hidden] + label:active {
-	background-image: url("../images/check_box_checked_pressed.png");
+input[type='checkbox'].custom-check:checked + label::after,
+input[type='checkbox'].custom-check:checked + input[type=hidden] + label::after {
+	transform: translateX(33px);
 }
-
-table.moduleTable tr.lastSelected td {
-	border-bottom: 2px dotted gray;
+input[type='checkbox'].custom-check + label::before,
+input[type='checkbox'].custom-check + input[type=hidden] + label::before {
+	color: #ffcece;
+	content: '\002716';
+	display: block;
+	font-family: "Times", "Times New Roman", "serif", "sans-serif", "EmojiSymbols";
+	font-size: 18px;
+	font-weight: 500;
+	height: 20px;
+	position: absolute;
+	right: 11px;
+}
+input[type='checkbox'].custom-check:checked + label::before,
+input[type='checkbox'].custom-check:checked + input[type=hidden] + label::before {
+	color: #ceffce;
+	content: '\002714';
+	left: 11px;
 }
 
 table.alignCellsTop td, table.alignCellsTop th {
