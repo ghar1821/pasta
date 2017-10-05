@@ -411,39 +411,30 @@ either expressed or implied, of the PASTA Project.
                             }}
                         ]
                     });
+                    
+                    function toggleEquation(sign) {
+                    	var content = editor.selection.getContent({format: 'html'});
+                    	if(!content) {
+                        	editor.execCommand('mceInsertContent', false, sign + " " + sign);
+                    	} else {
+                    		editor.execCommand('mceReplaceContent', false, sign + content + sign);
+                    	}
+                    }
+                    
                     editor.addButton('latex-split', {
                         type: 'splitbutton',
                         text: 'LaTeX',
                         title: 'Insert LaTeX equation',
                         icon: false,
-                        onclick: function() {
-                        	var content = editor.selection.getContent({format: 'html'});
-                        	console.log(editor.selection.getSel().getRangeAt(0));
-                        	if(!content) {
-	                        	editor.execCommand('mceInsertContent', false, '$$ $$');
-                        	} else {
-                        		editor.execCommand('mceReplaceContent', false, '$$' + content + '$$');
-                        	}
-                        },
+                        onclick: function() { toggleEquation('$$'); },
                         menu: [
-                            {text: 'Insert inline equation', onclick: function() {
-                            	var content = editor.selection.getContent({format: 'html'});
-                            	console.log(editor.selection.getSel().getRangeAt(0));
-                            	if(!content) {
-    	                        	editor.execCommand('mceInsertContent', false, '$$ $$');
-                            	} else {
-                            		editor.execCommand('mceReplaceContent', false, '$$' + content + '$$');
-                            	}
-                            }},
-                            {text: 'Insert block equation', onclick: function() {
-                            	var content = editor.selection.getContent({format: 'html'});
-                            	console.log(editor.selection.getSel().getRangeAt(0));
-                            	if(!content) {
-    	                        	editor.execCommand('mceInsertContent', false, '$$$ $$$');
-                            	} else {
-                            		editor.execCommand('mceReplaceContent', false, '$$$' + content + '$$$');
-                            	}
-                            }}
+                            {
+                            	text: 'Insert inline equation', 
+                            	onclick: function() { toggleEquation('$$') }
+                            }, {
+                            	text: 'Insert block equation', 
+                            	onclick: function() { toggleEquation('$$$') }
+                            }
                         ]
                     });
                 },
