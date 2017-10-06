@@ -40,11 +40,9 @@
 <script>
 $(".vrf-del").on("click", function() {
 	$.ajax({
-		headers : {
-			'Accept' : 'application/json',
-		},
 		url : "clearValidationResults/",
 		data : {"part" : $(this).attr("part")},
+		dataType: "text",
 		type : "POST",
 		success : function(data) {
 			console.log("DATA: " + data);
