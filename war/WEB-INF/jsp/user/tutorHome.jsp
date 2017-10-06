@@ -280,6 +280,9 @@ either expressed or implied, of the PASTA Project.
 								var value = progressBar.progressbar("option", "value");
 								if(value > 0) {
 									progressBar.progressbar("option", "value", Math.max(0, value - 1000));
+								} else {
+									pb.find(".ui-progressbar-value").removeClass("smooth-progress");
+									progressBar.progressbar("option", "value", false);
 								}
 							}
 							container.data("timer", window.setTimeout(decrease, 1000));
