@@ -16,7 +16,9 @@
 		<link href="<c:url value="/static/styles/theme.css?v=3"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/loading.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/styles/jquery.dataTables.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/static/styles/jquery/smoothness/jquery-ui-1.8.4.custom.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery-ui/jquery-ui.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery-ui/jquery-ui.structure.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/static/styles/jquery-ui/jquery-ui.theme.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<c:url value="/static/jqueryFileTree.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/scripts/chosen/chosen.css"/>" rel="stylesheet" type="text/css" media="screen" />
 		<link href="<c:url value="/static/styles/tipsy.css"/>" rel="stylesheet" type="text/css" media="screen" />
@@ -31,9 +33,9 @@
 		<script type="text/javascript" src="https://code.highcharts.com/5.0.14/modules/exporting.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/locale/en-au.js"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-1.8.2.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui.js"/>"></script>
-		<script type="text/javascript" src="<c:url value="/static/scripts/jquery/jquery-ui-timepicker-addon.js"/>"></script>
+		<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery-ui/jquery-ui.min.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/static/scripts/jquery-ui/jquery-ui-timepicker-addon.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.bpopup-0.11.0.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/jquery.dataTables.min.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/static/scripts/chosen/chosen.jquery.min.js"/>"></script>
