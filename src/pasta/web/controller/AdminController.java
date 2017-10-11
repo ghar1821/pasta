@@ -29,9 +29,27 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.zip.ZipOutputStream;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import javax.validation.Valid;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +65,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.docker.CommandResult;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
 import pasta.domain.form.UpdateUsersForm;
@@ -55,7 +74,9 @@ import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.ExecutionManager;
 import pasta.service.UserManager;
+import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
+import pasta.util.WhichProgram;
 import pasta.web.WebUtils;
 
 /**
@@ -279,5 +300,108 @@ public class AdminController {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		executionManager.forceSubmissionRefresh();
 		return "redirect:" + request.getHeader("Referer");
+	}
+	
+	@Autowired
+	private DataSource dataSource;
+	
+	@RequestMapping(value = "/dbdump/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadDatabaseDump(HttpServletRequest request, HttpServletResponse response) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		DBInfo info = new DBInfo((BasicDataSource) dataSource);
+		List<String> command = new LinkedList<>();
+		
+		command.add(WhichProgram.getInstance().path("mysqldump"));
+		command.add("--user=" + info.username);
+		command.add("--password=" + info.password);
+		command.add("--lock-tables");
+				
+		if(info.hostname != null) {
+			command.add("--host=" + info.hostname);
+		}
+		if(info.port != null) {
+			command.add("--port=" + info.port);
+		}
+		
+		String[] ignoreTables = {
+				"user_logins",
+				"assessment_ratings",
+				"hibernate_sequences",
+				"authentication_settings",
+				"server_addresses"
+		};
+		for(String ignore : ignoreTables) {
+			command.add("--ignore-table=" + info.databaseName + "." + ignore);
+		}
+		
+		String filename = "pasta_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
+		Path dumpPath = Paths.get(ProjectProperties.getInstance().getSandboxLocation(), filename + ".sql");
+		dumpPath.getParent().toFile().mkdirs();
+		command.add("--result-file=" + dumpPath.toString());
+		command.add(info.databaseName);
+		
+		try {
+			CommandResult result = PASTAUtil.executeCommand(command);
+			if(!result.getError().isEmpty()) {
+				throw new IOException(result.getError());
+			}
+		} catch (IOException | InterruptedException e) {
+			logger.error("Error generating SQL dump:", e);
+		}
+		
+	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
+
+	    try {
+	    	// Zip the file
+	    	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+	    	ZipOutputStream zip = new ZipOutputStream(outStream);
+	    	PASTAUtil.zip(zip, dumpPath.toFile(), dumpPath.getParent().toString());
+			zip.closeEntry();
+			zip.close();
+			
+			// Send the file
+			OutputStream out = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(outStream.toByteArray());
+			IOUtils.copy(in,out);
+		} catch (IOException e) {
+			logger.error("Error sending SQL dump:", e);
+		}
+	    
+		try {
+			Files.deleteIfExists(dumpPath);
+		} catch (IOException e) {
+			logger.error("Error deleting SQL dump:", e);
+		}
+	}
+	
+	private static class DBInfo {
+		String username;
+		String password;
+		String hostname;
+		String port;
+		String databaseName;
+		public DBInfo(BasicDataSource ds) {
+			this.username = ds.getUsername();
+			this.password = ds.getPassword();
+			String url = ds.getUrl();
+			int end = url.indexOf("//");
+			int start = 0;
+			if(end >= 0) {
+				start = end + 2;
+				end = url.indexOf(':', start);
+				this.hostname = url.substring(start, end);
+				start = end + 1;
+				end = url.indexOf('/', start);
+				this.port = url.substring(start, end);
+				start = end + 1;
+				end = url.indexOf('?', start);
+				if(end >= 0) {
+					this.databaseName = url.substring(start, end);
+				} else {
+					this.databaseName = url.substring(start);
+				}
+			}
+		}
 	}
 }

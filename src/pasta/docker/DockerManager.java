@@ -251,7 +251,7 @@ public class DockerManager {
 		}
 	}
 	
-	public CommandResult runCommand(ExecutionContainer container, String... command) {
+	public CombinedCommandResult runCommand(ExecutionContainer container, String... command) {
 		ExecCreateCmdResponse cmd = dockerClient.execCreateCmd(container.getId())
 				.withCmd(command)
 				.withAttachStdout(true)
@@ -274,7 +274,7 @@ public class DockerManager {
 			String combinedStr = streams.toString(StandardCharsets.UTF_8.name());
 			String outStr = streams.getOutputStream().toString(StandardCharsets.UTF_8.name());
 			String errStr = streams.getErrorStream().toString(StandardCharsets.UTF_8.name());
-			return new CommandResult(combinedStr, outStr, errStr);
+			return new CombinedCommandResult(combinedStr, outStr, errStr);
 		} catch (InterruptedException e) {
 			logger.error("Error waiting for command to run.", e);
 		} catch (IOException e) {
@@ -284,7 +284,7 @@ public class DockerManager {
 		return null;
 	}
 	
-	public CommandResult runAntTarget(ExecutionContainer container, String target) {
+	public CombinedCommandResult runAntTarget(ExecutionContainer container, String target) {
 		return runCommand(container, "ant", "-v", "-f", "build.xml", target);
 	}
 	

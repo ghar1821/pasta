@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import pasta.docker.CommandResult;
+import pasta.docker.CombinedCommandResult;
 import pasta.docker.DockerManager;
 import pasta.docker.ExecutionContainer;
 import pasta.testing.task.Task;
@@ -96,7 +96,7 @@ public class AntJob {
 			}
 		}
 		
-		CommandResult rs = DockerManager.instance().runAntTarget(container, target);
+		CombinedCommandResult rs = DockerManager.instance().runAntTarget(container, target);
 		boolean success = rs.getError().isEmpty();
 		
 		if(!success) {
