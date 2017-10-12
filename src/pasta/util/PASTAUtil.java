@@ -71,6 +71,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
+import pasta.docker.CombinedCommandResult;
+import pasta.docker.CommandResult;
 import pasta.domain.FileTreeNode;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
@@ -803,6 +805,31 @@ public class PASTAUtil {
 		}
 		ann.strLength = index - atIndex;
 		return ann;
+	}
+	
+	public static CommandResult executeCommand(List<String> command) throws IOException, InterruptedException {
+		ProcessBuilder pb = new ProcessBuilder(command);
+		Process process = pb.start();
+		
+		process.waitFor();
+		
+		BufferedReader output = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+		StringBuilder sb = new StringBuilder();
+		String s = null;
+		while ((s = output.readLine()) != null) {
+			sb.append(s).append(System.lineSeparator());
+		}
+		String allOutput = sb.toString();
+
+		sb = new StringBuilder();
+		while ((s = error.readLine()) != null) {
+			sb.append(s).append(System.lineSeparator());
+		}
+		String allError = sb.toString();
+		
+		return new CommandResult(allOutput, allError);
 	}
 }
 

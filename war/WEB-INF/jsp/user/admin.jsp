@@ -288,6 +288,18 @@ either expressed or implied, of the PASTA Project.
 			Click <a href="../legacy/convert/">here</a> to go to the legacy content page.
 		</div>
 	</div>
+	
+	<div class='section'>
+		<h2 class='section-title'>Database Download</h2>
+		<div class='part'>
+			<div>Download the contents of the PASTA database for analysis.</div>
+			<div class='button-panel'>
+				<form action="dbdump/" method="post">
+					<button type='submit'>Download</button>
+				</form>
+			</div>
+		</div>
+	</div>
 </c:if>
 
 
