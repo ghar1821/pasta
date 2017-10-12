@@ -109,7 +109,7 @@
 	<body id="home" class="tex2jax_ignore">
 		<div id='header'>
 			<div id='head'>
-				<a href='<c:url value="/home/"/>'><img class='logo' src="<c:url value="/static/icons/logo-full.png"/>"></a>
+				<a href='<c:url value="/home/"/>'><img class='logo' src="<c:url value="/static/icons/logo-full.svg"/>"></a>
 				<div class='horizontal float-right'><span class="title"><spring:message code="UOS" /></span></div>
 			</div>
 			
