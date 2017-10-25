@@ -39,6 +39,7 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 					<entry key="name" value="${project.name}" />
 					<entry key="location" value="${project.location}" />
+					<entry key="hostLocation" value="${project.hostLocation}" />
 					<entry key="authentication" value="${project.authentication:ldap}" />
 					<entry key="createAccountOnSuccessfulLogin" value="${project.createAccountOnSuccessfulLogin:true}" />
 					<entry key="pathUnitTests" value="${project.pathUnitTests:}" />

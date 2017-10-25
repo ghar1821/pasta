@@ -83,7 +83,7 @@ public class ProjectProperties {
 
 	// name of the project
 	private String name;
-	// location of the project
+	// location of the project (inside the docker container)
 	private String projectLocation;
 	// location of the templates
 	private String unitTestsLocation = "template" + File.separator + "unitTest" + File.separator;
@@ -93,6 +93,9 @@ public class ProjectProperties {
 	private String sandboxLocation = "sandbox" + File.separator;
 	// location of validator uploads
 	private String validatorLocation = "validation" + File.separator;
+	
+	// Location on the host where the project is kept
+	private String hostLocation;
 	
 	private AuthenticationSettings authSettings;
 	
@@ -161,6 +164,9 @@ public class ProjectProperties {
 		
 		this.initialInstructor = settings.get("initialInstructor");
 		
+		this.hostLocation = settings.get("hostLocation");
+		logger.info("Host content location set to \"" + hostLocation + "\". Note that this cannot be verified, so an incorrect value may cause unexpected errors.");
+		
 		ProjectProperties.properties = this;
 	}
 	
@@ -205,7 +211,6 @@ public class ProjectProperties {
 			logger.info("Using dummy authentication");
 		}
 		
-		logger.info("Initial instructor: " + getInitialInstructor());
 		if(getInitialInstructor() != null && !getInitialInstructor().isEmpty()) {
 			PASTAUser initial = userDAO.getUser(getInitialInstructor());
 			if(initial == null) {
@@ -384,5 +389,9 @@ public class ProjectProperties {
 
 	public String getInitialInstructor() {
 		return initialInstructor;
+	}
+
+	public String getHostLocation() {
+		return hostLocation;
 	}
 }

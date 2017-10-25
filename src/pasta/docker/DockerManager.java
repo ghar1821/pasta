@@ -40,6 +40,7 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 
 import pasta.util.Copy;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 import pasta.util.WhichProgram;
 import pasta.util.io.DualByteArrayOutputStream;
 
@@ -197,6 +198,23 @@ public class DockerManager {
 		}
 	}
 	
+	private String toHostPath(String dockerPath) {
+		logger.info("Converting \"" + dockerPath + "\" to host path:");
+		
+		String dockerBase = ProjectProperties.getInstance().getProjectLocation();
+		String hostBase = ProjectProperties.getInstance().getHostLocation();
+		if(dockerBase.endsWith("/")) {
+			dockerBase = dockerBase.substring(0, dockerBase.length() - 1);
+		}
+		if(hostBase.endsWith("/")) {
+			hostBase = hostBase.substring(0, hostBase.length() - 1);
+		}
+		
+		logger.info("  returning \"" + dockerPath.replaceFirst(dockerBase, hostBase) + "\"");
+		
+		return dockerPath.replaceFirst(dockerBase, hostBase);
+	}
+	
 	//docker run -td --name java -v $(pwd)/src:/pasta/src/ -v $(pwd)/out:/pasta/out/ -v /home/pasta/content/lib/:/pasta/lib java
 	public void runContainer(ExecutionContainer container) {
 		String libDir = "";
@@ -210,9 +228,14 @@ public class DockerManager {
 		labels.put("image", container.getImageName());
 		
 		List<Bind> binds = new LinkedList<>();
-		binds.add(new Bind(container.getSrcLoc().getAbsolutePath(), new Volume(PASTA_SRC + "/")));
-		binds.add(new Bind(container.getOutLoc().getAbsolutePath(), new Volume(PASTA_OUT + "/")));
-		binds.add(new Bind(libDir, new Volume(PASTA_LIB + "/")));
+		
+		String hostSrc = toHostPath(container.getSrcLoc().getAbsolutePath());
+		String hostOut = toHostPath(container.getOutLoc().getAbsolutePath());
+		String hostLib = toHostPath(libDir);
+		
+		binds.add(new Bind(hostSrc, new Volume(PASTA_SRC + "/")));
+		binds.add(new Bind(hostOut, new Volume(PASTA_OUT + "/")));
+		binds.add(new Bind(hostLib, new Volume(PASTA_LIB + "/")));
 		
 		if(container.getLanguage().getId().equals("matlab")) {
 			binds.add(new Bind(WhichProgram.getInstance().path("matlab.install"), new Volume(PASTA_BIN + "/MATLAB/")));
