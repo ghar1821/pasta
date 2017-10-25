@@ -155,9 +155,10 @@ public class AuthenticationController {
 			// Add the first user as an instructor
 			if(user == null) {
 				user = new PASTAUser();
+				user.setActive(true);
 				user.setUsername(loginForm.getUnikey());
 				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
-				user = userManager.getOrCreateUser(user);
+				userManager.save(user);
 			} else {
 				user.setActive(true);
 				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);

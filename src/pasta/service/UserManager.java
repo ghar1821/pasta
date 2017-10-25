@@ -389,6 +389,10 @@ public class UserManager {
 		return userDao.hasActiveUsers();
 	}
 	
+	public void save(PASTAUser user) {
+		userDao.save(user);
+	}
+	
 	public void update(PASTAUser user) {
 		userDao.update(user);
 	}
