@@ -138,6 +138,7 @@ public class AuthenticationController {
 		
 		PASTAUser user = userManager.getUser(loginForm.getUnikey());
 		if(userManager.hasActiveUsers()) {
+			logger.info("Has active users");
 			if(user == null || !user.isActive()) {
 				if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
 					user = new PASTAUser();
@@ -152,19 +153,24 @@ public class AuthenticationController {
 				return "login";
 			}
 		} else {
+			logger.info("Does not have active users");
 			// Add the first user as an instructor
 			if(user == null) {
+				logger.info("User is null");
 				user = new PASTAUser();
 				user.setActive(true);
 				user.setUsername(loginForm.getUnikey());
 				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
 				userManager.save(user);
 			} else {
+				logger.info("User is not null");
 				user.setActive(true);
 				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
 				userManager.update(user);
 			}
 		}
+		
+		logger.info("User: " + user);
 		
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
 				user, RequestAttributes.SCOPE_SESSION);
