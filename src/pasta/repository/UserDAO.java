@@ -290,6 +290,14 @@ public class UserDAO {
 		}
 	}
 	
+	public boolean hasActiveUsers() {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(PASTAUser.class);
+		cr.setProjection(Projections.rowCount());
+		cr.add(Restrictions.eq("active", true));
+		cr.add(Restrictions.ne("permissionLevel", UserPermissionLevel.GROUP));
+		return ((Number) cr.uniqueResult()).longValue() > 0;
+	}
+	
 	public Map<String, PASTAUser> getUserMap(){
 		return getUserMap(false, false, null);
 	}

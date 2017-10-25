@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.LoginForm;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UserManager;
@@ -136,18 +137,32 @@ public class AuthenticationController {
 		}
 		
 		PASTAUser user = userManager.getUser(loginForm.getUnikey());
-		if(user == null || !user.isActive()) {
-			if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
+		if(userManager.hasActiveUsers()) {
+			if(user == null || !user.isActive()) {
+				if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
+					user = new PASTAUser();
+					user.setUsername(loginForm.getUnikey());
+					user = userManager.getOrCreateUser(user);
+				} else {
+					result.rejectValue("password", "NotAvailable.loginForm.password");
+				}
+			}
+			
+			if (result.hasErrors()) {
+				return "login";
+			}
+		} else {
+			// Add the first user as an instructor
+			if(user == null) {
 				user = new PASTAUser();
 				user.setUsername(loginForm.getUnikey());
+				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
 				user = userManager.getOrCreateUser(user);
 			} else {
-				result.rejectValue("password", "NotAvailable.loginForm.password");
+				user.setActive(true);
+				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+				userManager.update(user);
 			}
-		}
-		
-		if (result.hasErrors()) {
-			return "login";
 		}
 		
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",

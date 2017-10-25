@@ -384,4 +384,12 @@ public class UserManager {
 			}
 		}
 	}
+	
+	public boolean hasActiveUsers() {
+		return userDao.hasActiveUsers();
+	}
+	
+	public void update(PASTAUser user) {
+		userDao.update(user);
+	}
 }
