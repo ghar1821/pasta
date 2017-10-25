@@ -45,6 +45,7 @@
 					<entry key="pathSubmissions" value="${project.pathSubmissions:}" />
 					<entry key="proxydomain" value="${project.proxydomain:}" />
 					<entry key="proxyport" value="${project.proxyport:}" />
+					<entry key="initialInstructor" value="${project.initialInstructor:}" />
 			</map>
 		</constructor-arg>
 	</bean>
