@@ -205,6 +205,7 @@ public class ProjectProperties {
 			logger.info("Using dummy authentication");
 		}
 		
+		logger.info("Initial instructor: " + getInitialInstructor());
 		if(getInitialInstructor() != null && !getInitialInstructor().isEmpty()) {
 			PASTAUser initial = userDAO.getUser(getInitialInstructor());
 			if(initial == null) {
@@ -212,10 +213,12 @@ public class ProjectProperties {
 				initial.setActive(true);
 				initial.setUsername(getInitialInstructor());
 				initial.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+				logger.info("Creating new user as initial instructor: " + initial.getUsername());
 				userDAO.add(initial);
 			} else {
 				initial.setActive(true);
 				initial.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+				logger.info("Updating existing user as initial instructor: " + initial.getUsername());
 				userDAO.update(initial);
 			}
 		}
