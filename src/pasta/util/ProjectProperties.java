@@ -48,7 +48,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.security.AuthenticationSettings;
+import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
@@ -100,6 +102,8 @@ public class ProjectProperties {
 	private Validator authenticationValidator;
 	// proxy
 	private Proxy proxy;
+	
+	private String initialInstructor;
 	
 	@Autowired
 	private LoginDAO loginDAO;
@@ -155,6 +159,8 @@ public class ProjectProperties {
 		logger.info("Sandbox Location set to: " + sandboxLocation);
 		logger.info("Validators Location set to: " + validatorLocation);
 		
+		this.initialInstructor = settings.get("initialInstructor");
+		
 		ProjectProperties.properties = this;
 	}
 	
@@ -197,6 +203,21 @@ public class ProjectProperties {
 		} else {
 			authenticationValidator = new DummyAuthValidator();
 			logger.info("Using dummy authentication");
+		}
+		
+		if(getInitialInstructor() != null && !getInitialInstructor().isEmpty()) {
+			PASTAUser initial = userDAO.getUser(getInitialInstructor());
+			if(initial == null) {
+				initial = new PASTAUser();
+				initial.setActive(true);
+				initial.setUsername(getInitialInstructor());
+				initial.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+				userDAO.add(initial);
+			} else {
+				initial.setActive(true);
+				initial.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
+				userDAO.update(initial);
+			}
 		}
 	}
 	
@@ -356,5 +377,9 @@ public class ProjectProperties {
 	
 	public ServletContext getServletContext() {
 		return servletContext;
+	}
+
+	public String getInitialInstructor() {
+		return initialInstructor;
 	}
 }

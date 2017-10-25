@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.LoginForm;
 import pasta.domain.user.PASTAUser;
 import pasta.service.UserManager;
@@ -137,40 +136,19 @@ public class AuthenticationController {
 		}
 		
 		PASTAUser user = userManager.getUser(loginForm.getUnikey());
-		if(userManager.hasActiveUsers()) {
-			logger.info("Has active users");
-			if(user == null || !user.isActive()) {
-				if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
-					user = new PASTAUser();
-					user.setUsername(loginForm.getUnikey());
-					user = userManager.getOrCreateUser(user);
-				} else {
-					result.rejectValue("password", "NotAvailable.loginForm.password");
-				}
-			}
-			
-			if (result.hasErrors()) {
-				return "login";
-			}
-		} else {
-			logger.info("Does not have active users");
-			// Add the first user as an instructor
-			if(user == null) {
-				logger.info("User is null");
+		if(user == null || !user.isActive()) {
+			if(ProjectProperties.getInstance().getCreateAccountOnSuccessfulLogin()) {
 				user = new PASTAUser();
-				user.setActive(true);
 				user.setUsername(loginForm.getUnikey());
-				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
-				userManager.save(user);
+				user = userManager.getOrCreateUser(user);
 			} else {
-				logger.info("User is not null");
-				user.setActive(true);
-				user.setPermissionLevel(UserPermissionLevel.INSTRUCTOR);
-				userManager.update(user);
+				result.rejectValue("password", "NotAvailable.loginForm.password");
 			}
 		}
 		
-		logger.info("User: " + user);
+		if (result.hasErrors()) {
+			return "login";
+		}
 		
 		RequestContextHolder.currentRequestAttributes().setAttribute("user",
 				user, RequestAttributes.SCOPE_SESSION);

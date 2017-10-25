@@ -384,16 +384,4 @@ public class UserManager {
 			}
 		}
 	}
-	
-	public boolean hasActiveUsers() {
-		return userDao.hasActiveUsers();
-	}
-	
-	public void save(PASTAUser user) {
-		userDao.save(user);
-	}
-	
-	public void update(PASTAUser user) {
-		userDao.update(user);
-	}
 }
