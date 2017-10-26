@@ -211,11 +211,11 @@ public class ExecutionManager {
 		}
 		
 		logger.debug("Deleting final sandbox location " + sandboxRoot);
-		try {
-			FileUtils.deleteDirectory(sandboxRoot);
-		} catch (IOException e) {
-			logger.error("Error deleting sandbox test at " + sandboxRoot);
-		}
+//TODO		try {
+//			FileUtils.deleteDirectory(sandboxRoot);
+//		} catch (IOException e) {
+//			logger.error("Error deleting sandbox test at " + sandboxRoot);
+//		}
 		// Update the assessment summaries for user/group members if this is the latest submission
 		AssessmentResult latest = resultManager.getLatestResultIncludingGroup(
 				user,

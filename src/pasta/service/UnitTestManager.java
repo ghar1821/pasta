@@ -283,12 +283,12 @@ public class UnitTestManager {
 		ProjectProperties.getInstance().getResultDAO().save(utResults);
 		ProjectProperties.getInstance().getUnitTestDAO().update(test);
 		
-		logger.debug("Deleting final sandbox location " + sandboxTop);
-		try {
-			FileUtils.deleteDirectory(sandboxLoc);
-		} catch (IOException e) {
-			logger.error("Error deleting sandbox test at " + sandboxLoc);
-		}
+//TODO		logger.debug("Deleting final sandbox location " + sandboxTop);
+//		try {
+//			FileUtils.deleteDirectory(sandboxLoc);
+//		} catch (IOException e) {
+//			logger.error("Error deleting sandbox test at " + sandboxLoc);
+//		}
 	}
 	
 	public void runBlackBoxTests(UnitTest test, String solutionName,
@@ -427,7 +427,7 @@ public class UnitTestManager {
 			File errorFile = new File(container.getOutLoc(), "run.errors");
 			if(errorFile.exists()) {
 				String errorContents = PASTAUtil.scrapeFile(errorFile);
-				FileUtils.deleteQuietly(errorFile);
+//TODO				FileUtils.deleteQuietly(errorFile);
 				if(runner instanceof CBlackBoxTestRunner || runner instanceof CPPBlackBoxTestRunner) {
 					// C/CPP build file notifies of segfault already, and replaces it with a fail
 					errorContents = errorContents.replaceAll(".*: the monitored command dumped core", "").trim();
