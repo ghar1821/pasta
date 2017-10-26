@@ -384,7 +384,7 @@ public class UnitTestManager {
 			}
 		}
 		
-		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, container.getSrcLoc(), false));
+//TODO		antJob.addCleanupTask(new CleanupSpecificFilesTask(testCode, container.getSrcLoc(), false));
 		
 		logger.debug("Starting run of ant job");
 		antJob.run();

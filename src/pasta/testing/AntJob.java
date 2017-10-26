@@ -115,7 +115,7 @@ public class AntJob {
 
 	private void cleanup() {
 		performTasks(cleanupTasks);
-		DockerManager.instance().removeContainer(container.getId());
+//		DockerManager.instance().removeContainer(container.getId());
 	}
 	
 	private void performTasks(List<Task> tasks) {
