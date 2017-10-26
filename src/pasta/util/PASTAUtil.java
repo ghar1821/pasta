@@ -68,8 +68,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
@@ -539,17 +537,8 @@ public class PASTAUtil {
 			}
 		}
 		
-		final DefaultResourceLoader loader = new DefaultResourceLoader();               
-	    Resource resource = loader.getResource("classpath:WEB-INF/template_content/" + pathInProject); 
-	    File copyFile;
-		try {
-			copyFile = resource.getFile();
-		} catch (IOException e) {
-			throw new FileNotFoundException("Template resource \"" + pathInProject + "\" not found.");
-		}
-		
 		File file = new File(ProjectProperties.getInstance().getProjectLocation() + pathInProject);
-//		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
+		File copyFile = new File(ProjectProperties.getInstance().getServletContext().getRealPath("/WEB-INF/template_content/" + pathInProject));
 		if(!file.isDirectory() && !isOutOfDate(file, copyFile)) {
 			return file;
 		}
