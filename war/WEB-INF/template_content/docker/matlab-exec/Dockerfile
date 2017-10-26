@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk
 
-RUN apt-get update && apt-get install -y --no-install-recommends ant ant-optional time coreutils libXt-dev
+RUN apt-get update && apt-get install -y --no-install-recommends ant ant-optional time coreutils
 
 ARG workDir
 
@@ -13,4 +13,4 @@ ARG binDir
 
 COPY bin/ ${binDir}/
 RUN chmod 755 ${binDir}/ # Needs 755 permissions as non-privileged users need to be able to access sub-directories of bin.
-RUN chmod 4750 ${binDir}/pastarun
+RUN chmod 4750 ${binDir}/matlabpastarun
