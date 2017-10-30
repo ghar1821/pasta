@@ -276,13 +276,14 @@ either expressed or implied, of the PASTA Project.
 			(function checkQueue(timeout) {
 				$.ajax({
 					url : '../checkJobQueue/' + assessmentId + '/',
-					dataType: 'json',
+					dataType: 'text',
 					success : function(data) {
 						var done = false;
 						if (data == "error") {
 							$span.html("There was an error while running your submission.");
 							done = true;
 						} else if(data) {
+							data = JSON.parse(data);
 							updateProgress($span, data);
 						} else {
 							$span.html("Refresh for results.");
@@ -349,6 +350,9 @@ either expressed or implied, of the PASTA Project.
 								var value = progressBar.progressbar("option", "value");
 								if(value > 0) {
 									progressBar.progressbar("option", "value", Math.max(0, value - 1000));
+								} else {
+									pb.find(".ui-progressbar-value").removeClass("smooth-progress");
+									progressBar.progressbar("option", "value", false);
 								}
 							}
 							container.data("timer", window.setTimeout(decrease, 1000));
