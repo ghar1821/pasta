@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,8 +185,10 @@ public class DockerManager {
 				Copy.copy(bin.toPath(), baseDir.toPath());
 			} catch (IOException e) {}
 			
+			Set<String> tags = new HashSet<>();
+			tags.add(buildFile.getTag());
 			String id = dockerClient.buildImageCmd(baseDir)
-				.withTag(buildFile.getTag())
+				.withTags(tags)
 				.withBuildArg("workDir", DockerManager.WORK_DIR)
 				.withBuildArg("binDir", DockerManager.PASTA_BIN)
 				.exec(callback)
