@@ -164,7 +164,10 @@
 		<constructor-arg ref="languageProperties" />
 	</bean>
 	
-	<bean id="whichProgram" class="pasta.util.WhichProgram" depends-on="pastaOptions"/>
+	<util:properties id="programProperties" location="classpath:programs.properties" />
+	<bean id="whichProgram" class="pasta.util.WhichProgram">
+		<constructor-arg ref="programProperties" />
+	</bean>
     
 	<task:annotation-driven />
 </beans>
