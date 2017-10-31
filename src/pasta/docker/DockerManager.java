@@ -171,11 +171,14 @@ public class DockerManager {
 		File baseDir = buildFile.getFile().getParentFile();
 
 		BuildImageResultCallback callback = new BuildImageResultCallback() {
-		    @Override
-		    public void onNext(BuildResponseItem item) {
-		       logger.debug(StringUtils.stripEnd(item.getStream(), "\n"));
-		       super.onNext(item);
-		    }
+			@Override
+			public void onNext(BuildResponseItem item) {
+				String content = StringUtils.stripEnd(item.getStream(), "\n");
+				if (content != null && !content.isEmpty()) {
+					logger.debug(content);
+				}
+				super.onNext(item);
+			}
 		};
 
 		try {
@@ -202,8 +205,6 @@ public class DockerManager {
 	}
 	
 	private String toHostPath(String dockerPath) {
-		logger.info("Converting \"" + dockerPath + "\" to host path:");
-		
 		String dockerBase = ProjectProperties.getInstance().getProjectLocation();
 		String hostBase = ProjectProperties.getInstance().getHostLocation();
 		if(dockerBase.endsWith("/")) {
@@ -212,9 +213,6 @@ public class DockerManager {
 		if(hostBase.endsWith("/")) {
 			hostBase = hostBase.substring(0, hostBase.length() - 1);
 		}
-		
-		logger.info("  returning \"" + dockerPath.replaceFirst(dockerBase, hostBase) + "\"");
-		
 		return dockerPath.replaceFirst(dockerBase, hostBase);
 	}
 	
