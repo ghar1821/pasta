@@ -15,9 +15,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -45,8 +43,6 @@ import pasta.util.ProjectProperties;
 import pasta.util.WhichProgram;
 import pasta.util.io.DualByteArrayOutputStream;
 
-@Service("dockerManager")
-@DependsOn("languageManager")
 public class DockerManager {
 	
 	protected static Logger logger = Logger.getLogger(DockerManager.class);

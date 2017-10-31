@@ -9,16 +9,19 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import pasta.util.PASTAUtil;
 
 @Service("languageManager")
+@DependsOn("pastaOptions")
 public class LanguageManager {
 	protected static Logger logger = Logger.getLogger(LanguageManager.class);
 	private static LanguageManager instance;
 	
 	private Map<String, Language> languages;
+	
 	private Properties properties;
 	
 	private LanguageManager(Properties properties) {
@@ -26,18 +29,14 @@ public class LanguageManager {
 		String languages = properties.getProperty("languages", "");
 		for(String language : languages.split(",")) {
 			String id = language.trim();
-			String name = properties.getProperty(id + ".name", "Unnamed");
-			String extensions = properties.getProperty(id + ".extensions");
 			String templateFile = properties.getProperty(id + ".build-template");
 			String dockerFile = properties.getProperty(id + ".docker-build");
 			String runnerClass = properties.getProperty(id + ".runner-class");
-			String testCaseOverhead = properties.getProperty(id + ".test-case-overhead");
-			String testSuiteOverhead = properties.getProperty(id + ".test-suite-overhead");
-			this.languages.put(id, new Language(id, name, extensions, templateFile, dockerFile, runnerClass, testSuiteOverhead, testCaseOverhead));
-			logger.info("Registered language " + name);
-			this.properties = properties;
+			Language newLang = new Language(id, templateFile, dockerFile, runnerClass);
+			this.languages.put(id, newLang);
+			logger.info("Registered language " + newLang.getName());
 		}
-		
+		this.properties = properties;
 		instance = this;
 		DockerManager.instance();
 	}

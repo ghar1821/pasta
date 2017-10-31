@@ -51,16 +51,6 @@
 		</constructor-arg>
 	</bean>
 	
-	<util:properties id="programProperties" location="classpath:programs.properties" />
-	<bean id="whichProgram" class="pasta.util.WhichProgram">
-		<constructor-arg ref="programProperties" />
-	</bean>
-	
-	<util:properties id="languageManager" location="classpath:languages.properties" />
-	<bean class="pasta.docker.LanguageManager">
-		<constructor-arg ref="languageManager" />
-	</bean>
-	
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="${jdbc.driverClassName}" />
@@ -103,6 +93,7 @@
 			<list>
 				<value>pasta.scheduler.AssessmentJob</value>
 				<value>pasta.scheduler.Job</value>
+				<value>pasta.domain.options.Option</value>
 				<value>pasta.domain.PASTALoginUser</value>
 				<value>pasta.domain.ratings.AssessmentRating</value>
 				<value>pasta.domain.release.ClassRule</value>
@@ -162,6 +153,18 @@
     <context:component-scan base-package="pasta.domain" />
     <context:component-scan base-package="pasta.util" />
     <context:component-scan base-package="pasta.docker" />
+    
+    <util:properties id="defaultProperties" location="classpath:defaults.properties" />
+	<bean id="pastaOptions" class="pasta.service.PASTAOptions">
+		<constructor-arg ref="defaultProperties" />
+	</bean>
+	
+	<util:properties id="languageProperties" location="classpath:languages.properties" />
+	<bean id="languageManager" class="pasta.docker.LanguageManager">
+		<constructor-arg ref="languageProperties" />
+	</bean>
+	
+	<bean id="whichProgram" class="pasta.util.WhichProgram" depends-on="pastaOptions"/>
     
 	<task:annotation-driven />
 </beans>
