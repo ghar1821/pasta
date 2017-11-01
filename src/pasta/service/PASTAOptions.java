@@ -1,7 +1,12 @@
 package pasta.service;
 
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -10,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.domain.form.UpdateOptionsForm;
 import pasta.domain.options.Option;
 import pasta.repository.OptionsDAO;
 
@@ -73,6 +79,10 @@ public class PASTAOptions {
 		return properties.getProperty(key);
 	}
 	
+	public List<Option> getAllOptions() {
+		return optionsDao.getAllOptions();
+	}
+	
 	public boolean clear(String key) {
 		if(properties.containsKey(key)) {
 			properties.remove(key);
@@ -83,5 +93,55 @@ public class PASTAOptions {
 	
 	public boolean hasKey(String key) {
 		return get(key) != null;
+	}
+	
+	public void delete(String key) {
+		clear(key);
+		optionsDao.delete(key);
+	}
+
+	public void updateOptions(UpdateOptionsForm form) {
+		Set<Option> formOptions = new HashSet<>(form.getOptions());
+		if(form.getAddKey() != null && !form.getAddKey().isEmpty()) {
+			Option opt = new Option(form.getAddKey(), form.getAddValue());
+			if(!formOptions.add(opt)) {
+				formOptions.remove(opt);
+				formOptions.add(opt);
+				clear(opt.getKey());
+			}
+		}
+		
+		if(form.getAddOptions() != null && !form.getAddOptions().isEmpty()) {
+			Scanner lineScn = new Scanner(form.getAddOptions());
+			while(lineScn.hasNext()) {
+				String line = lineScn.nextLine();
+				if(line.trim().isEmpty()) {
+					continue;
+				}
+				String[] parts = line.split("=", 2);
+				Option opt = new Option(parts[0], parts[1]);
+				if(!formOptions.add(opt)) {
+					formOptions.remove(opt);
+					formOptions.add(opt);
+					clear(opt.getKey());
+				}
+			}
+			lineScn.close();
+		}
+		
+		Set<String> allKeys = getAllOptions().stream()
+					.map(Option::getKey)
+					.collect(Collectors.toSet());
+		for(Option option : formOptions) {
+			if(!option.getKey().isEmpty()) {
+				if(!allKeys.contains(option.getKey()) || 
+						!get(option.getKey()).equals(option.getValue())) {
+					optionsDao.saveOrUpdate(option);
+					clear(option.getKey());
+				}
+				allKeys.remove(option.getKey());
+			}
+		}
+		allKeys.forEach(this::delete);
 	}
 }

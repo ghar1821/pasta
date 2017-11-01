@@ -68,11 +68,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pasta.docker.CommandResult;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
+import pasta.domain.form.UpdateOptionsForm;
 import pasta.domain.form.UpdateUsersForm;
+import pasta.domain.form.validate.UpdateOptionsFormValidator;
 import pasta.domain.form.validate.UpdateUsersFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.ExecutionManager;
+import pasta.service.PASTAOptions;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
@@ -108,7 +111,10 @@ public class AdminController {
 	
 	@Autowired
 	private UpdateUsersFormValidator updateValidator;
-
+	
+	@Autowired
+	private UpdateOptionsFormValidator updateOptionsValidator;
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -133,6 +139,11 @@ public class AdminController {
 		WebUtils.ensureLoggedIn(request);
 		return WebUtils.getUser();
 	}
+	
+	@ModelAttribute("updateOptionsForm")
+	public UpdateOptionsForm getUpdateOptionsForm() {
+		return new UpdateOptionsForm(PASTAOptions.instance().getAllOptions());
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// ADMIN //
@@ -152,11 +163,11 @@ public class AdminController {
 	 * </table>
 	 * JSP:
 	 * <ul>
-	 * 	<li>user/admin</li>
+	 * 	<li>admin/admin</li>
 	 * </ul>
 	 * 
 	 * @param model the model
-	 * @return "redirect:/login" or "user/admin".
+	 * @return "redirect:/login" or "admin/admin".
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
@@ -166,7 +177,7 @@ public class AdminController {
 			model.addAttribute("addresses", ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses());
 			model.addAttribute("taskDetails", executionManager.getExecutingTaskDetails());
 		}
-		return "user/admin";
+		return "admin/admin";
 	}
 	
 	/**
@@ -299,6 +310,30 @@ public class AdminController {
 	public String forceSubmissionRefresh(HttpServletRequest request) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		executionManager.forceSubmissionRefresh();
+		return "redirect:" + request.getHeader("Referer");
+	}
+	
+	@RequestMapping(value = "/options/", method = RequestMethod.GET)
+	public String loadOptions() {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		return "admin/options";
+	}
+	
+	@RequestMapping(value = "/options/updateOptions/", method = RequestMethod.POST)
+	public String updateOptions(HttpServletRequest request, 
+			@Valid @ModelAttribute("updateOptionsForm") UpdateOptionsForm form, BindingResult result, 
+			RedirectAttributes attr) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		updateOptionsValidator.validate(form, result);
+		if(result.hasErrors()) { 
+			attr.addFlashAttribute("updateOptionsForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateOptionsForm", result);
+			return "redirect:../.";
+		}
+		
+		PASTAOptions.instance().updateOptions(form);
+		
 		return "redirect:" + request.getHeader("Referer");
 	}
 	

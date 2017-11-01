@@ -1016,3 +1016,23 @@ thead.rotate > tr > th > div > span {
 .submission-progress .running {
 	color: green;
 }
+
+.options-table {
+	border-collapse: collapse;
+}
+.options-table td {
+	padding: 3px 0.35em;
+}
+.options-table td.value input {
+	width: 400px;
+}
+.options-table td.value textarea {
+	width: 400px;
+	height: 70px;
+}
+.options-table tr.to-delete {
+	background-color: lightgray;
+}
+form#updateOptionsForm input, form#updateOptionsForm textarea {
+	font-family: monospace;
+}

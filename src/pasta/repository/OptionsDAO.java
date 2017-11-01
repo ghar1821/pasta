@@ -30,6 +30,10 @@ public class OptionsDAO {
 	public void delete(Option option) {
 		sessionFactory.getCurrentSession().delete(option);
 	}
+	public void delete(String key) {
+		Option option = getOption(key);
+		delete(option);
+	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Option> getAllOptions() {
