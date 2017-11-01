@@ -2,7 +2,6 @@ package pasta.domain.form.validate;
 
 import java.util.Scanner;
 
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -26,8 +25,6 @@ public class UpdateOptionsFormValidator implements Validator {
 	@Override
 	public void validate(Object target, Errors errors) {
 		UpdateOptionsForm form = (UpdateOptionsForm) target;
-		
-		Logger.getLogger(getClass()).info(form.getOptions());
 		
 		boolean addKey = form.getAddKey() != null && !form.getAddKey().isEmpty();
 		boolean addValue = form.getAddValue() != null && !form.getAddValue().isEmpty();
