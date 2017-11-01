@@ -132,7 +132,16 @@ either expressed or implied, of the PASTA Project.
 			</div>
 		</div>
 	</div>
-		
+	
+	<c:if test="${user.instructor}">
+		<div class='section'>
+			<h2 class='section-title'>Options</h2>
+			<div class='part'>
+				Click <a href='options/'>here</a> to go to the options page, where you can see and change values for PASTA's options.
+			</div>
+		</div>
+	</c:if>
+	
 	<div id="confirmPopup" class='popup'>
 		<span class="button bClose"> <span><b>X</b></span>
 		</span>
