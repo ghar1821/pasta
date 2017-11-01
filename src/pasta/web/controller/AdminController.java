@@ -34,13 +34,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +64,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import pasta.docker.CommandResult;
+import pasta.docker.DockerManager;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
 import pasta.domain.form.UpdateUsersForm;
@@ -74,7 +73,6 @@ import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.ExecutionManager;
 import pasta.service.UserManager;
-import pasta.util.PASTAUtil;
 import pasta.util.ProjectProperties;
 import pasta.util.WhichProgram;
 import pasta.web.WebUtils;
@@ -317,13 +315,6 @@ public class AdminController {
 		command.add("--password=" + info.password);
 		command.add("--lock-tables");
 				
-		if(info.hostname != null) {
-			command.add("--host=" + info.hostname);
-		}
-		if(info.port != null) {
-			command.add("--port=" + info.port);
-		}
-		
 		String[] ignoreTables = {
 				"user_logins",
 				"assessment_ratings",
@@ -335,28 +326,36 @@ public class AdminController {
 			command.add("--ignore-table=" + info.databaseName + "." + ignore);
 		}
 		
-		String filename = "pasta_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
-		Path dumpPath = Paths.get(ProjectProperties.getInstance().getSandboxLocation(), filename + ".sql");
-		dumpPath.getParent().toFile().mkdirs();
-		command.add("--result-file=" + dumpPath.toString());
 		command.add(info.databaseName);
 		
+		CommandResult result = null;
 		try {
-			CommandResult result = PASTAUtil.executeCommand(command);
+			result = DockerManager.instance().executeDatabaseDump(command);
 			if(!result.getError().isEmpty()) {
 				throw new IOException(result.getError());
 			}
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
 			logger.error("Error generating SQL dump:", e);
 		}
 		
+		String filename = "pasta_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
 	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
 
 	    try {
 	    	// Zip the file
 	    	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 	    	ZipOutputStream zip = new ZipOutputStream(outStream);
-	    	PASTAUtil.zip(zip, dumpPath.toFile(), dumpPath.getParent().toString());
+	    	
+	    	ZipEntry ze = new ZipEntry(filename + ".sql");
+			zip.putNextEntry(ze);
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(result.getOutput().getBytes());
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = bais.read(buffer)) > 0) {
+				zip.write(buffer, 0, len);
+			}
+			bais.close();
 			zip.closeEntry();
 			zip.close();
 			
@@ -366,12 +365,6 @@ public class AdminController {
 			IOUtils.copy(in,out);
 		} catch (IOException e) {
 			logger.error("Error sending SQL dump:", e);
-		}
-	    
-		try {
-			Files.deleteIfExists(dumpPath);
-		} catch (IOException e) {
-			logger.error("Error deleting SQL dump:", e);
 		}
 	}
 	

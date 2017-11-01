@@ -276,7 +276,11 @@ public class DockerManager {
 	}
 	
 	public CombinedCommandResult runCommand(ExecutionContainer container, String... command) {
-		ExecCreateCmdResponse cmd = dockerClient.execCreateCmd(container.getId())
+		return runCommand(container.getId(), container.getLabel(), command);
+	}
+	
+	public CombinedCommandResult runCommand(String containerId, String containerLabel, String... command) {
+		ExecCreateCmdResponse cmd = dockerClient.execCreateCmd(containerId)
 				.withCmd(command)
 				.withAttachStdout(true)
 				.withAttachStderr(true)
@@ -288,12 +292,12 @@ public class DockerManager {
 				DualByteArrayOutputStream streams = new DualByteArrayOutputStream();
 			) {
 			ExecStartResultCallback callback = new ExecStartResultCallback(streams.getOutputStream(), streams.getErrorStream());
-			logger.trace("Start running command " + Arrays.toString(command) + " on " + container.getLabel());
+			logger.trace("Start running command " + Arrays.toString(command) + " on " + containerLabel);
 			dockerClient
 					.execStartCmd(execId)
 					.exec(callback)
 					.awaitCompletion();
-			logger.trace("Finished running command " + Arrays.toString(command) + " on " + container.getLabel());
+			logger.trace("Finished running command " + Arrays.toString(command) + " on " + containerLabel);
 			streams.flush();
 			String combinedStr = streams.toString(StandardCharsets.UTF_8.name());
 			String outStr = streams.getOutputStream().toString(StandardCharsets.UTF_8.name());
@@ -349,5 +353,23 @@ public class DockerManager {
 			}
 		}
 		return eps;
+	}
+	
+	public CommandResult executeDatabaseDump(List<String> command) {
+		List<Container> containers = dockerClient.listContainersCmd().withLabelFilter("pasta", "mysql").exec();
+		if(containers.size() == 0) {
+			throw new IllegalStateException("No Docker container running PASTA's MySQL found.");
+		}
+		
+		Container container = containers.get(0);
+		if(containers.size() > 1) {
+			logger.warn("Found more than one container for running mysqldump. Executing on first one: " + container.getId());
+		}
+		
+		String[] commandArray = command.toArray(new String[command.size()]);
+		CombinedCommandResult runCommand = runCommand(container.getId(), container.getNames()[0], commandArray);
+		logger.info("OUTPUT:" + runCommand.getOutput());
+		logger.info("ERROR:" + runCommand.getError());
+		return runCommand;
 	}
 }
