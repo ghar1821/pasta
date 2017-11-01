@@ -335,10 +335,16 @@ public class AdminController {
 		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	@RequestMapping(value = "/downloads/", method = RequestMethod.GET)
+	public String viewDownloads() {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		return "admin/downloads";
+	}
+	
 	@Autowired
 	private DataSource dataSource;
 	
-	@RequestMapping(value = "/dbdump/", method = RequestMethod.POST, produces="application/zip")
+	@RequestMapping(value = "/downloads/dbdump/", method = RequestMethod.POST, produces="application/zip")
 	public void downloadDatabaseDump(HttpServletRequest request, HttpServletResponse response) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
