@@ -29,9 +29,12 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,9 +45,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,6 +58,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.reporting.Report;
+import pasta.domain.reporting.ReportPermission;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.service.AssessmentManager;
@@ -162,7 +166,7 @@ public class ReportingController {
 		
 		Report report = reportingManager.getReport(reportId);
 		if(reportingManager.userCanViewReport(user, report)) {
-			Collection<Assessment> allAssessments = assessmentManager.getReleasedAssessments(user);
+			Set<Assessment> allAssessments = reportingManager.getAssessmentsForReport(user, report);
 			ArrayNode assessmentsNode = mapper.createArrayNode();
 			for(Assessment assessment : allAssessments) {
 				ObjectNode summaryNode = mapper.createObjectNode();
@@ -287,18 +291,53 @@ public class ReportingController {
 	@ResponseBody
 	public String savePermissions(@PathVariable("reportId") String reportId, 
 			@ModelAttribute("user") PASTAUser user, 
-			@RequestParam(value="permissions[]", required=false) List<UserPermissionLevel> permissions,
+			@RequestBody Map<String, Boolean> permissions,
 			ModelMap model) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
 		logger.info("User " + user.getUsername() + " saving report permissions for " + reportId + ": " + permissions);
 		Report report = reportingManager.getReport(reportId);
-		report.setPermissionLevels(permissions);
+		
+		Set<UserPermissionLevel> defaults = new HashSet<>();
+		permissions.entrySet().stream().filter(e -> e.getKey().startsWith("default-")).forEach(e -> {
+			if(e.getValue()) {
+				String key = e.getKey();
+				UserPermissionLevel level = UserPermissionLevel.valueOf(key.substring("default-".length()));
+				defaults.add(level);
+			}
+		});
+		report.setDefaultPermissionLevels(defaults);
+		
+		HashMap<Long, Assessment> assessmentCache = new HashMap<>();
+		Set<ReportPermission> assessmentPermissions = new HashSet<>();
+		permissions.entrySet().stream().filter(e -> !e.getKey().startsWith("default-")).forEach(e -> {
+			String[] key = e.getKey().split("-", 2);
+			long assessmentId = Long.parseLong(key[0]);
+			Assessment assessment;
+			if(assessmentCache.containsKey(assessmentId)) {
+				assessment = assessmentCache.get(assessmentId);
+			} else {
+				assessment = assessmentManager.getAssessment(assessmentId);
+				assessmentCache.put(assessmentId, assessment);
+			}
+			UserPermissionLevel level = UserPermissionLevel.valueOf(key[1]);
+			assessmentPermissions.add(new ReportPermission(report, assessment, level, e.getValue()));
+		});
+		reportingManager.setAssessmentPermissions(report, assessmentPermissions);
+		
 		reportingManager.saveOrUpdate(report);
 		
 		ObjectNode node = new ObjectMapper().createObjectNode();
 		node.put("result", "success");
 		node.put("reportId", reportId);
+		return getJSONString(node);
+	}
+	
+	@RequestMapping(value = "permissions/{reportId}/", method = RequestMethod.GET)
+	@ResponseBody
+	public String getPermissions(@PathVariable("reportId") String reportId) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		ObjectNode node = reportingManager.getReportPermissions(reportId);
 		return getJSONString(node);
 	}
 	

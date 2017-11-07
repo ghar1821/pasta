@@ -45,6 +45,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -63,6 +64,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
 import pasta.domain.release.ReleaseRule;
+import pasta.domain.reporting.ReportPermission;
 import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
@@ -698,4 +700,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			return false;
 		return true;
 	}
+	
+	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReportPermission> reportPermissions;
 }

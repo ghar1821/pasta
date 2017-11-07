@@ -109,6 +109,7 @@
 				<value>pasta.domain.release.SubmissionCountRule</value>
 				<value>pasta.domain.release.UsernameRule</value>
 				<value>pasta.domain.reporting.Report</value>
+				<value>pasta.domain.reporting.ReportPermission</value>
 				<value>pasta.domain.result.AssessmentResult</value>
 				<value>pasta.domain.result.AssessmentResultSummary</value>
 				<value>pasta.domain.result.HandMarkingResult</value>

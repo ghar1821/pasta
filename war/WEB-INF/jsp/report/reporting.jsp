@@ -63,30 +63,13 @@ either expressed or implied, of the PASTA Project.
 		<c:if test="${user.instructor and (empty pretending or pretending.instructor) }">
 			<div class='report-controls part'>
 				<span class='fa fa-eye'></span>
-				<c:choose>
-					<c:when test="${empty report.permissionLevels}"><a class='edit-permissions'><span class='permission'>Nobody</span></a></c:when>
-					<c:otherwise>
-						<a class='edit-permissions'><c:forEach var="permission" items="${report.permissionLevels}"><%--
-							--%><span class='permission'>${permission.description}</span><%--
-						--%></c:forEach></a>
-					</c:otherwise>
-				</c:choose>
+				<span><a class='edit-permissions'>Who can see this report?</a></span>
 			</div>
 		</c:if>
 		<div class='report-content' data-report='${report.id}'>
 		</div>
 	</div>
 </c:forEach>
-
-<script>
-	var allPermissions = [];
-	<c:forEach var="permission" items="${allPermissions}">
-		allPermissions.push({
-			text: "${permission.description}",
-			value: "${permission}"
-		});
-	</c:forEach>
-</script>
 
 <script src='<c:url value="/static/scripts/reporting/reporting.js"/>'></script>
 <c:forEach var="report" items="${allReports}">

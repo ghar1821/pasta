@@ -741,7 +741,7 @@ span.icon_help, div.icon_help {
 	width: 32px;
 }
 
-input[type='checkbox'].custom-check {
+*:not(label) > input[type='checkbox'].custom-check {
 	display: none;
 }
 input[type='checkbox'].custom-check + label,
@@ -754,6 +754,7 @@ input[type='checkbox'].custom-check + input[type=hidden] + label {
 	height: 20px;
 	line-height: 20px;
 	position: relative;
+	text-align: left;
 	transition: background 0.1s linear, border 0.1s linear;
 	vertical-align: middle;
 	width: 50px;
@@ -762,6 +763,11 @@ input[type='checkbox'].custom-check:checked + label,
 input[type='checkbox'].custom-check:checked + input[type=hidden] + label {
 	background-color: #66aa44;
 	border-color: green;
+}
+input[type='checkbox'].custom-check:indeterminate + label,
+input[type='checkbox'].custom-check:indeterminate + input[type=hidden] + label {
+	background-color: lightgray;
+	border-color: gray;
 }
 input[type='checkbox'].custom-check + label::after,
 input[type='checkbox'].custom-check + input[type=hidden] + label::after {
@@ -782,6 +788,10 @@ input[type='checkbox'].custom-check:checked + label::after,
 input[type='checkbox'].custom-check:checked + input[type=hidden] + label::after {
 	transform: translateX(33px);
 }
+input[type='checkbox'].custom-check:indeterminate + label::after,
+input[type='checkbox'].custom-check:indeterminate + input[type=hidden] + label::after {
+	transform: translateX(16px);
+}
 input[type='checkbox'].custom-check + label::before,
 input[type='checkbox'].custom-check + input[type=hidden] + label::before {
 	color: #ffcece;
@@ -799,6 +809,10 @@ input[type='checkbox'].custom-check:checked + input[type=hidden] + label::before
 	color: #ceffce;
 	content: '\002714';
 	left: 11px;
+}
+input[type='checkbox'].custom-check:indeterminate + label::before,
+input[type='checkbox'].custom-check:indeterminate + input[type=hidden] + label::before {
+	content: '';
 }
 
 table.alignCellsTop td, table.alignCellsTop th {
@@ -822,7 +836,7 @@ span.expanded-icon {
 	box-shadow: 0 0 25px 5px #999;
 	color: #111;
 	display: none;
-	padding: 25px;
+	padding: 10px;
 }
 .bClose {
 	border-radius: 7px 7px 7px 7px;
@@ -871,45 +885,46 @@ th.handMarkingTable,td.handMarkingTable {
 	background-color: white;
 }
 
-.report .permission {
-	padding: 0 0.8em;
+.report-permissions .name {
+	display: inline-block;
+	width: 220px;
+	white-space: normal;
+	padding: 0 0.75em;
 }
-.report .permission + .permission {
-	border-left: 1px solid lightgray;
+.report-permissions .perm {
+	display: inline-block;
+	width: 80px;
+	text-align: center;
+}
+.report-permissions .row {
+	white-space: nowrap;
+	padding: 0.5em 0;
+}
+.report-permissions .row.perms:nth-child(odd) {
+	background-color: #F4F4F4;
+}
+.report-permissions .header,
+.report-permissions .category  {
+	font-weight: bold;
+}
+.report-permissions .category:not(:first-child)  {
+	margin-top: 0.5em;
+}
+.report-permissions h3 {
+	margin-bottom: 0.5em;
+}
+.report-permissions .info {
+	margin-top: 0;
+	font-size: 0.9em;
+	color: #888;
+	font-style: italic;
+	max-width: 500px;
+}
+.report-permissions .permission-scroll {
+	max-height: 200px;
+	overflow-y: auto;
 }
 
-.report-permissions .permission:first-child {
-	border-top-left-radius: 0.5em;
-	border-top-right-radius: 0.5em;
-}
-.report-permissions .permission:last-child {
-	border-bottom-left-radius: 0.5em;
-	border-bottom-right-radius: 0.5em;
-}
-	
-.report-permissions .permissions {
-	width: 300px;
-}
-.report-permissions .permission {
-	padding: 0.5em 0.5em;
-	border-width: 1px;
-	border-style: solid;
-	border-color: #C00;
-	color: #C00;
-	background-color: #FCC;
-	cursor: pointer;
-}
-.report-permissions .permission + .permission {
-	border-top: none;
-}
-.report-permissions .permission.selected {
-	border-color: #090;
-	color: #090;
-	background-color: #DFC;
-}
-.report-permissions .permission-icon {
-	width: 2em;
-}
 .messages .success {
 	color: #090;
 }
