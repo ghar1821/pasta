@@ -32,6 +32,7 @@ package pasta.web.controller;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,6 +67,7 @@ import pasta.service.ReportingManager;
 import pasta.service.UserManager;
 import pasta.service.reporting.AssessmentReportingManager;
 import pasta.service.reporting.UnitTestReportingManager;
+import pasta.util.PASTAUtil;
 import pasta.web.WebUtils;
 
 /**
@@ -166,15 +168,44 @@ public class ReportingController {
 		
 		Report report = reportingManager.getReport(reportId);
 		if(reportingManager.userCanViewReport(user, report)) {
-			Set<Assessment> allAssessments = reportingManager.getAssessmentsForReport(user, report);
-			ArrayNode assessmentsNode = mapper.createArrayNode();
-			for(Assessment assessment : allAssessments) {
-				ObjectNode summaryNode = mapper.createObjectNode();
-				ObjectNode assessmentNode = assessmentReportManager.getAssessmentJSON(assessment);
-				summaryNode.set("assessment", assessmentNode);
-				assessmentsNode.add(summaryNode);
+			Set<Assessment> allowedAssessments = reportingManager.getAssessmentsForReport(user, report);
+			Map<String, Set<Assessment>> allAssessmentsByCategory = assessmentManager.getAllAssessmentsByCategory(user.isTutor());
+			
+			for(String category : allAssessmentsByCategory.keySet()) {
+				Iterator<Assessment> it = allAssessmentsByCategory.get(category).iterator();
+				while(it.hasNext()) {
+					if(!allowedAssessments.contains(it.next())) {
+						it.remove();
+					}
+				}
+				if(allAssessmentsByCategory.get(category).isEmpty()) {
+					allAssessmentsByCategory.remove(category);
+				}
 			}
-			node.set("assessments", assessmentsNode);
+			
+			Map<Long, ObjectNode> seenNodes = new HashMap<>();
+			ArrayNode categoriesNode = mapper.createArrayNode();
+			for(String category : allAssessmentsByCategory.keySet()) {
+				ObjectNode categoryNode = mapper.createObjectNode();
+				categoryNode.put("category", category);
+				
+				ArrayNode assessmentsNode = mapper.createArrayNode();
+				for(Assessment assessment : allAssessmentsByCategory.get(category)) {
+					if(seenNodes.containsKey(assessment.getId())) {
+						assessmentsNode.add(seenNodes.get(assessment.getId()));
+					} else {
+						ObjectNode summaryNode = mapper.createObjectNode();
+						ObjectNode assessmentNode = assessmentReportManager.getAssessmentJSON(assessment);
+						summaryNode.set("assessment", assessmentNode);
+						seenNodes.put(assessment.getId(), summaryNode);
+						assessmentsNode.add(summaryNode);
+					}
+				}
+				categoryNode.set("assessments", assessmentsNode);
+				categoriesNode.add(categoryNode);
+			}
+			
+			node.set("categories", categoriesNode);
 			
 			switch(reportId) {
 			case "mark-histograms": {
