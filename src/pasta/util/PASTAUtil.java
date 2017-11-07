@@ -45,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -830,6 +831,20 @@ public class PASTAUtil {
 		String allError = sb.toString();
 		
 		return new CommandResult(allOutput, allError);
+	}
+	
+	public static <K, V> Map<K, List<V>> groupBy(Function<V, K> grouper, Collection<V> items) {
+		Map<K, List<V>> groups = new HashMap<>();
+		for(V item : items) {
+			K key = grouper.apply(item);
+			List<V> value = groups.get(key);
+			if(value == null) {
+				value = new LinkedList<>();
+				groups.put(key, value);
+			}
+			value.add(item);
+		}
+		return groups;
 	}
 }
 
