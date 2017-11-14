@@ -284,4 +284,13 @@ public class UnitTestReportingManager {
 			return node;
 		}
 	}
+
+	public CSVReport getAllUnitTestAttemptsReport(int pageSize) {
+		List<Object[]> attempts = resultDAO.getAllUnitTestAttempts();
+		String[] header = {
+				"submission_id", "assessment", "submission_date", "user", 
+				"user_type", "submitted_by", "test_case", "result"
+		};
+		return new CSVReport(header, attempts, pageSize);
+	}
 }

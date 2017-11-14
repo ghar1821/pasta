@@ -76,6 +76,9 @@ import pasta.login.DBAuthValidator;
 import pasta.service.ExecutionManager;
 import pasta.service.PASTAOptions;
 import pasta.service.UserManager;
+import pasta.service.reporting.CSVReport;
+import pasta.service.reporting.CSVReport.CSVPage;
+import pasta.service.reporting.UnitTestReportingManager;
 import pasta.util.ProjectProperties;
 import pasta.util.WhichProgram;
 import pasta.web.WebUtils;
@@ -106,6 +109,9 @@ public class AdminController {
 	
 	@Autowired
 	private ExecutionManager executionManager;
+	
+	@Autowired
+	private UnitTestReportingManager unitTestReportingManager;
 	
 	@Autowired
 	private UpdateUsersFormValidator updateValidator;
@@ -335,10 +341,16 @@ public class AdminController {
 		return "redirect:" + request.getHeader("Referer");
 	}
 	
+	@RequestMapping(value = "/downloads/", method = RequestMethod.GET)
+	public String viewDownloads() {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		return "admin/downloads";
+	}
+	
 	@Autowired
 	private DataSource dataSource;
 	
-	@RequestMapping(value = "/dbdump/", method = RequestMethod.POST, produces="application/zip")
+	@RequestMapping(value = "/downloads/dbdump/", method = RequestMethod.POST, produces="application/zip")
 	public void downloadDatabaseDump(HttpServletRequest request, HttpServletResponse response) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		
@@ -430,6 +442,46 @@ public class AdminController {
 					this.databaseName = url.substring(start);
 				}
 			}
+		}
+	}
+	
+	@RequestMapping(value = "/downloads/uthistory/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadUnitTestHistory(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="maxRowCount", required=false) int maxRowCount) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		CSVReport report = unitTestReportingManager.getAllUnitTestAttemptsReport(maxRowCount);
+		CSVPage[] pages = report.getPages();
+		
+		String filename = "pasta_unit_test_results_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
+	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
+
+	    try {
+	    	// Zip the file
+	    	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+	    	ZipOutputStream zip = new ZipOutputStream(outStream);
+	    	
+	    	for(int i = 0; i < pages.length; i++) {
+	    		String entryName = "results";
+	    		if(pages.length > 1) {
+	    			int numDigits = (int) Math.ceil(Math.log10(pages.length + 1));
+	    			entryName += String.format("%0" + numDigits + "d", i + 1);
+	    		}
+	    		entryName += ".csv";
+	    		ZipEntry ze = new ZipEntry(entryName);
+				zip.putNextEntry(ze);
+				pages[i].output(zip);
+				zip.closeEntry();
+	    	}
+	    	
+			zip.close();
+			
+			// Send the file
+			OutputStream out = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(outStream.toByteArray());
+			IOUtils.copy(in,out);
+		} catch (IOException e) {
+			logger.error("Error sending unit test attempts:", e);
 		}
 	}
 }

@@ -299,14 +299,9 @@ either expressed or implied, of the PASTA Project.
 	</div>
 	
 	<div class='section'>
-		<h2 class='section-title'>Database Download</h2>
+		<h2 class='section-title'>Downloads</h2>
 		<div class='part'>
-			<div>Download the contents of the PASTA database for analysis.</div>
-			<div class='button-panel'>
-				<form action="dbdump/" method="post">
-					<button type='submit'>Download</button>
-				</form>
-			</div>
+			Click <a href='downloads/'>here</a> to go to the downloads page, where you can download data dumps from PASTA's database.
 		</div>
 	</div>
 </c:if>

@@ -47,6 +47,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
@@ -580,5 +581,22 @@ public class ResultDAO{
 		  }
 		}
 		return found ? stringBuffer.toString() : null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getAllUnitTestAttempts() {
+		String sql = "SELECT ar.id AS 'submission_id', a.name AS 'assessment', "
+				+ "ar.submission_date, u1.username AS 'user', u1.permission_level, "
+				+ "u2.username AS 'submitted_by', utcr.name AS 'test_case', utcr.result "
+				+ "FROM assessment_results ar "
+				+ "INNER JOIN assessment_result_unit_test_joins arutj ON ar.id = arutj.assessment_result_id "
+				+ "INNER JOIN unit_test_results utr ON utr.id = arutj.unit_test_result_id "
+				+ "INNER JOIN unit_test_case_results utcr ON utcr.test_case_id = utr.id "
+				+ "INNER JOIN users u1 ON ar.user_id = u1.id "
+				+ "INNER JOIN users u2 ON ar.submitted_by = u2.id "
+				+ "INNER JOIN assessments a ON ar.assessment_id = a.id "
+				+ "ORDER BY ar.submission_date, ar.id, utcr.name";
+		SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+		return query.list();
 	}
 }
