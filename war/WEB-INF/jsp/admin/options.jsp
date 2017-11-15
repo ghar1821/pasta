@@ -13,6 +13,11 @@
 
 <form:form commandName="updateOptionsForm" action="updateOptions/" method="post" cssClass="">
 	<div class='section'>
+		<div class='part no-line'>
+			<h2 class='part-title horizontal-block'>Current Options</h2>
+			<input id='search' type='text' />
+		</div>
+		
 		<div class='part'>
 			<c:if test="${not empty updateOptionsForm.options}">
 				<div class='pasta-form wide'>
@@ -135,4 +140,8 @@
 		});
 		return false;
 	});
+	
+	$(".options-table tbody tr").searchNode();
+	$(".options-table .key, .options-table input, .options-table textarea").searchable();
+	$("#search").searchBox();
 </script>

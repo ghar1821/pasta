@@ -86,7 +86,14 @@
 	
 	$.expr[":"].Contains = $.expr.createPseudo(function(arg) {
 	    return function( elem ) {
-	        return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+	    	var e = $(elem);
+	    	var text = "";
+	    	if(e.val()) {
+	    		text = e.val();
+	    	} else {
+	    		text = e.text();
+	    	}
+	        return text.toUpperCase().indexOf(arg.toUpperCase()) >= 0;
 	    };
 	});
  
