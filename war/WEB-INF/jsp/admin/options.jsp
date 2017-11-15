@@ -29,7 +29,7 @@
 									<td class='value'>
 										<div class="pf-item compact">
 											<c:choose>
-											<c:when test="${fn:endsWith(option.key, '.description')}">
+											<c:when test="${fn:endsWith(option.key, '.text')}">
 												<form:textarea path="options[${s.index}].value"/>
 											</c:when>
 											<c:otherwise>

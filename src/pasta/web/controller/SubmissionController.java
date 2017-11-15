@@ -74,6 +74,7 @@ import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
+import pasta.service.PASTAOptions;
 import pasta.service.RatingManager;
 import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
@@ -259,6 +260,9 @@ public class SubmissionController {
 		model.addAttribute("closed", closed);
 		model.addAttribute("hasGroupWork", hasGroupWork);
 		model.addAttribute("allGroupWork", allGroupWork);
+		
+		model.addAttribute("individualDeclaration", PASTAOptions.instance().get("submission.individual.text"));
+		model.addAttribute("groupDeclaration", PASTAOptions.instance().get("submission.group.text"));
 		
 		if (user.isTutor()) {
 			return "user/tutorHome";

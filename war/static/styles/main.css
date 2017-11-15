@@ -1051,3 +1051,17 @@ thead.rotate > tr > th > div > span {
 form#updateOptionsForm input, form#updateOptionsForm textarea {
 	font-family: monospace;
 }
+
+#submitPopup {
+	padding: 1.5em;
+}
+#submitPopup .submission-notice {
+	font-size: 1.3em;
+	max-width: 70vw;
+}
+#lateNotice {
+	text-align: center;
+	font-size: 200%;
+	color: red;
+	margin-bottom: 1em;
+}
