@@ -9,7 +9,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="Author" content="Alex Radu, Joshua Stretton, Vincent Gramoli" />
-		<title><spring:message code="UOS" /> </title>
+		<title><c:out value="${applicationName}" default="PASTA"/></title>
 		
 		<%--Increase the v=# number if you want to force users to re-download the CSS--%>
 		<link href="<c:url value="/static/styles/main.css?v=3"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -110,7 +110,7 @@
 		<div id='header'>
 			<div id='head'>
 				<a href='<c:url value="/home/"/>'><img class='logo' src="<c:url value="/static/icons/logo-full.svg"/>"></a>
-				<div class='horizontal float-right'><span class="title"><spring:message code="UOS" /></span></div>
+				<div class='horizontal float-right'><span class="title"><c:out value="${applicationName}" default="PASTA"/></span></div>
 			</div>
 			
 			<div id="login" class='link-bar right-align'>
