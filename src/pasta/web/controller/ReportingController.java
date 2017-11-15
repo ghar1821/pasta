@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -171,7 +172,8 @@ public class ReportingController {
 			Set<Assessment> allowedAssessments = reportingManager.getAssessmentsForReport(user, report);
 			Map<String, Set<Assessment>> allAssessmentsByCategory = assessmentManager.getAllAssessmentsByCategory(user.isTutor());
 			
-			for(String category : allAssessmentsByCategory.keySet()) {
+			TreeSet<String> categories = new TreeSet<String>(allAssessmentsByCategory.keySet());
+			for(String category : categories) {
 				Iterator<Assessment> it = allAssessmentsByCategory.get(category).iterator();
 				while(it.hasNext()) {
 					if(!allowedAssessments.contains(it.next())) {
