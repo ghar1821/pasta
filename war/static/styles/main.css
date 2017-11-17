@@ -550,7 +550,7 @@ div.consolePreview {
 	font-size: 13px;
 	overflow: auto;
 	padding: 0.5em;
-	white-space: pre-wrap;
+	white-space: pre;
 	width: 100%;
 }
 div.testCase + div.testCase {
