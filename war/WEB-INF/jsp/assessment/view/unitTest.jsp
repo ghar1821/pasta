@@ -565,8 +565,8 @@ either expressed or implied, of the PASTA Project.
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
             });
             
-            $("#testSubmit").on("click", function() {
-            	$(this).prop("disabled",true).val("Testing...");
+            $("#testUnitTest").on("submit", function() {
+            	$("#testSubmit").prop("disabled",true).val("Testing...");
             });
             
             $("#del-code").on("click", function() {
