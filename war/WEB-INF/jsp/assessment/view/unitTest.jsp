@@ -511,7 +511,7 @@ either expressed or implied, of the PASTA Project.
 				</td>
 			</tr>
 		</table>
-    	<input type="submit" value="Upload" id="submit"/>
+    	<input type="submit" value="Upload" id="testSubmit"/>
 	</form:form>
 </div>
 
@@ -555,6 +555,10 @@ either expressed or implied, of the PASTA Project.
             <%-- Disable test code button when main class not selected --%>
             $('#mainClassName').on('change', function() {
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
+            });
+            
+            $("#testSubmit").on("click", function() {
+            	$(this).prop("disabled",true).val("Testing...");
             });
             
             $("#del-code").on("click", function() {

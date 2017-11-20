@@ -23,6 +23,12 @@ button, input[type="submit"] {
 	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.2),
 				0px 1px 2px 0px rgba(0, 0, 0, 0.2);
 }
+button:disabled, input[type="submit"]:disabled {
+	color: gray;
+}
+button:not(.flat):disabled, input[type="submit"]:not(.flat):disabled {
+	background-color: lightgray;
+}
 button.compact, .compact button {
 	padding: 0.4em 0.6em;
 }
