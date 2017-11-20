@@ -523,8 +523,12 @@ either expressed or implied, of the PASTA Project.
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1>Are you sure you want to do that?</h1>
-	<a href="../tested/${unitTest.id}/"><button id="confirmButton">Confirm</button></a>
+	<div class='part'>
+		<h1 class='part-title'>Are you sure you want to do that?</h1>
+		<div class='button-panel'>
+			<a href="../tested/${unitTest.id}/"><button id="confirmButton">Confirm</button></a>
+		</div>
+	</div>
 </div>
 
 <script>
