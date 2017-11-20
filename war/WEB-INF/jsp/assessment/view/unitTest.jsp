@@ -498,21 +498,25 @@ either expressed or implied, of the PASTA Project.
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1> Test Unit Test </h1>
-	<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Test Submission:</td><td><form:input type="file" path="file"/> <form:errors path="file" /></td></tr>
-			<tr>
-				<td>Solution Name:</td>
-				<td>
-					<form:input path="solutionName"/>
-					<span class='help'>The name of the main solution source code file (if you are using black box tests). If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
-					<form:errors path="solutionName" />
-				</td>
-			</tr>
-		</table>
-    	<input type="submit" value="Upload" id="testSubmit"/>
-	</form:form>
+	<div class="part">
+		<h1 class='part-title'>Test Unit Test</h1>
+		<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
+			<table>
+				<tr><td>Test Submission:</td><td><form:input type="file" path="file"/> <form:errors path="file" /></td></tr>
+				<tr>
+					<td>Solution Name:</td>
+					<td>
+						<form:input path="solutionName"/>
+						<span class='help'>The name of the main solution source code file (if you are using black box tests). If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
+						<form:errors path="solutionName" />
+					</td>
+				</tr>
+			</table>
+			<div class='button-panel'>
+		    	<input type="submit" value="Upload" id="testSubmit"/>
+			</div>
+		</form:form>
+	</div>
 </div>
 
 <div id="confirmPopup" class='popup' >
