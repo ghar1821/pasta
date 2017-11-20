@@ -223,27 +223,29 @@ either expressed or implied, of the PASTA Project.
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<form:input type="hidden" path="assessment" value=""/>
 		
-		<div id='lateNotice'>
-			You are submitting this assessment late.
-		</div>
-		<div class='vertical-block'>
-			<div class='submission-notice individual'>
-				<c:out value="${individualDeclaration}" escapeXml="false"/>
+		<div class='part'>
+			<div id='lateNotice'>
+				You are submitting this assessment late.
 			</div>
-			<div class='submission-notice group'>
-				<c:out value="${groupDeclaration}" escapeXml="false"/>
+			<div class='vertical-block'>
+				<div class='submission-notice individual'>
+					<c:out value="${individualDeclaration}" escapeXml="false"/>
+				</div>
+				<div class='submission-notice group'>
+					<c:out value="${groupDeclaration}" escapeXml="false"/>
+				</div>
 			</div>
-		</div>
-		<div class='vertical-block'>
-			<form:input path="file" type="file" />
-		</div>
-		<div id='groupCheckDiv' class='vertical-block'>
-			<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
-			<label for='groupCheck' style="vertical-align: middle;"></label>
-			<span style="font-size:1.3em; vertical-align: middle;">&nbsp;I am submitting on behalf of my group.</span>
-		</div>
-		<div class='vertical-block'>
-		   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+			<div class='vertical-block'>
+				<form:input path="file" type="file" />
+			</div>
+			<div id='groupCheckDiv' class='vertical-block'>
+				<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
+				<label for='groupCheck' style="vertical-align: middle;"></label>
+				<span style="font-size:1.3em; vertical-align: middle;">&nbsp;I am submitting on behalf of my group.</span>
+			</div>
+			<div class='button-panel'>
+			   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >Submit</button>
+			</div>
 		</div>
    	</form:form>
 </div>
