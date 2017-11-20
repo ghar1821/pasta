@@ -1058,9 +1058,6 @@ form#updateOptionsForm input, form#updateOptionsForm textarea {
 	font-family: monospace;
 }
 
-#submitPopup {
-	padding: 1.5em;
-}
 #submitPopup .submission-notice {
 	font-size: 1.3em;
 	max-width: 70vw;
