@@ -145,43 +145,45 @@ either expressed or implied, of the PASTA Project.
 	<div id="newAssessment" class='popup'>
 		<span class="button bClose"> <span><b>X</b></span>
 		</span>
-		<h1>New Assessment</h1>
-		<form:form commandName="newAssessmentForm" enctype="multipart/form-data"
-			method="POST">
-			<div class='pasta-form narrow part'>
-				<div class='pf-item one-col'>
-					<div class='pf-label'>Name</div>
-					<div class='pf-input'>
-						<form:errors path="name" element="div" />
-						<form:input autocomplete="off" type="text" path="name" />
+		<div class='part'>
+			<h1 class='part-title'>New Assessment</h1>
+			<form:form commandName="newAssessmentForm" enctype="multipart/form-data"
+				method="POST">
+				<div class='pasta-form narrow'>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>Name</div>
+						<div class='pf-input'>
+							<form:errors path="name" element="div" />
+							<form:input autocomplete="off" type="text" path="name" />
+						</div>
+					</div>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>Marks</div>
+						<div class='pf-input'>
+							<form:errors path="marks" element="div" />
+							<form:input type="text" path="marks" />
+						</div>
+					</div>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>Due date</div>
+						<div class='pf-input'>
+							<form:errors path="dueDate" element="div" />
+							<form:input type="text" path="strDate"/>
+						</div>
+					</div>
+					<div class='pf-item one-col'>
+						<div class='pf-label'>Maximum number of submissions</div>
+						<div class='pf-input'>
+							<form:errors path="maxSubmissions" element="div" />
+							<form:input type="text" path="maxSubmissions" />
+						</div>
+					</div>
+					<div class='button-panel'>
+						<button type="submit" id="submit">Create</button>
 					</div>
 				</div>
-				<div class='pf-item one-col'>
-					<div class='pf-label'>Marks</div>
-					<div class='pf-input'>
-						<form:errors path="marks" element="div" />
-						<form:input type="text" path="marks" />
-					</div>
-				</div>
-				<div class='pf-item one-col'>
-					<div class='pf-label'>Due date</div>
-					<div class='pf-input'>
-						<form:errors path="dueDate" element="div" />
-						<form:input type="text" path="strDate"/>
-					</div>
-				</div>
-				<div class='pf-item one-col'>
-					<div class='pf-label'>Maximum number of submissions</div>
-					<div class='pf-input'>
-						<form:errors path="maxSubmissions" element="div" />
-						<form:input type="text" path="maxSubmissions" />
-					</div>
-				</div>
-				<div class='button-panel'>
-					<button type="submit" id="submit">Create</button>
-				</div>
-			</div>
-		</form:form>
+			</form:form>
+		</div>
 	</div>
 </c:if>
 
