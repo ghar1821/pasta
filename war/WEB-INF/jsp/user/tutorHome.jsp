@@ -31,7 +31,7 @@ either expressed or implied, of the PASTA Project.
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="tag"%>
 
 <div class='float-container'>
@@ -43,7 +43,8 @@ either expressed or implied, of the PASTA Project.
 
 <spring:hasBindErrors name="submission">
 	<div class='vertical-box padded'>
-		<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+		<form:form commandName="submission" enctype="multipart/form-data"
+			method="POST">
 			<h3>Submission Errors</h3>
 			<form:errors path="*" cssClass="ui-state-error" element="div" />
 		</form:form>
@@ -52,22 +53,23 @@ either expressed or implied, of the PASTA Project.
 
 <tag:submissionValidation />
 
-<div class="vertical-box padded"> 
+<div class="vertical-box padded">
 	<c:forEach var="assessmentCategory" items="${assessments}">
 		<div class='section category-box'>
 			<c:if test="${not empty assessmentCategory.key}">
 				<h2 class='section-title'>${assessmentCategory.key}</h2>
 			</c:if>
 			<c:forEach var="assessment" items="${assessmentCategory.value}">
-				<c:set var="closedAssessment" value="false"/>
+				<c:set var="closedAssessment" value="false" />
 				<c:if test="${closed[assessment.id]}">
-					<c:set var="closedAssessment" value="true"/>
+					<c:set var="closedAssessment" value="true" />
 				</c:if>
-				<div class='part assessment-box float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+				<div
+					class='part assessment-box float-container <c:if test="${closedAssessment}">closedAssessment</c:if>'>
 					<div class='part-title larger-text'>
 						<a href="../info/${assessment.id}/">${assessment.name}</a>
 					</div>
-					
+
 					<div class='clearfix vertical'>
 						<div class='horizontal-block float-left'>
 							<c:choose>
@@ -77,14 +79,17 @@ either expressed or implied, of the PASTA Project.
 								<c:otherwise>
 									<div class='assessment-mark'>
 										<div class='mark-numerator'>
-											<fmt:formatNumber type="number" minFractionDigits="0" maxFractionDigits="3" value="${results[assessment.id].marks}" />
+											<fmt:formatNumber type="number" minFractionDigits="0"
+												maxFractionDigits="3"
+												value="${results[assessment.id].marks}" />
 											<c:if test="${empty results[assessment.id]}">
 												0
 											</c:if>
 										</div>
 										<div class='mark-separator'>out of</div>
 										<div class='mark-denominator'>
-											<fmt:formatNumber type="number" minFractionDigits="0" maxFractionDigits="3" value="${assessment.marks}" />
+											<fmt:formatNumber type="number" minFractionDigits="0"
+												maxFractionDigits="3" value="${assessment.marks}" />
 										</div>
 									</div>
 								</c:otherwise>
@@ -102,7 +107,7 @@ either expressed or implied, of the PASTA Project.
 										<c:if test="${empty results[assessment.id]}">
 											0
 										</c:if>
-										${results[assessment.id].submissionsMadeThatCount} of 
+										${results[assessment.id].submissionsMadeThatCount} of
 										<c:choose>
 											<c:when test="${assessment.numSubmissionsAllowed == 0}">
 												&infin;
@@ -117,19 +122,26 @@ either expressed or implied, of the PASTA Project.
 						</div>
 					</div>
 					<div class='vertical'>
-						<tag:unitTestResult results="${results[assessment.id]}" 
-							closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
-							detailsLink="../info/${assessment.id}/"/>
+						<tag:unitTestResult results="${results[assessment.id]}"
+							closedAssessment="${closedAssessment}" summary="true"
+							separateGroup="true" detailsLink="../info/${assessment.id}/" />
 					</div>
-					
+
 					<div class='button-panel'>
-						<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
-						<button class='flat' onclick="location.href='../info/${assessment.id}/'">Details</button>
-						<c:if test="${ not empty user.tutorial and not empty assessment.handMarking}">
-							<button class='flat' onclick="location.href='../mark/${assessment.id}/'">Mark my classes</button>
+						<button
+							onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
+						<button class='flat'
+							onclick="location.href='../info/${assessment.id}/'">Details</button>
+						<c:if
+							test="${ not empty user.tutorial and not empty assessment.handMarking}">
+							<button class='flat'
+								onclick="location.href='../mark/${assessment.id}/'">Mark
+								my classes</button>
 						</c:if>
 						<c:if test="${assessment.groupWork}">
-							<button class='flat' onclick="location.href='../groups/${assessment.id}/'">Group Details</button>
+							<button class='flat'
+								onclick="location.href='../groups/${assessment.id}/'">Group
+								Details</button>
 						</c:if>
 					</div>
 				</div>
@@ -139,39 +151,41 @@ either expressed or implied, of the PASTA Project.
 </div>
 
 <div id="submitPopup" class="popup">
-	<form:form commandName="submission" enctype="multipart/form-data" method="POST">
+	<form:form commandName="submission" enctype="multipart/form-data"
+		method="POST">
 		<span class="button bClose"> <span><b>X</b></span></span>
-		<form:input type="hidden" path="assessment" value=""/>
-		
+		<form:input type="hidden" path="assessment" value="" />
+
 		<div class='part'>
-			<div id='lateNotice'>
-				You are submitting this assessment late.
-			</div>
+			<div id='lateNotice'>You are submitting this assessment late.</div>
 			<div class='vertical-block'>
 				<div class='submission-notice individual'>
-					<c:out value="${individualDeclaration}" escapeXml="false"/>
+					<c:out value="${individualDeclaration}" escapeXml="false" />
 				</div>
 				<div class='submission-notice group'>
-					<c:out value="${groupDeclaration}" escapeXml="false"/>
+					<c:out value="${groupDeclaration}" escapeXml="false" />
 				</div>
 			</div>
 			<div class='vertical-block'>
 				<form:input path="file" type="file" />
 			</div>
 			<div id='groupCheckDiv' class='vertical-block'>
-				<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
-				<label for='groupCheck' style="vertical-align: middle;"></label>
-				<span style="font-size:1.3em; vertical-align: middle;">&nbsp;I am submitting on behalf of my group.</span>
+				<form:checkbox id='groupCheck' cssClass="custom-check"
+					path="groupSubmission" />
+				<label for='groupCheck' style="vertical-align: middle;"></label> <span
+					style="font-size: 1.3em; vertical-align: middle;">&nbsp;I am
+					submitting on behalf of my group.</span>
 			</div>
 			<div class='button-panel'>
-			   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >Submit</button>
+				<button type="submit"
+					onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();">Submit</button>
 			</div>
 		</div>
-   	</form:form>
+	</form:form>
 </div>
 
 
-<div id="insertForm" style="display:none"></div>
+<div id="insertForm" style="display: none"></div>
 
 <script>
 	function markBatch(className){
