@@ -8,6 +8,7 @@
         xmlns:jdbc="http://www.springframework.org/schema/jdbc"
         xmlns:task="http://www.springframework.org/schema/task"
         xmlns:util="http://www.springframework.org/schema/util"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
         xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
@@ -20,36 +21,38 @@
            http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
            http://www.springframework.org/schema/task  
            http://www.springframework.org/schema/task/spring-task-3.0.xsd
+           http://www.springframework.org/schema/mvc  
+           http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
            http://www.springframework.org/schema/util
            http://www.springframework.org/schema/util/spring-util-3.0.xsd">
            
-	<bean 
-	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-		<list>
-				<value>WEB-INF/classes/database.properties</value>
-				<value>WEB-INF/classes/project.properties</value>
-			</list>
-		</property>
-	</bean>
+<!-- 	<bean  -->
+<!-- 	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> -->
+<!-- 		<property name="locations"> -->
+<!-- 		<list> -->
+<!-- 				<value>WEB-INF/classes/database.properties</value> -->
+<!-- 				<value>WEB-INF/classes/project.properties</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
 	           
-	<bean id="loginDAO" class="pasta.repository.LoginDAO" />
-    <bean id="projectProperties" class="pasta.util.ProjectProperties" depends-on="loginDAO">
-		<constructor-arg>
-			<map key-type="java.lang.String" value-type="java.lang.String">
-					<entry key="name" value="${project.name}" />
-					<entry key="location" value="${project.location}" />
-					<entry key="hostLocation" value="${project.hostLocation}" />
-					<entry key="authentication" value="${project.authentication:ldap}" />
-					<entry key="createAccountOnSuccessfulLogin" value="${project.createAccountOnSuccessfulLogin:true}" />
-					<entry key="pathUnitTests" value="${project.pathUnitTests:}" />
-					<entry key="pathSubmissions" value="${project.pathSubmissions:}" />
-					<entry key="proxydomain" value="${project.proxydomain:}" />
-					<entry key="proxyport" value="${project.proxyport:}" />
-					<entry key="initialInstructor" value="${project.initialInstructor:}" />
-			</map>
-		</constructor-arg>
-	</bean>
+<!-- 	<bean id="loginDAO" class="pasta.repository.LoginDAO" /> -->
+<!--     <bean id="projectProperties" class="pasta.util.ProjectProperties" depends-on="loginDAO"> -->
+<!-- 		<constructor-arg> -->
+<!-- 			<map key-type="java.lang.String" value-type="java.lang.String"> -->
+<!-- 					<entry key="name" value="${project.name}" /> -->
+<!-- 					<entry key="location" value="${project.location}" /> -->
+<!-- 					<entry key="hostLocation" value="${project.hostLocation}" /> -->
+<!-- 					<entry key="authentication" value="${project.authentication:ldap}" /> -->
+<!-- 					<entry key="createAccountOnSuccessfulLogin" value="${project.createAccountOnSuccessfulLogin:true}" /> -->
+<!-- 					<entry key="pathUnitTests" value="${project.pathUnitTests:}" /> -->
+<!-- 					<entry key="pathSubmissions" value="${project.pathSubmissions:}" /> -->
+<!-- 					<entry key="proxydomain" value="${project.proxydomain:}" /> -->
+<!-- 					<entry key="proxyport" value="${project.proxyport:}" /> -->
+<!-- 					<entry key="initialInstructor" value="${project.initialInstructor:}" /> -->
+<!-- 			</map> -->
+<!-- 		</constructor-arg> -->
+<!-- 	</bean> -->
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
 		destroy-method="close">
@@ -147,13 +150,13 @@
 	    p:targetMethod="initLogging"
 	    p:arguments-ref="log4jProperties" />
 
-    <context:component-scan base-package="pasta.repository" />
-    <context:component-scan base-package="pasta.login" />		 
-    <context:component-scan base-package="pasta.service" />
-    <context:component-scan base-package="pasta.scheduler" />
-    <context:component-scan base-package="pasta.domain" />
-    <context:component-scan base-package="pasta.util" />
-    <context:component-scan base-package="pasta.docker" />
+<!--     <context:component-scan base-package="pasta.repository" /> -->
+<!--     <context:component-scan base-package="pasta.login" />		  -->
+<!--     <context:component-scan base-package="pasta.service" /> -->
+<!--     <context:component-scan base-package="pasta.scheduler" /> -->
+<!--     <context:component-scan base-package="pasta.domain" /> -->
+<!--     <context:component-scan base-package="pasta.util" /> -->
+<!--     <context:component-scan base-package="pasta.docker" /> -->
     
     <util:properties id="defaultProperties" location="classpath:defaults.properties" />
 	<bean id="pastaOptions" class="pasta.service.PASTAOptions">
@@ -169,6 +172,13 @@
 	<bean id="whichProgram" class="pasta.util.WhichProgram">
 		<constructor-arg ref="programProperties" />
 	</bean>
+	
+<!-- 	<mvc:interceptors> -->
+<!-- 		<mvc:interceptor> -->
+<!-- 			<mvc:mapping path="/**"/> -->
+<!-- 			<bean class='pasta.web.controller.advice.GlobalModelAtributes' /> -->
+<!-- 		</mvc:interceptor> -->
+<!-- 	</mvc:interceptors> -->
     
 	<task:annotation-driven />
 </beans>

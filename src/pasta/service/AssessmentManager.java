@@ -74,7 +74,7 @@ import pasta.util.ProjectProperties;
 @Repository
 public class AssessmentManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	@Autowired private AssessmentDAO assDao;
 	
 	@Autowired
 	private ResultManager resultManager;

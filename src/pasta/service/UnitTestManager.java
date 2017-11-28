@@ -96,8 +96,8 @@ import pasta.util.ProjectProperties;
 @Repository
 public class UnitTestManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	@Autowired private AssessmentDAO assDao;
+	@Autowired private ResultDAO resultDAO;
 	
 	final static String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
 	final static String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
