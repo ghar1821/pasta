@@ -296,7 +296,7 @@ either expressed or implied, of the PASTA Project.
 			<div class='pasta-form'>
 				<div class='pf-section'>
 					<div class='pf-horizontal two-col'>
-						<div class='pf-item'>
+						<div class='pf-item uploadAdvancedTestContainer'>
 							<div class='pf-label'>Upload Code</div>
 							<div class='pf-input'>
 								<form:input type="file" path="file"/>
@@ -325,14 +325,14 @@ either expressed or implied, of the PASTA Project.
 								</form:select>
 							</div>
 						</div>
-						<div class='pf-item one-col'>
-							<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any advanced tests to run on a submission. This time is separate to any timeout specified in the 'input-output' section.</span></div>
-							<div class='pf-input'>
-								<form:input path="advancedTimeout" />
-								<form:errors path="advancedTimeout" />
-							</div>
-						</div>
 					</c:if>
+					<div class='pf-item one-col advancedTimeoutContainer'>
+						<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any advanced tests to run on a submission. This time is separate to any timeout specified in the 'input-output' section.</span></div>
+						<div class='pf-input'>
+							<form:input path="advancedTimeout" />
+							<form:errors path="advancedTimeout" />
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -692,6 +692,17 @@ either expressed or implied, of the PASTA Project.
          	$(":not(#emptyTest) > .testCase").collapsible({
          		collapsed: true,
          		"heading-selector": ".pf-item:first,.controls"
+         	});
+         	
+         	<c:if test="${not unitTest.hasCode}">
+         		var timeoutContainer = $(".advancedTimeoutContainer");
+         		if(!timeoutContainer.find("[id$='.errors']").length) {
+         			$(".advancedTimeoutContainer").hide();
+         		}
+         	</c:if>
+         	$(".uploadAdvancedTestContainer input[type='file']").on("change", function() {
+         		var hasFile = $(this).val() != "";
+         		$(".advancedTimeoutContainer").toggle(hasFile);
          	});
          	
   			<c:if test="${not empty sessionScope.ts}">
