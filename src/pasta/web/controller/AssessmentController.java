@@ -349,7 +349,9 @@ public class AssessmentController {
 		if(assessment == null) {
 			return "redirect:/home/";
 		}
-		submissionManager.runAssessment(assessment, userManager.getUserListIncludingGroups());
+		new Thread(() -> {
+			submissionManager.runAssessment(assessment, userManager.getUserListIncludingGroups());
+		}).run();
 		return "redirect:" + request.getHeader("Referer");
 	}
 
