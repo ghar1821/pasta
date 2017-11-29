@@ -118,6 +118,13 @@
 		    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
 			</sequential>
 		</parallel>
+		<mkdir dir="${outDirectory}/${carryDir}"/>
+		<copy todir="${outDirectory}/${carryDir}/${bbuseroutfile}">
+			<fileset dir="${binDir}/${bbuseroutfile}" />
+		</copy>
+		<copy todir="${outDirectory}/${carryDir}/${bbmetafile}">
+			<fileset dir="${binDir}/${bbmetafile}" />
+		</copy>
     </target>
     <target name="doTest">
     	<script language="javascript"> <![CDATA[
