@@ -93,8 +93,9 @@ public class WebApplicationConfig {
 		sf.setAnnotatedClasses(
 				pasta.scheduler.AssessmentJob.class,
 				pasta.scheduler.Job.class,
-				pasta.domain.options.Option.class,
+				pasta.domain.BaseEntity.class,
 				pasta.domain.PASTALoginUser.class,
+				pasta.domain.options.Option.class,
 				pasta.domain.ratings.AssessmentRating.class,
 				pasta.domain.release.ClassRule.class,
 				pasta.domain.release.DateRule.class,
@@ -112,6 +113,7 @@ public class WebApplicationConfig {
 				pasta.domain.reporting.ReportPermission.class,
 				pasta.domain.result.AssessmentResult.class,
 				pasta.domain.result.AssessmentResultSummary.class,
+				pasta.domain.result.AssessmentResultSummary.AssessmentResultSummaryId.class,
 				pasta.domain.result.HandMarkingResult.class,
 				pasta.domain.result.UnitTestCaseResult.class,
 				pasta.domain.result.UnitTestResult.class,
