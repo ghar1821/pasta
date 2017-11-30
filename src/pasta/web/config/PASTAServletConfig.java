@@ -28,7 +28,7 @@ public class PASTAServletConfig extends WebMvcConfigurerAdapter {
 		return new GlobalModelAtributesInterceptor();
 	}
 	
-	@Bean
+	@Bean(name="viewResolver")
 	public InternalResourceViewResolver createInternalResourceViewResolver() {
 		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
 		resolver.setViewClass(JstlView.class);
@@ -37,7 +37,7 @@ public class PASTAServletConfig extends WebMvcConfigurerAdapter {
 		return resolver;
 	}
 	
-	@Bean
+	@Bean(name="multipartResolver")
 	public CommonsMultipartResolver createCommonsMultipartResolver() {
 		CommonsMultipartResolver resolver = new CommonsMultipartResolver();
 		resolver.setMaxUploadSize(10000000);
