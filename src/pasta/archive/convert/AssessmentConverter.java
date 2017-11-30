@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,10 +29,20 @@ import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
+import pasta.repository.AssessmentDAO;
+import pasta.repository.HandMarkingDAO;
+import pasta.repository.UnitTestDAO;
 import pasta.util.ProjectProperties;
 
 public class AssessmentConverter {
 	private static Logger logger = Logger.getLogger(AssessmentConverter.class);
+	
+	@Autowired
+	private AssessmentDAO assessmentDAO;
+	@Autowired
+	private HandMarkingDAO handMarkingDAO;
+	@Autowired
+	private UnitTestDAO unitTestDAO;
 	
 	private Map<String, pasta.archive.legacy.UnitTest> allUnitTests;
 	private Map<String, pasta.archive.legacy.HandMarking> allHandMarking;
@@ -120,7 +131,7 @@ public class AssessmentConverter {
 	private void doSave() {
 		for(Map.Entry<String, UnitTest> utEntry : convertedUnitTests.entrySet()) {
 			try {
-				ProjectProperties.getInstance().getUnitTestDAO().save(utEntry.getValue());
+				unitTestDAO.save(utEntry.getValue());
 				output.add("Saved unit test " + utEntry.getKey());
 			} catch(Exception e) {
 				String error = "Error saving unit test " + utEntry.getKey();
@@ -130,7 +141,7 @@ public class AssessmentConverter {
 		}
 		for(Map.Entry<String, HandMarking> hmEntry : convertedHandMarking.entrySet()) {
 			try {
-				ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(hmEntry.getValue());
+				handMarkingDAO.saveOrUpdate(hmEntry.getValue());
 				output.add("Saved hand marking " + hmEntry.getKey());
 			} catch(Exception e) {
 				String error = "Error saving hand marking " + hmEntry.getKey();
@@ -140,7 +151,7 @@ public class AssessmentConverter {
 		}
 		for(Map.Entry<String, Assessment> assEntry : convertedAssessments.entrySet()) {
 			try {
-				ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assEntry.getValue());
+				assessmentDAO.saveOrUpdate(assEntry.getValue());
 				output.add("Saved assessment " + assEntry.getKey());
 			} catch(Exception e) {
 				String error = "Error saving assessment " + assEntry.getKey();

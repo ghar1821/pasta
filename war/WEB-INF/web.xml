@@ -2,15 +2,42 @@
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+	<context-param>
+		<param-name>contextClass</param-name>
+		<param-value>
+			org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+		</param-value>
+	</context-param>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+	            pasta.web.config.WebApplicationConfig
+		</param-value>
+	</context-param>
+	
 	<servlet>
 		<servlet-name>pasta</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+	        <param-name>contextClass</param-name>
+	        <param-value>
+	            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+	        </param-value>
+	    </init-param>
+	    <init-param>
+	        <param-name>contextConfigLocation</param-name>
+	        <param-value>
+	            pasta.web.config.PASTAServletConfig
+	        </param-value>
+	    </init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>pasta</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+	
 	<servlet-mapping>
 		<servlet-name>default</servlet-name>
 		<url-pattern>/static/*</url-pattern>
@@ -76,13 +103,13 @@
 		<param-name>webAppRootKey</param-name>
 		<param-value>pasta.root</param-value>
 	</context-param>
-	<context-param>
-	    <param-name>contextConfigLocation</param-name>
-	    <param-value>
-	        /WEB-INF/applicationContext-security.xml
-	        /WEB-INF/applicationContext.xml
-	    </param-value>
-	</context-param>
+<!-- 	<context-param> -->
+<!-- 	    <param-name>contextConfigLocation</param-name> -->
+<!-- 	    <param-value> -->
+<!-- 	        /WEB-INF/applicationContext-security.xml -->
+<!-- 	        /WEB-INF/applicationContext.xml -->
+<!-- 	    </param-value> -->
+<!-- 	</context-param> -->
 	
 	<jsp-config>
 	  <taglib>

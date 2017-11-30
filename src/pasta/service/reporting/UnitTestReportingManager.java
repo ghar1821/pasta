@@ -20,7 +20,6 @@ import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.ResultDAO;
 import pasta.service.UserManager;
-import pasta.util.ProjectProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,7 +34,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Repository
 public class UnitTestReportingManager {
 
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	@Autowired
+	private ResultDAO resultDAO;
 	
 	@Autowired
 	private UserManager userManager;

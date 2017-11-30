@@ -55,7 +55,7 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.repository.AssessmentDAO;
-import pasta.util.ProjectProperties;
+import pasta.repository.HandMarkingDAO;
 
 
 /**
@@ -75,7 +75,10 @@ import pasta.util.ProjectProperties;
 @Repository
 public class HandMarkingManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	@Autowired
+	private AssessmentDAO assDao;
+	@Autowired
+	private HandMarkingDAO handMarkingDao;
 	
 	@Autowired
 	private ApplicationContext context;
@@ -92,7 +95,7 @@ public class HandMarkingManager {
 	 * @return collection of all of the hand marking templates
 	 */
 	public Collection<HandMarking> getHandMarkingList() {
-		return ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings();
+		return handMarkingDao.getAllHandMarkings();
 	}
 
 	/**
@@ -103,11 +106,11 @@ public class HandMarkingManager {
 	 * @return the hand marking template with that id, null if it does not exist
 	 */
 	public HandMarking getHandMarking(long handMarkingId) {
-		return ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId);
+		return handMarkingDao.getHandMarking(handMarkingId);
 	}
 	
 	public WeightedHandMarking getWeightedHandMarking(long id) {
-		return ProjectProperties.getInstance().getHandMarkingDAO().getWeightedHandMarking(id);
+		return handMarkingDao.getWeightedHandMarking(id);
 	}
 
 	/**
@@ -117,8 +120,7 @@ public class HandMarkingManager {
 	 */
 	public void removeHandMarking(long handMarkingId) {
 		assDao.unlinkHandMarking(handMarkingId);
-		ProjectProperties.getInstance().getHandMarkingDAO().delete(
-				ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(handMarkingId));
+		handMarkingDao.delete(handMarkingDao.getHandMarking(handMarkingId));
 	}
 
 	/**
@@ -146,7 +148,7 @@ public class HandMarkingManager {
 			}
 		}
 
-		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(newTemplate);
+		handMarkingDao.saveOrUpdate(newTemplate);
 		return newTemplate;
 	}
 
@@ -165,7 +167,7 @@ public class HandMarkingManager {
 			while(iter.hasNext()) {
 				WeightedField oldField = iter.next();
 				if(oldField.getId() < 0) {
-					WeightedField newField = ProjectProperties.getInstance().getHandMarkingDAO().createNewWeightedField();
+					WeightedField newField = handMarkingDao.createNewWeightedField();
 					newField.setName(oldField.getName());
 					newField.setWeight(oldField.getWeight());
 					replacements.put(oldField.getId(), newField);
@@ -283,7 +285,7 @@ public class HandMarkingManager {
 			}
 		}
 		
-		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(template);
+		handMarkingDao.saveOrUpdate(template);
 	}
 
 	/**

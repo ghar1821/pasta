@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +26,8 @@ public class LanguageManager {
 	
 	private Properties properties;
 	
-	private LanguageManager(Properties properties) {
+	@Autowired
+	private LanguageManager(@Qualifier("languageProperties") Properties properties) {
 		this.languages = new HashMap<>();
 		String languages = properties.getProperty("languages", "");
 		for(String language : languages.split(",")) {

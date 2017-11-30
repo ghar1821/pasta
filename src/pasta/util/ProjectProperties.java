@@ -37,7 +37,7 @@ import java.net.Proxy;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -45,6 +45,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 
@@ -56,12 +57,8 @@ import pasta.login.DummyAuthValidator;
 import pasta.login.FTPAuthValidator;
 import pasta.login.ImapAuthValidator;
 import pasta.login.LDAPAuthValidator;
-import pasta.repository.AssessmentDAO;
-import pasta.repository.HandMarkingDAO;
 import pasta.repository.LoginDAO;
-import pasta.repository.ReportingDAO;
 import pasta.repository.ResultDAO;
-import pasta.repository.UnitTestDAO;
 import pasta.repository.UserDAO;
 import pasta.service.ResultManager;
 
@@ -75,7 +72,7 @@ import pasta.service.ResultManager;
  * @version 2.0
  * @since 2012-11-13
  */
-@Component
+@Component("projectProperties")
 public class ProjectProperties {
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -111,50 +108,43 @@ public class ProjectProperties {
 	@Autowired
 	private LoginDAO loginDAO;
 	@Autowired
-	private AssessmentDAO assessmentDAO;
-	@Autowired
 	private ResultDAO resultDAO;
 	@Autowired
 	private ResultManager resultManager;
 	@Autowired
-	private UnitTestDAO unitTestDAO;
-	@Autowired
-	private HandMarkingDAO handMarkingDAO;
-	@Autowired
 	private UserDAO userDAO;
-	@Autowired
-	private ReportingDAO reportingDAO;
 	
 	@Autowired
 	private ServletContext servletContext;
 
 	private String settingsAuthType;
 	
-	private ProjectProperties(Map<String, String> settings) {
-		name = settings.get("name");
+	@Autowired
+	private ProjectProperties(@Qualifier("projectSettings") Properties settings) {
+		name = settings.getProperty("name");
 		
-		projectLocation = settings.get("location");
+		projectLocation = settings.getProperty("location");
 		if (projectLocation != null && !projectLocation.isEmpty() && !projectLocation.endsWith(File.separator)) {
 			projectLocation += File.separator;
 		}
 
-		createAccountOnSuccessfulLogin = Boolean.parseBoolean(settings.get("createAccountOnSuccessfulLogin"));
-		if (settings.get("proxydomain") != null && !settings.get("proxydomain").isEmpty()
-				&& settings.get("proxyport") != null && !settings.get("proxyport").isEmpty()) {
+		createAccountOnSuccessfulLogin = Boolean.parseBoolean(settings.getProperty("createAccountOnSuccessfulLogin"));
+		if (settings.getProperty("proxydomain") != null && !settings.getProperty("proxydomain").isEmpty()
+				&& settings.getProperty("proxyport") != null && !settings.getProperty("proxyport").isEmpty()) {
 
-			SocketAddress addr = new InetSocketAddress(settings.get("proxydomain"), Integer.parseInt(settings
-					.get("proxyport")));
+			SocketAddress addr = new InetSocketAddress(settings.getProperty("proxydomain"), Integer.parseInt(settings
+					.getProperty("proxyport")));
 			this.proxy = new Proxy(Proxy.Type.HTTP, addr);
-			logger.info("Using proxy " + settings.get("proxydomain") + " on port " + settings.get("proxyport"));
+			logger.info("Using proxy " + settings.getProperty("proxydomain") + " on port " + settings.getProperty("proxyport"));
 		}
 
 		// Store for use in post construct method
-		settingsAuthType = settings.get("authentication");
+		settingsAuthType = settings.getProperty("authentication");
 		
-		unitTestsLocation = checkPath(settings.get("pathUnitTests"), projectLocation + unitTestsLocation);
-		submissionsLocation = checkPath(settings.get("pathSubmissions"), projectLocation + submissionsLocation);
-		sandboxLocation = checkPath(settings.get("pathSandbox"), projectLocation + sandboxLocation);
-		validatorLocation = checkPath(settings.get("pathValidation"), projectLocation + validatorLocation);
+		unitTestsLocation = checkPath(settings.getProperty("pathUnitTests"), projectLocation + unitTestsLocation);
+		submissionsLocation = checkPath(settings.getProperty("pathSubmissions"), projectLocation + submissionsLocation);
+		sandboxLocation = checkPath(settings.getProperty("pathSandbox"), projectLocation + sandboxLocation);
+		validatorLocation = checkPath(settings.getProperty("pathValidation"), projectLocation + validatorLocation);
 
 		logger.info("Project location set to: " + projectLocation);
 		logger.info("UnitTests location set to: " + unitTestsLocation);
@@ -162,9 +152,9 @@ public class ProjectProperties {
 		logger.info("Sandbox Location set to: " + sandboxLocation);
 		logger.info("Validators Location set to: " + validatorLocation);
 		
-		this.initialInstructor = settings.get("initialInstructor");
+		this.initialInstructor = settings.getProperty("initialInstructor");
 		
-		this.hostLocation = settings.get("hostLocation");
+		this.hostLocation = settings.getProperty("hostLocation");
 		logger.info("Host content location set to \"" + hostLocation + "\". Note that this cannot be verified, so an incorrect value may cause unexpected errors.");
 		
 		ProjectProperties.properties = this;
@@ -352,14 +342,6 @@ public class ProjectProperties {
 		return proxy;
 	}
 
-	public AssessmentDAO getAssessmentDAO() {
-		return assessmentDAO;
-	}
-	
-	public LoginDAO getLoginDAO(){
-		return loginDAO;
-	}
-
 	public ResultDAO getResultDAO() {
 		return resultDAO;
 	}
@@ -367,22 +349,6 @@ public class ProjectProperties {
 		return resultManager;
 	}
 
-	public UnitTestDAO getUnitTestDAO() {
-		return unitTestDAO;
-	}
-
-	public HandMarkingDAO getHandMarkingDAO() {
-		return handMarkingDAO;
-	}
-	
-	public UserDAO getUserDAO() {
-		return userDAO;
-	}
-	
-	public ReportingDAO getReportingDAO() {
-		return reportingDAO;
-	}
-	
 	public ServletContext getServletContext() {
 		return servletContext;
 	}

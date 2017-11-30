@@ -7,9 +7,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import pasta.service.PASTAOptions;
 
+@Service("whichProgram")
 public class WhichProgram {
 
 	private Map<String, String> programs;
@@ -21,7 +25,8 @@ public class WhichProgram {
 	private static final String[] required = {"java", "javac", "time", "timeout", "mysqldump"};
 	private static final String[] optional = {"python2", "python3", "g++", "gcc"};
 	
-	private WhichProgram(Properties properties) {
+	@Autowired
+	private WhichProgram(@Qualifier("programProperties") Properties properties) {
 		programs = new HashMap<String, String>();
 		
 		for(Object propKey : properties.keySet()) {

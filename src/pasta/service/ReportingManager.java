@@ -24,7 +24,6 @@ import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
 import pasta.repository.ReportingDAO;
-import pasta.util.ProjectProperties;
 
 @Service("reportingManager")
 @Repository
@@ -32,7 +31,8 @@ public class ReportingManager implements InitializingBean {
 	public static final Logger logger = Logger
 			.getLogger(ReportingManager.class);
 	
-	private ReportingDAO reportingDAO = ProjectProperties.getInstance().getReportingDAO();
+	@Autowired
+	private ReportingDAO reportingDAO;
 	
 	@Autowired
 	private AssessmentDAO assessmentDAO;
