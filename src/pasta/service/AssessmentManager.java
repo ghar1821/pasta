@@ -54,6 +54,7 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.HandMarkingDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.util.ProjectProperties;
 
@@ -89,6 +90,8 @@ public class AssessmentManager {
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
+	@Autowired
+	private HandMarkingDAO handMarkingDAO;
 	
 
 	// Validator for the submission
@@ -188,7 +191,7 @@ public class AssessmentManager {
 		assessment.setNumSubmissionsAllowed(form.getMaxSubmissions());
 		assessment.setDueDate(form.getDueDate());
 		
-		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+		assDao.saveOrUpdate(assessment);
 		return assessment;
 	}
 	
@@ -241,8 +244,7 @@ public class AssessmentManager {
 	
 		// link weighted hand marking to hand marking template and assessment
 		for (WeightedHandMarking handMarking : assessment.getHandMarking()) {
-			HandMarking realTemplate = ProjectProperties.getInstance().getHandMarkingDAO()
-					.getHandMarking(handMarking.getHandMarking().getId());
+			HandMarking realTemplate = handMarkingDAO.getHandMarking(handMarking.getHandMarking().getId());
 			handMarking.setHandMarking(realTemplate);
 			handMarking.setAssessment(assessment);
 		}
@@ -264,7 +266,7 @@ public class AssessmentManager {
 			}
 		}
 		
-		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+		assDao.saveOrUpdate(assessment);
 	}
 
 	public boolean hasGroupWork(Assessment assessment) {

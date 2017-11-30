@@ -53,7 +53,6 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.util.ProjectProperties;
 
 /**
  * Data Access Object for Assessments.
@@ -80,6 +79,9 @@ public class AssessmentDAO {
 	@Autowired
 	private SessionFactory sessionFactory;
 	
+	@Autowired
+	private HandMarkingDAO handMarkingDAO;
+	
 	public AssessmentDAO() {
 	}
 	
@@ -100,7 +102,7 @@ public class AssessmentDAO {
 	}
 
 	public Collection<HandMarking> getHandMarkingList() {
-		return ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings();
+		return handMarkingDAO.getAllHandMarkings();
 	}
 
 	public Collection<Assessment> getAssessmentList() {
@@ -165,7 +167,7 @@ public class AssessmentDAO {
 	 * @param newHandMarking the new hand marking template
 	 */
 	public void updateHandMarking(HandMarking newHandMarking) {
-		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(newHandMarking);
+		handMarkingDAO.saveOrUpdate(newHandMarking);
 	}
 
 	/**

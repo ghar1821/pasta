@@ -56,6 +56,7 @@ import pasta.domain.result.HandMarkingResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
+import pasta.repository.AssessmentDAO;
 import pasta.repository.ResultDAO;
 import pasta.service.AssessmentManager;
 import pasta.service.GroupManager;
@@ -63,7 +64,6 @@ import pasta.service.HandMarkingManager;
 import pasta.service.ResultManager;
 import pasta.service.UserManager;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
 
 /**
@@ -85,6 +85,8 @@ public class TutorMarkingController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
+	private AssessmentDAO assessmentDAO;
 	@Autowired
 	private ResultDAO resultDAO;
 
@@ -164,7 +166,7 @@ public class TutorMarkingController {
 			return "redirect:/home/";
 		}
 
-		Assessment assessment = ProjectProperties.getInstance().getAssessmentDAO().getAssessment(assessmentId);
+		Assessment assessment = assessmentDAO.getAssessment(assessmentId);
 		String assessmentName = assessment.getName();
 		model.addAttribute("assessmentName", assessmentName);
 

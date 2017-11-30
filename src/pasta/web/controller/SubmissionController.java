@@ -69,6 +69,7 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
+import pasta.repository.AssessmentDAO;
 import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
@@ -82,7 +83,6 @@ import pasta.service.UserManager;
 import pasta.service.ValidationManager;
 import pasta.service.validation.SubmissionValidationResult;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
 
 /**
@@ -107,6 +107,9 @@ public class SubmissionController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
+	private AssessmentDAO assessmentDAO;
+	
 	@Autowired
 	private SubmissionManager manager;
 	@Autowired
@@ -352,8 +355,7 @@ public class SubmissionController {
 			return "redirect:.";
 		}
 		
-		Assessment assessment = ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment());
+		Assessment assessment = assessmentDAO.getAssessment(form.getAssessment());
 		
 		SubmissionValidationResult validationResult = validationManager.validate(forUser, assessment, form);
 		session.setAttribute("validationResults", validationResult);

@@ -197,7 +197,7 @@ public class UnitTestManager {
 		logger.info("Testing unit test " + test.getName());
 		
 		if (test.getTestResult() != null) {
-			ProjectProperties.getInstance().getUnitTestDAO().deleteTestTests(test);
+			unitTestDAO.deleteTestTests(test);
 		}
 
 		// This results object will be updated with the results as we go
@@ -280,8 +280,8 @@ public class UnitTestManager {
 			runJUnitTests(test, utResults, mainClass, context, container);
 		}
 		
-		ProjectProperties.getInstance().getResultDAO().save(utResults);
-		ProjectProperties.getInstance().getUnitTestDAO().update(test);
+		resultDAO.save(utResults);
+		unitTestDAO.update(test);
 		
 		logger.debug("Deleting final sandbox location " + sandboxTop);
 		try {
@@ -403,8 +403,7 @@ public class UnitTestManager {
 			
 			logger.debug("Reading results from disk");
 			// Get results from ant output
-			thisResult = ProjectProperties.getInstance().getResultDAO()
-					.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context, testDescriptions);
+			thisResult = resultDAO.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context, testDescriptions);
 			if(thisResult == null) {
 				thisResult = new UnitTestResult();
 				thisResult.setRuntimeErrors("Could not read unit test results from disk.");

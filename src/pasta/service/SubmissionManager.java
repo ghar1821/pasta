@@ -67,7 +67,8 @@ import pasta.util.ProjectProperties;
 @Repository
 public class SubmissionManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	@Autowired
+	private AssessmentDAO assDao;
 	
 	@Autowired
 	private ApplicationContext context;

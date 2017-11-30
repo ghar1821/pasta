@@ -79,25 +79,15 @@ import pasta.util.ProjectProperties;
 @Repository
 public class ExecutionManager {
 
-	private AssessmentDAO assDao = ProjectProperties.getInstance()
-			.getAssessmentDAO();
+	@Autowired private AssessmentDAO assDao;
 	
 	@Autowired private UnitTestManager unitTestManager;
 	@Autowired private ResultManager resultManager;
 	@Autowired private GroupManager groupManager;
 
-	private ExecutionScheduler scheduler;
+	@Autowired private ExecutionScheduler scheduler;
+	@Autowired private AssessmentJobExecutor executor;
 	
-	private AssessmentJobExecutor executor;
-	public ExecutionManager(AssessmentJobExecutor executor) {
-		this.executor = executor;
-	}
-
-	@Autowired
-	public void setMyScheduler(ExecutionScheduler myScheduler) {
-		this.scheduler = myScheduler;
-	}
-
 	public static final Logger logger = Logger
 			.getLogger(ExecutionManager.class);
 
