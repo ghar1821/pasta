@@ -1,4 +1,4 @@
-package pasta.web.config;
+package pasta.config;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Bean;

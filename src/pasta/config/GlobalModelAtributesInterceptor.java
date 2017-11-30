@@ -1,4 +1,4 @@
-package pasta.web.config;
+package pasta.config;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

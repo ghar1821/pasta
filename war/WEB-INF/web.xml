@@ -12,7 +12,7 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-	            pasta.web.config.WebApplicationConfig
+	            pasta.config.WebApplicationConfig
 		</param-value>
 	</context-param>
 	
@@ -28,7 +28,7 @@
 	    <init-param>
 	        <param-name>contextConfigLocation</param-name>
 	        <param-value>
-	            pasta.web.config.PASTAServletConfig
+	            pasta.config.PASTAServletConfig
 	        </param-value>
 	    </init-param>
 		<load-on-startup>1</load-on-startup>

@@ -1,4 +1,4 @@
-package pasta.web.config;
+package pasta.config;
 
 import java.io.IOException;
 import java.util.Properties;
