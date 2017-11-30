@@ -479,7 +479,9 @@ either expressed or implied, of the PASTA Project.
 						.prop("disabled", true)
 
 					// Save the description
-					$("#description").val(tinymce.activeEditor.getContent());
+					if(tinymce.activeEditor) {
+						$("#description").val(tinymce.activeEditor.getContent());
+					}
 				});
 
 		var i = 0;
