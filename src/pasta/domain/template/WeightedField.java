@@ -33,7 +33,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 
 /**
@@ -48,7 +48,7 @@ import pasta.domain.VerboseName;
 @Entity
 @Table (name = "weighted_fields")
 @VerboseName("weighted field")
-public class WeightedField extends ArchivableBaseEntity implements Comparable<WeightedField> {
+public class WeightedField extends BaseEntity implements Comparable<WeightedField> {
 	
 	private static final long serialVersionUID = -5647759434783526021L;
 

@@ -47,7 +47,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 
 /**
@@ -77,7 +77,7 @@ import pasta.domain.VerboseName;
 @Entity
 @Table (name = "hand_markings")
 @VerboseName("hand marking module")
-public class HandMarking extends ArchivableBaseEntity implements Comparable<HandMarking> {
+public class HandMarking extends BaseEntity implements Comparable<HandMarking> {
 
 	private static final long serialVersionUID = 5276980986516750657L;
 	

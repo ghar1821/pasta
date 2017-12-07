@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 
 /**
@@ -15,7 +15,7 @@ import pasta.domain.VerboseName;
 @Entity
 @Table (name = "black_box_test_cases")
 @VerboseName("black box test case")
-public class BlackBoxTestCase extends ArchivableBaseEntity {
+public class BlackBoxTestCase extends BaseEntity {
 	private static final long serialVersionUID = -4974380327385340788L;
 	public static final String validNameRegex = "[a-zA-Z][a-zA-Z0-9_]*";
 

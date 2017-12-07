@@ -7,13 +7,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 
 @Entity
 @Table (name = "hand_marking_data")
 @VerboseName(value = "hand-marking datum", plural = "hand-marking data")
-public class HandMarkData extends ArchivableBaseEntity implements Comparable<HandMarkData> {
+public class HandMarkData extends BaseEntity implements Comparable<HandMarkData> {
 
 	private static final long serialVersionUID = -9016810010400907861L;
 	

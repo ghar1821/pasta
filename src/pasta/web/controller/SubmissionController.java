@@ -29,34 +29,20 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -72,9 +58,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import pasta.archive.ArchiveEntry;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
 import pasta.domain.FileTreeNode;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.NewUnitTestForm;
@@ -83,31 +66,13 @@ import pasta.domain.form.validate.SubmissionValidator;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.ratings.RatingForm;
 import pasta.domain.result.AssessmentResult;
-import pasta.domain.result.HandMarkingResult;
-import pasta.domain.result.UnitTestCaseResult;
-import pasta.domain.result.UnitTestResult;
 import pasta.domain.template.Assessment;
-import pasta.domain.template.BlackBoxOptions;
-import pasta.domain.template.BlackBoxTestCase;
-import pasta.domain.template.HandMarkData;
-import pasta.domain.template.HandMarking;
-import pasta.domain.template.UnitTest;
-import pasta.domain.template.WeightedField;
-import pasta.domain.template.WeightedHandMarking;
-import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
-import pasta.repository.BaseDAO;
-import pasta.repository.HandMarkingDAO;
-import pasta.repository.RatingDAO;
-import pasta.repository.ResultDAO;
-import pasta.repository.UnitTestDAO;
-import pasta.repository.UserDAO;
 import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
-import pasta.service.ArchiveManager;
 import pasta.service.AssessmentManager;
 import pasta.service.ExecutionManager;
 import pasta.service.GroupManager;
@@ -224,239 +189,6 @@ public class SubmissionController {
 		execManager.fixWaitingJobs();
 		execManager.executeRemainingAssessmentJobs();
 		return "Executing";
-	}
-	
-	@Autowired
-	@Qualifier("baseDAO")
-	private BaseDAO baseDAO;
-	
-	@Autowired
-	private ArchiveManager archiveManager;
-	
-	@RequestMapping(value = "serial/1/")
-	@ResponseBody
-	public String doSerial1(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
-		
-		archiveManager.test1();
-		return "<h1>OKAY 1</h1>";
-	}
-		
-	@RequestMapping(value = "serial/2/")
-	@ResponseBody
-	public String doSerial2(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
-		
-		archiveManager.test2();
-		
-//		logger.info("Saving extra rating...");
-//		AssessmentRating assessmentRating = new AssessmentRating(assessmentDAO.getAssessment(1), user);
-//		assessmentRating.setRating(9);
-//		baseDAO.save(assessmentRating);
-		
-		/*
-		Assessment ass = new Assessment();
-		ass.setName("Testing");
-		ass.setMarks(10);
-		ass.setDueDate(new Date());
-		
-		AssessmentDAO dao = ProjectProperties.getInstance().getAssessmentDAO();
-		
-		logger.info("---- SAVING Assessment");
-		dao.saveOrUpdate(ass);
-		Long id = ass.getId();
-		ass = dao.getAssessment(id);
-		logger.info("---- Assessment: " + ass.getName() + " (" + ass.getMarks() + ")");
-		
-		UserDAO udao = ProjectProperties.getInstance().getUserDAO();
-		PASTAUser me = udao.getUser("jstretton");
-		
-		logger.info("---- ADDING UNIT TEST");
-		WeightedUnitTest wut = new WeightedUnitTest();
-		UnitTest ut = ProjectProperties.getInstance().getUnitTestDAO().getUnitTest(1);
-		wut.setTest(ut);
-		wut.setWeight(1);
-		ass.addUnitTest(wut);
-		dao.saveOrUpdate(ass);
-		ass = dao.getAssessment(id);
-		logger.info("---- Assessment unit tests: " + ass.getAllUnitTests().size());
-		
-		logger.info("---- ADDING HAND MARKING");
-		WeightedHandMarking whm = new WeightedHandMarking();
-		HandMarking hm = ProjectProperties.getInstance().getHandMarkingDAO().getHandMarking(1);
-		whm.setHandMarking(hm);
-		whm.setWeight(1);
-		ass.addHandMarking(whm);
-		dao.saveOrUpdate(ass);
-		ass = dao.getAssessment(id);
-		logger.info("---- Assessment hand marking: " + ass.getHandMarking().size());
-		
-		ResultDAO rdao = ProjectProperties.getInstance().getResultDAO();
-		
-		logger.info("---- SETTING UP MARKS");
-		AssessmentResult result = new AssessmentResult();
-		result.setAssessment(ass);
-		result.setUser(me);
-		result.setSubmittedBy(me);
-		result.setSubmissionDate(new Date());
-		
-		UnitTestResult utr = new UnitTestResult();
-		logger.info(" ================================ WUT ID? " + (wut.getId()));
-		wut = ProjectProperties.getInstance().getUnitTestDAO().getWeightedUnitTest(wut.getId());
-		utr.setWeightedUnitTest(wut);
-		utr.setCompileErrors("COMPILE ERRORS!!!");
-		result.addUnitTest(utr);
-		
-		HandMarkingResult hmr = new HandMarkingResult();
-		hmr.setWeightedHandMarking(whm);
-		Map<Long,Long> resultMap = new HashMap<>();
-		resultMap.put(4L, 2L);
-		resultMap.put(5L, 3L);
-		resultMap.put(6L, 3L);
-		hmr.setResult(resultMap);
-		result.addHandMarkingResult(hmr);
-		
-		rdao.saveOrUpdate(result);
-		Long rId = result.getId();
-		result = rdao.getAssessmentResult(rId);
-		logger.info("---- Assessment results: " + result.getMarks());
-		*/
-		
-		/*
-		PASTAUser newuser = new PASTAUser();
-		newuser.setActive(true);
-		newuser.setPermissionLevel(UserPermissionLevel.STUDENT);
-		newuser.setStream("");
-		newuser.setTutorial("");
-		newuser.setUsername("newuser");
-		udao.save(newuser);
-		*/
-		
-		/*
-		logger.info("---- SAVING Rating");
-		AssessmentRating rating = new AssessmentRating(ass, me);
-		rating.setComment("LOL this was TERRIBLE");
-		rating.setRating(9001);
-		ratingDAO.saveOrUpdate(rating);
-		rating = ratingDAO.getRating(ass, me);
-		logger.info("---- Rating: " + rating.getComment() + " (" + rating.getRating() + ")");
-		
-		WeightedUnitTest wut1 = ass.getAllUnitTests().iterator().next();
-		WeightedUnitTest wut2 = result.getUnitTests().iterator().next().getWeightedUnitTest();
-		
-		logger.info(" ================================ WUT Same as each other? " + (wut1 == wut2));
-		logger.info(" ================================ WUT ass same as wut? " + (wut1 == wut));
-		logger.info(" ================================ WUT result same as wut? " + (wut2 == wut));
-		
-		WeightedHandMarking whm1 = ass.getHandMarking().iterator().next();
-		WeightedHandMarking whm2 = result.getHandMarkingResults().iterator().next().getWeightedHandMarking();
-		
-		logger.info(" ================================ WHM Same as each other? " + (whm1 == whm2));
-		logger.info(" ================================ WHM ass same as wut? " + (whm1 == whm));
-		logger.info(" ================================ WHM result same as wut? " + (whm2 == whm));
-		
-		logger.info("---- DELETING Assessment");
-		dao.delete(ass);
-		ass = dao.getAssessment(id);
-		logger.info("---- Assessment: " + ass);
-		
-		result = rdao.getAssessmentResult(rId);
-		logger.info("---- Assessment results after delete: " + result);
-		*/
-		
-		/*
-		File f = new File(ProjectProperties.getInstance().getProjectLocation(), "test.ser");
-		ObjectOutputStream out = null;
-		ObjectInputStream in = null;
-		try {
-			FileOutputStream fileOut = new FileOutputStream(f);
-			out = new ObjectOutputStream(fileOut);
-			Assessment ass = assessmentManager.getAssessment(1);
-			
-			ArchiveItem<Assessment> item = new ArchiveItem<>(ass);
-			
-			item.archiveTo(out);
-			out.close();
-			
-			FileInputStream fileIn = new FileInputStream(f);
-			in = new ObjectInputStream(fileIn);
-			ArchiveItem<Assessment> item2 = (ArchiveItem<Assessment>) ArchiveItem.readFrom(in);
-			in.close();
-			
-			Assessment ass2 = (Assessment) item2.getData();
-//			item2.clearDataId();
-			logger.info("Part of this instance?: " + item2.isFromThisInstance());
-			
-			RebuildOptions options = new RebuildOptions();
-			Assessment clone;
-			try {
-				clone = ass2.rebuild(options);
-				clone.setName(clone.getName() + " (copy)");
-				logger.info("Rebuilt " + clone);
-				logger.info("Rebuilt id " + clone.getId());
-				ProjectProperties.getInstance().getAssessmentDAO().deepSaveOrUpdate(clone);
-			} catch (InvalidRebuildOptionsException e) {
-				logger.error("Error rebuilding assessment", e);
-			}
-			
-			
-//			FileOutputStream fileOut = new FileOutputStream(f);
-//			out = new ObjectOutputStream(fileOut);
-//			Assessment ass = assessmentManager.getAssessment(1);
-//			ArchiveItem item = new ArchiveItem(ass);
-//			
-//			logger.info("First item, part of this instance? " + item.isFromThisInstance());
-//			
-//			item.archiveTo(out);
-//			out.close();
-//			
-//			FileInputStream fileIn = new FileInputStream(f);
-//			in = new ObjectInputStream(fileIn);
-//			ArchiveItem item2 = ArchiveItem.readFrom(in);
-//			in.close();
-//			
-//			Assessment ass2 = (Assessment) item2.getData();
-//			
-//			logger.info("Second item, description: " + ass2.getDescription());
-//			logger.info("Part of this instance?: " + item2.isFromThisInstance());
-//			logger.info("Second item ID before resetting: " + ass2.getId());
-//			logger.info("First item ID before resetting: " + ass.getId());
-//			item2.clearDataId();
-//			logger.info("Second item ID after resetting: " + ass2.getId());
-//			logger.info("First item ID after resetting: " + ass.getId());
-//			
-//			
-//			
-//			Set<WeightedCompetition> c1 = ass.getCompetitions();
-//			logger.info("competitions collection 1: " + c1.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(c1)));
-//			Set<WeightedCompetition> c2 = ass2.getCompetitions();
-//			logger.info("competitions collection 2: " + c2.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(c2)));
-//			
-////			WeightedUnitTest t1 = ass.getAllUnitTests().iterator().next();
-////			logger.info("unit test 1: " + t1.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(t1)));
-////			WeightedUnitTest t2 = ass2.getAllUnitTests().iterator().next();
-////			logger.info("unit test 2: " + t2.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(t2)));
-//			
-//			logger.info("Unit tests 1 length: " + ass.getAllUnitTests().size());
-//			logger.info("Unit tests 2 length: " + ass2.getAllUnitTests().size());
-//			
-//			ass2.setName(ass.getName() + " (Copy)");
-//			
-//			ProjectProperties.getInstance().getAssessmentDAO().saveArchivedItem(ass2);
-			
-			return "<p>" + ass.getDescription() + "</p>";
-		} catch (FileNotFoundException e) {
-			logger.error(e);
-		} catch (IOException e) {
-			logger.error(e);
-		} finally {
-			try {
-				out.close();
-			} catch (Exception e) {}
-			try {
-				in.close();
-			} catch (Exception e) {}
-		}
-		*/
-		return "<h1>OKAY 2</h1>";
 	}
 	
 	// ///////////////////////////////////////////////////////////////////////////

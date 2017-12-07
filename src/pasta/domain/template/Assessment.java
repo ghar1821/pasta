@@ -56,12 +56,9 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.ArchivableBaseEntity;
-import pasta.archive.Archive;
-import pasta.archive.ArchiveEntry;
-import pasta.archive.ArchiveOptions;
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.release.ReleaseAllResultsRule;
@@ -130,7 +127,7 @@ import pasta.util.ProjectProperties;
 @Entity
 @Table (name = "assessments")
 @VerboseName("assessment")
-public class Assessment extends ArchivableBaseEntity implements Comparable<Assessment> {
+public class Assessment extends BaseEntity implements Comparable<Assessment> {
 
 	private static final long serialVersionUID = -387829953944113890L;
 
@@ -629,35 +626,6 @@ public class Assessment extends ArchivableBaseEntity implements Comparable<Asses
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
-	}
-	
-	@Override
-	public void prepareForArchive(ArchiveOptions options) {
-		// TODO Auto-generated method stub
-	}
-	
-	@Override
-	public void rebuildFromArchive(Archive archive, ArchivableBaseEntity existing) {
-		Iterator<WeightedUnitTest> wutIt = this.getAllUnitTests().iterator();
-		while(wutIt.hasNext()) {
-			WeightedUnitTest wut = wutIt.next();
-			UnitTest correct = (UnitTest) archive.getUnarchived(new ArchiveEntry(wut.getTest()));
-			if(correct == null) {
-				wutIt.remove();
-			} else {
-				wut.setTest(correct);
-			}
-		}
-		Iterator<WeightedHandMarking> whmIt = this.getHandMarking().iterator();
-		while(whmIt.hasNext()) {
-			WeightedHandMarking whm = whmIt.next();
-			HandMarking correct = (HandMarking) archive.getUnarchived(new ArchiveEntry(whm.getHandMarking()));
-			if(correct == null) {
-				whmIt.remove();
-			} else {
-				whm.setHandMarking(correct);
-			}
-		}
 	}
 	
 	/*===========================

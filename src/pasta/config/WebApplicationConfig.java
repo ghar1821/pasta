@@ -91,8 +91,6 @@ public class WebApplicationConfig {
 		sf.setHibernateProperties(hibernateProperties);
 		
 		sf.setAnnotatedClasses(
-				pasta.archive.MappableClass.class,
-				pasta.archive.PreviousArchive.class,
 				pasta.domain.BaseEntity.class,
 				pasta.domain.PASTALoginUser.class,
 				pasta.domain.options.Option.class,

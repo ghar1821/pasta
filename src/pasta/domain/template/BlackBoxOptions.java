@@ -9,13 +9,13 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 
 @Entity
 @Table(name = "black_box_options")
 @VerboseName(value = "black box options", plural = "black box options")
-public class BlackBoxOptions extends ArchivableBaseEntity {
+public class BlackBoxOptions extends BaseEntity {
 	private static final long serialVersionUID = 1094750990939205404L;
 	
 	@Column(name = "detailed_errors")

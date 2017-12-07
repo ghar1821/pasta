@@ -40,7 +40,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 import pasta.domain.result.UnitTestResult;
 
@@ -62,7 +62,7 @@ import pasta.domain.result.UnitTestResult;
 @Entity
 @Table (name = "weighted_unit_tests")
 @VerboseName("weighted unit test module")
-public class WeightedUnitTest extends ArchivableBaseEntity implements Comparable<WeightedUnitTest> {
+public class WeightedUnitTest extends BaseEntity implements Comparable<WeightedUnitTest> {
 	
 	private static final long serialVersionUID = 2594905907808283182L;
 

@@ -47,8 +47,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.ArchivableBaseEntity;
-import pasta.archive.Archive;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
@@ -76,7 +75,7 @@ import pasta.util.ProjectProperties;
 @Entity
 @Table (name = "unit_tests")
 @VerboseName("unit test module")
-public class UnitTest extends ArchivableBaseEntity implements Comparable<UnitTest> {
+public class UnitTest extends BaseEntity implements Comparable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
 	
@@ -354,22 +353,6 @@ public class UnitTest extends ArchivableBaseEntity implements Comparable<UnitTes
 		return null;
 	}
 	
-	@Override
-	public void rebuildFromArchive(Archive archive, ArchivableBaseEntity existing) {
-		super.rebuildFromArchive(archive, existing);
-		this.getBlackBoxOptions().rebuildFromArchive(archive, existing == null ? null : ((UnitTest) existing).getBlackBoxOptions());
-		
-		if(existing == null) {
-			for (BlackBoxTestCase testCase : this.getTestCases()) {
-				testCase.setId(null);
-//				testCase.setVersion(null);
-			}
-		} else {
-			
-		}
-		
-	}
-
 	/*===========================
 	 * CONVENIENCE RELATIONSHIPS
 	 * 

@@ -40,7 +40,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.BaseEntity;
 import pasta.domain.VerboseName;
 import pasta.domain.result.HandMarkingResult;
 
@@ -62,7 +62,7 @@ import pasta.domain.result.HandMarkingResult;
 @Entity
 @Table (name = "weighted_hand_markings")
 @VerboseName("weighted hand-marking module")
-public class WeightedHandMarking extends ArchivableBaseEntity implements Comparable<WeightedHandMarking> {
+public class WeightedHandMarking extends BaseEntity implements Comparable<WeightedHandMarking> {
 
 	private static final long serialVersionUID = -3429348535279846933L;
 	
