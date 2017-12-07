@@ -138,15 +138,6 @@ public class AssessmentManager {
 	 * @param assessmentId the id of the assessment
 	 */
 	public boolean removeAssessment(long assessmentId) {
-//		if(releaseManager.isAssessmentLinked(assessmentId)) {
-//			//TODO explain to user that you can't delete an assessment that is used in a release rule
-//			return false;
-//		}
-//		groupManager.deleteAllAssessmentGroups(assessmentId);
-//		ratingManager.deleteAllRatingsForAssessment(assessmentId);
-//		resultManager.deleteAllResultsForAssessment(assessmentId);
-//		userManager.deleteAllExtensionsForAssessment(assessmentId);
-		
 		assDao.removeAssessment(assessmentId);
 		return true;
 	}
