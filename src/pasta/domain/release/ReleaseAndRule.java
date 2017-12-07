@@ -15,8 +15,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
 import pasta.domain.user.PASTAUser;
 
 /**
@@ -90,14 +88,5 @@ public class ReleaseAndRule extends ReleaseRule implements Serializable {
 			sb.append('(').append(rule.toString()).append(')');
 		}
 		return sb.toString();
-	}
-	
-	@Override
-	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		LinkedList<ReleaseRule> newRules = new LinkedList<>();
-		for(ReleaseRule rule : this.getRules()) {
-			newRules.add(rule.rebuild(options));
-		}
-		return new ReleaseAndRule((ReleaseRule[]) newRules.toArray());
 	}
 }

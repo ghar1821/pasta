@@ -36,9 +36,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.internal.util.SerializationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,15 +70,12 @@ import pasta.domain.template.WeightedUnitTest;
 @Transactional
 @Repository("assessmentDAO")
 @DependsOn("projectProperties")
-public class AssessmentDAO {
+public class AssessmentDAO extends BaseDAO {
 
-	protected final Log logger = LogFactory.getLog(getClass());
-
-	@Autowired
-	private SessionFactory sessionFactory;
-	
 	@Autowired
 	private HandMarkingDAO handMarkingDAO;
+	@Autowired
+	private UnitTestDAO unitTestDAO;
 	
 	public AssessmentDAO() {
 	}
@@ -168,7 +162,7 @@ public class AssessmentDAO {
 	 * @param newHandMarking the new hand marking template
 	 */
 	public void updateHandMarking(HandMarking newHandMarking) {
-		handMarkingDAO.saveOrUpdate(newHandMarking);
+		saveOrUpdate(newHandMarking);
 	}
 
 	/**
@@ -210,13 +204,8 @@ public class AssessmentDAO {
 		updateHandMarking(newMarking);
 	}
 	
-	public void delete(Assessment assessment) {
-		try {
-			sessionFactory.getCurrentSession().delete(assessment);
-			logger.info("Deleted assessment " + assessment.getName());
-		} catch (Exception e) {
-			logger.error("Could not delete assessment " + assessment.getName(), e);
-		}
+	public void merge(Assessment assessment) {
+		sessionFactory.getCurrentSession().merge(assessment);
 	}
 	
 	public void saveOrUpdate(Assessment assessment) {
@@ -227,16 +216,12 @@ public class AssessmentDAO {
 	}
 	
 	public void deepSaveOrUpdate(Assessment assessment) {
-		ProjectProperties properties = ProjectProperties.getInstance();
-		
-		HandMarkingDAO handMarkingDAO = properties.getHandMarkingDAO();
 		for(WeightedHandMarking hm : assessment.getHandMarking()) {
 			if(hm.getHandMarking() != null) {
 				handMarkingDAO.saveOrUpdate(hm.getHandMarking());
 			}
 		}
 		
-		UnitTestDAO unitTestDAO = properties.getUnitTestDAO();
 		for(WeightedUnitTest ut : assessment.getAllUnitTests()) {
 			if(ut.getTest() != null) {
 				unitTestDAO.saveOrUpdate(ut.getTest());

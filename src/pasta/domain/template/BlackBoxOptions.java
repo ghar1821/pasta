@@ -2,8 +2,6 @@ package pasta.domain.template;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -11,16 +9,14 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import pasta.archive.Archivable;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 
 @Entity
 @Table(name = "black_box_options")
-public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
+@VerboseName(value = "black box options", plural = "black box options")
+public class BlackBoxOptions extends ArchivableBaseEntity {
 	private static final long serialVersionUID = 1094750990939205404L;
-	
-	@Id @GeneratedValue
-	private Long id;
 	
 	@Column(name = "detailed_errors")
 	private boolean detailedErrors;
@@ -50,14 +46,6 @@ public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
 		this.gccCommandLineArgs = copy.gccCommandLineArgs;
 	}
 	
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-	
 	public UnitTest getTest() {
 		return test;
 	}
@@ -80,10 +68,5 @@ public class BlackBoxOptions implements Archivable<BlackBoxOptions> {
 
 	public void setGccCommandLineArgs(String gccCommandLineArgs) {
 		this.gccCommandLineArgs = gccCommandLineArgs;
-	}
-
-	@Override
-	public BlackBoxOptions rebuild(RebuildOptions options) {
-		return new BlackBoxOptions(this);
 	}
 }

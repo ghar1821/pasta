@@ -16,6 +16,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.VerboseName;
 import pasta.domain.template.Assessment;
 
 /**
@@ -29,6 +30,7 @@ import pasta.domain.template.Assessment;
 		uniqueConstraints = {
 				@UniqueConstraint(columnNames={"assessment_id", "number"})
 		})
+@VerboseName("assessment group")
 public class PASTAGroup extends PASTAUser implements Comparable<PASTAUser> {
 	private static final long serialVersionUID = -5991364679026799465L;
 

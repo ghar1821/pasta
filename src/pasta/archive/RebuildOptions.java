@@ -7,6 +7,16 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.UnitTest;
 
 public class RebuildOptions {
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	private Assessment parentAssessment;
 	private UnitTest parentUnitTest;
 	private HandMarking parentHandMarking;

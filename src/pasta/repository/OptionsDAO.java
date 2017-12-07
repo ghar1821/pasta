@@ -17,19 +17,13 @@ import pasta.domain.options.Option;
 
 @Transactional
 @Repository("optionsDAO")
-public class OptionsDAO {
+public class OptionsDAO extends BaseDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	@Autowired
 	private SessionFactory sessionFactory;
 	
-	public void saveOrUpdate(Option option) {
-		sessionFactory.getCurrentSession().saveOrUpdate(option);
-	}
-	public void delete(Option option) {
-		sessionFactory.getCurrentSession().delete(option);
-	}
 	public void delete(String key) {
 		Option option = getOption(key);
 		delete(option);
@@ -52,7 +46,9 @@ public class OptionsDAO {
 	}
 	
 	public Option getOption(String key) {
-		return (Option) sessionFactory.getCurrentSession().get(Option.class, key);
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(Option.class);
+		cr.add(Restrictions.eq("key", key));
+		return (Option) cr.uniqueResult();
 	}
 	
 	public boolean hasOption(String key) {

@@ -162,7 +162,7 @@ public class ProjectProperties {
 		logger.info("Host content location set to \"" + hostLocation + "\". Note that this cannot be verified, so an incorrect value may cause unexpected errors.");
 		
 		try {
-			instanceID = Long.parseLong(settings.get("instanceID"));
+			instanceID = Long.parseLong(settings.getProperty("instanceID"));
 		} catch(NumberFormatException | NullPointerException e) {}
 		
 		if(instanceID == null) {

@@ -39,8 +39,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -49,9 +47,9 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.archive.Archive;
+import pasta.domain.VerboseName;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.util.PASTAUtil;
@@ -77,7 +75,8 @@ import pasta.util.ProjectProperties;
 
 @Entity
 @Table (name = "unit_tests")
-public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
+@VerboseName("unit test module")
+public class UnitTest extends ArchivableBaseEntity implements Comparable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
 	
@@ -86,9 +85,6 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 	public static String BB_OUTPUT_FILENAME = "userout";
 	public static String BB_META_FILENAME = "usermeta";
 
-	@Id @GeneratedValue
-	private Long id;
-	
 	private String name;
 	
 	private boolean tested;
@@ -197,13 +193,6 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		this.tested = tested;
 	}
 		
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	/**
 	 * Get a list of the most recent test case names. These will be retrieved
 	 * according to the last run test on the unit test. If the unit test has not
@@ -219,16 +208,6 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 			}
 		}
 		return names;
-	}
-	
-	@Override
-	public String toString(){
-		String output = "<unitTestProperties>" + System.getProperty("line.separator");
-		output += "\t<id>"+id+"</id>" + System.lineSeparator();
-		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
-		output += "\t<tested>" + tested + "</tested>" + System.getProperty("line.separator");
-		output += "</unitTestProperties>";
-		return output;
 	}
 
 	@Override
@@ -259,7 +238,9 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		if(this.testResult != null) {
 			this.testResult.setTesterTest(null);
 		}
-		testResult.setTesterTest(this);
+		if(testResult != null) {
+			testResult.setTesterTest(this);
+		}
 		this.testResult = testResult;
 	}
 	
@@ -332,31 +313,6 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		this.advancedTimeout = advancedTimeout;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UnitTest other = (UnitTest) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-
 	public boolean hasBlackBoxTests() {
 		return !getTestCases().isEmpty();
 	}
@@ -397,22 +353,23 @@ public class UnitTest implements Comparable<UnitTest>, Archivable<UnitTest> {
 		}
 		return null;
 	}
-
-	@Override
-	public UnitTest rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		UnitTest clone = new UnitTest(this.getName(), false);
-		clone.setAllowAccessoryFileWrite(this.isAllowAccessoryFileWrite());
-		clone.setBlackBoxOptions(this.getBlackBoxOptions() == null ? null : this.getBlackBoxOptions().rebuild(options));
-		clone.setMainClassName(this.getMainClassName());
-		clone.setSubmissionCodeRoot(this.getSubmissionCodeRoot());
-		LinkedList<BlackBoxTestCase> newTestCases = new LinkedList<>();
-		for(BlackBoxTestCase testCase : this.getTestCases()) {
-			newTestCases.add(testCase.rebuild(options));
-		}
-		clone.setTestCases(newTestCases);
-		return clone;
-	}
 	
+	@Override
+	public void rebuildFromArchive(Archive archive, ArchivableBaseEntity existing) {
+		super.rebuildFromArchive(archive, existing);
+		this.getBlackBoxOptions().rebuildFromArchive(archive, existing == null ? null : ((UnitTest) existing).getBlackBoxOptions());
+		
+		if(existing == null) {
+			for (BlackBoxTestCase testCase : this.getTestCases()) {
+				testCase.setId(null);
+//				testCase.setVersion(null);
+			}
+		} else {
+			
+		}
+		
+	}
+
 	/*===========================
 	 * CONVENIENCE RELATIONSHIPS
 	 * 

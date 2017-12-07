@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -45,26 +46,23 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.archive.Archive;
+import pasta.archive.ArchiveEntry;
+import pasta.archive.ArchiveOptions;
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
+import pasta.domain.VerboseName;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.release.ReleaseAllResultsRule;
 import pasta.domain.release.ReleaseResultsRule;
@@ -131,19 +129,13 @@ import pasta.util.ProjectProperties;
  */
 @Entity
 @Table (name = "assessments")
-public class Assessment implements Comparable<Assessment>, Archivable<Assessment> {
+@VerboseName("assessment")
+public class Assessment extends ArchivableBaseEntity implements Comparable<Assessment> {
 
 	private static final long serialVersionUID = -387829953944113890L;
 
 	public static final String TUTOR_CATEGORY_PREFIX = "*";
 
-	@Transient
-	protected transient final Log logger = LogFactory.getLog(getClass());
-	
-	@Id
-	@GeneratedValue
-	private Long id;
-	
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -204,13 +196,6 @@ public class Assessment implements Comparable<Assessment>, Archivable<Assessment
 	
 	@Column (name="custom_validator_name")
 	private String customValidatorName;
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
 	
 	public String getName() {
 		return name;
@@ -420,7 +405,7 @@ public class Assessment implements Comparable<Assessment>, Archivable<Assessment
 			return null;
 		}
 		return new File(ProjectProperties.getInstance().getAssessmentValidatorLocation() + 
-				id + "/" + customValidatorName);
+				getId() + "/" + customValidatorName);
 	}
 	public String getCustomValidatorName() {
 		return customValidatorName;
@@ -641,114 +626,38 @@ public class Assessment implements Comparable<Assessment>, Archivable<Assessment
 		return testNames;
 	}
 
-//	/**
-//	 * See string representation in class description.
-//	 */
-//	@Override
-//	public String toString() {
-//		String output = "";
-//		output += "<assessment>" + System.getProperty("line.separator");
-//		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
-//		output += "\t<category>" + getCategory() + "</category>" + System.getProperty("line.separator");
-//		if(getReleasedClasses() != null){
-//			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
-//		}
-//		if(getSpecialRelease() != null){
-//			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
-//		}
-//		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
-//		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
-//		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
-//		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
-//				+ System.getProperty("line.separator");
-//		output += "\t<countUncompilable>" + isCountUncompilable() + "</countUncompilable>" + System.getProperty("line.separator");
-//		if (unitTests.size() + secretUnitTests.size() > 0) {
-//			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
-//			for (WeightedUnitTest unitTest : unitTests) {
-//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-//						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
-//			}
-//			for (WeightedUnitTest unitTest : secretUnitTests) {
-//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-//						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
-//			}
-//			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
-//		}
-//		// handMarks
-//		if (handMarking.size() > 0) {
-//			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
-//			for (WeightedHandMarking handMarks : handMarking) {
-//				output += "\t\t<handMarks id=\"" + handMarks.getHandMarking().getId() + "\" weight=\""
-//						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
-//			}
-//			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
-//		}
-//		output += "</assessment>" + System.getProperty("line.separator");
-//		return output;
-//	}
-//	
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
 	}
+	
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Assessment other = (Assessment) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
+	public void prepareForArchive(ArchiveOptions options) {
+		// TODO Auto-generated method stub
 	}
 	
 	@Override
-	public Assessment rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		Assessment clone = new Assessment();
-		options.setParentAssessment(clone);
-		
-		clone.setCategory(this.getCategory());
-		clone.setCountUncompilable(this.isCountUncompilable());
-		clone.setCustomValidatorName(this.getCustomValidatorName());
-		clone.setDescription(this.getDescription());
-		clone.setDueDate(this.getDueDate() == null ? null : (Date) this.getDueDate().clone());
-		clone.setGroupCount(this.getGroupCount());
-		clone.setGroupLockDate(this.getGroupLockDate() == null ? null : (Date) this.getGroupLockDate().clone());
-		clone.setGroupSize(this.getGroupSize());
-		LinkedList<WeightedHandMarking> newHandMarking = new LinkedList<>();
-		for(WeightedHandMarking hm : this.getHandMarking()) {
-			newHandMarking.add(hm.rebuild(options));
+	public void rebuildFromArchive(Archive archive, ArchivableBaseEntity existing) {
+		Iterator<WeightedUnitTest> wutIt = this.getAllUnitTests().iterator();
+		while(wutIt.hasNext()) {
+			WeightedUnitTest wut = wutIt.next();
+			UnitTest correct = (UnitTest) archive.getUnarchived(new ArchiveEntry(wut.getTest()));
+			if(correct == null) {
+				wutIt.remove();
+			} else {
+				wut.setTest(correct);
+			}
 		}
-		clone.setHandMarking(newHandMarking);
-		clone.setLateDate(this.getLateDate() == null ? null : (Date) this.getLateDate().clone());
-		clone.setMarks(this.getMarks());
-		clone.setName(this.getName());
-		clone.setNumSubmissionsAllowed(this.getNumSubmissionsAllowed());
-		clone.setReleaseRule(this.getReleaseRule() == null ? null : this.getReleaseRule().rebuild(options));
-		clone.setSolutionName(this.getSolutionName());
-		clone.setStudentsManageGroups(this.isStudentsManageGroups());
-		clone.setSubmissionLanguages(new TreeSet<Language>(this.getSubmissionLanguages()));
-		LinkedList<WeightedUnitTest> newUnitTests = new LinkedList<>();
-		for(WeightedUnitTest ut : this.getAllUnitTests()) {
-			newUnitTests.add(ut.rebuild(options));
+		Iterator<WeightedHandMarking> whmIt = this.getHandMarking().iterator();
+		while(whmIt.hasNext()) {
+			WeightedHandMarking whm = whmIt.next();
+			HandMarking correct = (HandMarking) archive.getUnarchived(new ArchiveEntry(whm.getHandMarking()));
+			if(correct == null) {
+				whmIt.remove();
+			} else {
+				whm.setHandMarking(correct);
+			}
 		}
-		clone.setUnitTests(newUnitTests);
-		
-		options.setParentAssessment(null);
-		return clone;
 	}
 	
 	/*===========================

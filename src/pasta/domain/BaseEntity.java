@@ -1,5 +1,6 @@
 package pasta.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -17,7 +18,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @MappedSuperclass
-public abstract class BaseEntity {
+public abstract class BaseEntity implements Serializable {
+	private static final long serialVersionUID = -1756187635982947853L;
 
 	@Transient
 	protected transient final Logger logger = Logger.getLogger(getClass());
@@ -54,7 +56,7 @@ public abstract class BaseEntity {
 	public Long getVersion() {
 		return version;
 	}
-	protected void setVersion(Long version) {
+	public void setVersion(Long version) {
 		this.version = version;
 	}
 	
@@ -81,7 +83,22 @@ public abstract class BaseEntity {
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + " #" + getId();
+		return this.getTypeName(false) + " #" + getId();
+	}
+	
+	public String getTypeName(boolean plural) {
+		VerboseName vn = this.getClass().getAnnotation(VerboseName.class);
+		if(vn == null) {
+			return this.getClass().getSimpleName() + (plural ? "s" : "");
+		}
+		if(plural) {
+			String name = vn.plural();
+			if(name == null || name.isEmpty()) {
+				return vn.value() + "s";
+			}
+			return name;
+		}
+		return vn.value();
 	}
 
 	@Override

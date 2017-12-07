@@ -14,11 +14,15 @@ public class ModifiedByValueGeneration
         implements AnnotationValueGeneration<ModifiedBy> {
     private final ValueGenerator<String> generator = new ValueGenerator<String>() {
         public String generateValue(Session session, Object owner) {
-            PASTAUser user = WebUtils.getUser();
-            if(user == null) {
-            	return "unknown";
+        	try {
+            	PASTAUser user = WebUtils.getUser();
+            	if(user == null) {
+            		return "anonymous";
+            	}
+            	return user.getUsername();
+            } catch(IllegalStateException e) {
+            	return "pasta";
             }
-            return user.getUsername();
         }
     };
 

@@ -35,16 +35,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.result.HandMarkingResult;
 
 /**
@@ -64,13 +61,10 @@ import pasta.domain.result.HandMarkingResult;
 
 @Entity
 @Table (name = "weighted_hand_markings")
-public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Archivable<WeightedHandMarking> {
+@VerboseName("weighted hand-marking module")
+public class WeightedHandMarking extends ArchivableBaseEntity implements Comparable<WeightedHandMarking> {
 
 	private static final long serialVersionUID = -3429348535279846933L;
-	
-	@Id
-	@GeneratedValue
-	private Long id;
 	
 	private double weight;
 	
@@ -88,13 +82,6 @@ public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Arc
 	public WeightedHandMarking() {
 		setWeight(0);
 		setGroupWork(false);
-	}
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
 	}
 	
 	public double getWeight() {
@@ -155,32 +142,32 @@ public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Arc
 		if(diff != 0) {
 			return diff;
 		}
-		if(this.id == null) {
-			return other.id == null ? 0 : -1;
+		if(this.getId() == null) {
+			return other.getId() == null ? 0 : -1;
 		}
-		if(other.id == null) {
+		if(other.getId() == null) {
 			return 1;
 		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (groupWork ? 1231 : 1237);
 		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(weight);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -192,27 +179,9 @@ public class WeightedHandMarking implements Comparable<WeightedHandMarking>, Arc
 				return false;
 		} else if (!handMarking.equals(other.handMarking))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
 			return false;
 		return true;
-	}
-
-	@Override
-	public WeightedHandMarking rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		if(options.getParentAssessment() == null) {
-			throw new InvalidRebuildOptionsException("Cannot rebuild a weighted hand marking template without an assessment");
-		}
-		WeightedHandMarking clone = new WeightedHandMarking();
-		clone.setAssessment(options.getParentAssessment());
-		clone.setGroupWork(this.isGroupWork());
-		clone.setHandMarking(this.getHandMarking() == null ? null : this.getHandMarking().rebuild(options));
-		clone.setWeight(this.getWeight());
-		return clone;
 	}
 	
 	/*===========================

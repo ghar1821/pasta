@@ -2,26 +2,20 @@ package pasta.domain.template;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 
 @Entity
 @Table (name = "hand_marking_data")
-public class HandMarkData implements Archivable<HandMarkData>, Comparable<HandMarkData> {
+@VerboseName(value = "hand-marking datum", plural = "hand-marking data")
+public class HandMarkData extends ArchivableBaseEntity implements Comparable<HandMarkData> {
 
 	private static final long serialVersionUID = -9016810010400907861L;
-	
-	@Id
-	@GeneratedValue
-	private Long id;
 	
 	@OneToOne
     @JoinColumn (name = "column_id")
@@ -48,13 +42,6 @@ public class HandMarkData implements Archivable<HandMarkData>, Comparable<HandMa
 		this.data = data;
 	}
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public WeightedField getColumn() {
 		return column;
 	}
@@ -97,42 +84,7 @@ public class HandMarkData implements Archivable<HandMarkData>, Comparable<HandMa
 	}
 	
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		HandMarkData other = (HandMarkData) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-
-	@Override
 	public String toString() {
-		return "{" + this.id + ": " + (this.column == null ? "null" : this.column.getId()) + ", " + (this.row == null ? "null" : this.row.getId()) + ", " + this.data + "}";
+		return "{" + this.getId() + ": " + (this.column == null ? "null" : this.column.getId()) + ", " + (this.row == null ? "null" : this.row.getId()) + ", " + this.data + "}";
 	}
-
-	@Override
-	public HandMarkData rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		HandMarkData clone = new HandMarkData();
-		clone.setColumn(this.getColumn() == null ? null : this.getColumn().rebuild(options)); //TODO: get from cache
-		clone.setData(this.getData());
-		clone.setRow(this.getRow() == null ? null : this.getRow().rebuild(options)); //TODO: get from cache
-		return clone;
-	}
-	
 }

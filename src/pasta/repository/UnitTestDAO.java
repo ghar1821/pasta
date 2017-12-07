@@ -2,10 +2,6 @@ package pasta.repository;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,41 +11,13 @@ import pasta.domain.template.WeightedUnitTest;
 
 @Transactional
 @Repository("unitTestDAO")
-public class UnitTestDAO {
+public class UnitTestDAO extends BaseDAO {
 
-	protected final Log logger = LogFactory.getLog(getClass());
-	
-	@Autowired
-	private SessionFactory sessionFactory;
-	
-	public void save(UnitTest test) {
-		sessionFactory.getCurrentSession().save(test);
-		logger.info("Created unit test " + test.getName());
-	}
-	
-	public void update(UnitTest test) {
-		sessionFactory.getCurrentSession().update(test);
-		logger.info("Updated unit test " + test.getName());
-	}
-	
-	public void saveOrUpdate(UnitTest test) {
-		Long id = test.getId();
-		sessionFactory.getCurrentSession().saveOrUpdate(test);
-		logger.info((id == test.getId() ? "Updated" : "Created") +
-				" unit test " + test.getName());
-	}
-	
-	public void delete(UnitTest test) {
-		sessionFactory.getCurrentSession().delete(test);
-		logger.info("Deleted unit test " + test.getName());
-	}
-	
 	public void deleteTestTests(UnitTest test) {
 		UnitTestResult testResult = test.getTestResult();
 		test.setTestResult(null);
 		update(test);
-		sessionFactory.getCurrentSession().delete(testResult);
-		logger.info("Deleted unit test test result" + test.getName());
+		delete(testResult);
 	}
 	
 	@SuppressWarnings("unchecked")

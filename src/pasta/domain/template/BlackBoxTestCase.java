@@ -2,13 +2,10 @@ package pasta.domain.template;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * @author Joshua Stretton
@@ -17,13 +14,11 @@ import pasta.archive.RebuildOptions;
  */
 @Entity
 @Table (name = "black_box_test_cases")
-public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
+@VerboseName("black box test case")
+public class BlackBoxTestCase extends ArchivableBaseEntity {
 	private static final long serialVersionUID = -4974380327385340788L;
 	public static final String validNameRegex = "[a-zA-Z][a-zA-Z0-9_]*";
 
-	@Id @GeneratedValue
-	private Long id;
-	
 	@Column(name = "test_name")
 	private String testName;
 	
@@ -43,13 +38,6 @@ public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
 	private boolean toBeCompared = true;
 	
 	private int timeout;
-
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getTestName() {
 		return testName;
@@ -103,30 +91,6 @@ public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
 		this.toBeCompared = toBeCompared;
 	}
 	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		BlackBoxTestCase other = (BlackBoxTestCase) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-	
 	public boolean exactlyEquals(Object obj) {
 		if (this == obj)
 			return true;
@@ -140,10 +104,10 @@ public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
 				return false;
 		} else if (!commandLine.equals(other.commandLine))
 			return false;
-		if (id == null) {
-			if (other.id != null)
+		if (getId() == null) {
+			if (other.getId() != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!getId().equals(other.getId()))
 			return false;
 		if (input == null) {
 			if (other.input != null)
@@ -173,19 +137,7 @@ public class BlackBoxTestCase implements Archivable<BlackBoxTestCase> {
 	}
 	@Override
 	public String toString() {
-		return "BlackBoxTestCase [id=" + id + ", testName=" + testName + ", commandLine=" + commandLine + ", input="
+		return "BlackBoxTestCase [id=" + getId() + ", testName=" + testName + ", commandLine=" + commandLine + ", input="
 				+ input + ", output=" + output + ", description=" + description + ", timeout=" + timeout + "]";
-	}
-	
-	@Override
-	public BlackBoxTestCase rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		BlackBoxTestCase clone = new BlackBoxTestCase();
-		clone.setCommandLine(this.getCommandLine());
-		clone.setInput(this.getInput());
-		clone.setOutput(this.getOutput());
-		clone.setTestName(this.getTestName());
-		clone.setTimeout(this.getTimeout());
-		clone.setToBeCompared(this.isToBeCompared());
-		return clone;
 	}
 }

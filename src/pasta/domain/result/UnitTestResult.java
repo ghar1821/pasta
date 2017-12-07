@@ -44,8 +44,6 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -57,6 +55,8 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.UnitTest;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.util.PASTAUtil;
@@ -70,7 +70,8 @@ import pasta.util.PASTAUtil;
  */
 @Entity
 @Table (name = "unit_test_results")
-public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
+@VerboseName("unit test result")
+public class UnitTestResult extends BaseEntity implements Serializable, Comparable<UnitTestResult>{
 	
 	private static final long serialVersionUID = -4862404513190004578L;
 	
@@ -79,10 +80,6 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	private static final int FILES_COMPILED_MAX_LENGTH = 66000;
 	private static final int RUNTIME_OUTPUT_MAX_LENGTH = 128000;
 
-	@Id @GeneratedValue
-	@Column (name = "id")
-	private Long id;
-	
 	@OneToOne
 	@JoinColumn (name="tester_unit_test_id", nullable = true)
 	private UnitTest testerTest; // When the test is for testing a unit test
@@ -131,13 +128,6 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Column (name = "runtime_output", length = RUNTIME_OUTPUT_MAX_LENGTH)
 	@Size (max = RUNTIME_OUTPUT_MAX_LENGTH)
 	private String fullOutput;
-
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public UnitTest getTest() {
 		return getTesterTest() == null ? (getWeightedUnitTest() == null ? null : getWeightedUnitTest().getTest()) : getTesterTest();
@@ -382,29 +372,5 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 			return s1.trim();
 		}
 		return (s1 + (!s1.isEmpty() && !s2.isEmpty() ? System.lineSeparator() + "===============" : "") + System.lineSeparator() + s2).trim();
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UnitTestResult other = (UnitTestResult) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
 	}
 }

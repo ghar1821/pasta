@@ -91,8 +91,8 @@ public class WebApplicationConfig {
 		sf.setHibernateProperties(hibernateProperties);
 		
 		sf.setAnnotatedClasses(
-				pasta.scheduler.AssessmentJob.class,
-				pasta.scheduler.Job.class,
+				pasta.archive.MappableClass.class,
+				pasta.archive.PreviousArchive.class,
 				pasta.domain.BaseEntity.class,
 				pasta.domain.PASTALoginUser.class,
 				pasta.domain.options.Option.class,
@@ -129,7 +129,9 @@ public class WebApplicationConfig {
 				pasta.domain.template.WeightedHandMarking.class,
 				pasta.domain.template.WeightedUnitTest.class,
 				pasta.domain.user.PASTAGroup.class,
-				pasta.domain.user.PASTAUser.class
+				pasta.domain.user.PASTAUser.class,
+				pasta.scheduler.AssessmentJob.class,
+				pasta.scheduler.Job.class
 		);
 		
 		return sf;

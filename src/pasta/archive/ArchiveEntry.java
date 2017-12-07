@@ -1,52 +1,43 @@
 package pasta.archive;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
 
 import pasta.util.ProjectProperties;
 
-public class ArchiveItem<T> {
-	protected static Logger logger = Logger.getLogger(ArchiveItem.class);
+public class ArchiveEntry implements Serializable {
+	private static final long serialVersionUID = -8781057876124034321L;
+
+	protected static Logger logger = Logger.getLogger(ArchiveEntry.class);
 	
-	private Archivable<T> data;
+	private ArchivableBaseEntity data;
 	private long instanceId;
 	
-	public ArchiveItem(Archivable<T> data) {
+	public ArchiveEntry(ArchivableBaseEntity data) {
 		this.data = data;
 		this.instanceId = getThisInstanceID();
 	}
 	
-	private ArchiveItem(Archivable<T> data, long instanceId) {
+	private ArchiveEntry(ArchivableBaseEntity data, long instanceId) {
 		this.data = data;
 		this.instanceId = instanceId;
 	}
 	
-	public Serializable getData() {
+	public ArchivableBaseEntity getData() {
 		return data;
+	}
+	
+	public long getInstanceId() {
+		return instanceId;
 	}
 
 	private long getThisInstanceID() {
 		return ProjectProperties.getInstance().getInstanceId();
-	}
-	
-	@Deprecated
-	public void clearDataId() {
-		if(data != null) {
-			try {
-				Method setId = data.getClass().getMethod("setId", Long.class);
-				setId.invoke(data, (Long)null);
-			} catch (NoSuchMethodException e) {
-				// Do nothing
-			} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				logger.error("Could not set ID to null", e);
-			}
-		}
 	}
 	
 	public boolean isFromThisInstance() {
@@ -63,12 +54,13 @@ public class ArchiveItem<T> {
 		return out;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static ArchiveItem<?> readFrom(ObjectInputStream in) {
+	public static ArchiveEntry readFrom(ObjectInputStream in) throws EOFException {
 		try {
-			Archivable<?> data = (Archivable<?>) in.readObject();
+			ArchivableBaseEntity data = (ArchivableBaseEntity) in.readObject();
 			long instanceId = in.readLong();
-			return new ArchiveItem(data, instanceId);
+			return new ArchiveEntry(data, instanceId);
+		} catch (EOFException e) {
+			throw e;
 		} catch (ClassNotFoundException | IOException e) {
 			logger.error("Error reading archive item from stream", e);
 		}

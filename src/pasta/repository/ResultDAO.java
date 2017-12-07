@@ -49,14 +49,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,39 +89,23 @@ import pasta.util.ProjectProperties;
  */
 @Transactional
 @Repository("resultDAO")
-public class ResultDAO{
+public class ResultDAO extends BaseDAO {
 	
 	protected final Log logger = LogFactory.getLog(getClass());
-	
-	@Autowired
-	private SessionFactory sessionFactory;
-	
-	/**
-	 * Delete the assessment result from the database.
-	 * 
-	 * @param result assessment test result being deleted
-	 */
-	public void delete(AssessmentResult result) {
-		sessionFactory.getCurrentSession().delete(result);
-	}
 	
 	public void delete(AssessmentResultSummary result) {
 		sessionFactory.getCurrentSession().delete(result);
 	}
 
-	public void delete(HandMarkingResult result) {
-		sessionFactory.getCurrentSession().delete(result);
-	}
-	
 	/**
-	 * Delete the unit test result from the database.
-	 * 
-	 * @param result the unit test result being deleted
+	 * Save the assessment summary to the database.
+	 *
+	 * @param result the assessment summary being saved
 	 */
-	public void delete(UnitTestResult result) {
-		sessionFactory.getCurrentSession().delete(result);
+	public void saveOrUpdate(AssessmentResultSummary result) {
+		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}
-	
+
 	public AssessmentResult getAssessmentResult(long id) {
 		return (AssessmentResult) sessionFactory.getCurrentSession().get(AssessmentResult.class, id);
 	}
@@ -491,61 +473,6 @@ public class ResultDAO{
 		}
 	}
 
-	/**
-	 * Save the assessment summary to the database.
-	 *
-	 * @param result the assessment summary being saved
-	 */
-	public void saveOrUpdate(AssessmentResultSummary result) {
-		sessionFactory.getCurrentSession().saveOrUpdate(result);
-	}
-
-	/**
-	 * Save the assessment result to the database.
-	 * 
-	 * @param result the assessment result being saved
-	 */
-	public void save(AssessmentResult result) {
-		sessionFactory.getCurrentSession().save(result);
-	}
-
-	/**
-	 * Save the unit test result to the database.
-	 * 
-	 * @param result the unit test result being saved
-	 */
-	public void save(UnitTestResult result) {
-		sessionFactory.getCurrentSession().save(result);
-	}
-	
-	public void saveOrUpdate(HandMarkingResult result) {
-		sessionFactory.getCurrentSession().saveOrUpdate(result);
-	}
-
-	/**
-	 * Update the assessment result in the database.
-	 * 
-	 * @param result the assessment result being updated
-	 */
-	public void update(AssessmentResult result) {
-		Session session = sessionFactory.getCurrentSession();
-		session.saveOrUpdate(result);
-		
-/* 	Removed as these should be unnecessary now
- *		session.flush();
- *		session.clear();
- */
-	}
-
-	/**
-	 * Update the unit test result in the database.
-	 * 
-	 * @param result the unit test result being updated
-	 */
-	public void update(UnitTestResult result) {
-		sessionFactory.getCurrentSession().update(result);
-	}
-
 	public void unlinkUnitTest(long id) {
 		Session session = sessionFactory.getCurrentSession();
 		@SuppressWarnings("unchecked")
@@ -644,9 +571,5 @@ public class ResultDAO{
 		Criteria cr = sessionFactory.getCurrentSession().createCriteria(AssessmentResultSummary.class);
 		cr.add(Restrictions.eq("id.assessment", assessment));
 		return cr.list();
-	}
-
-	public void saveOrUpdate(AssessmentResult result) {
-		sessionFactory.getCurrentSession().saveOrUpdate(result);
 	}
 }

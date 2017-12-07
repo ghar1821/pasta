@@ -2,18 +2,18 @@ package pasta.domain.options;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Length;
 
+import pasta.domain.BaseEntity;
+
 @Entity
 @Table(name = "options")
-public class Option {
+public class Option extends BaseEntity {
 
-	@Id
-	@Column(name="option_key", length = 255)
+	@Column(name="option_key", length = 255, unique = true)
 	@Length(max = 255)
 	private String key;
 	

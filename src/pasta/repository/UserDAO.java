@@ -72,30 +72,7 @@ import pasta.domain.user.PASTAUser;
  */
 @Transactional
 @Repository("userDAO")
-public class UserDAO {
-	
-	protected final Log logger = LogFactory.getLog(getClass());
-	
-	@Autowired
-	private SessionFactory sessionFactory;
-
-	/**
-	 * Save the user to the cache and the database.
-	 * 
-	 * @param user the user being saved
-	 */
-	public void save(PASTAUser user) {
-		sessionFactory.getCurrentSession().save(user);
-	}
-
-	/**
-	 * Update the user in the cache and the database.
-	 * 
-	 * @param user the user being updated
-	 */
-	public void update(PASTAUser user) {
-		sessionFactory.getCurrentSession().update(user);
-	}
+public class UserDAO extends BaseDAO {
 	
 	/**
 	 * "Delete" the user from the database by setting them as inactive.
@@ -104,11 +81,10 @@ public class UserDAO {
 	 */
 	public void delete(PASTAUser user) {
 		if(user instanceof PASTAGroup) {
-			logger.info("Deleting group " + ((PASTAGroup) user).getName());
 			((PASTAGroup) user).setAssessment(null);
 			((PASTAGroup) user).removeAllMembers();
 			update(user);
-			sessionFactory.getCurrentSession().delete(user);
+			super.delete(user);
 		} else {
 			user.setActive(false);
 			update(user);
@@ -533,10 +509,10 @@ public class UserDAO {
 		AssessmentExtension curExt = getAssessmentExtension(user, assessment);
 		if(curExt == null) {
 			AssessmentExtension ext = new AssessmentExtension(user, assessment, extension);
-			sessionFactory.getCurrentSession().save(ext);
+			save(ext);
 		} else {
 			curExt.setNewDueDate(extension);
-			sessionFactory.getCurrentSession().update(curExt);
+			update(curExt);
 		}
 	}
 
@@ -560,9 +536,5 @@ public class UserDAO {
 				.createCriteria("assessment")
 				.add(Restrictions.eq("id", assessmentId))
 				.list();
-	}
-	
-	public void deleteExtension(AssessmentExtension extension) {
-		sessionFactory.getCurrentSession().delete(extension);
 	}
 }

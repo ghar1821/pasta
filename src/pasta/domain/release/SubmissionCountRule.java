@@ -9,8 +9,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.user.PASTAUser;
 
@@ -89,17 +87,5 @@ public class SubmissionCountRule extends ReleaseAllResultsRule implements Serial
 		.append(getCompareAssessment() == null ? "null" : getCompareAssessment().getName())
 		.append(" is ").append(compareMode).append(' ').append(submissionCount);
 		return sb.toString();
-	}
-
-	@Override
-	public ReleaseRule rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		if(options.getParentAssessment() == null) {
-			throw new InvalidRebuildOptionsException("Cannot rebuild a 'submission count' rule without an assessment");
-		}
-		SubmissionCountRule clone = new SubmissionCountRule();
-		clone.setCompareAssessment(options.getParentAssessment());
-		clone.setCompareMode(this.getCompareMode());
-		clone.setSubmissionCount(this.getSubmissionCount());
-		return clone;
 	}
 }

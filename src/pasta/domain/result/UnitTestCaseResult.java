@@ -40,6 +40,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+
 /**
  * Container class to hold the result of a single unit test.
  * <p>
@@ -59,7 +62,8 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name = "unit_test_case_results")
-public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCaseResult>{
+@VerboseName("unit test case result")
+public class UnitTestCaseResult extends BaseEntity implements Serializable, Comparable<UnitTestCaseResult>{
 	
 	private static final long serialVersionUID = 6764260613777032069L;
 	
@@ -70,9 +74,6 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	private final static int MAX_MESSAGE_LENGTH = 8000;
 	private final static int MAX_EXT_MESSAGE_LENGTH = 66000;
 
-	@Id @GeneratedValue
-	private Long id;
-	
 	@Column(name = "name")
 	private String testName;
 	
@@ -96,13 +97,6 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	@ManyToOne
 	@JoinColumn(name="unit_test_result_id")
 	private UnitTestResult unitTestResult;
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
 	
 	public String getTestName() {
 		return testName;

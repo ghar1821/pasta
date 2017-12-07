@@ -380,7 +380,7 @@ public class UserManager {
 		if(!extensions.isEmpty()) {
 			logger.info("Deleting " + extensions.size() + " extensions for assessment " + assessmentId);
 			for(AssessmentExtension ext : extensions) {
-				userDao.deleteExtension(ext);
+				userDao.delete(ext);
 			}
 		}
 	}

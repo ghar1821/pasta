@@ -114,7 +114,6 @@ public class RatingController {
 			@PathVariable("assessmentId") long assessmentId,
 			@ModelAttribute("ratingForm") RatingForm form,
 			HttpSession session) {
-		
 		Assessment assessment = assessmentManager.getAssessment(assessmentId);
 		Future<AssessmentRating> rating = ratingManager.saveRating(assessment, userManager.getUser(username), form);
 		session.setAttribute("rating", rating);

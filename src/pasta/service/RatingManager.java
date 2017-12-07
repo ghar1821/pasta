@@ -47,6 +47,7 @@ import pasta.domain.ratings.RatingForm;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.RatingDAO;
+import pasta.web.WebUtils;
 
 /**
  * Rating manager.

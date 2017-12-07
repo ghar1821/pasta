@@ -38,15 +38,15 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import pasta.domain.BaseEntity;
 import pasta.domain.UserPermissionLevel;
+import pasta.domain.VerboseName;
 import pasta.domain.ratings.AssessmentRating;
 import pasta.domain.result.AssessmentResult;
 import pasta.domain.result.AssessmentResultSummary;
@@ -61,13 +61,10 @@ import pasta.scheduler.AssessmentJob;
 @Entity
 @Table(name = "users",uniqueConstraints={@UniqueConstraint(columnNames={"username"})})
 @Inheritance(strategy=InheritanceType.JOINED)
-public class PASTAUser implements Serializable, Comparable<PASTAUser>{
+@VerboseName("user")
+public class PASTAUser extends BaseEntity implements Serializable, Comparable<PASTAUser>{
 
 	private static final long serialVersionUID = -9070027568016757820L;
-	
-	@Id
-	@GeneratedValue
-	private Long id;
 	
 	@Column(name = "username", nullable = false)
 	private String username = "";
@@ -85,13 +82,6 @@ public class PASTAUser implements Serializable, Comparable<PASTAUser>{
 	@Column(name="active")
 	private boolean active = true;
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getUsername() {
 		return username;
 	}

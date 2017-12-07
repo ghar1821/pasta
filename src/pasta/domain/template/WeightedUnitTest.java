@@ -35,16 +35,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.result.UnitTestResult;
 
 /**
@@ -64,14 +61,11 @@ import pasta.domain.result.UnitTestResult;
 
 @Entity
 @Table (name = "weighted_unit_tests")
-public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivable<WeightedUnitTest> {
+@VerboseName("weighted unit test module")
+public class WeightedUnitTest extends ArchivableBaseEntity implements Comparable<WeightedUnitTest> {
 	
 	private static final long serialVersionUID = 2594905907808283182L;
 
-	@Id
-	@GeneratedValue
-	private Long id;
-	
 	private double weight;
 	
 	private boolean secret;
@@ -91,13 +85,6 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 		setWeight(0);
 		setSecret(false);
 		setGroupWork(false);
-	}
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
 	}
 	
 	public double getWeight() {
@@ -163,13 +150,13 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 		if(diff != 0) {
 			return diff;
 		}
-		if(this.id == null) {
-			return other.id == null ? 0 : -1;
+		if(this.getId() == null) {
+			return other.getId() == null ? 0 : -1;
 		}
-		if(other.id == null) {
+		if(other.getId() == null) {
 			return 1;
 		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
 	
 	@Override
@@ -180,9 +167,8 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (secret ? 1231 : 1237);
 		result = prime * result + ((test == null) ? 0 : test.hashCode());
 		long temp;
@@ -190,21 +176,17 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		WeightedUnitTest other = (WeightedUnitTest) obj;
 		if (groupWork != other.groupWork)
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (secret != other.secret)
 			return false;
@@ -216,20 +198,6 @@ public class WeightedUnitTest implements Comparable<WeightedUnitTest>, Archivabl
 		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
 			return false;
 		return true;
-	}
-
-	@Override
-	public WeightedUnitTest rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		if(options.getParentAssessment() == null) {
-			throw new InvalidRebuildOptionsException("Cannot rebuild a weighted unit test without an assessment");
-		}
-		WeightedUnitTest clone = new WeightedUnitTest();
-		clone.setAssessment(options.getParentAssessment());
-		clone.setGroupWork(this.isGroupWork());
-		clone.setSecret(this.isSecret());
-		clone.setTest(this.getTest() == null ? null : this.getTest().rebuild(options));
-		clone.setWeight(this.getWeight());
-		return clone;
 	}
 	
 	/*===========================

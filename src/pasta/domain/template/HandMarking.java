@@ -37,8 +37,6 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
@@ -49,9 +47,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import pasta.archive.Archivable;
-import pasta.archive.InvalidRebuildOptionsException;
-import pasta.archive.RebuildOptions;
+import pasta.archive.ArchivableBaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * Container class for the hand marking assessment module.
@@ -79,13 +76,10 @@ import pasta.archive.RebuildOptions;
  */
 @Entity
 @Table (name = "hand_markings")
-public class HandMarking implements Archivable<HandMarking>, Comparable<HandMarking> {
+@VerboseName("hand marking module")
+public class HandMarking extends ArchivableBaseEntity implements Comparable<HandMarking> {
 
 	private static final long serialVersionUID = 5276980986516750657L;
-
-	@Id
-	@GeneratedValue 
-	private Long id;
 	
 	private String name;
 	
@@ -198,14 +192,6 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 		return col == null ? 0 : col.getWeight();
 	}
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public void addData(HandMarkData handMarkData) {
 		getData().add(handMarkData);
 		handMarkData.setHandMarking(this);
@@ -315,53 +301,6 @@ public class HandMarking implements Archivable<HandMarking>, Comparable<HandMark
 	@Override
 	public int compareTo(HandMarking other) {
 		return this.name.compareTo(other.name);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		HandMarking other = (HandMarking) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-
-	@Override
-	public HandMarking rebuild(RebuildOptions options) throws InvalidRebuildOptionsException {
-		HandMarking clone = new HandMarking();
-		LinkedList<WeightedField> newColumnHeaders = new LinkedList<>();
-		for(WeightedField header : this.getColumnHeader()) {
-			newColumnHeaders.add(header.rebuild(options));
-		}
-		clone.setColumnHeader(newColumnHeaders);
-		LinkedList<HandMarkData> newData = new LinkedList<>();
-		for(HandMarkData data : this.getData()) {
-			newData.add(data.rebuild(options));
-		}
-		clone.setData(newData);
-		clone.setName(this.getName());
-		LinkedList<WeightedField> newRowHeader = new LinkedList<>();
-		for(WeightedField header : this.getRowHeader()) {
-			newRowHeader.add(header.rebuild(options));
-		}
-		clone.setRowHeader(newRowHeader);
-		return clone;
 	}
 	
 	/*===========================

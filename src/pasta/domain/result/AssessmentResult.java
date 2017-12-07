@@ -47,8 +47,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -59,6 +57,8 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
@@ -89,14 +89,11 @@ import pasta.util.ProjectProperties;
 uniqueConstraints = { @UniqueConstraint(columnNames={
 		"user_id", "assessment_id", "submission_date"
 })})
-public class AssessmentResult implements Serializable, Comparable<AssessmentResult>{
+@VerboseName("assessment result")
+public class AssessmentResult extends BaseEntity implements Serializable, Comparable<AssessmentResult>{
 
 	private static final long serialVersionUID = 447867201394779087L;
 
-	@Id
-	@GeneratedValue 
-	private Long id;
-	
 	@ManyToOne
 	@JoinColumn(name="user_id", nullable = false)
 	private PASTAUser user;
@@ -130,13 +127,6 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	@Column(name="group_result")
 	private boolean groupResult;
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public PASTAUser getUser() {
 		return user;
 	}

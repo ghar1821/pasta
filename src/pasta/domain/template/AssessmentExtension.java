@@ -5,17 +5,18 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.user.PASTAUser;
 
 @Entity
 @Table(name="assessment_extensions")
-public class AssessmentExtension  implements Serializable, Comparable<AssessmentExtension> {
+@VerboseName("assessment extension")
+public class AssessmentExtension extends BaseEntity implements Serializable, Comparable<AssessmentExtension> {
 	private static final long serialVersionUID = -1323359810061509591L;
 
 	public AssessmentExtension() {}
@@ -25,9 +26,6 @@ public class AssessmentExtension  implements Serializable, Comparable<Assessment
 		this.assessment = assessment;
 		this.newDueDate = newDueDate;
 	}
-	@Id
-	@GeneratedValue
-	private Long id;
 	
 	@ManyToOne
 	@JoinColumn(name="user", nullable=false)
@@ -39,13 +37,6 @@ public class AssessmentExtension  implements Serializable, Comparable<Assessment
 	
 	@Column(name="new_due_date")
 	private Date newDueDate;
-
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public PASTAUser getUser() {
 		return user;
