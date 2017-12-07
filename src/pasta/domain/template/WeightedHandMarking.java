@@ -151,39 +151,6 @@ public class WeightedHandMarking extends BaseEntity implements Comparable<Weight
 		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(weight);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedHandMarking other = (WeightedHandMarking) obj;
-		if (groupWork != other.groupWork)
-			return false;
-		if (handMarking == null) {
-			if (other.handMarking != null)
-				return false;
-		} else if (!handMarking.equals(other.handMarking))
-			return false;
-		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
-			return false;
-		return true;
-	}
-	
 	/*===========================
 	 * CONVENIENCE RELATIONSHIPS
 	 * 

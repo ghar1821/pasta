@@ -211,6 +211,29 @@ public class AssessmentManager {
 		assessment.setGroupSize(form.getGroupSize());
 		assessment.setStudentsManageGroups(form.isStudentsManageGroups());
 		
+		// Update weighted unit test details
+		for (WeightedUnitTest test : assessment.getAllUnitTests()) {
+			for (WeightedUnitTest formTest : form.getSelectedUnitTests()) {
+				if(formTest.getId() == test.getId()) {
+					test.setGroupWork(formTest.isGroupWork());
+					test.setSecret(formTest.isSecret());
+					test.setWeight(formTest.getWeight());
+					break;
+				}
+			}
+		}
+		
+		// Update weighted hand marking details
+		for (WeightedHandMarking hm : assessment.getHandMarking()) {
+			for (WeightedHandMarking formHm : form.getSelectedHandMarking()) {
+				if(formHm.getId() == hm.getId()) {
+					hm.setGroupWork(formHm.isGroupWork());
+					hm.setWeight(formHm.getWeight());
+					break;
+				}
+			}
+		}
+		
 		// unlink any unnecessary unit tests
 		{
 			Collection<WeightedUnitTest> toRemove = CollectionUtils.subtract(assessment.getAllUnitTests(), form.getSelectedUnitTests());
@@ -257,7 +280,6 @@ public class AssessmentManager {
 			}
 		}
 		
-//		assDao.saveOrUpdate(assessment);
 		assDao.merge(assessment);
 	}
 

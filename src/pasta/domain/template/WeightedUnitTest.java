@@ -164,42 +164,6 @@ public class WeightedUnitTest extends BaseEntity implements Comparable<WeightedU
 		return  "{ID:" + this.getId() + " for " + (this.test == null ? "null" : this.test.getId()) + (secret ? " (secret)" : "") + "}";
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + (secret ? 1231 : 1237);
-		result = prime * result + ((test == null) ? 0 : test.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(weight);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedUnitTest other = (WeightedUnitTest) obj;
-		if (groupWork != other.groupWork)
-			return false;
-		if (secret != other.secret)
-			return false;
-		if (test == null) {
-			if (other.test != null)
-				return false;
-		} else if (!test.equals(other.test))
-			return false;
-		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
-			return false;
-		return true;
-	}
-	
 	/*===========================
 	 * CONVENIENCE RELATIONSHIPS
 	 * 
