@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.repository;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,11 +113,13 @@ public class AssessmentDAO extends BaseDAO {
 	public void unlinkUnitTest(long unitTestId) {
 		// go through all assessments and remove the unit test from them
 		for(Assessment assessment: getAllAssessments()){
+			List<WeightedUnitTest> toRemove = new LinkedList<>();
 			for(WeightedUnitTest test: assessment.getAllUnitTests()){
 				if(test.getTest().getId() == unitTestId){
-					assessment.removeUnitTest(test);
+					toRemove.add(test);
 				}
 			}
+			assessment.removeUnitTests(toRemove);
 		}
 	}
 	
@@ -142,13 +145,13 @@ public class AssessmentDAO extends BaseDAO {
 	public void unlinkHandMarking(long handMarkingId) {
 		// remove from assessments
 		for(Assessment ass : getAllAssessments()) {
-			Set<WeightedHandMarking> marking = ass.getHandMarking();
-			for (WeightedHandMarking template : marking) {
+			List<WeightedHandMarking> toRemove = new LinkedList<>();
+			for (WeightedHandMarking template : ass.getHandMarking()) {
 				if(template.getHandMarking().getId() == handMarkingId) {
-					ass.removeHandMarking(template);
-					break;
+					toRemove.add(template);
 				}
 			}
+			ass.removeHandMarkings(toRemove);
 		}
 	}
 
