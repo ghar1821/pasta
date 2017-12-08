@@ -204,7 +204,7 @@ either expressed or implied, of the PASTA Project.
 						<div class='pf-item pf-horizontal'>
 							<div class='pf-label'>Test Case Description</div>
 							<div class='pf-input'>
-								<textarea id="testCases0.description" name="testCases0.description"></textarea>
+								<textarea id="testCases0.description" name="testCases[0].description"></textarea>
 							</div>
 						</div>
 					</div>
