@@ -29,7 +29,10 @@ button:disabled, input[type="submit"]:disabled {
 button:not(.flat):disabled, input[type="submit"]:not(.flat):disabled {
 	background-color: lightgray;
 }
-button.compact, .compact button {
+.button-panel > button.compact,
+.button-panel > input[type=submit].compact,
+button.compact, 
+.compact button {
 	padding: 0.4em 0.6em;
 }
 button.flat,
@@ -86,7 +89,8 @@ button.floating.plus {
 	vertical-align: top;
 }
 
-.part .button-panel:not(:first-child) {
+.part *:not(.part-title) > .button-panel:not(:first-child),
+.part > .button-panel:not(:first-child) {
 	margin-top: 1em;
 }
 .section > .button-panel {
@@ -99,6 +103,19 @@ button.floating.plus {
 .button-panel > button:not(:first-child),
 .button-panel > input[type=submit]:not(:first-child) {
 	margin-left: 0.4em;
+}
+
+.part-title > .button-panel,
+.section-title > .button-panel {
+	display: inline-block;
+	float: right;
+	padding: 0;
+}
+.part-title > .button-panel {
+	margin: 0;
+}
+.section-title > .button-panel {
+	margin: 0 1em;
 }
 
 .clearfix:after {
@@ -165,7 +182,7 @@ div.part.no-line + div.part.no-line {
 .part.row {
 	display: flex;
 	align-items: center;
-	padding: 0.7em;
+	padding: 0.3em 0.8em;
 }
 
 .ip-item:not(:first-child) {
@@ -470,6 +487,22 @@ div.star-medal img {
 	top: 0.12em;
 }
 
+div.assessment-box {
+	position: relative;
+}
+div.rate-assessment {
+	background-color: white;
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 1px;
+	bottom: 0;
+	box-shadow: 2px 2px 3px 2px rgba(0, 0, 0, 0.1);
+	margin: 1em;
+	padding: 0.5em 1em 1em 1em;
+	position: absolute;
+	right: 0;
+	z-index: 10;
+}
 div.ratingDot {
 	background-repeat: no-repeat;
 	cursor: pointer;

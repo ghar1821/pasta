@@ -68,6 +68,18 @@ either expressed or implied, of the PASTA Project.
 								</div>
 							</c:if>
 						</div>
+						
+						<div class='button-panel'>
+							<button class='flat hbn-button' data-hbn-icon="fa-info" onclick='location.href="${assessment.id}/"'>Details</button>
+							<c:if test="${fn:length(assessment.allUnitTests) != 0}">
+								<button class='flat hbn-button hbn-confirm' data-hbn-icon="fa-refresh" onclick="location.href='./${assessment.id}/run/'">Re-run</button>
+							</c:if>
+							<button class='flat hbn-button' data-hbn-icon="fa-download" onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
+							<button class='flat hbn-button' data-hbn-icon="fa-copyright" onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
+							<c:if test="${user.instructor}">
+								<button class='flat deleteAssessment hbn-button' data-hbn-icon="fa-trash" assessment='${assessment.id}'>Delete</button>
+							</c:if>
+						</div>
 					</div>
 					<div>
 						<div class='info-panel horizontal-block top-align'>
@@ -119,19 +131,6 @@ either expressed or implied, of the PASTA Project.
 								</div>
 							</div>
 						</div>
-					</div>
-					<div class='button-panel'>
-						<button class='flat' onclick='location.href="${assessment.id}/"'>Details</button>
-						<c:if test="${fn:length(assessment.allUnitTests) != 0}">
-							<button class='flat' onclick="$(this).toggle().next().toggle()">Re-run</button>
-							<button style="display: none;" onclick="location.href='./${assessment.id}/run/'"
-									onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
-						</c:if>
-						<button class='flat' onclick="location.href='./downloadLatest/${assessment.id}/'">Download Latest Submissions</button>
-						<button class='flat' onclick="location.href='../moss/view/${assessment.id}/'">MOSS</button>
-						<c:if test="${user.instructor}">
-							<button class='flat deleteAssessment' assessment='${assessment.id}'>Delete</button>
-						</c:if>
 					</div>
 				</div>
 			</c:forEach>
@@ -224,5 +223,9 @@ either expressed or implied, of the PASTA Project.
 		$(".assessment-name").searchable();
 		$(".category-box").find(".section-title").searchable();
 		var searchBox = $("#search").searchBox();
+		
+		$(".hbn-button").hoverButton({
+			dataKey: "hbn-icon"
+		});
 	})(jQuery);
 </script>

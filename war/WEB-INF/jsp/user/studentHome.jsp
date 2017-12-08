@@ -75,6 +75,40 @@ either expressed or implied, of the PASTA Project.
 				</c:if>
 				
 				<div class='part assessment-box float-container <c:if test="${closedAssessment}">closedAssessment</c:if>' >
+					<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
+						<div class='rate-assessment'>
+							<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
+								<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
+								<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
+								<div class='vertical float-container'>
+									<div class='button-panel float-right'>
+										<button class='flat compact hbn-button showComments' data-hbn-icon='fa-commenting-o' assessment='${assessment.id}'>More feedback</button>
+										<button class='flat compact hbn-button closeRating' data-hbn-icon='fa-close' assessment='${assessment.id}'>Not now</button>
+									</div>
+								</div>
+								<div class='vertical'>
+									<div class='ratingControls float-container'>
+										<div class='horizontal-block float-left'>
+											<span class='labelEasy'>Easy</span>
+										</div>
+										<div class='ratingDots horizontal-block float-left'>
+											<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
+										</div>
+										<div class='horizontal-block float-left'>
+											<span class='labelHard'>Hard</span>
+										</div>
+									</div>
+								</div>
+								<div class='vertical small-gap' id='confirmRating'></div>
+								<div id='extraComments${assessment.id}' class='popup'>
+									<p><strong>Tell us what you think about this assessment:</strong><br/>
+									<textarea class="ratingComment">${ratingForms[assessment.id].comment}</textarea><br/>
+									<p><button class='ratingSubmit' assessment='${assessment.id}'>Submit</button>
+								</div>
+							</form:form>
+						</div>
+					</c:if>
+					
 					<div class='part-title larger-text'>
 						<c:if test="${((results[assessment.id].finishedHandMarking) and (closedAssessment or empty assessment.secretUnitTests)) and results[assessment.id].percentage >= 0.75}">
 							<div class='star-medal'>
@@ -97,6 +131,23 @@ either expressed or implied, of the PASTA Project.
 							</div>
 						</c:if>
 						<a href="../info/${assessment.id}/">${assessment.name}</a>
+						
+						<div class='button-panel'>
+							<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
+								<button class='openRating flat hbn-button' assessment='${assessment.id}' data-hbn-icon='fa-star-half-o' data-autoclick='${!rated}'>Rate assessment</button>
+							</c:if>
+							<c:if test="${assessment.groupWork && empty viewedUser}">
+								<button class='flat hbn-button' data-hbn-icon='fa-users' onclick="location.href='../groups/${assessment.id}/'">Group management</button>
+							</c:if>
+							<c:if test="${ not empty viewedUser}">
+								<!-- tutor is viewing a user and they may give out an extension -->
+								<button class='flat hbn-button' data-hbn-icon='fa-calendar-plus-o' onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
+							</c:if>
+							<button class='flat hbn-button' data-hbn-icon='fa-info' onclick="location.href='../info/${assessment.id}/'">Details</button>
+							<c:if test="${user.tutor or not closedAssessment}">
+								<button class='hbn-button' data-hbn-icon='fa-upload' onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
+							</c:if>
+						</div>
 					</div>
 					
 					<div class='clearfix vertical'>
@@ -158,59 +209,12 @@ either expressed or implied, of the PASTA Project.
 								</div>
 							</div>
 						</div>
-						<c:if test="${empty viewedUser && results[assessment.id].submissionsMadeThatCount > 0}">
-							<div class='horizontal-block float-right'>
-								<form:form commandName="ratingForm" assessment='${assessment.id}' cssClass="ratingForm${assessment.id}" action='../rating/saveRating/${username}/${assessment.id}/'>
-									<form:hidden path="comment" value="${ratingForms[assessment.id].comment}" />
-									<c:set var="rated" value="${ratingForms[assessment.id].rating != 0}" />
-									<div class='vertical'>
-										<div class='ratingVisToggle <c:if test="${!rated}">hidden</c:if>'>
-											<a>Change rating</a>
-										</div>
-										<div class='ratingControls float-container ratingVisToggle <c:if test="${rated}">hidden</c:if>'>
-											<div class='horizontal-block float-left'>
-												<span class='labelEasy'>Easy</span>
-											</div>
-											<div class='ratingDots horizontal-block float-left'>
-												<form:hidden path="rating" value="${ratingForms[assessment.id].rating}" />
-											</div>
-											<div class='horizontal-block float-left'>
-												<span class='labelHard'>Hard</span>
-											</div>
-										</div>
-									</div>
-									<div class='vertical small-gap float-container'>
-										<div class='float-left'><a class='showComments' assessment='${assessment.id}'>More feedback</a></div>
-										<div class='float-right' id='confirmRating'></div>
-									</div>
-									<div id='extraComments${assessment.id}' class='popup'>
-										<p><strong>Tell us what you think about this assessment:</strong><br/>
-										<textarea class="ratingComment">${ratingForms[assessment.id].comment}</textarea><br/>
-										<p><button class='ratingSubmit' assessment='${assessment.id}'>Submit</button>
-									</div>
-								</form:form>
-							</div>
-						</c:if>
 					</div>
 					
 					<div class='vertical'>
 						<tag:unitTestResult results="${results[assessment.id]}" 
 							closedAssessment="${closedAssessment}" summary="true" separateGroup="true"
 							detailsLink="../info/${assessment.id}/"/>
-					</div>
-					
-					<div class='button-panel'>
-						<c:if test="${user.tutor or not closedAssessment}">
-							<button onclick="submitAssessment('${assessment.id}', '${assessment.dueDate}', ${hasGroupWork[assessment.id]}, ${allGroupWork[assessment.id]});">Submit</button>
-						</c:if>
-						<button class='flat' onclick="location.href='../info/${assessment.id}/'">Details</button>
-						<c:if test="${assessment.groupWork && empty viewedUser}">
-							<button class='flat' onclick="location.href='../groups/${assessment.id}/'">Group Details</button>
-						</c:if>
-						<c:if test="${ not empty viewedUser}">
-							<!-- tutor is viewing a user and they may give out an extension -->
-							<button class='flat' onclick="giveExtension('${assessment.id}', '${assessment.simpleDueDate}')">Give extension</button>
-						</c:if>
 					</div>
 				</div>
 			</c:forEach>
@@ -443,6 +447,10 @@ either expressed or implied, of the PASTA Project.
 			beforeSearch : function() {
 				askForRating(true);
 			}
+		});
+		
+		$(".hbn-button").hoverButton({
+			dataKey: "hbn-icon"
 		});
 	});
 </script>

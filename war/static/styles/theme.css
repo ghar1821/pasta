@@ -209,3 +209,7 @@ table.moduleTable tr.selected {
 .submission-progress .ui-progressbar-value {
 	background: #0099fc;
 }
+
+div.rate-assessment {
+	border-color: #DC740E;
+}
