@@ -43,6 +43,7 @@ $('div.submitted-by-panel').on({
 	}
 });
 $('div.submitted-by-panel').each(function() {
+	$(this).css("margin-top", "4px");
 	$(this).css("overflow", "hidden");
 	var $inner = $(this).children().first();
 	$(this).width($(this).width() - $inner.children().last().width());
@@ -109,4 +110,8 @@ $(".modifyCommentsBtn").on("click", function() {
 	});
 	$commentDiv.show();
 	$(this).hide();
+});
+
+$(".hbn-button").hoverButton({
+	dataKey: "hbn-icon"
 });

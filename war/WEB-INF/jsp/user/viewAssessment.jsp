@@ -129,6 +129,27 @@ either expressed or implied, of the PASTA Project.
 			<div class='clearfix section-title'>
 				<h3 class='horizontal-block showHide' showhide='${result.id}'><pasta:readableDate date="${result.submissionDate}" /><c:out value="${lateString[result.id]}"/></h3>
 				
+				<%--Button panel--%>
+				<c:if test="${ user.tutor }" >
+					<div class='button-panel'>
+						<c:set var="pathPrefix" value="../.." />
+						<c:if test="${not empty viewedUser}">
+							<c:set var="pathPrefix" value="../../../.." />
+						</c:if>
+						<c:if test="${not empty result.assessment.handMarking}">
+							<c:set var="markButtonText" value="Mark attempt" />
+							<c:if test="${not empty result.handMarkingResults and result.finishedHandMarking}">
+								<c:set var="markButtonText" value="Edit attempt marks" />
+							</c:if>
+							<button class='flat hbn-button' data-hbn-icon="fa-check" onclick="window.location.href='${pathPrefix}/mark/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
+						</c:if>
+						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
+							<button class='flat hbn-button' data-hbn-icon="fa-refresh" onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
+						</c:if>
+						<button class='flat hbn-button' data-hbn-icon="fa-download" onclick="window.location.href='${pathPrefix}/download/${result.user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
+					</div>
+				</c:if>
+				
 				<%--Group work submission details--%>
 				<c:if test="${groupResult}">
 					<div class='submitted-by-panel float-right'>
@@ -152,32 +173,9 @@ either expressed or implied, of the PASTA Project.
 			</div>
 			
 			<%--Summary of results--%>
-			<div class='part no-line'>
+			<div class='part'>
 				<h3 class='part-title'>Summary</h3>
 				<tag:unitTestResult closedAssessment="${closed}" results="${result}" summary="true" />
-			</div>
-			
-			<%--Button panel--%>
-			<div class='part no-line'>
-				<c:if test="${ user.tutor }" >
-					<div class='button-panel'>
-						<c:set var="pathPrefix" value="../.." />
-						<c:if test="${not empty viewedUser}">
-							<c:set var="pathPrefix" value="../../../.." />
-						</c:if>
-						<c:if test="${not empty result.assessment.handMarking}">
-							<c:set var="markButtonText" value="Mark attempt" />
-							<c:if test="${not empty result.handMarkingResults and result.finishedHandMarking}">
-								<c:set var="markButtonText" value="Edit attempt marks" />
-							</c:if>
-							<button class='flat' onclick="window.location.href='${pathPrefix}/mark/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >${markButtonText}</button>
-						</c:if>
-						<c:if test="${not empty result.assessment.unitTests or not empty result.assessment.secretUnitTests}">
-							<button class='flat' onclick="window.location.href='${pathPrefix}/runAssessment/${effectiveUser.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'">Re-run attempt</button>
-						</c:if>
-						<button class='flat' onclick="window.location.href='${pathPrefix}/download/${result.user.username}/${result.assessment.id}/${result.formattedSubmissionDate}/'" >Download attempt</button>
-					</div>
-				</c:if>
 			</div>
 			
 			<%--Details of results--%>

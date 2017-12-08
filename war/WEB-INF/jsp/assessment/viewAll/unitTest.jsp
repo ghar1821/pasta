@@ -58,11 +58,9 @@ either expressed or implied, of the PASTA Project.
 				</span>
 			</div>
 			<div class='button-panel'>
-				<button class='flat' onclick='location.href="./${unitTest.id}/"'>Details</button>
+				<button class='flat hbn-button' data-hbn-icon="fa-info" onclick='location.href="./${unitTest.id}/"'>Details</button>
 				<c:if test="${user.instructor}">
-					<button class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
-					<button style="display:none;" onclick="location.href='./delete/${unitTest.id}/'" 
-						onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
+					<button class='flat hbn-button hbn-confirm' data-hbn-icon="fa-trash" onclick="location.href='./delete/${unitTest.id}/'">Delete</button>
 				</c:if>
 			</div>
 		</div>
@@ -111,4 +109,8 @@ either expressed or implied, of the PASTA Project.
 	$(".unitTest").searchNode();
 	$(".unitTest").find(".testName").searchable();
 	var searchBox = $("#search").searchBox();
+	
+	$(".hbn-button").hoverButton({
+		dataKey: "hbn-icon"
+	});
 </script>

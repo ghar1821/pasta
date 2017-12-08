@@ -45,11 +45,9 @@ either expressed or implied, of the PASTA Project.
 		<div class='part row handMarking'>
 			<div class='hmName larger-text'>${handMarking.name}</div>
 			<div class='button-panel'>
-				<button class='flat' onclick="location.href='./${handMarking.id}/'">Details</button>
+				<button class='flat hbn-button' data-hbn-icon="fa-info" onclick="location.href='./${handMarking.id}/'">Details</button>
 				<c:if test="${user.instructor}">
-					<button class='flat' onclick="$(this).toggle().next().toggle()">Delete</button>
-					<button style="display:none" onclick="location.href='./delete/${handMarking.id}/'" 
-						onmouseout="$(this).toggle().prev().toggle();">Confirm</button>
+					<button class='flat hbn-button hbn-confirm' data-hbn-icon="fa-trash" onclick="location.href='./delete/${handMarking.id}/'">Delete</button>
 				</c:if>
 			</div>
 		</div>
@@ -104,5 +102,9 @@ either expressed or implied, of the PASTA Project.
 		$(".handMarking").searchNode();
 		$(".handMarking").find(".hmName").searchable();
 		var searchBox = $("#search").searchBox();
+		
+		$(".hbn-button").hoverButton({
+			dataKey: "hbn-icon"
+		});
 	});
 </script>

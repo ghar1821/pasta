@@ -105,11 +105,17 @@ button.floating.plus {
 	margin-left: 0.4em;
 }
 
-.part-title > .button-panel {
-	margin: 0;
-	padding: 0;
+.part-title > .button-panel,
+.section-title > .button-panel {
 	display: inline-block;
 	float: right;
+	padding: 0;
+}
+.part-title > .button-panel {
+	margin: 0;
+}
+.section-title > .button-panel {
+	margin: 0 1em;
 }
 
 .clearfix:after {
@@ -176,7 +182,7 @@ div.part.no-line + div.part.no-line {
 .part.row {
 	display: flex;
 	align-items: center;
-	padding: 0.7em;
+	padding: 0.3em 0.8em;
 }
 
 .ip-item:not(:first-child) {
