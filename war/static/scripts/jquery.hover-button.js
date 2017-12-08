@@ -61,6 +61,43 @@
 				} else {
 					wide();
 				}
+				
+				if(container.is(".hbn-confirm")) {
+					if(container[0].onclick) {
+						container.data("oClickFunction", container[0].onclick);
+						container[0].onclick = null;
+					}
+					var text = container.find(".hbn-text");
+					container.on("click", function(e) {
+						if($(this).data("confirm")) {
+							var oFunc = container.data("oClickFunction");
+							if(container.data("oClickFunction")) {
+								oFunc.call(container[0], e);
+							}
+							return true;
+						} else {
+							$(this).data("confirm", true);
+							text.data("oText", text.text());
+							text.text("Sure?");
+							var classes = "";
+							if($(this).is(".flat")) {
+								classes += "flat "
+							}
+							if($(this).is(".secondary")) {
+								classes += "secondary "
+							}
+							$(this).data("oClasses", classes);
+							$(this).removeClass(classes);
+							e.preventDefault();
+							return false;
+						}
+					});
+					container.on("mouseleave", function() {
+						$(this).data("confirm", false);
+						text.text(text.data("oText"));
+						$(this).addClass($(this).data("oClasses"));
+					});
+				}
 			}
 			
 			// Wait until font awesome has added the "fa-events-icons-ready" class 
