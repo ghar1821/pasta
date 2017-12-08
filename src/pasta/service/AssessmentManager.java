@@ -54,6 +54,7 @@ import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.AssessmentDAO;
+import pasta.repository.HandMarkingDAO;
 import pasta.repository.UnitTestDAO;
 import pasta.util.ProjectProperties;
 
@@ -74,7 +75,7 @@ import pasta.util.ProjectProperties;
 @Repository
 public class AssessmentManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
+	@Autowired private AssessmentDAO assDao;
 	
 	@Autowired
 	private ResultManager resultManager;
@@ -89,6 +90,8 @@ public class AssessmentManager {
 	
 	@Autowired
 	private UnitTestDAO unitTestDAO;
+	@Autowired
+	private HandMarkingDAO handMarkingDAO;
 	
 
 	// Validator for the submission
@@ -135,15 +138,6 @@ public class AssessmentManager {
 	 * @param assessmentId the id of the assessment
 	 */
 	public boolean removeAssessment(long assessmentId) {
-		if(releaseManager.isAssessmentLinked(assessmentId)) {
-			//TODO explain to user that you can't delete an assessment that is used in a release rule
-			return false;
-		}
-		groupManager.deleteAllAssessmentGroups(assessmentId);
-		ratingManager.deleteAllRatingsForAssessment(assessmentId);
-		resultManager.deleteAllResultsForAssessment(assessmentId);
-		userManager.deleteAllExtensionsForAssessment(assessmentId);
-		
 		assDao.removeAssessment(assessmentId);
 		return true;
 	}
@@ -188,7 +182,7 @@ public class AssessmentManager {
 		assessment.setNumSubmissionsAllowed(form.getMaxSubmissions());
 		assessment.setDueDate(form.getDueDate());
 		
-		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+		assDao.saveOrUpdate(assessment);
 		return assessment;
 	}
 	
@@ -217,6 +211,29 @@ public class AssessmentManager {
 		assessment.setGroupSize(form.getGroupSize());
 		assessment.setStudentsManageGroups(form.isStudentsManageGroups());
 		
+		// Update weighted unit test details
+		for (WeightedUnitTest test : assessment.getAllUnitTests()) {
+			for (WeightedUnitTest formTest : form.getSelectedUnitTests()) {
+				if(formTest.getId() == test.getId()) {
+					test.setGroupWork(formTest.isGroupWork());
+					test.setSecret(formTest.isSecret());
+					test.setWeight(formTest.getWeight());
+					break;
+				}
+			}
+		}
+		
+		// Update weighted hand marking details
+		for (WeightedHandMarking hm : assessment.getHandMarking()) {
+			for (WeightedHandMarking formHm : form.getSelectedHandMarking()) {
+				if(formHm.getId() == hm.getId()) {
+					hm.setGroupWork(formHm.isGroupWork());
+					hm.setWeight(formHm.getWeight());
+					break;
+				}
+			}
+		}
+		
 		// unlink any unnecessary unit tests
 		{
 			Collection<WeightedUnitTest> toRemove = CollectionUtils.subtract(assessment.getAllUnitTests(), form.getSelectedUnitTests());
@@ -241,8 +258,7 @@ public class AssessmentManager {
 	
 		// link weighted hand marking to hand marking template and assessment
 		for (WeightedHandMarking handMarking : assessment.getHandMarking()) {
-			HandMarking realTemplate = ProjectProperties.getInstance().getHandMarkingDAO()
-					.getHandMarking(handMarking.getHandMarking().getId());
+			HandMarking realTemplate = handMarkingDAO.getHandMarking(handMarking.getHandMarking().getId());
 			handMarking.setHandMarking(realTemplate);
 			handMarking.setAssessment(assessment);
 		}
@@ -264,7 +280,7 @@ public class AssessmentManager {
 			}
 		}
 		
-		ProjectProperties.getInstance().getAssessmentDAO().saveOrUpdate(assessment);
+		assDao.merge(assessment);
 	}
 
 	public boolean hasGroupWork(Assessment assessment) {

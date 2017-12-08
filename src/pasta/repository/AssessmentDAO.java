@@ -36,10 +36,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
+import org.hibernate.internal.util.SerializationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
@@ -53,7 +51,6 @@ import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
-import pasta.util.ProjectProperties;
 
 /**
  * Data Access Object for Assessments.
@@ -73,12 +70,12 @@ import pasta.util.ProjectProperties;
 @Transactional
 @Repository("assessmentDAO")
 @DependsOn("projectProperties")
-public class AssessmentDAO {
-
-	protected final Log logger = LogFactory.getLog(getClass());
+public class AssessmentDAO extends BaseDAO {
 
 	@Autowired
-	private SessionFactory sessionFactory;
+	private HandMarkingDAO handMarkingDAO;
+	@Autowired
+	private UnitTestDAO unitTestDAO;
 	
 	public AssessmentDAO() {
 	}
@@ -100,7 +97,7 @@ public class AssessmentDAO {
 	}
 
 	public Collection<HandMarking> getHandMarkingList() {
-		return ProjectProperties.getInstance().getHandMarkingDAO().getAllHandMarkings();
+		return handMarkingDAO.getAllHandMarkings();
 	}
 
 	public Collection<Assessment> getAssessmentList() {
@@ -165,7 +162,7 @@ public class AssessmentDAO {
 	 * @param newHandMarking the new hand marking template
 	 */
 	public void updateHandMarking(HandMarking newHandMarking) {
-		ProjectProperties.getInstance().getHandMarkingDAO().saveOrUpdate(newHandMarking);
+		saveOrUpdate(newHandMarking);
 	}
 
 	/**
@@ -207,20 +204,77 @@ public class AssessmentDAO {
 		updateHandMarking(newMarking);
 	}
 	
-	public void delete(Assessment assessment) {
-		try {
-			sessionFactory.getCurrentSession().delete(assessment);
-			logger.info("Deleted assessment " + assessment.getName());
-		} catch (Exception e) {
-			logger.error("Could not delete assessment " + assessment.getName(), e);
-		}
+	public void merge(Assessment assessment) {
+		sessionFactory.getCurrentSession().merge(assessment);
 	}
 	
 	public void saveOrUpdate(Assessment assessment) {
-		long id = assessment.getId();
+		Long id = assessment.getId();
 		sessionFactory.getCurrentSession().saveOrUpdate(assessment);
 		logger.info((id == assessment.getId() ? "Updated" : "Created") +
 				" assessment " + assessment.getName());
+	}
+	
+	public void deepSaveOrUpdate(Assessment assessment) {
+		for(WeightedHandMarking hm : assessment.getHandMarking()) {
+			if(hm.getHandMarking() != null) {
+				handMarkingDAO.saveOrUpdate(hm.getHandMarking());
+			}
+		}
+		
+		for(WeightedUnitTest ut : assessment.getAllUnitTests()) {
+			if(ut.getTest() != null) {
+				unitTestDAO.saveOrUpdate(ut.getTest());
+			}
+		}
+		
+		saveOrUpdate(assessment);
+	}
+	
+	private String ts(Object o) {
+		return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+	}
+	
+	public void saveArchivedItem(Assessment assessment) {
+		
+//		UnitTest ut = assessment.getAllUnitTests().iterator().next().getTest();
+//		UnitTest clone = (UnitTest) SerializationHelper.clone(ut);
+//		clone.setId(null);
+//		clone.getBlackBoxOptions().setId(null);
+//		for(BlackBoxTestCase tc : clone.getTestCases()) {
+//			tc.setId(null);
+//		}
+//		clone.setName(clone.getName() + " (copy)");
+//		sessionFactory.getCurrentSession().persist(clone);
+		
+		
+		Assessment clone = (Assessment) SerializationHelper.clone(assessment);
+		clone.setName(clone.getName() + " (copy)");
+		clone.setId(null);
+		
+//		clone.setUnitTests(new LinkedList<WeightedUnitTest>());
+//		clone.setHandMarking(new LinkedList<WeightedHandMarking>());
+//		sessionFactory.getCurrentSession().evict(clone);
+//		logger.info("cache mode:" + sessionFactory.getCurrentSession().getIdentifier(clone));
+		
+		logger.info("Saving new archive assessment with ID " + clone.getId());
+		logger.info("Assessment to be saved: " + ts(clone));
+		logger.info("Assessment unit tests to be saved: " + clone.getAllUnitTests().size());
+		Set<WeightedUnitTest> allUnitTests = clone.getAllUnitTests();
+		for(WeightedUnitTest comp : allUnitTests) {
+			comp.setId(null);
+			logger.info("Unit test " + comp.getId() + " assessment to be saved: " + ts(comp.getAssessment()));
+		}
+		clone.setUnitTests(allUnitTests);
+		Set<WeightedHandMarking> handMarking = clone.getHandMarking();
+		for(WeightedHandMarking comp : handMarking) {
+			comp.setId(null);
+			logger.info("Hand marking " + comp.getId() + " assessment to be saved: " + ts(comp.getAssessment()));
+		}
+		clone.setHandMarking(handMarking);
+		clone.getReleaseRule().setId(null);
+		sessionFactory.getCurrentSession().save(clone);
+//		sessionFactory.getCurrentSession().update(assessment);
 	}
 	
 	@SuppressWarnings("unchecked")

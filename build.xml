@@ -161,7 +161,7 @@
 		<delete failonerror="false" dir="${deploy.path}/${name}/WEB-INF/classes/"/>
 		<delete failonerror="false">
 		    <fileset dir="${build.dir}" includes="**/*.class"/>
-			<fileset dir="${build.dir}" includes="**/*.xml"/>
+			<fileset dir="${build.dir}" includes="**/*.xml" excludes="**/applicationContext*.xml"/>
 			<fileset dir="${build.dir}" includes="**/*.jsp"/>
 		</delete>
 	</target>
@@ -170,7 +170,7 @@
 		<delete failonerror="false" dir="${deploy.path}/${name}"/>
 		<delete failonerror="false">
 		    <fileset dir="${build.dir}" includes="**/*.class"/>
-			<fileset dir="${build.dir}" includes="**/*.xml"/>
+			<fileset dir="${build.dir}" includes="**/*.xml" excludes="**/applicationContext*.xml"/>
 			<fileset dir="${build.dir}" includes="**/*.jsp"/>
 		  </delete>
 	</target>

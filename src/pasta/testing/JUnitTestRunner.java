@@ -22,7 +22,7 @@ public class JUnitTestRunner extends Runner {
 	}
 	
 	private void init() {
-		setMaxRunTime(60000);
+		setMaxRunTime(10000L);
 		addOption("testOutputFile", "result");
 		addOption("testName", "TestName");
 		addOption("filterStackTraces", "yes");
@@ -30,9 +30,9 @@ public class JUnitTestRunner extends Runner {
 		addOption("javacPath", WhichProgram.getInstance().path("javac"));
 	}
 	
-	public void setMaxRunTime(long milliseconds) {
-		if(milliseconds >= 0) {
-			addOption("maxTimeAllowed", String.valueOf(milliseconds));
+	public void setMaxRunTime(Long milliseconds) {
+		if(milliseconds != null && milliseconds >= 0) {
+			addOption("advancedTimeout", String.valueOf(milliseconds));
 		}
 	}
 	

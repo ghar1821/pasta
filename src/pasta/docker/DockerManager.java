@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,9 +15,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -40,11 +39,10 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 
 import pasta.util.Copy;
 import pasta.util.PASTAUtil;
+import pasta.util.ProjectProperties;
 import pasta.util.WhichProgram;
 import pasta.util.io.DualByteArrayOutputStream;
 
-@Service("dockerManager")
-@DependsOn("languageManager")
 public class DockerManager {
 	
 	protected static Logger logger = Logger.getLogger(DockerManager.class);
@@ -169,11 +167,14 @@ public class DockerManager {
 		File baseDir = buildFile.getFile().getParentFile();
 
 		BuildImageResultCallback callback = new BuildImageResultCallback() {
-		    @Override
-		    public void onNext(BuildResponseItem item) {
-		       logger.debug(StringUtils.stripEnd(item.getStream(), "\n"));
-		       super.onNext(item);
-		    }
+			@Override
+			public void onNext(BuildResponseItem item) {
+				String content = StringUtils.stripEnd(item.getStream(), "\n");
+				if (content != null && !content.isEmpty()) {
+					logger.debug(content);
+				}
+				super.onNext(item);
+			}
 		};
 
 		try {
@@ -183,8 +184,10 @@ public class DockerManager {
 				Copy.copy(bin.toPath(), baseDir.toPath());
 			} catch (IOException e) {}
 			
+			Set<String> tags = new HashSet<>();
+			tags.add(buildFile.getTag());
 			String id = dockerClient.buildImageCmd(baseDir)
-				.withTag(buildFile.getTag())
+				.withTags(tags)
 				.withBuildArg("workDir", DockerManager.WORK_DIR)
 				.withBuildArg("binDir", DockerManager.PASTA_BIN)
 				.exec(callback)
@@ -195,6 +198,18 @@ public class DockerManager {
 			buildFile.registerFailure();
 			logger.error("Error building image " + buildFile.getTag(), e);
 		}
+	}
+	
+	private String toHostPath(String dockerPath) {
+		String dockerBase = ProjectProperties.getInstance().getProjectLocation();
+		String hostBase = ProjectProperties.getInstance().getHostLocation();
+		if(dockerBase.endsWith("/")) {
+			dockerBase = dockerBase.substring(0, dockerBase.length() - 1);
+		}
+		if(hostBase.endsWith("/")) {
+			hostBase = hostBase.substring(0, hostBase.length() - 1);
+		}
+		return dockerPath.replaceFirst(dockerBase, hostBase);
 	}
 	
 	//docker run -td --name java -v $(pwd)/src:/pasta/src/ -v $(pwd)/out:/pasta/out/ -v /home/pasta/content/lib/:/pasta/lib java
@@ -210,9 +225,14 @@ public class DockerManager {
 		labels.put("image", container.getImageName());
 		
 		List<Bind> binds = new LinkedList<>();
-		binds.add(new Bind(container.getSrcLoc().getAbsolutePath(), new Volume(PASTA_SRC + "/")));
-		binds.add(new Bind(container.getOutLoc().getAbsolutePath(), new Volume(PASTA_OUT + "/")));
-		binds.add(new Bind(libDir, new Volume(PASTA_LIB + "/")));
+		
+		String hostSrc = toHostPath(container.getSrcLoc().getAbsolutePath());
+		String hostOut = toHostPath(container.getOutLoc().getAbsolutePath());
+		String hostLib = toHostPath(libDir);
+		
+		binds.add(new Bind(hostSrc, new Volume(PASTA_SRC + "/")));
+		binds.add(new Bind(hostOut, new Volume(PASTA_OUT + "/")));
+		binds.add(new Bind(hostLib, new Volume(PASTA_LIB + "/")));
 		
 		if(container.getLanguage().getId().equals("matlab")) {
 			binds.add(new Bind(WhichProgram.getInstance().path("matlab.install"), new Volume(PASTA_BIN + "/MATLAB/")));
@@ -251,8 +271,12 @@ public class DockerManager {
 		}
 	}
 	
-	public CommandResult runCommand(ExecutionContainer container, String... command) {
-		ExecCreateCmdResponse cmd = dockerClient.execCreateCmd(container.getId())
+	public CombinedCommandResult runCommand(ExecutionContainer container, String... command) {
+		return runCommand(container.getId(), container.getLabel(), command);
+	}
+	
+	public CombinedCommandResult runCommand(String containerId, String containerLabel, String... command) {
+		ExecCreateCmdResponse cmd = dockerClient.execCreateCmd(containerId)
 				.withCmd(command)
 				.withAttachStdout(true)
 				.withAttachStderr(true)
@@ -264,17 +288,17 @@ public class DockerManager {
 				DualByteArrayOutputStream streams = new DualByteArrayOutputStream();
 			) {
 			ExecStartResultCallback callback = new ExecStartResultCallback(streams.getOutputStream(), streams.getErrorStream());
-			logger.trace("Start running command " + Arrays.toString(command) + " on " + container.getLabel());
+			logger.trace("Start running command " + Arrays.toString(command) + " on " + containerLabel);
 			dockerClient
 					.execStartCmd(execId)
 					.exec(callback)
 					.awaitCompletion();
-			logger.trace("Finished running command " + Arrays.toString(command) + " on " + container.getLabel());
+			logger.trace("Finished running command " + Arrays.toString(command) + " on " + containerLabel);
 			streams.flush();
 			String combinedStr = streams.toString(StandardCharsets.UTF_8.name());
 			String outStr = streams.getOutputStream().toString(StandardCharsets.UTF_8.name());
 			String errStr = streams.getErrorStream().toString(StandardCharsets.UTF_8.name());
-			return new CommandResult(combinedStr, outStr, errStr);
+			return new CombinedCommandResult(combinedStr, outStr, errStr);
 		} catch (InterruptedException e) {
 			logger.error("Error waiting for command to run.", e);
 		} catch (IOException e) {
@@ -284,7 +308,7 @@ public class DockerManager {
 		return null;
 	}
 	
-	public CommandResult runAntTarget(ExecutionContainer container, String target) {
+	public CombinedCommandResult runAntTarget(ExecutionContainer container, String target) {
 		return runCommand(container, "ant", "-v", "-f", "build.xml", target);
 	}
 	
@@ -325,5 +349,23 @@ public class DockerManager {
 			}
 		}
 		return eps;
+	}
+	
+	public CommandResult executeDatabaseDump(List<String> command) {
+		List<Container> containers = dockerClient.listContainersCmd().withLabelFilter("pasta", "mysql").exec();
+		if(containers.size() == 0) {
+			throw new IllegalStateException("No Docker container running PASTA's MySQL found.");
+		}
+		
+		Container container = containers.get(0);
+		if(containers.size() > 1) {
+			logger.warn("Found more than one container for running mysqldump. Executing on first one: " + container.getId());
+		}
+		
+		String[] commandArray = command.toArray(new String[command.size()]);
+		CombinedCommandResult runCommand = runCommand(container.getId(), container.getNames()[0], commandArray);
+		logger.info("OUTPUT:" + runCommand.getOutput());
+		logger.info("ERROR:" + runCommand.getError());
+		return runCommand;
 	}
 }

@@ -1,24 +1,21 @@
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+
 @Entity
 @Table (name = "hand_marking_data")
-public class HandMarkData implements Serializable, Comparable<HandMarkData> {
+@VerboseName(value = "hand-marking datum", plural = "hand-marking data")
+public class HandMarkData extends BaseEntity implements Comparable<HandMarkData> {
 
 	private static final long serialVersionUID = -9016810010400907861L;
-	
-	@Id
-	@GeneratedValue
-	private long id;
 	
 	@OneToOne
     @JoinColumn (name = "column_id")
@@ -30,6 +27,10 @@ public class HandMarkData implements Serializable, Comparable<HandMarkData> {
 	
 	@Column (length = 4096)
 	private String data;
+	
+	@ManyToOne
+	@JoinColumn(name="hand_marking_id", nullable = true)
+	private HandMarking handMarking;
 
 	public HandMarkData() {
 	}
@@ -41,13 +42,6 @@ public class HandMarkData implements Serializable, Comparable<HandMarkData> {
 		this.data = data;
 	}
 	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public WeightedField getColumn() {
 		return column;
 	}
@@ -68,6 +62,13 @@ public class HandMarkData implements Serializable, Comparable<HandMarkData> {
 	public void setData(String data) {
 		this.data = data;
 	}
+	
+	public HandMarking getHandMarking() {
+		return handMarking;
+	}
+	public void setHandMarking(HandMarking handMarking) {
+		this.handMarking = handMarking;
+	}
 
 	@Override
 	public int compareTo(HandMarkData other) {
@@ -83,30 +84,7 @@ public class HandMarkData implements Serializable, Comparable<HandMarkData> {
 	}
 	
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		HandMarkData other = (HandMarkData) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
-
-	@Override
 	public String toString() {
-		return "{" + this.id + ": " + (this.column == null ? "null" : this.column.getId()) + ", " + (this.row == null ? "null" : this.row.getId()) + ", " + this.data + "}";
+		return "{" + this.getId() + ": " + (this.column == null ? "null" : this.column.getId()) + ", " + (this.row == null ? "null" : this.row.getId()) + ", " + this.data + "}";
 	}
-	
 }

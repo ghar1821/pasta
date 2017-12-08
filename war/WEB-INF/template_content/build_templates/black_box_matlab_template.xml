@@ -120,8 +120,19 @@
 	</target>
 
 	<target name="run" depends="init">
-		<echo message="Executing '${testName}'"/>
-		<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
+    	<parallel threadCount="1" timeout="${blackBoxTimeout}">
+			<sequential>
+				<echo message="Executing '${testName}'"/>
+		    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
+			</sequential>
+		</parallel>
+		<mkdir dir="${outDirectory}/${carryDir}"/>
+		<copy todir="${outDirectory}/${carryDir}/${bbuseroutfile}">
+			<fileset dir="${binDir}/${bbuseroutfile}" />
+		</copy>
+		<copy todir="${outDirectory}/${carryDir}/${bbmetafile}">
+			<fileset dir="${binDir}/${bbmetafile}" />
+		</copy>
 	</target>
 	<target name="doTest">
 		<script language="javascript">
@@ -178,7 +189,7 @@
 			<delete file="${binDir}/${bbuseroutfile}/${bbTestName}"/>
 			<touch file="${binDir}/${bbuseroutfile}/${bbTestName}"/>
 		</else></if>
-		
+		<touch file="${binDir}/${bbmetafile}/${bbTestName}.executed"/>
 	</target>
 
 	<target name="test" depends="init">
@@ -187,7 +198,7 @@
 			jvm="${javaPath}"
             filtertrace="${filterStackTraces}"
             fork="yes"
-            timeout="${maxtimeallowed}"
+			timeout="${advancedTimeout}" 
             dir="${binDir}">
 			<formatter type="xml" />
 			<test name="${testName}" outfile="${testOutputFile}" />

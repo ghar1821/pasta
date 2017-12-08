@@ -29,16 +29,20 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+import pasta.domain.result.UnitTestResult;
 
 /**
  * Container class for a weighted unit test.
@@ -57,14 +61,11 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name = "weighted_unit_tests")
-public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTest> {
+@VerboseName("weighted unit test module")
+public class WeightedUnitTest extends BaseEntity implements Comparable<WeightedUnitTest> {
 	
 	private static final long serialVersionUID = 2594905907808283182L;
 
-	@Id
-	@GeneratedValue
-	private long id;
-	
 	private double weight;
 	
 	private boolean secret;
@@ -76,20 +77,14 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 	@JoinColumn(name = "unit_test_id")
 	private UnitTest test;
 	
-	@ManyToOne (cascade = CascadeType.ALL)
+	@ManyToOne
+	@JoinColumn(name = "assessment_id")
 	private Assessment assessment;
 	
 	public WeightedUnitTest() {
 		setWeight(0);
 		setSecret(false);
 		setGroupWork(false);
-	}
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
 	}
 	
 	public double getWeight() {
@@ -155,49 +150,27 @@ public class WeightedUnitTest implements Serializable, Comparable<WeightedUnitTe
 		if(diff != 0) {
 			return diff;
 		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+		if(this.getId() == null) {
+			return other.getId() == null ? 0 : -1;
+		}
+		if(other.getId() == null) {
+			return 1;
+		}
+		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
 	
 	@Override
 	public String toString() {
 		return  "{ID:" + this.getId() + " for " + (this.test == null ? "null" : this.test.getId()) + (secret ? " (secret)" : "") + "}";
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + (int) (id ^ (id >>> 32));
-		result = prime * result + (secret ? 1231 : 1237);
-		result = prime * result + ((test == null) ? 0 : test.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(weight);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedUnitTest other = (WeightedUnitTest) obj;
-		if (groupWork != other.groupWork)
-			return false;
-		if (id != other.id)
-			return false;
-		if (secret != other.secret)
-			return false;
-		if (test == null) {
-			if (other.test != null)
-				return false;
-		} else if (!test.equals(other.test))
-			return false;
-		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
-			return false;
-		return true;
-	}
+
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "weightedUnitTest", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<UnitTestResult> unitTestResults;
 }

@@ -29,7 +29,6 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,8 +36,7 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
@@ -48,6 +46,9 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * Container class for the hand marking assessment module.
@@ -75,39 +76,44 @@ import org.hibernate.annotations.LazyCollectionOption;
  */
 @Entity
 @Table (name = "hand_markings")
-public class HandMarking implements Serializable, Comparable<HandMarking> {
+@VerboseName("hand marking module")
+public class HandMarking extends BaseEntity implements Comparable<HandMarking> {
 
 	private static final long serialVersionUID = 5276980986516750657L;
-
-	@Id
-	@GeneratedValue 
-	private long id;
 	
 	private String name;
 	
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable(name="hand_marking_columns",
-			joinColumns=@JoinColumn(name = "hand_marking_id"),
-			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
+	@OneToMany(
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true
+	)
     @OrderBy("weight")
+	@JoinTable(name="hand_marking_columns", 
+		joinColumns=@JoinColumn(name="hand_marking_id"), 
+		inverseJoinColumns=@JoinColumn(name="weighted_field_id")
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<WeightedField> columnHeader = new ArrayList<WeightedField>();
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable(name="hand_marking_rows",
-			joinColumns=@JoinColumn(name = "hand_marking_id"),
-			inverseJoinColumns=@JoinColumn(name = "weighted_field_id"))
-    @OrderColumn(name = "row_index")
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<WeightedField> rowHeader = new ArrayList<WeightedField>();
-	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable (name="hand_marking_data_joins", 
-		joinColumns=@JoinColumn(name = "hand_marking_id"),
-		inverseJoinColumns=@JoinColumn(name = "hand_marking_data_id"))
+	@OneToMany(
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true,
+			mappedBy = "handMarking"
+			)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<HandMarkData> data = new ArrayList<HandMarkData>();
 	
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			orphanRemoval = true
+	)
+	@JoinTable(name="hand_marking_rows", 
+		joinColumns=@JoinColumn(name="hand_marking_id"), 
+		inverseJoinColumns=@JoinColumn(name="weighted_field_id")
+	)
+    @OrderColumn(name = "row_index")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<WeightedField> rowHeader = new ArrayList<WeightedField>();
 	
 	public String getName() {
 		return name;
@@ -126,8 +132,8 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	}
 	
 	public void setColumnHeader(List<WeightedField> columnHeader) {
-		this.columnHeader.clear();
-		this.columnHeader.addAll(columnHeader);
+		removeAllColumns();
+		addColumns(columnHeader);
 	}
 
 	public List<WeightedField> getRowHeader() {
@@ -135,8 +141,8 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	}
 
 	public void setRowHeader(List<WeightedField> rowHeader) {
-		this.rowHeader.clear();
-		this.rowHeader.addAll(rowHeader);
+		removeAllRows();
+		addRows(rowHeader);
 	}
 
 	public List<HandMarkData> getData() {
@@ -186,24 +192,23 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 		return col == null ? 0 : col.getWeight();
 	}
 
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public void addData(HandMarkData handMarkData) {
 		getData().add(handMarkData);
+		handMarkData.setHandMarking(this);
 	}
 	
 	public void addData(Collection<HandMarkData> handMarkData) {
-		getData().addAll(handMarkData);
+		for(HandMarkData datum : handMarkData) {
+			addData(datum);
+		}
 	}
 	
 	public boolean removeData(HandMarkData handMarkData) {
-		return getData().remove(handMarkData);
+		boolean removed = getData().remove(handMarkData);
+		if(removed) {
+			handMarkData.setHandMarking(null);
+		}
+		return removed;
 	}
 	
 	public boolean removeData(Collection<HandMarkData> handMarkData) {
@@ -215,7 +220,18 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	}
 	
 	public void removeAllData() {
+		for(HandMarkData datum : getData()) {
+			datum.setHandMarking(null);
+		}
 		getData().clear();
+	}
+	
+	public void removeAllRows() {
+		getRowHeader().clear();
+	}
+	
+	public void removeAllColumns() {
+		getColumnHeader().clear();
 	}
 
 	public void addColumn(WeightedField column) {
@@ -231,7 +247,7 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	public boolean removeColumn(WeightedField column) {
 		List<HandMarkData> toRemove = new LinkedList<>();
 		for(HandMarkData data : getData()) {
-			if(data.getColumn() == column) {
+			if(data.getColumn().equals(column)) {
 				toRemove.add(data);
 			}
 		}
@@ -263,7 +279,7 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	public boolean removeRow(WeightedField row) {
 		List<HandMarkData> toRemove = new LinkedList<>();
 		for(HandMarkData data : getData()) {
-			if(data.getRow() == row) {
+			if(data.getRow().equals(row)) {
 				toRemove.add(data);
 			}
 		}
@@ -286,26 +302,14 @@ public class HandMarking implements Serializable, Comparable<HandMarking> {
 	public int compareTo(HandMarking other) {
 		return this.name.compareTo(other.name);
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		HandMarking other = (HandMarking) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "handMarking", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<WeightedHandMarking> weightedHandMarkings;
 }

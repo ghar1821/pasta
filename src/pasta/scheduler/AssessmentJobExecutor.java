@@ -13,13 +13,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import pasta.repository.ResultDAO;
 import pasta.service.ExecutionManager;
-import pasta.util.ProjectProperties;
 
 public class AssessmentJobExecutor extends ThreadPoolExecutor {
 
 	protected Logger logger = Logger.getLogger(getClass());
 	
+	@Autowired private ResultDAO resultDAO;
 	@Autowired private ExecutionScheduler scheduler;
 	@Autowired protected ExecutionManager executionManager;
 
@@ -74,7 +75,7 @@ public class AssessmentJobExecutor extends ThreadPoolExecutor {
 		}
 		task.job.getResults().setWaitingToRun(false);
 		try {
-			ProjectProperties.getInstance().getResultDAO().update(task.job.getResults());
+			resultDAO.update(task.job.getResults());
 		} catch(Exception e) {
 			logger.error("Unable to update results from assessment job #" + task.job.getId(), e);
 		}

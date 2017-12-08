@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,6 +17,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.usertype.UserType;
 
+import pasta.service.PASTAOptions;
 import pasta.testing.BlackBoxTestRunner;
 import pasta.util.PASTAUtil;
 
@@ -23,14 +25,9 @@ public class Language implements UserType, Comparable<Language> {
 	protected static Logger logger = Logger.getLogger(Language.class);
 	
 	private String id;
-	private String name;
-	private List<String> extensions;
 	private File templateFile;
 	private File dockerFile;
 	private Class<? extends BlackBoxTestRunner> runnerClass;
-	
-	private long testCaseExecutionOverhead;
-	private long testSuiteExecutionOverhead;
 	
 	private DockerBuildFile dockerBuildFile;
 	
@@ -38,10 +35,8 @@ public class Language implements UserType, Comparable<Language> {
 	public Language() {}
 	
 	@SuppressWarnings("unchecked")
-	public Language(String id, String name, String extensions, String templateFile, String dockerFile, String runnerClass, String testSuiteOverhead, String testCaseOverhead) {
+	public Language(String id, String templateFile, String dockerFile, String runnerClass) {
 		this.id = id;
-		this.name = name;
-		this.extensions = Arrays.asList(extensions.split(","));
 		try {
 			this.templateFile = PASTAUtil.getTemplateResource("build_templates/" + templateFile);
 		} catch (FileNotFoundException e) {
@@ -56,21 +51,7 @@ public class Language implements UserType, Comparable<Language> {
 		try {
 			this.runnerClass = (Class<? extends BlackBoxTestRunner>) Class.forName(runnerClass);
 		} catch (ClassNotFoundException e) {
-			logger.error("Class not found: " + runnerClass + " for " + name, e);
-		}
-		if(testSuiteOverhead != null && !testSuiteOverhead.isEmpty()) {
-			try {
-				this.testSuiteExecutionOverhead = Long.parseLong(testSuiteOverhead);
-			} catch(NumberFormatException e) {
-				logger.warn("\"" + testSuiteOverhead + "\" is not a valid value for test-suite-overhead. Must be a whole number (in milliseconds)");
-			}
-		}
-		if(testCaseOverhead != null && !testCaseOverhead.isEmpty()) {
-			try {
-				this.testCaseExecutionOverhead = Long.parseLong(testCaseOverhead);
-			} catch(NumberFormatException e) {
-				logger.warn("\"" + testCaseOverhead + "\" is not a valid value for test-case-overhead. Must be a whole number (in milliseconds)");
-			}
+			logger.error("Class not found: " + runnerClass + " for " + getName(), e);
 		}
 	}
 
@@ -78,10 +59,22 @@ public class Language implements UserType, Comparable<Language> {
 		return id;
 	}
 	public String getName() {
-		return name;
+		String value = PASTAOptions.instance()
+				.get("languages." + this.getId() + ".name");
+		if(value == null) {
+			logger.warn("Option \"languages." + this.getId() + ".name\" not found");
+			return "Unknown";
+		}
+		return value;
 	}
 	public List<String> getExtensions() {
-		return extensions;
+		String value = PASTAOptions.instance()
+				.get("languages." + this.getId() + ".extensions");
+		if(value == null) {
+			logger.warn("Option \"languages." + this.getId() + ".extensions\" not found");
+			return new LinkedList<>();
+		}
+		return Arrays.asList(value.split(","));
 	}
 	public File getTemplateFile() {
 		return templateFile;
@@ -100,11 +93,34 @@ public class Language implements UserType, Comparable<Language> {
 		}
 		return null;
 	}
+	
 	public long getTestCaseExecutionOverhead() {
-		return testCaseExecutionOverhead;
+		String value = PASTAOptions.instance()
+				.get("languages." + this.getId() + ".test-case-overhead");
+		if(value == null) {
+			logger.warn("Option \"languages." + this.getId() + ".test-case-overhead\" not found");
+			return 0;
+		}
+		try {
+			return Long.valueOf(value);
+		} catch(NumberFormatException e) {
+			logger.warn("\"" + value + "\" is not a valid value for test-case-overhead. Must be a whole number (in milliseconds)");
+		}
+		return 0;
 	}
 	public long getTestSuiteExecutionOverhead() {
-		return testSuiteExecutionOverhead;
+		String value = PASTAOptions.instance()
+				.get("languages." + this.getId() + ".test-suite-overhead");
+		if(value == null) {
+			logger.warn("Option \"languages." + this.getId() + ".test-suite-overhead\" not found");
+			return 0;
+		}
+		try {
+			return Long.valueOf(value);
+		} catch(NumberFormatException e) {
+			logger.warn("\"" + value + "\" is not a valid value for test-suite-overhead. Must be a whole number (in milliseconds)");
+		}
+		return 0;
 	}
 
 	public String getImageName() {
@@ -116,7 +132,7 @@ public class Language implements UserType, Comparable<Language> {
 	}
 	public boolean isLanguage(String filename) {
 		return filename != null &&
-				extensions.contains(filename.substring(filename.lastIndexOf('.') + 1).toLowerCase());
+				getExtensions().contains(filename.substring(filename.lastIndexOf('.') + 1).toLowerCase());
 	}
 
 	@Override
@@ -212,6 +228,6 @@ public class Language implements UserType, Comparable<Language> {
 
 	@Override
 	public String toString() {
-		return name;
+		return getName();
 	}
 }

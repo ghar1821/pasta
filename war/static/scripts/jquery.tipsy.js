@@ -29,7 +29,14 @@
             if (title && this.enabled) {
                 var $tip = this.tip();
                 
-                $tip.zIndex(this.$element.zIndex() + 1);
+                var zIndex = 0;
+                $tip.parents().filter(function() {
+                	return !isNaN($(this).css("z-index"));
+                }).first().each(function() {
+                	zIndex = $(this).css("z-index");
+                });
+                
+                $tip.css("z-index", zIndex + 1);
                 $tip.find('.tipsy-inner')[this.options.html ? 'html' : 'text'](title);
                 $tip[0].className = 'tipsy'; // reset classname in case of dynamic gravity
                 $tip.remove().css({top: 0, left: 0, visibility: 'hidden', display: 'block'}).prependTo(document.body);

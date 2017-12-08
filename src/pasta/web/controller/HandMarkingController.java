@@ -54,8 +54,8 @@ import pasta.domain.form.validate.UpdateHandMarkingFormValidator;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.user.PASTAUser;
+import pasta.repository.HandMarkingDAO;
 import pasta.service.HandMarkingManager;
-import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
 
 /**
@@ -79,6 +79,9 @@ public class HandMarkingController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
+	private HandMarkingDAO handMarkingDao;
+	
 	@Autowired
 	private HandMarkingManager handMarkingManager;
 	
@@ -213,14 +216,15 @@ public class HandMarkingController {
 		return "redirect:../../";
 	}
 	
+	
+	
 	@InitBinder
 	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
 	    // when passing a column/row as an id, convert that id into an actual WeightedField object
 		binder.registerCustomEditor(WeightedField.class, new PropertyEditorSupport() {
 		    @Override
 		    public void setAsText(String text) {
-		    	WeightedField field = ProjectProperties.getInstance().getHandMarkingDAO()
-		    			.getWeightedField(Long.parseLong(text));
+		    	WeightedField field = handMarkingDao.getWeightedField(Long.parseLong(text));
 		    	if(field == null) {
 		    		field = new WeightedField();
 		    		field.setId(Long.parseLong(text));

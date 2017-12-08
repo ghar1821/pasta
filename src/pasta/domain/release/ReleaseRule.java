@@ -25,7 +25,7 @@ public abstract class ReleaseRule implements Comparable<ReleaseRule>, Serializab
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
-	private long id;
+	private Long id;
 	
 	protected abstract boolean isMet(PASTAUser user);
 	
@@ -46,10 +46,10 @@ public abstract class ReleaseRule implements Comparable<ReleaseRule>, Serializab
 		return this.getShortDescription().compareTo(other.getShortDescription());
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	

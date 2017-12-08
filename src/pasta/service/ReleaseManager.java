@@ -206,8 +206,4 @@ public class ReleaseManager {
 		}
 		return rule;
 	}
-
-	public boolean isAssessmentLinked(long assessmentId) {
-		return releaseDAO.isAssessmentLinked(assessmentId);
-	}
 }

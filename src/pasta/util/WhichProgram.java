@@ -7,7 +7,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
+import pasta.service.PASTAOptions;
+
+@Service("whichProgram")
 public class WhichProgram {
 
 	private Map<String, String> programs;
@@ -16,10 +22,11 @@ public class WhichProgram {
 	
 	protected final static Logger logger = Logger.getLogger(WhichProgram.class);
 	
-	private static final String[] required = {"java", "javac", "time", "timeout"};
-	private static final String[] optional = {"matlab", "python2", "python3", "g++", "gcc"};
+	private static final String[] required = {"java", "javac", "time", "timeout", "mysqldump"};
+	private static final String[] optional = {"python2", "python3", "g++", "gcc"};
 	
-	private WhichProgram(Properties properties) {
+	@Autowired
+	private WhichProgram(@Qualifier("programProperties") Properties properties) {
 		programs = new HashMap<String, String>();
 		
 		for(Object propKey : properties.keySet()) {
@@ -53,11 +60,15 @@ public class WhichProgram {
 	}
 	
 	public boolean hasProgram(String program) {
-		return programs.containsKey(program) && programs.get(program) != null;
+		return path(program) != null;
 	}
 	
 	public String path(String program) {
-		return programs.get(program);
+		String path = programs.get(program);
+		if(path == null) {
+			path = PASTAOptions.instance().get("programs." + program);
+		}
+		return path;
 	}
 	
 	public static WhichProgram getInstance() {

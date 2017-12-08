@@ -77,21 +77,23 @@ either expressed or implied, of the PASTA Project.
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1> New Unit Test </h1>
-	<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
-		<div class='pasta-form narrow part'>
-			<div class='pf-item one-col'>
-				<div class='pf-label'>Name</div>
-				<div class='pf-input'>
-					<form:errors path="name" element="div" />
-					<form:input autocomplete="off" type="text" path="name" />
+	<div class='part'>
+		<h1 class='part-title'> New Unit Test </h1>
+		<form:form commandName="newUnitTest" enctype="multipart/form-data" method="POST">
+			<div class='pasta-form narrow'>
+				<div class='pf-item one-col'>
+					<div class='pf-label'>Name</div>
+					<div class='pf-input'>
+						<form:errors path="name" element="div" />
+						<form:input autocomplete="off" type="text" path="name" />
+					</div>
+				</div>
+				<div class='button-panel'>
+					<button type="submit" id="submit">Create</button>
 				</div>
 			</div>
-			<div class='button-panel'>
-				<button type="submit" id="submit">Create</button>
-			</div>
-		</div>
-	</form:form>
+		</form:form>
+	</div>
 </div>
 
 	

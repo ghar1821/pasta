@@ -67,7 +67,7 @@ either expressed or implied, of the PASTA Project.
 			<div class='ip-label'>Allowed Languages</div>
 			<div class='ip-desc'>
 				<c:forEach var="language" items="${assessment.submissionLanguages}">
-					<div><code>${language.description}</code></div>
+					<div><code>${language.name}</code></div>
 				</c:forEach>
 			</div>
 		</div>

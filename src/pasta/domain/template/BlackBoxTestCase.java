@@ -1,12 +1,11 @@
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * @author Joshua Stretton
@@ -15,13 +14,11 @@ import javax.persistence.Table;
  */
 @Entity
 @Table (name = "black_box_test_cases")
-public class BlackBoxTestCase implements Serializable {
+@VerboseName("black box test case")
+public class BlackBoxTestCase extends BaseEntity {
 	private static final long serialVersionUID = -4974380327385340788L;
 	public static final String validNameRegex = "[a-zA-Z][a-zA-Z0-9_]*";
 
-	@Id @GeneratedValue
-	private long id;
-	
 	@Column(name = "test_name")
 	private String testName;
 	
@@ -41,13 +38,6 @@ public class BlackBoxTestCase implements Serializable {
 	private boolean toBeCompared = true;
 	
 	private int timeout;
-
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
 
 	public String getTestName() {
 		return testName;
@@ -101,27 +91,6 @@ public class BlackBoxTestCase implements Serializable {
 		this.toBeCompared = toBeCompared;
 	}
 	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		BlackBoxTestCase other = (BlackBoxTestCase) obj;
-		if (id == 0 || id != other.id)
-			return false;
-		return true;
-	}
-	
 	public boolean exactlyEquals(Object obj) {
 		if (this == obj)
 			return true;
@@ -135,7 +104,10 @@ public class BlackBoxTestCase implements Serializable {
 				return false;
 		} else if (!commandLine.equals(other.commandLine))
 			return false;
-		if (id != other.id)
+		if (getId() == null) {
+			if (other.getId() != null)
+				return false;
+		} else if (!getId().equals(other.getId()))
 			return false;
 		if (input == null) {
 			if (other.input != null)
@@ -165,8 +137,7 @@ public class BlackBoxTestCase implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "BlackBoxTestCase [id=" + id + ", testName=" + testName + ", commandLine=" + commandLine + ", input="
+		return "BlackBoxTestCase [id=" + getId() + ", testName=" + testName + ", commandLine=" + commandLine + ", input="
 				+ input + ", output=" + output + ", description=" + description + ", timeout=" + timeout + "]";
 	}
-	
 }

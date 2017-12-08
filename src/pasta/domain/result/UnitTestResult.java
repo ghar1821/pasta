@@ -30,6 +30,7 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.result;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -43,12 +44,10 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
@@ -56,7 +55,10 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.UnitTest;
+import pasta.domain.template.WeightedUnitTest;
 import pasta.util.PASTAUtil;
 
 /**
@@ -68,33 +70,32 @@ import pasta.util.PASTAUtil;
  */
 @Entity
 @Table (name = "unit_test_results")
-public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
+@VerboseName("unit test result")
+public class UnitTestResult extends BaseEntity implements Serializable, Comparable<UnitTestResult>{
 	
 	private static final long serialVersionUID = -4862404513190004578L;
 	
-	private static final int COMPILE_ERROR_MAX_LENGTH = 64000;
-	private static final int RUNTIME_ERROR_MAX_LENGTH = 64000;
-	private static final int FILES_COMPILED_MAX_LENGTH = 64000;
+	private static final int COMPILE_ERROR_MAX_LENGTH = 66000;
+	private static final int RUNTIME_ERROR_MAX_LENGTH = 66000;
+	private static final int FILES_COMPILED_MAX_LENGTH = 66000;
 	private static final int RUNTIME_OUTPUT_MAX_LENGTH = 128000;
 
-	@Id @GeneratedValue
-	@Column (name = "id")
-	private long id;
+	@OneToOne
+	@JoinColumn (name="tester_unit_test_id", nullable = true)
+	private UnitTest testerTest; // When the test is for testing a unit test
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn (name = "unit_test_id")
-	private UnitTest test;
+	@ManyToOne
+	@JoinColumn (name="weighted_unit_test_id", nullable = true)
+	private WeightedUnitTest weightedUnitTest; // When the test is part of an assessment
 	
-	private boolean secret;
+	@ManyToOne
+	@JoinColumn (name = "assessment_result_id", nullable = true)
+	private AssessmentResult assessmentResult;
 	
-	@Column(name="group_work")
-	private boolean groupWork;
-	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn (name = "test_case_id") // TODO should be named "unit_test_result_id"
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "unitTestResult")
 	@OrderBy ("testName")
 	@LazyCollection (LazyCollectionOption.FALSE)
-	private List<UnitTestCaseResult> testCases;
+	private List<UnitTestCaseResult> testCases = new ArrayList<>();
 	
 	@Column (name = "internal_error")
 	private boolean internalError;
@@ -128,39 +129,54 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 	@Size (max = RUNTIME_OUTPUT_MAX_LENGTH)
 	private String fullOutput;
 
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public UnitTest getTest() {
-		return test;
+		return getTesterTest() == null ? (getWeightedUnitTest() == null ? null : getWeightedUnitTest().getTest()) : getTesterTest();
 	}
-	public void setTest(UnitTest test) {
-		this.test = test;
+	
+	public UnitTest getTesterTest() {
+		return testerTest;
 	}
-
+	public void setTesterTest(UnitTest test) {
+		this.testerTest = test;
+	}
+	
+	public WeightedUnitTest getWeightedUnitTest() {
+		return weightedUnitTest;
+	}
+	public void setWeightedUnitTest(WeightedUnitTest weightedUnitTest) {
+		this.weightedUnitTest = weightedUnitTest;
+	}
+	
 	public boolean isSecret() {
-		return secret;
+		WeightedUnitTest wut = getWeightedUnitTest();
+		return wut == null ? false : wut.isSecret();
 	}
-	public void setSecret(boolean secret) {
-		this.secret = secret;
-	}
-
 	public boolean isGroupWork() {
-		return groupWork;
-	}
-	public void setGroupWork(boolean groupWork) {
-		this.groupWork = groupWork;
+		WeightedUnitTest wut = getWeightedUnitTest();
+		return wut == null ? false : wut.isGroupWork();
 	}
 
 	public List<UnitTestCaseResult> getTestCases() {
 		return testCases;
 	}
+	public void addTestCaseResult(UnitTestCaseResult utcr) {
+		utcr.setUnitTestResult(this);
+		this.testCases.add(utcr);
+	}
+	public void addAllTestCaseResults(Collection<UnitTestCaseResult> results) {
+		for(UnitTestCaseResult result : results) {
+			addTestCaseResult(result);
+		}
+	}
 	public void setTestCases(List<UnitTestCaseResult> testCases) {
-		this.testCases = testCases;
+		removeAllTestCases();
+		addAllTestCaseResults(testCases);
+	}
+	public void removeAllTestCases() {
+		for(UnitTestCaseResult result : this.testCases) {
+			result.setUnitTestResult(null);
+		}
+		this.testCases.clear();
 	}
 
 	public boolean isInternalError() {
@@ -308,10 +324,17 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		}
 		return null;
 	}
-
+	
+	public AssessmentResult getAssessmentResult() {
+		return assessmentResult;
+	}
+	public void setAssessmentResult(AssessmentResult assessmentResult) {
+		this.assessmentResult = assessmentResult;
+	}
+	
 	@Override
 	public int compareTo(UnitTestResult target) {
-		return test.getName().compareTo(target.getTest().getName());
+		return getTest().getName().compareTo(target.getTest().getName());
 	}
 	
 	public void combine(UnitTestResult other) {
@@ -323,17 +346,15 @@ public class UnitTestResult implements Serializable, Comparable<UnitTestResult>{
 		this.setCleanError(cleanError || other.cleanError);
 		this.setCompileErrors(combineStrings(compileErrors, other.compileErrors));
 		this.setFilesCompiled(combineStrings(filesCompiled, other.filesCompiled));
-		this.setGroupWork(groupWork || other.groupWork);
 		this.setInternalError(internalError || other.internalError);
 		this.setRuntimeErrors(combineStrings(runtimeErrors, other.runtimeErrors));
 		this.setFullOutput(combineStrings(fullOutput, other.fullOutput));
-		this.setSecret(secret || other.secret);
 		
 		if(this.getTestCases() == null && other.getTestCases() != null) {
 			this.testCases = new LinkedList<UnitTestCaseResult>();
 		}
 		if(other.getTestCases() != null) {
-			this.getTestCases().addAll(other.getTestCases());
+			this.addAllTestCaseResults(other.getTestCases());
 		}
 		this.getValidationErrors().addAll(other.getValidationErrors());
 	}

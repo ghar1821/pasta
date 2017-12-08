@@ -37,8 +37,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Repository
 public class AssessmentReportingManager {
 
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	@Autowired
+	private AssessmentDAO assDao;
+	@Autowired
+	private ResultDAO resultDAO;
 	
 	@Autowired
 	private UserManager userManager;

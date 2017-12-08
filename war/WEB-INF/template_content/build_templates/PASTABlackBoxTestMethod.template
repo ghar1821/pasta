@@ -1,7 +1,10 @@
     @Test (timeout=${timeout})
     public void ${testName}() {
+        if(!testExecuted("${testName}")) {
+        	fail("Test case did not execute; unit test suite timed out.");
+        }
         if(testTimedOut("${testName}")) {
-        	fail("Test timed out after ${timeout} ms");
+        	fail("Test case timed out after ${timeout} ms");
         }
         if(testSegfaulted("${testName}")) {
         	fail("Test resulted in a segmentation fault (the monitored command dumped core)");

@@ -34,6 +34,11 @@
             </fileset>
         </copy>
 	</target>
+	<target name="movePreviousOutput">
+	    <move todir="${binDir}">
+			<fileset dir="${outDirectory}/pbbt_carry" /> 
+	    </move>
+	</target>
 	
 	<target name="init">
 		<property environment="env"/>
@@ -52,7 +57,7 @@
 	    </path>
 	</target>
 	
-    <target name="setup" depends="makeBin, copyNonJava, makeWritable">
+    <target name="setup" depends="makeBin, copyNonJava, makeWritable, movePreviousOutput">
     </target>
 	
     <target name="clean">
@@ -86,7 +91,7 @@
         	jvm="${javaPath}"
         	filtertrace="${filterStackTraces}" 
         	fork="yes" 
-        	timeout="${maxtimeallowed}" 
+        	timeout="${advancedTimeout}" 
         	dir="${binDir}">
 			<formatter type="xml" />
             <test name="${testName}" outfile="${testOutputFile}" />

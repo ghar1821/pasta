@@ -5,9 +5,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,24 +15,10 @@ import pasta.domain.user.PASTAUser;
 
 @Transactional
 @Repository("ratingDAO")
-public class RatingDAO {
+public class RatingDAO extends BaseDAO {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	@Autowired
-	private SessionFactory sessionFactory;
-	
-	public AssessmentRating saveOrUpdate(AssessmentRating rating) {
-		sessionFactory.getCurrentSession().saveOrUpdate(rating);
-		logger.info("Saved rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
-		return rating;
-	}
-	
-	public void delete(AssessmentRating rating) {
-		sessionFactory.getCurrentSession().delete(rating);
-		logger.info("Deleted rating for " + rating.getAssessment().getName() + " by " + rating.getUser().getUsername());
-	}
-	
 	@SuppressWarnings("unchecked")
 	public List<AssessmentRating> getAllRatings() {
 		return sessionFactory.getCurrentSession().createCriteria(AssessmentRating.class).list();

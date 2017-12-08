@@ -46,10 +46,8 @@ import java.util.TreeSet;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -58,12 +56,14 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.hibernate.annotations.SortNatural;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.Assessment;
 import pasta.domain.template.WeightedHandMarking;
 import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
+import pasta.scheduler.AssessmentJob;
 import pasta.util.ProjectProperties;
 /**
  * Container for the results of an assessment.
@@ -89,33 +89,24 @@ import pasta.util.ProjectProperties;
 uniqueConstraints = { @UniqueConstraint(columnNames={
 		"user_id", "assessment_id", "submission_date"
 })})
-public class AssessmentResult implements Serializable, Comparable<AssessmentResult>{
+@VerboseName("assessment result")
+public class AssessmentResult extends BaseEntity implements Serializable, Comparable<AssessmentResult>{
 
 	private static final long serialVersionUID = 447867201394779087L;
 
-	@Id
-	@GeneratedValue 
-	private long id;
-	
 	@ManyToOne
 	@JoinColumn(name="user_id", nullable = false)
 	private PASTAUser user;
 	
 	@ManyToOne
-	@JoinColumn(name="submitted_by", nullable = false)
+	@JoinColumn(name="submitted_by", nullable = true)
 	private PASTAUser submittedBy;
 	
-	@OneToMany (cascade = CascadeType.ALL)
-	@JoinTable(name="assessment_result_unit_test_joins",
-		joinColumns=@JoinColumn(name = "assessment_result_id"),
-		inverseJoinColumns=@JoinColumn(name = "unit_test_result_id"))
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "assessmentResult")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<UnitTestResult> unitTests = new ArrayList<UnitTestResult>();
 	
-	@OneToMany (cascade = CascadeType.ALL)
-	@JoinTable(name="assessment_result_hand_marking_joins",
-		joinColumns=@JoinColumn(name = "assessment_result_id"),
-		inverseJoinColumns=@JoinColumn(name = "hand_marking_result_id"))
+	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "assessmentResult")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<HandMarkingResult> handMarkingResults = new ArrayList<HandMarkingResult>();
 	
@@ -136,13 +127,6 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 	@Column(name="group_result")
 	private boolean groupResult;
 	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public PASTAUser getUser() {
 		return user;
 	}
@@ -195,11 +179,6 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 			}
 		}
 		return tests;
-	}
-	public void setUnitTests(List<UnitTestResult> unitTests) {
-		this.unitTests.clear();
-		this.unitTests.addAll(unitTests);
-		Collections.sort(this.unitTests);
 	}
 
 	public Assessment getAssessment() {
@@ -262,16 +241,58 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		Collections.sort(handMarkingResults);
 		return handMarkingResults;
 	}
-	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
-		this.handMarkingResults.clear();
-		this.handMarkingResults.addAll(handMarkingResults);
+	
+	public void addHandMarkingResult(HandMarkingResult result) {
+		result.setAssessmentResult(this);
+		this.handMarkingResults.add(result);
 	}
-
+	public void addHandMarkingResults(Collection<HandMarkingResult> handMarkingResults) {
+		for(HandMarkingResult result : handMarkingResults) {
+			addHandMarkingResult(result);
+		}
+	}
+	
+	public void removeHandMarkingResult(HandMarkingResult result) {
+		result.setAssessmentResult(null);
+		this.handMarkingResults.remove(result);
+	}
+	public void removeAllHandMarkingResults() {
+		for(HandMarkingResult result : this.getHandMarkingResults()) {
+			result.setAssessmentResult(null);
+		}
+		this.getHandMarkingResults().clear();
+	}
+	
+	public void setHandMarkingResults(List<HandMarkingResult> handMarkingResults) {
+		removeAllHandMarkingResults();
+		addHandMarkingResults(handMarkingResults);
+	}
+	
 	public void addUnitTest(UnitTestResult test){
+		test.setAssessmentResult(this);
 		unitTests.add(test);
 	}
+	public void addUnitTests(Collection<UnitTestResult> unitTestResults) {
+		for(UnitTestResult result : unitTestResults) {
+			addUnitTest(result);
+		}
+	}
+	
 	public void removeUnitTest(UnitTestResult test){
+		test.setAssessmentResult(null);
 		unitTests.remove(test);
+	}
+	public void removeAllUnitTestResults() {
+		for(UnitTestResult result : this.getUnitTests()) {
+			result.setAssessmentResult(null);
+		}
+		this.getUnitTests().clear();
+	}
+	
+	public void setUnitTests(List<UnitTestResult> unitTests) {
+		removeAllUnitTestResults();
+		addUnitTests(unitTests);
+		Collections.sort(this.unitTests);
 	}
 	
 	/**
@@ -586,11 +607,13 @@ public class AssessmentResult implements Serializable, Comparable<AssessmentResu
 		return o.getSubmissionDate().compareTo(this.submissionDate);
 	}
 	
-	public void addHandMarkingResult(HandMarkingResult result) {
-		this.handMarkingResults.add(result);
-	}
-	
-	public void removeHandMarkingResult(HandMarkingResult result) {
-		this.handMarkingResults.remove(result);
-	}
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "results", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentJob> jobs;
 }

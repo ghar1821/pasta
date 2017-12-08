@@ -53,11 +53,14 @@ import pasta.domain.template.UnitTest;
 public class UpdateUnitTestForm {
 	
 	@Min(0)
-	private long id;
+	private Long id;
 	
 	@NotEmpty
 	@Length(max=256)
 	private String name;
+	
+	private Long advancedTimeout;
+	private Long blackBoxTimeout;
 	
 	private CommonsMultipartFile file;
 	
@@ -79,6 +82,8 @@ public class UpdateUnitTestForm {
 		this.testCases = createTestCaseForms(base.getTestCases());
 		this.blackBoxOptions = new BlackBoxOptions(base.getBlackBoxOptions());
 		this.allowAccessoryWrite = base.isAllowAccessoryFileWrite();
+		this.advancedTimeout = base.getAdvancedTimeout();
+		this.blackBoxTimeout = base.getBlackBoxTimeout();
 		
 		this.file = null;
 		this.accessoryFile = null;
@@ -91,10 +96,10 @@ public class UpdateUnitTestForm {
 		return forms;
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getName() {
@@ -102,6 +107,18 @@ public class UpdateUnitTestForm {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public Long getAdvancedTimeout() {
+		return advancedTimeout;
+	}
+	public void setAdvancedTimeout(Long advancedTimeout) {
+		this.advancedTimeout = advancedTimeout;
+	}
+	public Long getBlackBoxTimeout() {
+		return blackBoxTimeout;
+	}
+	public void setBlackBoxTimeout(Long blackBoxTimeout) {
+		this.blackBoxTimeout = blackBoxTimeout;
 	}
 	public CommonsMultipartFile getFile() {
 		return file;

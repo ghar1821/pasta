@@ -2,7 +2,7 @@
 
 	displayCallbacks["displayRatings"] = function(content, data) {
 		
-		if(!data.assessments || data.assessments.length == 0) {
+		if(!data.categories || data.categories.length == 0) {
 			$("<div/>").addClass("part").text("No assessments to view.").appendTo(content);
 			return;
 		}
@@ -13,7 +13,7 @@
 		$("<div/>").addClass("pf-label").text("Assessment:").appendTo(selectDiv);
 		var selectInputDiv = $("<div/>").addClass("pf-input").appendTo(selectDiv);
 		
-		var select = createAssessmentSelect(content, data.assessments);
+		var select = createAssessmentSelect(content, data.categories);
 		select.appendTo(selectInputDiv);
 		
 		var ratingsDiv;
@@ -71,16 +71,25 @@
 		});
 	}
 	
-	function createAssessmentSelect(container, assessments) {
+	function createAssessmentSelect(container, categories) {
 		var select = $("<select/>");
 		$("<option/>").appendTo(select);
-		$.each(assessments, function(i, assessment) {
-			$("<option/>", {
-				text: assessment.assessment.name,
-				value: assessment.assessment.id
-			})
-			.data("assessment", assessment)
-			.appendTo(select);
+		$.each(categories, function(j, category) {
+			var group = select;
+			if(category) {
+				group = $("<optgroup/>", {
+					label: category.category
+				})
+				.appendTo(select);
+			}
+			$.each(category.assessments, function(i, assessment) {
+				$("<option/>", {
+					text: assessment.assessment.name,
+					value: assessment.assessment.id
+				})
+				.data("assessment", assessment)
+				.appendTo(group);
+			});
 		});
 		return select;
 	}

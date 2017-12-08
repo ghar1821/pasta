@@ -29,16 +29,20 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+import pasta.domain.result.HandMarkingResult;
 
 /**
  * Container class for a weighted hand marking.
@@ -57,13 +61,10 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name = "weighted_hand_markings")
-public class WeightedHandMarking implements Serializable, Comparable<WeightedHandMarking> {
+@VerboseName("weighted hand-marking module")
+public class WeightedHandMarking extends BaseEntity implements Comparable<WeightedHandMarking> {
 
 	private static final long serialVersionUID = -3429348535279846933L;
-	
-	@Id
-	@GeneratedValue
-	private long id;
 	
 	private double weight;
 	
@@ -74,19 +75,13 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 	@JoinColumn(name = "hand_marking_id")
 	private HandMarking handMarking;
 	
-	@ManyToOne (cascade = CascadeType.ALL)
+	@ManyToOne
+	@JoinColumn(name = "assessment_id")
 	private Assessment assessment;
 	
 	public WeightedHandMarking() {
 		setWeight(0);
 		setGroupWork(false);
-	}
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
 	}
 	
 	public double getWeight() {
@@ -147,41 +142,22 @@ public class WeightedHandMarking implements Serializable, Comparable<WeightedHan
 		if(diff != 0) {
 			return diff;
 		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+		if(this.getId() == null) {
+			return other.getId() == null ? 0 : -1;
+		}
+		if(other.getId() == null) {
+			return 1;
+		}
+		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (groupWork ? 1231 : 1237);
-		result = prime * result + ((handMarking == null) ? 0 : handMarking.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
-		long temp;
-		temp = Double.doubleToLongBits(weight);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedHandMarking other = (WeightedHandMarking) obj;
-		if (groupWork != other.groupWork)
-			return false;
-		if (handMarking == null) {
-			if (other.handMarking != null)
-				return false;
-		} else if (!handMarking.equals(other.handMarking))
-			return false;
-		if (id != other.id)
-			return false;
-		if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight))
-			return false;
-		return true;
-	}
+
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "weightedHandMarking", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<HandMarkingResult> handMarkingResults;
 }

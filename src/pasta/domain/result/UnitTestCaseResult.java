@@ -35,8 +35,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * Container class to hold the result of a single unit test.
@@ -57,7 +62,8 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name = "unit_test_case_results")
-public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCaseResult>{
+@VerboseName("unit test case result")
+public class UnitTestCaseResult extends BaseEntity implements Serializable, Comparable<UnitTestCaseResult>{
 	
 	private static final long serialVersionUID = 6764260613777032069L;
 	
@@ -66,11 +72,8 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	public static final String ERROR = "error";
 	
 	private final static int MAX_MESSAGE_LENGTH = 8000;
-	private final static int MAX_EXT_MESSAGE_LENGTH = 64000;
+	private final static int MAX_EXT_MESSAGE_LENGTH = 66000;
 
-	@Id @GeneratedValue
-	private long id;
-	
 	@Column(name = "name")
 	private String testName;
 	
@@ -91,12 +94,9 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	
 	private double time;
 	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
+	@ManyToOne
+	@JoinColumn(name="unit_test_result_id")
+	private UnitTestResult unitTestResult;
 	
 	public String getTestName() {
 		return testName;
@@ -147,6 +147,13 @@ public class UnitTestCaseResult implements Serializable, Comparable<UnitTestCase
 	}
 	public void setTestDescription(String testDescription) {
 		this.testDescription = testDescription;
+	}
+	
+	public UnitTestResult getUnitTestResult() {
+		return unitTestResult;
+	}
+	public void setUnitTestResult(UnitTestResult unitTestResult) {
+		this.unitTestResult = unitTestResult;
 	}
 	
 	public boolean isPass() {

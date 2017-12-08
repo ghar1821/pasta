@@ -96,8 +96,8 @@ import pasta.util.ProjectProperties;
 @Repository
 public class UnitTestManager {
 	
-	private AssessmentDAO assDao = ProjectProperties.getInstance().getAssessmentDAO();
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	@Autowired private AssessmentDAO assDao;
+	@Autowired private ResultDAO resultDAO;
 	
 	final static String BB_TEST_TEMPLATE = "PASTABlackBoxTest.template";
 	final static String BB_TEST_METHOD_TEMPLATE = "PASTABlackBoxTestMethod.template";
@@ -197,12 +197,11 @@ public class UnitTestManager {
 		logger.info("Testing unit test " + test.getName());
 		
 		if (test.getTestResult() != null) {
-			ProjectProperties.getInstance().getUnitTestDAO().deleteTestTests(test);
+			unitTestDAO.deleteTestTests(test);
 		}
 
 		// This results object will be updated with the results as we go
 		UnitTestResult utResults = new UnitTestResult();
-		utResults.setTest(test);
 		test.setTestResult(utResults);
 		
 		File sandboxTop = new File(ProjectProperties.getInstance().getSandboxLocation() + "unitTest/" + test.getFileAppropriateName() + "/");
@@ -280,8 +279,7 @@ public class UnitTestManager {
 			runJUnitTests(test, utResults, mainClass, context, container);
 		}
 		
-		ProjectProperties.getInstance().getResultDAO().save(utResults);
-		ProjectProperties.getInstance().getUnitTestDAO().update(test);
+		unitTestDAO.saveOrUpdate(test);
 		
 		logger.debug("Deleting final sandbox location " + sandboxTop);
 		try {
@@ -318,13 +316,9 @@ public class UnitTestManager {
 		
 		runner.setMainTestClassname(mainClass);
 		runner.setFilterStackTraces(false);
-		runner.setTestData(test.getTestCases());
-		int totalTime = 1000;
-		for(BlackBoxTestCase testCase : test.getTestCases()) {
-			totalTime += testCase.getTimeout();
-		}
-		runner.setMaxRunTime(totalTime);
+		runner.setTestData(test.getTestCases(), subLanguage);
 		runner.setSolutionName(solutionName);
+		runner.setTimeout(test.getBlackBoxTimeout() + (test.getTestCases().size() * subLanguage.getTestCaseExecutionOverhead()));
 		
 		if(subLanguage.getId().equals("c")) {
 			((CBlackBoxTestRunner) runner).setGCCArguments(test.getBlackBoxOptions().getGccCommandLineArgs());
@@ -355,6 +349,7 @@ public class UnitTestManager {
 		}
 		runner.setMainTestClassname(mainClass);
 		runner.setFilterStackTraces(false);
+		runner.setMaxRunTime(test.getAdvancedTimeout());
 		String[] targets = new String[] {"build", "test", "clean"};
 		File testLoc = test.getCodeLocation();
 		doTest(runner, targets, test, testLoc, utResults, context, container);
@@ -406,8 +401,7 @@ public class UnitTestManager {
 			
 			logger.debug("Reading results from disk");
 			// Get results from ant output
-			thisResult = ProjectProperties.getInstance().getResultDAO()
-					.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context, testDescriptions);
+			thisResult = resultDAO.getUnitTestResultFromDisk(container.getOutLoc().getAbsolutePath(), context, testDescriptions);
 			if(thisResult == null) {
 				thisResult = new UnitTestResult();
 				thisResult.setRuntimeErrors("Could not read unit test results from disk.");
@@ -457,6 +451,8 @@ public class UnitTestManager {
 		test.setMainClassName(updateForm.getMainClassName());
 		test.setSubmissionCodeRoot(updateForm.getSubmissionCodeRoot());
 		test.setAllowAccessoryFileWrite(updateForm.isAllowAccessoryWrite());
+		test.setAdvancedTimeout(updateForm.getAdvancedTimeout());
+		test.setBlackBoxTimeout(updateForm.getBlackBoxTimeout());
 		
 		List<BlackBoxTestCase> newCases = updateForm.getPlainTestCases();
 		ListIterator<BlackBoxTestCase> newIt = newCases.listIterator();

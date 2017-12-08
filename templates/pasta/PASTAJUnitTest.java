@@ -215,6 +215,20 @@ public class PASTAJUnitTest {
     	return new File("usermeta/", testName + ".segfault").exists();
     }
     
+    /**
+     * Check if the given input-output test case executed. 
+     * 
+     * The test may have not executed if the test module ran out of time 
+     * (specified by the maximum run time in the unit test options).
+     * 
+     * @param testName
+     *            the name of the input-output test case
+     * @return true if the execution of the test case was completed.
+     */
+    protected final boolean testExecuted(String testName) {
+    	return new File("usermeta/", testName + ".executed").exists();
+    }
+    
     private String getMetaFileLine(String testName, int line) {
     	try {
     		return readFileLines(getTestMetaFile(testName))[line-1];

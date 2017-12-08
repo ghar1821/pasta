@@ -4,25 +4,22 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAUser;
 
 @Entity
 @Table(name = "assessment_ratings")
-public class AssessmentRating implements Serializable {
+@VerboseName("assessment rating")
+public class AssessmentRating extends BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = -2757383372009772835L;
 
-	@Id
-	@GeneratedValue
-	private long id;
-	
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private PASTAUser user;
@@ -42,13 +39,6 @@ public class AssessmentRating implements Serializable {
 	public AssessmentRating(Assessment assessment, PASTAUser user) {
 		this.user = user;
 		this.assessment = assessment;
-	}
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
 	}
 	
 	public PASTAUser getUser() {
@@ -81,7 +71,6 @@ public class AssessmentRating implements Serializable {
 
 	@Override
 	public String toString() {
-		return "AssessmentRating [id=" + id + ", user=" + user.getUsername() + ", assessment=" + assessment
-				+ ", rating=" + rating + ", comment=" + comment + "]";
+		return "assessment rating for " + getAssessment().getName() + " by " + getUser().getUsername();
 	}
 }

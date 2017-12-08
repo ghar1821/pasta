@@ -8,7 +8,7 @@ import pasta.domain.template.BlackBoxTestCase;
  * @since 23 Jun 2015
  */
 public class BlackBoxTestCaseForm {
-	private long id;
+	private Long id;
 	private String testName;
 	private String commandLine;
 	private String input;
@@ -32,10 +32,10 @@ public class BlackBoxTestCaseForm {
 		this.deleteMe = false;
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	

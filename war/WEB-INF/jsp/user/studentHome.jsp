@@ -227,25 +227,29 @@ either expressed or implied, of the PASTA Project.
 		<span class="button bClose"> <span><b>X</b></span></span>
 		<form:input type="hidden" path="assessment" value=""/>
 		
-		<div id='lateNotice' class='vertical-block' style="text-align:center;font-size:200%; color:red">
-			You are submitting this assessment late.
-		</div>
-		<div class='vertical-block' style="font-size:150%">
-			By submitting this assessment I accept the University of Sydney's <a href="http://sydney.edu.au/engineering/it/current_students/undergrad/policies/academic_honesty.shtml">academic honesty policy.</a>
-		</div>
-		<div id='groupDeclaration' class='vertical-block' style="font-size:150%">
-			By submitting I also declare that all group members have participated to a satisfactory level in completing this assessment.
-		</div>
-		<div class='vertical-block'>
-			<form:input path="file" type="file" />
-		</div>
-		<div id='groupCheckDiv' class='vertical-block'>
-			<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
-			<label for='groupCheck' style="vertical-align: middle;"></label>
-			<span style="font-size:150%; vertical-align: middle;">I am submitting on behalf of my group.</span>
-		</div>
-		<div class='vertical-block'>
-		   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >I accept</button>
+		<div class='part'>
+			<div id='lateNotice'>
+				You are submitting this assessment late.
+			</div>
+			<div class='vertical-block'>
+				<div class='submission-notice individual'>
+					<c:out value="${individualDeclaration}" escapeXml="false"/>
+				</div>
+				<div class='submission-notice group'>
+					<c:out value="${groupDeclaration}" escapeXml="false"/>
+				</div>
+			</div>
+			<div class='vertical-block'>
+				<form:input path="file" type="file" />
+			</div>
+			<div id='groupCheckDiv' class='vertical-block'>
+				<form:checkbox id='groupCheck' cssClass="custom-check" path="groupSubmission"/>
+				<label for='groupCheck' style="vertical-align: middle;"></label>
+				<span style="font-size:1.3em; vertical-align: middle;">&nbsp;I am submitting on behalf of my group.</span>
+			</div>
+			<div class='button-panel'>
+			   	<button type="submit" onclick="this.disabled=true;this.innerHTML='Sending, please wait...';document.getElementById('submission').submit();" >Submit</button>
+			</div>
 		</div>
    	</form:form>
 </div>
@@ -280,13 +284,14 @@ either expressed or implied, of the PASTA Project.
 			(function checkQueue(timeout) {
 				$.ajax({
 					url : '../checkJobQueue/' + assessmentId + '/',
-					dataType: 'json',
+					dataType: 'text',
 					success : function(data) {
 						var done = false;
 						if (data == "error") {
 							$span.html("There was an error while running your submission.");
 							done = true;
 						} else if(data) {
+							data = JSON.parse(data);
 							updateProgress($span, data);
 						} else {
 							$span.html("Refresh for results.");
@@ -353,6 +358,9 @@ either expressed or implied, of the PASTA Project.
 								var value = progressBar.progressbar("option", "value");
 								if(value > 0) {
 									progressBar.progressbar("option", "value", Math.max(0, value - 1000));
+								} else {
+									pb.find(".ui-progressbar-value").removeClass("smooth-progress");
+									progressBar.progressbar("option", "value", false);
 								}
 							}
 							container.data("timer", window.setTimeout(decrease, 1000));
@@ -424,7 +432,9 @@ either expressed or implied, of the PASTA Project.
 		});
 		
 		$("#groupCheck").on("change", function() {
-			$("#groupDeclaration").toggle($(this).is(":checked"));
+			var isGroup = $(this).is(":checked");
+			$(".submission-notice.individual").toggle(!isGroup);
+			$(".submission-notice.group").toggle(isGroup);
 		});
 		
 		$(".category-box,.assessment-box").searchNode();

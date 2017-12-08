@@ -30,7 +30,6 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,8 +38,7 @@ import java.util.Map;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -49,6 +47,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.result.UnitTestCaseResult;
 import pasta.domain.result.UnitTestResult;
 import pasta.util.PASTAUtil;
@@ -74,7 +74,8 @@ import pasta.util.ProjectProperties;
 
 @Entity
 @Table (name = "unit_tests")
-public class UnitTest implements Serializable, Comparable<UnitTest> {
+@VerboseName("unit test module")
+public class UnitTest extends BaseEntity implements Comparable<UnitTest> {
 	
 	private static final long serialVersionUID = -7413957282304051135L;
 	
@@ -83,12 +84,15 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public static String BB_OUTPUT_FILENAME = "userout";
 	public static String BB_META_FILENAME = "usermeta";
 
-	@Id @GeneratedValue
-	private long id;
-	
 	private String name;
 	
 	private boolean tested;
+	
+	@Column (name = "black_box_timeout")
+	private Long blackBoxTimeout;
+	
+	@Column (name = "advanced_timeout")
+	private Long advancedTimeout;
 	
 	@Column (name = "main_class_name")
 	private String mainClassName;
@@ -99,8 +103,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@Column (name = "allow_accessory_write")
 	private boolean allowAccessoryFileWrite;
 	
-	@OneToOne (cascade=CascadeType.ALL)
-	@JoinColumn (name="test_result_id")
+	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "testerTest", optional = true)
 	private UnitTestResult testResult;
 	
 	@OneToMany (cascade = CascadeType.ALL, orphanRemoval = true)
@@ -108,8 +111,7 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<BlackBoxTestCase> testCases;
 	
-	@OneToOne (cascade=CascadeType.ALL, orphanRemoval = true, optional = true)
-	@JoinColumn (name="black_box_options_id")
+	@OneToOne (cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "test")
 	private BlackBoxOptions blackBoxOptions;
 
 	/**
@@ -127,10 +129,12 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	
 	public void init(String name, boolean tested) {
 		this.name = name;
+		this.blackBoxTimeout = null;
+		this.advancedTimeout = null;
 		this.tested = tested;
 		this.submissionCodeRoot = "";
 		this.testCases = new ArrayList<BlackBoxTestCase>();
-		this.blackBoxOptions = new BlackBoxOptions();
+		setBlackBoxOptions(new BlackBoxOptions());
 		this.allowAccessoryFileWrite = false;
 	}
 
@@ -188,13 +192,6 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		this.tested = tested;
 	}
 		
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	/**
 	 * Get a list of the most recent test case names. These will be retrieved
 	 * according to the last run test on the unit test. If the unit test has not
@@ -210,16 +207,6 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 			}
 		}
 		return names;
-	}
-	
-	@Override
-	public String toString(){
-		String output = "<unitTestProperties>" + System.getProperty("line.separator");
-		output += "\t<id>"+id+"</id>" + System.lineSeparator();
-		output += "\t<name>" + name + "</name>" + System.getProperty("line.separator");
-		output += "\t<tested>" + tested + "</tested>" + System.getProperty("line.separator");
-		output += "</unitTestProperties>";
-		return output;
 	}
 
 	@Override
@@ -247,6 +234,12 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	}
 
 	public void setTestResult(UnitTestResult testResult) {
+		if(this.testResult != null) {
+			this.testResult.setTesterTest(null);
+		}
+		if(testResult != null) {
+			testResult.setTesterTest(this);
+		}
 		this.testResult = testResult;
 	}
 	
@@ -278,12 +271,16 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 
 	public BlackBoxOptions getBlackBoxOptions() {
 		if(blackBoxOptions == null) {
-			blackBoxOptions = new BlackBoxOptions();
+			setBlackBoxOptions(new BlackBoxOptions());
 		}
 		return blackBoxOptions;
 	}
 
 	public void setBlackBoxOptions(BlackBoxOptions blackBoxOptions) {
+		if(this.blackBoxOptions != null) {
+			this.blackBoxOptions.setTest(null);
+		}
+		blackBoxOptions.setTest(this);
 		this.blackBoxOptions = blackBoxOptions;
 	}
 
@@ -294,27 +291,25 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 	public void setAllowAccessoryFileWrite(boolean allowAccessoryFileWrite) {
 		this.allowAccessoryFileWrite = allowAccessoryFileWrite;
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
+	
+	public Long getBlackBoxTimeout() {
+		if(getTestCases().isEmpty()) {
+			return null;
+		}
+		return blackBoxTimeout;
+	}
+	public void setBlackBoxTimeout(Long blackBoxTimeout) {
+		this.blackBoxTimeout = blackBoxTimeout;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UnitTest other = (UnitTest) obj;
-		if (id != other.id)
-			return false;
-		return true;
+	public Long getAdvancedTimeout() {
+		if(!hasCode() || getMainClassName() == null) {
+			return null;
+		}
+		return advancedTimeout;
+	}
+	public void setAdvancedTimeout(Long advancedTimeout) {
+		this.advancedTimeout = advancedTimeout;
 	}
 
 	public boolean hasBlackBoxTests() {
@@ -357,4 +352,14 @@ public class UnitTest implements Serializable, Comparable<UnitTest> {
 		}
 		return null;
 	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<WeightedUnitTest> weightedUnitTests;
 }

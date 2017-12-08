@@ -10,7 +10,9 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import pasta.domain.UserPermissionLevel;
 import pasta.domain.reporting.Report;
+import pasta.domain.reporting.ReportPermission;
 
 @Transactional
 @Repository("reportingDAO")
@@ -36,5 +38,13 @@ public class ReportingDAO {
 	
 	public void saveOrUpdate(Report report) {
 		sessionFactory.getCurrentSession().saveOrUpdate(report);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ReportPermission> getPermissions(Report report, UserPermissionLevel permissionLevel) {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(ReportPermission.class);
+		cr.add(Restrictions.eq("id.report", report));
+		cr.add(Restrictions.eq("id.permissionLevel", permissionLevel));
+		return cr.list();
 	}
 }

@@ -69,11 +69,14 @@ import pasta.domain.result.AssessmentResult;
 import pasta.domain.template.Assessment;
 import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
+import pasta.repository.AssessmentDAO;
 import pasta.scheduler.AssessmentJob;
 import pasta.scheduler.ExecutionEstimator;
 import pasta.scheduler.ExecutionScheduler;
 import pasta.service.AssessmentManager;
+import pasta.service.ExecutionManager;
 import pasta.service.GroupManager;
+import pasta.service.PASTAOptions;
 import pasta.service.RatingManager;
 import pasta.service.ResultManager;
 import pasta.service.SubmissionManager;
@@ -81,7 +84,6 @@ import pasta.service.UserManager;
 import pasta.service.ValidationManager;
 import pasta.service.validation.SubmissionValidationResult;
 import pasta.util.PASTAUtil;
-import pasta.util.ProjectProperties;
 import pasta.web.WebUtils;
 
 /**
@@ -106,6 +108,9 @@ public class SubmissionController {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	@Autowired
+	private AssessmentDAO assessmentDAO;
+	
 	@Autowired
 	private SubmissionManager manager;
 	@Autowired
@@ -176,6 +181,16 @@ public class SubmissionController {
 		return WebUtils.getUser();
 	}
 
+	@Autowired
+	private ExecutionManager execManager;
+	@RequestMapping(value = "run/")
+	@ResponseBody
+	public String doTests(@ModelAttribute("user")PASTAUser user, Model model, HttpServletRequest request, HttpSession session) {
+		execManager.fixWaitingJobs();
+		execManager.executeRemainingAssessmentJobs();
+		return "Executing";
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// HOME //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -259,6 +274,9 @@ public class SubmissionController {
 		model.addAttribute("closed", closed);
 		model.addAttribute("hasGroupWork", hasGroupWork);
 		model.addAttribute("allGroupWork", allGroupWork);
+		
+		model.addAttribute("individualDeclaration", PASTAOptions.instance().get("submission.individual.text"));
+		model.addAttribute("groupDeclaration", PASTAOptions.instance().get("submission.group.text"));
 		
 		if (user.isTutor()) {
 			return "user/tutorHome";
@@ -348,8 +366,7 @@ public class SubmissionController {
 			return "redirect:.";
 		}
 		
-		Assessment assessment = ProjectProperties.getInstance().getAssessmentDAO()
-					.getAssessment(form.getAssessment());
+		Assessment assessment = assessmentDAO.getAssessment(form.getAssessment());
 		
 		SubmissionValidationResult validationResult = validationManager.validate(forUser, assessment, form);
 		session.setAttribute("validationResults", validationResult);

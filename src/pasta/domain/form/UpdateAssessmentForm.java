@@ -63,7 +63,7 @@ import pasta.domain.template.WeightedUnitTest;
 public class UpdateAssessmentForm {
 	
 	@Min(0)
-	private long id;
+	private Long id;
 	
 	@NotEmpty
 	@Length(max=256)
@@ -128,10 +128,10 @@ public class UpdateAssessmentForm {
 		this.selectedHandMarking = new ArrayList<WeightedHandMarking>();
 	}
 	
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	

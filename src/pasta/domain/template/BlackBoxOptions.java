@@ -1,26 +1,33 @@
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 
 @Entity
 @Table(name = "black_box_options")
-public class BlackBoxOptions implements Serializable {
+@VerboseName(value = "black box options", plural = "black box options")
+public class BlackBoxOptions extends BaseEntity {
 	private static final long serialVersionUID = 1094750990939205404L;
-	
-	@Id @GeneratedValue
-	private long id;
 	
 	@Column(name = "detailed_errors")
 	private boolean detailedErrors;
 	
 	@Column(name = "gcc_command_line_args")
 	private String gccCommandLineArgs;
+	
+	@OneToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn (name="unit_test_id")
+	private UnitTest test;
 	
 	public BlackBoxOptions() {
 		detailedErrors = true;
@@ -39,12 +46,12 @@ public class BlackBoxOptions implements Serializable {
 		this.gccCommandLineArgs = copy.gccCommandLineArgs;
 	}
 	
-	public long getId() {
-		return id;
+	public UnitTest getTest() {
+		return test;
 	}
 
-	public void setId(long id) {
-		this.id = id;
+	public void setTest(UnitTest test) {
+		this.test = test;
 	}
 
 	public boolean isDetailedErrors() {

@@ -30,12 +30,12 @@ either expressed or implied, of the PASTA Project.
 package pasta.domain.template;
 
 import java.io.File;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -45,24 +45,29 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import pasta.docker.Language;
 import pasta.docker.LanguageManager;
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+import pasta.domain.ratings.AssessmentRating;
+import pasta.domain.release.ReleaseAllResultsRule;
+import pasta.domain.release.ReleaseResultsRule;
 import pasta.domain.release.ReleaseRule;
+import pasta.domain.reporting.ReportPermission;
+import pasta.domain.result.AssessmentResult;
+import pasta.domain.result.AssessmentResultSummary;
+import pasta.domain.user.PASTAGroup;
 import pasta.domain.user.PASTAUser;
 import pasta.util.ProjectProperties;
 
@@ -121,19 +126,13 @@ import pasta.util.ProjectProperties;
  */
 @Entity
 @Table (name = "assessments")
-public class Assessment implements Serializable, Comparable<Assessment>{
+@VerboseName("assessment")
+public class Assessment extends BaseEntity implements Comparable<Assessment> {
 
 	private static final long serialVersionUID = -387829953944113890L;
 
 	public static final String TUTOR_CATEGORY_PREFIX = "*";
 
-	@Transient
-	protected final Log logger = LogFactory.getLog(getClass());
-	
-	@Id
-	@GeneratedValue
-	private long id;
-	
 	private String name;
 	private double marks;
 	private Date dueDate = new Date();
@@ -158,16 +157,19 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	@Column (name = "count_uncompilable")
 	private boolean countUncompilable = true;
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
-	//TODO this doesn't need to be a join table any more: see weighted hand marking
-	@JoinTable(name="assessment_unit_tests",
-	joinColumns=@JoinColumn(name = "assessment_id"),
-	inverseJoinColumns=@JoinColumn(name = "unit_test_id"))
+	@OneToMany (
+			cascade = CascadeType.ALL,
+			orphanRemoval = true,
+			mappedBy = "assessment"
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedUnitTest> unitTests = new TreeSet<WeightedUnitTest>();
 	
-	@OneToMany (cascade = CascadeType.ALL, orphanRemoval=true)
-	@JoinColumn(name="assessment_id")
+	@OneToMany (
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true, 
+			mappedBy = "assessment"
+	)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WeightedHandMarking> handMarking = new TreeSet<WeightedHandMarking>();
 	
@@ -191,13 +193,6 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 	
 	@Column (name="custom_validator_name")
 	private String customValidatorName;
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
 	
 	public String getName() {
 		return name;
@@ -407,7 +402,7 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 			return null;
 		}
 		return new File(ProjectProperties.getInstance().getAssessmentValidatorLocation() + 
-				id + "/" + customValidatorName);
+				getId() + "/" + customValidatorName);
 	}
 	public String getCustomValidatorName() {
 		return customValidatorName;
@@ -628,74 +623,32 @@ public class Assessment implements Serializable, Comparable<Assessment>{
 		return testNames;
 	}
 
-//	/**
-//	 * See string representation in class description.
-//	 */
-//	@Override
-//	public String toString() {
-//		String output = "";
-//		output += "<assessment>" + System.getProperty("line.separator");
-//		output += "\t<name>" + getName() + "</name>" + System.getProperty("line.separator");
-//		output += "\t<category>" + getCategory() + "</category>" + System.getProperty("line.separator");
-//		if(getReleasedClasses() != null){
-//			output += "\t<releasedClasses>" + getReleasedClasses() + "</releasedClasses>" + System.getProperty("line.separator");
-//		}
-//		if(getSpecialRelease() != null){
-//			output += "\t<specialRelease>" + getSpecialRelease() + "</specialRelease>" + System.getProperty("line.separator");
-//		}
-//		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
-//		output += "\t<dueDate>" + sdf.format(getDueDate()) + "</dueDate>" + System.getProperty("line.separator");
-//		output += "\t<marks>" + getMarks() + "</marks>" + System.getProperty("line.separator");
-//		output += "\t<submissionsAllowed>" + getNumSubmissionsAllowed() + "</submissionsAllowed>"
-//				+ System.getProperty("line.separator");
-//		output += "\t<countUncompilable>" + isCountUncompilable() + "</countUncompilable>" + System.getProperty("line.separator");
-//		if (unitTests.size() + secretUnitTests.size() > 0) {
-//			output += "\t<unitTestSuite>" + System.getProperty("line.separator");
-//			for (WeightedUnitTest unitTest : unitTests) {
-//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-//						+ unitTest.getWeight() + "\"/>" + System.getProperty("line.separator");
-//			}
-//			for (WeightedUnitTest unitTest : secretUnitTests) {
-//				output += "\t\t<unitTest id=\"" + unitTest.getTest().getId() + "\" weight=\""
-//						+ unitTest.getWeight() + "\" secret=\"true\" />" + System.getProperty("line.separator");
-//			}
-//			output += "\t</unitTestSuite>" + System.getProperty("line.separator");
-//		}
-//		// handMarks
-//		if (handMarking.size() > 0) {
-//			output += "\t<handMarkingSuite>" + System.getProperty("line.separator");
-//			for (WeightedHandMarking handMarks : handMarking) {
-//				output += "\t\t<handMarks id=\"" + handMarks.getHandMarking().getId() + "\" weight=\""
-//						+ handMarks.getWeight() + "\"/>" + System.getProperty("line.separator");
-//			}
-//			output += "\t</handMarkingSuite>" + System.getProperty("line.separator");
-//		}
-//		output += "</assessment>" + System.getProperty("line.separator");
-//		return output;
-//	}
-//	
 	@Override
 	public int compareTo(Assessment o) {
 		return getName().compareTo(o.getName());
 	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Assessment other = (Assessment) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
+	
+	/*===========================
+	 * CONVENIENCE RELATIONSHIPS
+	 * 
+	 * Making unidirectional many-to-one relationships into bidirectional 
+	 * one-to-many relationships for ease of deletion by Hibernate
+	 *===========================
+	 */
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentRating> ratings;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentExtension> extensions;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResult> results;
+	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<AssessmentResultSummary> summaries;
+	@OneToMany(mappedBy = "compareAssessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReleaseResultsRule> releaseResultsRules;
+	@OneToMany(mappedBy = "compareAssessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReleaseAllResultsRule> releaseAllResultsRules;
+	@OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<PASTAGroup> groups;
+	@OneToMany(mappedBy = "id.assessment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ReportPermission> reportPermissions;
 }

@@ -52,6 +52,8 @@ import org.apache.commons.collections4.map.LazyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 import pasta.domain.template.HandMarking;
 import pasta.domain.template.WeightedField;
 import pasta.domain.template.WeightedHandMarking;
@@ -66,13 +68,11 @@ import pasta.domain.template.WeightedHandMarking;
  */
 @Entity
 @Table (name = "hand_marking_results")
-public class HandMarkingResult implements Serializable, Comparable<HandMarkingResult> {
+@VerboseName("hand-marking result")
+public class HandMarkingResult extends BaseEntity implements Serializable, Comparable<HandMarkingResult> {
 
 	private static final long serialVersionUID = -2181570522930825901L;
 
-	@Id @GeneratedValue
-	private long id;
-	
 	@ElementCollection (fetch=FetchType.EAGER)
     @MapKeyColumn(name="row_id")
     @Column(name="column_id")
@@ -85,15 +85,11 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
     @ManyToOne
     @JoinColumn (name = "weighted_hand_marking_id")
 	private WeightedHandMarking weightedHandMarking;
+    
+    @ManyToOne
+	@JoinColumn (name = "assessment_result_id")
+	private AssessmentResult assessmentResult;
 	
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public Map<Long, Long> getResult() {
 		return result;
 	}
@@ -140,6 +136,13 @@ public class HandMarkingResult implements Serializable, Comparable<HandMarkingRe
 			return true;
 		}
 		return false;  
+	}
+	
+	public AssessmentResult getAssessmentResult() {
+		return assessmentResult;
+	}
+	public void setAssessmentResult(AssessmentResult assessmentResult) {
+		this.assessmentResult = assessmentResult;
 	}
 
 	@Override

@@ -29,9 +29,25 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.web.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import javax.validation.Valid;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,15 +63,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import pasta.docker.CommandResult;
+import pasta.docker.DockerManager;
 import pasta.domain.UserPermissionLevel;
 import pasta.domain.form.ChangePasswordForm;
+import pasta.domain.form.UpdateOptionsForm;
 import pasta.domain.form.UpdateUsersForm;
+import pasta.domain.form.validate.UpdateOptionsFormValidator;
 import pasta.domain.form.validate.UpdateUsersFormValidator;
 import pasta.domain.user.PASTAUser;
 import pasta.login.DBAuthValidator;
 import pasta.service.ExecutionManager;
+import pasta.service.PASTAOptions;
 import pasta.service.UserManager;
+import pasta.service.reporting.CSVReport;
+import pasta.service.reporting.CSVReport.CSVPage;
+import pasta.service.reporting.UnitTestReportingManager;
 import pasta.util.ProjectProperties;
+import pasta.util.WhichProgram;
 import pasta.web.WebUtils;
 
 /**
@@ -86,8 +111,14 @@ public class AdminController {
 	private ExecutionManager executionManager;
 	
 	@Autowired
+	private UnitTestReportingManager unitTestReportingManager;
+	
+	@Autowired
 	private UpdateUsersFormValidator updateValidator;
-
+	
+	@Autowired
+	private UpdateOptionsFormValidator updateOptionsValidator;
+	
 	// ///////////////////////////////////////////////////////////////////////////
 	// Models //
 	// ///////////////////////////////////////////////////////////////////////////
@@ -112,6 +143,11 @@ public class AdminController {
 		WebUtils.ensureLoggedIn(request);
 		return WebUtils.getUser();
 	}
+	
+	@ModelAttribute("updateOptionsForm")
+	public UpdateOptionsForm getUpdateOptionsForm() {
+		return new UpdateOptionsForm(PASTAOptions.instance().getAllOptions());
+	}
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// ADMIN //
@@ -131,11 +167,11 @@ public class AdminController {
 	 * </table>
 	 * JSP:
 	 * <ul>
-	 * 	<li>user/admin</li>
+	 * 	<li>admin/admin</li>
 	 * </ul>
 	 * 
 	 * @param model the model
-	 * @return "redirect:/login" or "user/admin".
+	 * @return "redirect:/login" or "admin/admin".
 	 */
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String viewAdmin(@ModelAttribute("user") PASTAUser user, ModelMap model) {
@@ -145,7 +181,7 @@ public class AdminController {
 			model.addAttribute("addresses", ProjectProperties.getInstance().getAuthenticationSettings().getServerAddresses());
 			model.addAttribute("taskDetails", executionManager.getExecutingTaskDetails());
 		}
-		return "user/admin";
+		return "admin/admin";
 	}
 	
 	/**
@@ -279,5 +315,184 @@ public class AdminController {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
 		executionManager.forceSubmissionRefresh();
 		return "redirect:" + request.getHeader("Referer");
+	}
+	
+	@RequestMapping(value = "/options/", method = RequestMethod.GET)
+	public String loadOptions() {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		return "admin/options";
+	}
+	
+	@RequestMapping(value = "/options/updateOptions/", method = RequestMethod.POST)
+	public String updateOptions(HttpServletRequest request, 
+			@Valid @ModelAttribute("updateOptionsForm") UpdateOptionsForm form, BindingResult result, 
+			RedirectAttributes attr) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		updateOptionsValidator.validate(form, result);
+		if(result.hasErrors()) { 
+			attr.addFlashAttribute("updateOptionsForm", form);
+			attr.addFlashAttribute("org.springframework.validation.BindingResult.updateOptionsForm", result);
+			return "redirect:../.";
+		}
+		
+		PASTAOptions.instance().updateOptions(form);
+		
+		return "redirect:" + request.getHeader("Referer");
+	}
+	
+	@RequestMapping(value = "/downloads/", method = RequestMethod.GET)
+	public String viewDownloads() {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		return "admin/downloads";
+	}
+	
+	@Autowired
+	private DataSource dataSource;
+	
+	@RequestMapping(value = "/downloads/dbdump/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadDatabaseDump(HttpServletRequest request, HttpServletResponse response) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		
+		DBInfo info = new DBInfo((BasicDataSource) dataSource);
+		List<String> command = new LinkedList<>();
+		
+		command.add(WhichProgram.getInstance().path("mysqldump"));
+		command.add("--user=" + info.username);
+		command.add("--password=" + info.password);
+		command.add("--lock-tables");
+				
+		String[] ignoreTables = {
+				"user_logins",
+				"assessment_ratings",
+				"hibernate_sequences",
+				"authentication_settings",
+				"server_addresses"
+		};
+		for(String ignore : ignoreTables) {
+			command.add("--ignore-table=" + info.databaseName + "." + ignore);
+		}
+		
+		command.add(info.databaseName);
+		
+		CommandResult result = null;
+		try {
+			result = DockerManager.instance().executeDatabaseDump(command);
+			if(!result.getError().isEmpty()) {
+				throw new IOException(result.getError());
+			}
+		} catch (IOException e) {
+			logger.error("Error generating SQL dump:", e);
+		}
+		
+		String filename = "pasta_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
+	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
+
+	    try {
+	    	// Zip the file
+	    	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+	    	ZipOutputStream zip = new ZipOutputStream(outStream);
+	    	
+	    	ZipEntry ze = new ZipEntry(filename + ".sql");
+			zip.putNextEntry(ze);
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(result.getOutput().getBytes());
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = bais.read(buffer)) > 0) {
+				zip.write(buffer, 0, len);
+			}
+			bais.close();
+			zip.closeEntry();
+			zip.close();
+			
+			// Send the file
+			OutputStream out = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(outStream.toByteArray());
+			IOUtils.copy(in,out);
+		} catch (IOException e) {
+			logger.error("Error sending SQL dump:", e);
+		}
+	}
+	
+	private static class DBInfo {
+		String username;
+		String password;
+		String hostname;
+		String port;
+		String databaseName;
+		public DBInfo(BasicDataSource ds) {
+			this.username = ds.getUsername();
+			this.password = ds.getPassword();
+			String url = ds.getUrl();
+			int end = url.indexOf("//");
+			int start = 0;
+			if(end >= 0) {
+				start = end + 2;
+				end = url.indexOf(':', start);
+				this.hostname = url.substring(start, end);
+				start = end + 1;
+				end = url.indexOf('/', start);
+				this.port = url.substring(start, end);
+				start = end + 1;
+				end = url.indexOf('?', start);
+				if(end >= 0) {
+					this.databaseName = url.substring(start, end);
+				} else {
+					this.databaseName = url.substring(start);
+				}
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/downloads/utchistory/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadUnitTestCaseHistory(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="maxRowCount", required=false) int maxRowCount) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		CSVReport report = unitTestReportingManager.getAllUnitTestAttemptsReport(maxRowCount);
+		downloadCSVReport(report, response, "pasta_unit_test_results");
+	}
+	
+	@RequestMapping(value = "/downloads/submissionhistory/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadSubmissionHistory(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="maxRowCount", required=false) int maxRowCount) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		CSVReport report = unitTestReportingManager.getAllSubmissionsReport(maxRowCount);
+		downloadCSVReport(report, response, "pasta_submissions");
+	}
+	
+	private void downloadCSVReport(CSVReport report, HttpServletResponse response, String filePrefix) {
+		CSVPage[] pages = report.getPages();
+		
+		String filename = filePrefix + "_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
+	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
+
+	    try {
+	    	// Zip the file
+	    	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+	    	ZipOutputStream zip = new ZipOutputStream(outStream);
+	    	
+	    	for(int i = 0; i < pages.length; i++) {
+	    		String entryName = "results";
+	    		if(pages.length > 1) {
+	    			int numDigits = (int) Math.ceil(Math.log10(pages.length + 1));
+	    			entryName += String.format("%0" + numDigits + "d", i + 1);
+	    		}
+	    		entryName += ".csv";
+	    		ZipEntry ze = new ZipEntry(entryName);
+				zip.putNextEntry(ze);
+				pages[i].output(zip);
+				zip.closeEntry();
+	    	}
+	    	
+			zip.close();
+			
+			// Send the file
+			OutputStream out = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(outStream.toByteArray());
+			IOUtils.copy(in,out);
+		} catch (IOException e) {
+			logger.error("Error sending CSV report:", e);
+		}
 	}
 }

@@ -215,6 +215,15 @@ either expressed or implied, of the PASTA Project.
 			<h3 class='part-title'>Options</h3>
 			<div class='pasta-form'>
 				<div class='pf-section'>
+					<div class='pf-item one-col keep-showing'>
+						<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any input-output tests to run on a submission. This time is separate to any timeout specified in the 'advanced' section.</span></div>
+						<div class='pf-input'>
+							<form:input path="blackBoxTimeout" />
+							<form:errors path="blackBoxTimeout" />
+						</div>
+					</div>
+				</div>
+				<div class='pf-section'>
 					<div class='pf-item'>
 						<form:checkbox path="blackBoxOptions.detailedErrors" label="Detailed error messages"/>
 						<span class='help'>With this option, users will see messages displaying the difference between their output and the expected output. Otherwise they will just see whether they were correct or not.</span>
@@ -287,7 +296,7 @@ either expressed or implied, of the PASTA Project.
 			<div class='pasta-form'>
 				<div class='pf-section'>
 					<div class='pf-horizontal two-col'>
-						<div class='pf-item'>
+						<div class='pf-item uploadAdvancedTestContainer'>
 							<div class='pf-label'>Upload Code</div>
 							<div class='pf-input'>
 								<form:input type="file" path="file"/>
@@ -317,6 +326,13 @@ either expressed or implied, of the PASTA Project.
 							</div>
 						</div>
 					</c:if>
+					<div class='pf-item one-col advancedTimeoutContainer'>
+						<div class='pf-label'>Maximum execution time per submission (ms) <span class='help'>Only applies if there are any advanced tests to run on a submission. This time is separate to any timeout specified in the 'input-output' section.</span></div>
+						<div class='pf-input'>
+							<form:input path="advancedTimeout" />
+							<form:errors path="advancedTimeout" />
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -482,29 +498,37 @@ either expressed or implied, of the PASTA Project.
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1> Test Unit Test </h1>
-	<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
-		<table>
-			<tr><td>Test Submission:</td><td><form:input type="file" path="file"/> <form:errors path="file" /></td></tr>
-			<tr>
-				<td>Solution Name:</td>
-				<td>
-					<form:input path="solutionName"/>
-					<span class='help'>The name of the main solution source code file (if you are using black box tests). If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
-					<form:errors path="solutionName" />
-				</td>
-			</tr>
-		</table>
-    	<input type="submit" value="Upload" id="submit"/>
-	</form:form>
+	<div class="part">
+		<h1 class='part-title'>Test Unit Test</h1>
+		<form:form commandName="testUnitTest" action="./test/" enctype="multipart/form-data" method="POST">
+			<table>
+				<tr><td>Test Submission:</td><td><form:input type="file" path="file"/> <form:errors path="file" /></td></tr>
+				<tr>
+					<td>Solution Name:</td>
+					<td>
+						<form:input path="solutionName"/>
+						<span class='help'>The name of the main solution source code file (if you are using black box tests). If students are to submit <code>MyProgram.java</code> and <code>MyProgram.c</code>, then solution name should be "MyProgram"</span>
+						<form:errors path="solutionName" />
+					</td>
+				</tr>
+			</table>
+			<div class='button-panel'>
+		    	<input type="submit" value="Upload" id="testSubmit"/>
+			</div>
+		</form:form>
+	</div>
 </div>
 
 <div id="confirmPopup" class='popup' >
 	<span class="button bClose">
 		<span><b>X</b></span>
 	</span>
-	<h1>Are you sure you want to do that?</h1>
-	<a href="../tested/${unitTest.id}/"><button id="confirmButton">Confirm</button></a>
+	<div class='part'>
+		<h1 class='part-title'>Are you sure you want to do that?</h1>
+		<div class='button-panel'>
+			<a href="../tested/${unitTest.id}/"><button id="confirmButton">Confirm</button></a>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -539,6 +563,10 @@ either expressed or implied, of the PASTA Project.
             <%-- Disable test code button when main class not selected --%>
             $('#mainClassName').on('change', function() {
             	$('#testPopup').prop('disabled', !$(this).find(':selected').val());
+            });
+            
+            $("#testUnitTest").on("submit", function() {
+            	$("#testSubmit").prop("disabled",true).val("Testing...");
             });
             
             $("#del-code").on("click", function() {
@@ -659,11 +687,22 @@ either expressed or implied, of the PASTA Project.
          	
          	$("#ioOptions").collapsible({
          		collapsed: true,
-         		"heading-selector": "h3"
+         		"heading-selector": "h3, .keep-showing"
          	});
          	$(":not(#emptyTest) > .testCase").collapsible({
          		collapsed: true,
          		"heading-selector": ".pf-item:first,.controls"
+         	});
+         	
+         	<c:if test="${not unitTest.hasCode}">
+         		var timeoutContainer = $(".advancedTimeoutContainer");
+         		if(!timeoutContainer.find("[id$='.errors']").length) {
+         			$(".advancedTimeoutContainer").hide();
+         		}
+         	</c:if>
+         	$(".uploadAdvancedTestContainer input[type='file']").on("change", function() {
+         		var hasFile = $(this).val() != "";
+         		$(".advancedTimeoutContainer").toggle(hasFile);
          	});
          	
   			<c:if test="${not empty sessionScope.ts}">

@@ -373,9 +373,7 @@ either expressed or implied, of the PASTA Project.
 		});
 		function asyncForm(action, success, failure) {
 			$.ajax({
-				headers : {
-					'Accept' : 'application/json',
-				},
+				dataType: "text",
 				url : action,
 				type : "POST",
 				statusCode : {

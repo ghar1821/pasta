@@ -84,7 +84,7 @@ public class CombinedAssessmentResult extends AssessmentResult {
 	}
 
 	@Override
-	public long getId() {
+	public Long getId() {
 		throw new IllegalAccessError("Cannot access property 'ID' of a combined assessment result");
 	}
 

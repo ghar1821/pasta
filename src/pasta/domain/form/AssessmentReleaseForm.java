@@ -27,7 +27,7 @@ import pasta.service.ReleaseManager;
  * @since 24 Apr 2015
  */
 public class AssessmentReleaseForm {
-	private long ruleId;
+	private Long ruleId;
 	private String ruleName;
 	
 	// For rules types with sub-rules
@@ -93,10 +93,10 @@ public class AssessmentReleaseForm {
 
 	
 	
-	public long getRuleId() {
+	public Long getRuleId() {
 		return ruleId;
 	}
-	public void setRuleId(long ruleId) {
+	public void setRuleId(Long ruleId) {
 		this.ruleId = ruleId;
 	}
 

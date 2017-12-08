@@ -7,23 +7,21 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
+
 @Entity
 @Table (name = "authentication_settings")
-public class AuthenticationSettings implements Serializable {
+@VerboseName(value = "authentication settings", plural = "authentication settings")
+public class AuthenticationSettings extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = -3844260322329134309L;
 
-	@GeneratedValue
-	@Id
-	private long id;
-	
 	// auth type (dummy, imap, database), etc
 	@Column(name="auth_type")
 	private String type;
@@ -36,13 +34,6 @@ public class AuthenticationSettings implements Serializable {
 	@Column(name = "server_address")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<String> serverAddresses;
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
 	
 	public String getType() {
 		return type;

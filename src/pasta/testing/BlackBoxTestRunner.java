@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import pasta.docker.Language;
 import pasta.domain.template.BlackBoxTestCase;
 import pasta.domain.template.UnitTest;
 import pasta.util.WhichProgram;
@@ -28,9 +29,10 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 		addOption("bbmetafile", UnitTest.BB_META_FILENAME);
 		addOption("timeoutPath", WhichProgram.getInstance().path("timeout"));
 		addOption("timePath", WhichProgram.getInstance().path("time"));
+		addOption("carryDir", "pbbt_carry");
 	}
 
-	public void setTestData(List<BlackBoxTestCase> testCases) {
+	public void setTestData(List<BlackBoxTestCase> testCases, Language language) {
 		StringBuilder indices = new StringBuilder();
 		StringBuilder properties = new StringBuilder();
 		for(int i = 0; i < testCases.size(); i++) {
@@ -42,9 +44,9 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 			properties.append("<property name='bbTestName").append(i).append("' value='")
 				.append(testCase.getTestName()).append("'/>\n");
 			properties.append("<property name='bbTestTimeout").append(i).append("' value='")
-				.append(String.valueOf(testCase.getTimeout())).append("'/>\n");
+				.append(String.valueOf(testCase.getTimeout() + language.getTestCaseExecutionOverhead())).append("'/>\n");
 			properties.append("<property name='bbTestTimeoutSeconds").append(i).append("' value='")
-				.append(String.valueOf(testCase.getTimeout() / 1000.0)).append("'/>\n");
+				.append(String.valueOf((testCase.getTimeout() + language.getTestCaseExecutionOverhead()) / 1000.0)).append("'/>\n");
 			String commandLine = StringEscapeUtils.escapeXml(Optional.ofNullable(testCase.getCommandLine()).orElse(""));
 			properties.append("<property name='bbTestCommandLine").append(i).append("' value='")
 				.append(commandLine).append("'/>\n");
@@ -59,6 +61,13 @@ public abstract class BlackBoxTestRunner extends JUnitTestRunner {
 	
 	public void setRunErrorsFile(String filename) {
 		addOption("runErrorsFile", filename);
+	}
+	
+	public void setTimeout(Long timeout) {
+		if(timeout == null) {
+			throw new NullPointerException("Timeout cannot be null");
+		}
+		addOption("blackBoxTimeout", timeout.toString());
 	}
 
 	@Override

@@ -20,7 +20,6 @@ import pasta.domain.template.WeightedUnitTest;
 import pasta.domain.user.PASTAUser;
 import pasta.repository.ResultDAO;
 import pasta.service.UserManager;
-import pasta.util.ProjectProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,7 +34,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Repository
 public class UnitTestReportingManager {
 
-	private ResultDAO resultDAO = ProjectProperties.getInstance().getResultDAO();
+	@Autowired
+	private ResultDAO resultDAO;
 	
 	@Autowired
 	private UserManager userManager;
@@ -283,5 +283,23 @@ public class UnitTestReportingManager {
 			node.put("stream", getStream());
 			return node;
 		}
+	}
+
+	public CSVReport getAllUnitTestAttemptsReport(int pageSize) {
+		List<Object[]> attempts = resultDAO.getAllTestCaseDetails();
+		String[] header = {
+				"submission_id", "test_case", "result", "test_case_weight", 
+		};
+		return new CSVReport(header, attempts, pageSize);
+	}
+	
+	public CSVReport getAllSubmissionsReport(int pageSize) {
+		List<Object[]> attempts = resultDAO.getAllSubmissionDetails();
+		String[] header = {
+				"submission_id", "assessment_id", "assessment_name", "assessment_release_date",
+				"assessment_due_date", "auto_mark_weighted_percentage", "submission_date",
+				"user", "permission_level", "submitted_by", "group_members"
+		};
+		return new CSVReport(header, attempts, pageSize);
 	}
 }

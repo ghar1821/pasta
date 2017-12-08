@@ -79,25 +79,15 @@ import pasta.util.ProjectProperties;
 @Repository
 public class ExecutionManager {
 
-	private AssessmentDAO assDao = ProjectProperties.getInstance()
-			.getAssessmentDAO();
+	@Autowired private AssessmentDAO assDao;
 	
 	@Autowired private UnitTestManager unitTestManager;
 	@Autowired private ResultManager resultManager;
 	@Autowired private GroupManager groupManager;
 
-	private ExecutionScheduler scheduler;
+	@Autowired private ExecutionScheduler scheduler;
+	@Autowired private AssessmentJobExecutor executor;
 	
-	private AssessmentJobExecutor executor;
-	public ExecutionManager(AssessmentJobExecutor executor) {
-		this.executor = executor;
-	}
-
-	@Autowired
-	public void setMyScheduler(ExecutionScheduler myScheduler) {
-		this.scheduler = myScheduler;
-	}
-
 	public static final Logger logger = Logger
 			.getLogger(ExecutionManager.class);
 
@@ -153,26 +143,26 @@ public class ExecutionManager {
 			ExecutionContainer container = new ExecutionContainer(executionLabel, sandboxSrc, sandboxOut);
 			
 			// Check if test has been run before, and remove previous results if so
-			Iterator<UnitTestResult> previousResultsIt = job.getResults().getUnitTests().iterator();
-			while(previousResultsIt.hasNext()) {
-				UnitTestResult existingResult = previousResultsIt.next();
+			List<UnitTestResult> staleResults = new LinkedList<>();
+			for(UnitTestResult existingResult : job.getResults().getUnitTests()) {
 				if(existingResult == null) {
 					continue;
 				}
 				if(existingResult.getTest() == null || 
 						existingResult.getTest().getId() == test.getId() ||
 						!validTestIds.contains(existingResult.getTest().getId())) {
-					existingResult.clearValidationErrors();
-					existingResult.getTestCases().clear();
-					previousResultsIt.remove();
+					staleResults.add(existingResult);
 				}
+			}
+			for(UnitTestResult staleResult : staleResults) {
+				staleResult.clearValidationErrors();
+				staleResult.removeAllTestCases();
+				job.getResults().removeUnitTest(staleResult);
 			}
 			
 			// Create the new results object that will be used
 			UnitTestResult utResults = new UnitTestResult();
-			utResults.setTest(test);
-			utResults.setSecret(weightedTest.isSecret());
-			utResults.setGroupWork(weightedTest.isGroupWork());
+			utResults.setWeightedUnitTest(weightedTest);
 			job.getResults().addUnitTest(utResults);
 			
 			// Code we are interested in testing

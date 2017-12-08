@@ -29,13 +29,12 @@ either expressed or implied, of the PASTA Project.
 
 package pasta.domain.template;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
+
+import pasta.domain.BaseEntity;
+import pasta.domain.VerboseName;
 
 /**
  * Container class for a pairing of String and double, commonly used in
@@ -48,14 +47,11 @@ import javax.persistence.Table;
  */
 @Entity
 @Table (name = "weighted_fields")
-public class WeightedField implements Serializable, Comparable<WeightedField> {
+@VerboseName("weighted field")
+public class WeightedField extends BaseEntity implements Comparable<WeightedField> {
 	
 	private static final long serialVersionUID = -5647759434783526021L;
 
-	@Id 
-	@GeneratedValue
-	private long id;
-	
 	@Column (length = 512)
 	private String name;
 	private double weight;
@@ -70,13 +66,6 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 		this.weight = weight;
 	}
 	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -101,33 +90,17 @@ public class WeightedField implements Serializable, Comparable<WeightedField> {
 		if(diff != 0) {
 			return diff;
 		}
-		return (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0));
+		if(this.getId() == null) {
+			return other.getId() == null ? 0 : -1;
+		}
+		if(other.getId() == null) {
+			return 1;
+		}
+		return (this.getId() < other.getId() ? -1 : (this.getId() > other.getId() ? 1 : 0));
 	}
 	
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		WeightedField other = (WeightedField) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
-
-	@Override
 	public String toString() {
-		return "(" + id + ": " + name + ", " + weight + ")";
+		return "(" + getId() + ": " + name + ", " + weight + ")";
 	}
 }

@@ -1,26 +1,32 @@
-/* USYD Theme */
+/*
+main theme:
+main - #0099fc (light: #aedfff) (dark: #006BB1) (very light: #e8f6ff)
+buttons - #ff4100 (light: #ffa789)
+other - #ffbc00
+*/
+
 body {
 	color: #333;
 	background: #f5f5f5;
 }
 
 a {
-	color: #DC740E;
+	color: #006BB1;
 }
 /* a:visited { */
 /* 	color: #AC5500; */
 /* } */
 a:hover {
-	color: #EDA054;
+	color: #0099fc;
 }
 
 button, input[type="submit"] {
 	color: white;
-	background-color: #DC740E;
+	background-color: #ff4100;
 }
 button:hover,
 input[type="submit"]:hover {
-	background-color: #EDA054;
+	background-color: #ffa789;
 }
 button.secondary,
 input[type="submit"].secondary {
@@ -28,7 +34,7 @@ input[type="submit"].secondary {
 }
 button.secondary, button.flat,
 input[type="submit"].secondary, input[type="submit"].flat {
-	color: #DC740E;
+	color: #ff4100;
 }
 button.secondary:hover, button.flat:hover,
 input[type="submit"].secondary:hover, input[type="submit"].flat:hover {
@@ -47,7 +53,7 @@ div.section {
 .pasta-form input[type="password"],
 .pasta-form textarea,
 .pasta-form input[type="number"] {
-	background-color: #FFECD9;
+	background-color: #e8f6ff;
 }
 .pasta-form input[type="text"]:disabled,
 .pasta-form input[type="password"]:disabled,
@@ -58,17 +64,20 @@ div.section {
 }
 
 div.tab-bar {
-	background-color: #DC740E;
-}
+	background-color: #0099fc;
 }
 div.tab-bar .tab {
-	background-color: #DC740E;
+	background-color: #0099fc;
+}
+div.tab-bar .tab a {
+	color: white;
 }
 div.tab-bar .tab:hover,
 div.tab-bar .tab.current {
-	background-color: #EDA054;
+	background-color: #aedfff;
 }
-div.tab-bar a {
+div.tab-bar .tab:hover a,
+div.tab-bar .tab.current a {
 	color: #333;
 }
 
@@ -106,7 +115,7 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 }
 
 .hm-table th {
-	background-color: #FFECD9;
+	background-color: #e8f6ff;
 }
 .hm-table td.selectedMark {
 	background-color: #DDF;
@@ -116,7 +125,7 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 }
 
 #groupSelection input.editing {
-	background-color: #FFD0A1;
+	background-color: #aedfff;
 }
 .group-size.overFull {
 	background-color: #FCC;
@@ -129,15 +138,15 @@ div.unitTestResult.revealed.error, div.unitTestResult.revealed.failure {
 /* '>' selector necessary to add specificity */
 div.subRule.first,
 .release-rule ul.first {
-	border-left-color: #f5af00;
+	border-left-color: #0099fc;
 }
 div.first > div > div > div > div.subRule,
 .release-rule ul.first > li > ul {
-	border-left-color: red;
+	border-left-color: #ff4100;
 }
 .release-rule ul.first > li > ul > li > ul,
 div.first > div > div > div > div.subRule > div > div > div > div.subRule {
-	border-left-color: #12416c;
+	border-left-color: #ffbc00;
 }
 
 /* Release rules */
@@ -194,11 +203,11 @@ table.moduleTable tr.selected {
 }
 
 .pasta-loader {
-	border-color: #DC740E;
+	border-color: #0099fc;
 }
 
 .submission-progress .ui-progressbar-value {
-	background: #DC740E;
+	background: #0099fc;
 }
 
 div.rate-assessment {
