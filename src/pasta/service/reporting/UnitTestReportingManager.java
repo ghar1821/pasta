@@ -286,10 +286,19 @@ public class UnitTestReportingManager {
 	}
 
 	public CSVReport getAllUnitTestAttemptsReport(int pageSize) {
-		List<Object[]> attempts = resultDAO.getAllUnitTestAttempts();
+		List<Object[]> attempts = resultDAO.getAllTestCaseDetails();
 		String[] header = {
-				"submission_id", "assessment", "submission_date", "user", 
-				"user_type", "submitted_by", "test_case", "result"
+				"submission_id", "test_case", "result", "test_case_weight", 
+		};
+		return new CSVReport(header, attempts, pageSize);
+	}
+	
+	public CSVReport getAllSubmissionsReport(int pageSize) {
+		List<Object[]> attempts = resultDAO.getAllSubmissionDetails();
+		String[] header = {
+				"submission_id", "assessment_id", "assessment_name", "assessment_release_date",
+				"assessment_due_date", "auto_mark_weighted_percentage", "submission_date",
+				"user", "permission_level", "submitted_by", "group_members"
 		};
 		return new CSVReport(header, attempts, pageSize);
 	}

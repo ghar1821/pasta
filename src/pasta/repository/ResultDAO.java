@@ -518,18 +518,55 @@ public class ResultDAO extends BaseDAO {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object[]> getAllUnitTestAttempts() {
-		String sql = "SELECT ar.id AS 'submission_id', a.name AS 'assessment', "
-				+ "ar.submission_date, u1.username AS 'user', u1.permission_level, "
-				+ "u2.username AS 'submitted_by', utcr.name AS 'test_case', utcr.result "
-				+ "FROM assessment_results ar "
-				+ "INNER JOIN assessment_result_unit_test_joins arutj ON ar.id = arutj.assessment_result_id "
-				+ "INNER JOIN unit_test_results utr ON utr.id = arutj.unit_test_result_id "
-				+ "INNER JOIN unit_test_case_results utcr ON utcr.test_case_id = utr.id "
-				+ "INNER JOIN users u1 ON ar.user_id = u1.id "
-				+ "INNER JOIN users u2 ON ar.submitted_by = u2.id "
-				+ "INNER JOIN assessments a ON ar.assessment_id = a.id "
-				+ "ORDER BY ar.submission_date, ar.id, utcr.name";
+	public List<Object[]> getAllTestCaseDetails() {
+		String sql = "SELECT ar.id AS 'submission_id', utcr.name AS 'test_case', utcr.result, (wut.weight / tcc.test_case_count) AS 'test_case_weight' " + 
+				"FROM assessment_results ar " + 
+				"INNER JOIN unit_test_results utr ON ar.id = utr.assessment_result_id " + 
+				"INNER JOIN unit_test_case_results utcr ON utcr.unit_test_result_id = utr.id " + 
+				"INNER JOIN weighted_unit_tests wut ON wut.id = utr.weighted_unit_test_id " + 
+				"INNER JOIN ( " + 
+				"  SELECT unit_test_result_id AS 'utr_id', count(*) AS 'test_case_count' FROM unit_test_case_results GROUP BY unit_test_result_id " + 
+				") AS tcc ON tcc.utr_id = utr.id " + 
+				"ORDER BY ar.id, utcr.name";
+		SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+		return query.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getAllSubmissionDetails() {
+		String sql = "SELECT ar.id AS 'submission_id', a.id AS 'assessment_id', a.name AS 'assessment_name', " + 
+				"rd.date AS 'assessment_release_date', a.dueDate AS 'assessment_due_date', " + 
+				"grades.auto_percent * 100.0 AS 'auto_mark_weighted_percentage', " + 
+				"ar.submission_date, u1.username AS 'user', u1.permission_level, " + 
+				"u2.username AS 'submitted_by', IFNULL(agm.members,'') AS 'group_members' " + 
+				"FROM assessment_results ar " + 
+				"INNER JOIN users u1 ON ar.user_id = u1.id " + 
+				"INNER JOIN users u2 ON ar.submitted_by = u2.id " + 
+				"INNER JOIN assessments a ON ar.assessment_id = a.id " + 
+				"INNER JOIN ( " + 
+				"  SELECT rel_a.id, IFNULL(rel_rd.release_date, '') AS 'date' FROM assessments rel_a LEFT OUTER JOIN rules_date rel_rd ON (rel_a.release_rule_id = rel_rd.id) " + 
+				") rd ON (rd.id = a.id) " + 
+				"LEFT OUTER JOIN ( " + 
+				"  SELECT ag.id AS 'group_id', GROUP_CONCAT(u.username SEPARATOR ',') AS 'members' FROM assessment_groups ag INNER JOIN assessment_group_members agm ON (ag.id = agm.assessment_group_id) inner join users u on (agm.user_id = u.id) group by ag.id " + 
+				") agm ON (agm.group_id = ar.user_id) " + 
+				"INNER JOIN ( " + 
+				"  SELECT ar.id AS submission_id, (SUM(((correct.pass_test_case_count / tcc.test_case_count) * wut.weight)) / SUM(wut.weight)) AS auto_percent " + 
+				"  FROM assessment_results ar " + 
+				"  INNER JOIN unit_test_results utr ON ar.id = utr.assessment_result_id " + 
+				"  INNER JOIN weighted_unit_tests wut ON wut.id = utr.weighted_unit_test_id " + 
+				"  INNER JOIN ( " + 
+				"    SELECT unit_test_result_id AS 'utr_id', count(*) AS 'test_case_count' " + 
+				"    FROM unit_test_case_results " + 
+				"    GROUP BY unit_test_result_id " + 
+				"  ) AS tcc ON tcc.utr_id = utr.id " + 
+				"  INNER JOIN ( " + 
+				"    SELECT unit_test_result_id AS 'utr_id', SUM(result='pass') AS 'pass_test_case_count' " + 
+				"    FROM unit_test_case_results " + 
+				"    GROUP BY unit_test_result_id " + 
+				"  ) AS correct ON correct.utr_id = utr.id " + 
+				"  GROUP BY ar.id " + 
+				") AS grades ON grades.submission_id = ar.id " + 
+				"ORDER BY ar.submission_date";
 		SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 		return query.list();
 	}

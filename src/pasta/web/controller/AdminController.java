@@ -445,15 +445,26 @@ public class AdminController {
 		}
 	}
 	
-	@RequestMapping(value = "/downloads/uthistory/", method = RequestMethod.POST, produces="application/zip")
-	public void downloadUnitTestHistory(HttpServletRequest request, HttpServletResponse response, 
+	@RequestMapping(value = "/downloads/utchistory/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadUnitTestCaseHistory(HttpServletRequest request, HttpServletResponse response, 
 			@RequestParam(value="maxRowCount", required=false) int maxRowCount) {
 		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
-		
 		CSVReport report = unitTestReportingManager.getAllUnitTestAttemptsReport(maxRowCount);
+		downloadCSVReport(report, response, "pasta_unit_test_results");
+	}
+	
+	@RequestMapping(value = "/downloads/submissionhistory/", method = RequestMethod.POST, produces="application/zip")
+	public void downloadSubmissionHistory(HttpServletRequest request, HttpServletResponse response, 
+			@RequestParam(value="maxRowCount", required=false) int maxRowCount) {
+		WebUtils.ensureAccess(UserPermissionLevel.INSTRUCTOR);
+		CSVReport report = unitTestReportingManager.getAllSubmissionsReport(maxRowCount);
+		downloadCSVReport(report, response, "pasta_submissions");
+	}
+	
+	private void downloadCSVReport(CSVReport report, HttpServletResponse response, String filePrefix) {
 		CSVPage[] pages = report.getPages();
 		
-		String filename = "pasta_unit_test_results_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
+		String filename = filePrefix + "_" + new SimpleDateFormat("YYYY-MM-dd").format(new Date());
 	    response.setHeader("Content-disposition", "attachment; filename=" + filename + ".zip");
 
 	    try {
@@ -481,7 +492,7 @@ public class AdminController {
 			InputStream in = new ByteArrayInputStream(outStream.toByteArray());
 			IOUtils.copy(in,out);
 		} catch (IOException e) {
-			logger.error("Error sending unit test attempts:", e);
+			logger.error("Error sending CSV report:", e);
 		}
 	}
 }
