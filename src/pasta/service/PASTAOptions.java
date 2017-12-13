@@ -2,7 +2,10 @@ package pasta.service;
 
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -13,9 +16,11 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import pasta.config.options.OptionsListener;
 import pasta.domain.form.UpdateOptionsForm;
 import pasta.domain.options.Option;
 import pasta.repository.OptionsDAO;
@@ -40,18 +45,35 @@ public class PASTAOptions {
 	@Qualifier("defaultProperties")
 	private Properties defaultsFromFile;
 	
+	private List<OptionsListener> listeners;
+	
+	@Autowired
+	private ApplicationContext appContext;
+	
 	private PASTAOptions() {
 		instance = this;
+		listeners = new LinkedList<>();
 	}
-	
+
 	@PostConstruct
 	private void afterInit() {
 		defaultsFromFile.forEach((k, v) -> {
 			if(!optionsDao.hasOption(k.toString())) {
-				optionsDao.saveOrUpdate(new Option(k.toString(), v.toString()));
+				Option option = new Option(k.toString(), v.toString());
+				optionsDao.saveOrUpdate(option);
+				registerUpdate(option);
 			}
 		});
 		this.properties = new Properties(defaultsFromFile);
+		registerListeners();
+	}
+	
+	private void registerListeners() {
+		Map<String, OptionsListener> listenerBeans = appContext.getBeansOfType(OptionsListener.class);
+		for (Entry<String, OptionsListener> entry : listenerBeans.entrySet()) {
+			logger.info("Registering options listener: " + entry.getValue().getClass().getName());
+			listeners.add(entry.getValue());
+		}
 	}
 	
 	public Properties getPropertySet(String prefix) {
@@ -139,11 +161,20 @@ public class PASTAOptions {
 				if(!allKeys.contains(option.getKey()) || 
 						!get(option.getKey()).equals(option.getValue())) {
 					optionsDao.saveOrUpdate(option);
+					registerUpdate(option);
 					clear(option.getKey());
 				}
 				allKeys.remove(option.getKey());
 			}
 		}
 		allKeys.forEach(this::delete);
+	}
+	
+	private void registerUpdate(Option option) {
+		for (OptionsListener listener : listeners) {
+			if(listener.actsOn(option)) {
+				listener.optionUpdated(option);
+			}
+		}
 	}
 }

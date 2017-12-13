@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -24,12 +25,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import pasta.scheduler.AssessmentJobExecutor;
+import pasta.service.PASTAOptions;
 
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
 @EnableScheduling
-@ComponentScan(basePackages={"pasta.repository", "pasta.login", "pasta.service", "pasta.scheduler", "pasta.domain", "pasta.util", "pasta.docker"})
+@ComponentScan(basePackages={"pasta.repository", "pasta.login", "pasta.service", "pasta.scheduler", "pasta.domain", "pasta.util", "pasta.docker", "pasta.config.options"})
 @ImportResource({"classpath:applicationContext-security.xml"})
 @PropertySource("classpath:project.properties")
 @PropertySource("classpath:database.properties")
@@ -72,9 +74,18 @@ public class WebApplicationConfig {
 	}
 	
 	@Bean(name="assessmentJobExecutor")
+	@DependsOn("pastaOptions")
 	public AssessmentJobExecutor createAssessmentJobExecutor() {
-		final int corePoolSize = 2;
-		final int maxPoolSize = 3;
+		String core = PASTAOptions.instance().get("execution.threads.core.size");
+		int corePoolSize = 1;
+		if(core != null) {
+			try { corePoolSize = new Integer(core); } catch (NumberFormatException e){}
+		}
+		String max = PASTAOptions.instance().get("execution.threads.max.size");
+		int maxPoolSize = 1;
+		if(max != null) {
+			try { maxPoolSize = new Integer(max); } catch (NumberFormatException e){}
+		}
 		return new AssessmentJobExecutor(corePoolSize, maxPoolSize);
 	}
 	
