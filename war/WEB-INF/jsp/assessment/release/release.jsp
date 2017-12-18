@@ -33,7 +33,7 @@ SOFTWARE.
 <h1>Release Rule - ${assessment.name}</h1>
 <spring:hasBindErrors name="releaseRuleForm">
 	<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.4em;">
-		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+		<span class="ui-icon ui-icon-alert" style="margin-right: .3em;"></span>
 		<b>ERROR:</b> Please check your form for indicated errors, and try again.
 	</div>
 </spring:hasBindErrors>

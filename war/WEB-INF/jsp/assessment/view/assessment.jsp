@@ -34,7 +34,7 @@ SOFTWARE.
 
 <spring:hasBindErrors name="updateAssessmentForm">
 	<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.5em;">
-		<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+		<span class="ui-icon ui-icon-alert" style="margin-right: .3em;"></span>
 		<b>ERROR: Please check your form for indicated errors, and try again.</b>
 	</div>
 </spring:hasBindErrors>
@@ -50,7 +50,7 @@ SOFTWARE.
 <div id='hideUntilLoaded' style='display:none'>
 	<c:if test="${not assessment.completelyTested}" >
 		<div class="ui-state-error ui-corner-all vertical-block" style="font-size: 1.5em;">
-			<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span><b>WARNING:</b> This assessment contains untested unit tests
+			<span class="ui-icon ui-icon-alert" style="margin-right: .3em;"></span><b>WARNING:</b> This assessment contains untested unit tests
 		</div>
 	</c:if>
 	
