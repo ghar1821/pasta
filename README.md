@@ -1,9 +1,8 @@
 # README #
 
-This README presents PASTA Arrabbiata with an updated interface. PASTA helps instructors assessing the skills of students and provides these students with instant feedback not exclusively based on their programming skills but also on
+PASTA helps instructors assessing the skills of students and provides these students with instant feedback not exclusively based on their programming skills but also on
 their ability to design algorithms, understand network protocols, test databases, reason logically, measure complexity, etc.
-
-
+PASTA Arrabbiata is the open source version of PASTA with a generic interface, docker container support and documentation. 
 
 ### Who do I talk to? ###
 
