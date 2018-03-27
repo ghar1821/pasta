@@ -4,6 +4,8 @@ PASTA helps instructors assessing the skills of students and provides these stud
 their ability to design algorithms, understand network protocols, test databases, reason logically, measure complexity, etc.
 PASTA Arrabbiata is the open source version of PASTA with a generic interface, docker container support and documentation. 
 
+Documentation is available on the [https://bitbucket.org/gramoli/arrabbiata/wiki/Home](wiki).
+
 ### Who do I talk to? ###
 
   * Vincent Gramoli <vincent.gramoli@sydney.edu.au>
