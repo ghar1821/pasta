@@ -101,7 +101,7 @@
         		<exclude name="origSubmission/**/*"/>
         		<exclude name="${binDir}/**/*"/>
 			</fileset>
-			<syslibset libs="stdc++"/>
+			<syslibset libs="stdc++,m"/>
         </cc>
 		<echo message="Using javac to compile Java code"/>
         <javac
