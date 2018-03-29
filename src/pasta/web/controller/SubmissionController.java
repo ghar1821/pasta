@@ -509,7 +509,7 @@ public class SubmissionController {
 			return "0";
 		}
 		if(hide && (!results.isFinishedHandMarking() || 
-				(results.getAssessment().isClosed() && !results.getAssessment().getSecretUnitTests().isEmpty()))) {
+				(!results.getAssessment().isClosed() && !results.getAssessment().getSecretUnitTests().isEmpty()))) {
 			return "???";
 		}
 		double marks = results.getMarks();
