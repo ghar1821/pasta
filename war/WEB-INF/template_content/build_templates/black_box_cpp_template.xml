@@ -122,12 +122,18 @@
     </target>
 
     <target name="run" depends="init">
+      <trycatch>
+	<try>
     	<parallel threadCount="1" timeout="${blackBoxTimeout}">
 			<sequential>
 				<echo message="Executing '${testName}'"/>
 		    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
 			</sequential>
-		</parallel>
+	</parallel>
+	</try>
+	<catch>
+	</catch>
+      </trycatch>
 		<mkdir dir="${outDirectory}/${carryDir}"/>
 		<copy todir="${outDirectory}/${carryDir}/${bbuseroutfile}">
 			<fileset dir="${binDir}/${bbuseroutfile}" />

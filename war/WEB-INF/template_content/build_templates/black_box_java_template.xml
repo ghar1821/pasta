@@ -89,13 +89,19 @@
     	<record name="${outDirectory}/compile.errors" action="stop"/>
     </target>
     <target name="run" depends="init">
+      <trycatch>
+	<try>
         <parallel threadCount="1" timeout="${blackBoxTimeout}">
 			<sequential>
 				<echo message="Executing '${testName}'"/>
 		    	<foreach param="bbTestIndex" list="${bbTestIndices}" target="doTest"/>
 				<echo message="Completed tests"/>
 			</sequential>
-		</parallel>
+	</parallel>
+	</try>
+	<catch>
+	</catch>
+      </trycatch>
     	<mkdir dir="${outDirectory}/${carryDir}"/>
 		<copy todir="${outDirectory}/${carryDir}/${bbuseroutfile}">
 			<fileset dir="${binDir}/${bbuseroutfile}" />
