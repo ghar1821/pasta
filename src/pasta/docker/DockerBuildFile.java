@@ -25,6 +25,7 @@ SOFTWARE.
 package pasta.docker;
 
 import java.io.File;
+import java.util.Map;
 
 public class DockerBuildFile {
 	enum Status {
@@ -35,12 +36,14 @@ public class DockerBuildFile {
 	private String tag;
 	private File file;
 	private Status status;
+	private Map<String, String> buildArgs;
 	
-	public DockerBuildFile(String tag, File file) {
+	public DockerBuildFile(String tag, File file, Map<String, String> buildArgs) {
 		this.tag = tag;
 		this.file = file;
 		this.status = Status.NOT_YET_BUILT;
 		this.id = null;
+		this.buildArgs = buildArgs;
 	}
 	
 	public String getTag() {
@@ -54,6 +57,9 @@ public class DockerBuildFile {
 	}
 	public String getId() {
 		return id;
+	}
+	public Map<String, String> getBuildArgs() {
+		return buildArgs;
 	}
 	
 	public void registerSuccess(String id) {

@@ -42,6 +42,7 @@ import org.apache.log4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
@@ -210,10 +211,14 @@ public class DockerManager {
 			
 			Set<String> tags = new HashSet<>();
 			tags.add(buildFile.getTag());
-			String id = dockerClient.buildImageCmd(baseDir)
+			BuildImageCmd buildCmd = dockerClient.buildImageCmd(baseDir)
 				.withTags(tags)
 				.withBuildArg("workDir", DockerManager.WORK_DIR)
-				.withBuildArg("binDir", DockerManager.PASTA_BIN)
+				.withBuildArg("binDir", DockerManager.PASTA_BIN);
+
+			buildFile.getBuildArgs().forEach((key, value) -> buildCmd = buildCmd.withBuildArg(key, value));
+
+			String id = buildCmd
 				.exec(callback)
 				.awaitImageId();
 			buildFile.registerSuccess(id);

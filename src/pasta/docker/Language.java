@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
@@ -59,7 +60,7 @@ public class Language implements UserType, Comparable<Language> {
 	public Language() {}
 	
 	@SuppressWarnings("unchecked")
-	public Language(String id, String templateFile, String dockerFile, String runnerClass) {
+	public Language(String id, String templateFile, String dockerFile, Map<String, String> buildArgs, String runnerClass) {
 		this.id = id;
 		try {
 			this.templateFile = PASTAUtil.getTemplateResource("build_templates/" + templateFile);
@@ -71,7 +72,7 @@ public class Language implements UserType, Comparable<Language> {
 		} catch (FileNotFoundException e) {
 			logger.error("Cannot find docker file for " + this.id + ": " + dockerFile);
 		}
-		this.dockerBuildFile = new DockerBuildFile(id + "-exec", getDockerFile());
+		this.dockerBuildFile = new DockerBuildFile(id + "-exec", getDockerFile(), buildArgs);
 		try {
 			this.runnerClass = (Class<? extends BlackBoxTestRunner>) Class.forName(runnerClass);
 		} catch (ClassNotFoundException e) {

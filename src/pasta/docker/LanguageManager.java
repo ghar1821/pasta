@@ -26,10 +26,12 @@ package pasta.docker;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -59,7 +61,19 @@ public class LanguageManager {
 			String templateFile = properties.getProperty(id + ".build-template");
 			String dockerFile = properties.getProperty(id + ".docker-build");
 			String runnerClass = properties.getProperty(id + ".runner-class");
-			Language newLang = new Language(id, templateFile, dockerFile, runnerClass);
+
+			HashMap<String, String> buildArgs = new HashMap<>();
+			Enumeration<?> propNames = properties.propertyNames();
+			while(propNames.hasMoreElements()) {
+				String propKey = propNames.nextElement().toString();
+				if(propKey.startsWith(id + ".build-arg.")) {
+					String buildArgKey = propKey.substring((id + ".build-arg.").length());
+					String buildArgValue = properties.getProperty(propKey);
+					buildArgs.put(buildArgKey, buildArgValue);
+				}
+			}
+
+			Language newLang = new Language(id, templateFile, dockerFile, buildArgs, runnerClass);
 			this.languages.put(id, newLang);
 			logger.info("Registered language " + newLang.getName());
 		}

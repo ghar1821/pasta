@@ -2,6 +2,10 @@ FROM openjdk:8-jdk
 
 RUN apt-get update && apt-get install -y --no-install-recommends ant ant-optional time coreutils python3-dev python3-pip
 
+ARG pipPackages
+
+RUN if [ ! -z "${pipPackages}" ]; then pip3 install ${pipPackages} ; fi
+
 ARG workDir
 
 RUN mkdir ${workDir}/
