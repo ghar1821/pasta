@@ -216,7 +216,10 @@ public class DockerManager {
 				.withBuildArg("workDir", DockerManager.WORK_DIR)
 				.withBuildArg("binDir", DockerManager.PASTA_BIN);
 
-			buildFile.getBuildArgs().forEach((key, value) -> buildCmd = buildCmd.withBuildArg(key, value));
+			Map<String, String> buildArgs = buildFile.getBuildArgs();
+			for(String key : buildArgs.keySet()) {
+				buildCmd = buildCmd.withBuildArg(key, buildArgs.get(key));
+			}
 
 			String id = buildCmd
 				.exec(callback)
