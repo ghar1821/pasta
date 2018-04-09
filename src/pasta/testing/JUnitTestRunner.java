@@ -80,6 +80,11 @@ public class JUnitTestRunner extends Runner {
 
 	@Override
 	public String extractCompileErrors(File compileErrorFile, AntResults results) {
+		String buildError = extractAntBuildError(results);
+		if(buildError != null) {
+			return buildError;
+		}
+		
 		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorFile));
 		StringBuilder compErrors = new StringBuilder();
 		if(scn.hasNext()) {
@@ -127,5 +132,15 @@ public class JUnitTestRunner extends Runner {
 		}
 		scn.close();
 		return files.toString();
+	}
+	
+	protected String extractAntBuildError(AntResults results) {
+		String buildOutput = results.getOutput("build");
+		if(buildOutput.contains("BUILD FAILED")) {
+			String failureText = buildOutput.split("BUILD FAILED")[1].trim();
+			String firstLine = failureText.split("[\r\n]+")[0];
+			return firstLine.replaceFirst(".*/build.xml:[0-9]+:", "").trim();
+		}
+		return null;
 	}
 }

@@ -34,10 +34,16 @@
             </fileset>
         </copy>
 	</target>
-	<target name="movePreviousOutput">
+	
+	<target name="movePreviousOutput" depends="checkPreviousOutput" if="previousOutput.exists">
 	    <move todir="${binDir}">
 			<fileset dir="${outDirectory}/pbbt_carry" /> 
 	    </move>
+	</target>
+	<target name="checkPreviousOutput">
+		<condition property="previousOutput.exists">
+			<available file="${outDirectory}/pbbt_carry" type="dir"/>
+		</condition>
 	</target>
 	
 	<target name="init">

@@ -51,6 +51,11 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 
 	@Override
 	public String extractCompileErrors(File compileErrorFile, AntResults results) {
+		String buildError = extractAntBuildError(results);
+		if(buildError != null) {
+			return buildError;
+		}
+		
 		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorFile));
 		StringBuilder compErrors = new StringBuilder();
 		boolean startedJavacErrors = false;
@@ -67,7 +72,9 @@ public class CBlackBoxTestRunner extends BlackBoxTestRunner {
 				compErrors.append(chopped).append(System.lineSeparator());
 			}
 			// Chop off the trailing "\n"
-			compErrors.deleteCharAt(compErrors.length()-1);
+			if(compErrors.length() > 0) {
+				compErrors.deleteCharAt(compErrors.length()-1);
+			}
 		}
 		scn.close();
 		return compErrors.toString();
