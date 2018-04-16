@@ -81,12 +81,12 @@ public class JUnitTestRunner extends Runner {
 	@Override
 	public String extractCompileErrors(File compileErrorFile, AntResults results) {
 		String buildError = extractAntBuildError(results);
-		if(buildError != null) {
-			return buildError;
+		StringBuilder compErrors = new StringBuilder();
+		if(buildError != null && !buildError.isEmpty()) {
+			compErrors.append(buildError).append(System.lineSeparator());
 		}
 		
 		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorFile));
-		StringBuilder compErrors = new StringBuilder();
 		if(scn.hasNext()) {
 			String line = "";
 			while(scn.hasNextLine()) {
@@ -97,10 +97,11 @@ public class JUnitTestRunner extends Runner {
 				}
 				compErrors.append(chopped).append(System.lineSeparator());
 			}
-			// Chop off the trailing "\n"
-			if(compErrors.length() > 0) {
-				compErrors.deleteCharAt(compErrors.length()-1);
-			}
+		}
+		
+		// Chop off the trailing "\n"
+		if(compErrors.length() > 0) {
+			compErrors.deleteCharAt(compErrors.length()-1);
 		}
 		scn.close();
 		return compErrors.toString();

@@ -46,12 +46,12 @@ public class CPPBlackBoxTestRunner extends BlackBoxTestRunner {
 	@Override
 	public String extractCompileErrors(File compileErrorsFile, AntResults results) {
 		String buildError = extractAntBuildError(results);
-		if(buildError != null) {
-			return buildError;
+		StringBuilder compErrors = new StringBuilder();
+		if(buildError != null && !buildError.isEmpty()) {
+			compErrors.append(buildError).append(System.lineSeparator());
 		}
 		
 		Scanner scn = new Scanner(PASTAUtil.scrapeFile(compileErrorsFile));
-		StringBuilder compErrors = new StringBuilder();
 		if(scn.hasNext()) {
 			String line = "";
 			while(scn.hasNextLine()) {
@@ -62,10 +62,10 @@ public class CPPBlackBoxTestRunner extends BlackBoxTestRunner {
 				}
 				compErrors.append(chopped).append(System.lineSeparator());
 			}
-			// Chop off the trailing "\n"
-			if(compErrors.length() > 0) {
-				compErrors.deleteCharAt(compErrors.length()-1);
-			}
+		}
+		// Chop off the trailing "\n"
+		if(compErrors.length() > 0) {
+			compErrors.deleteCharAt(compErrors.length()-1);
 		}
 		scn.close();
 		return compErrors.toString();
